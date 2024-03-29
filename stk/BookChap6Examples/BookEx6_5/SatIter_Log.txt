@@ -1,0 +1,77 @@
+Astrogator Log File; DriverMCS: Mission_Control_Sequence
+-------------------------------------------------------------
+
+
+----------------------------------------------
+Begin targeter profile Target_Sequence.Differential_Corrector
+
+Initial control parameters:
+
+Unscaled Controls:
+Name                                              Current Value            Last Update        Total Correction
+Maneuver-Transfer_1 : ImpulsiveMnvr.Cartesian.X  2.720045100000 km/sec  0.000000000000 km/sec   0.000000000000 km/sec
+Maneuver-Transfer_1 : ImpulsiveMnvr.Cartesian.Y -1.126679600000 km/sec  0.000000000000 km/sec   0.000000000000 km/sec
+Maneuver-Transfer_1 : ImpulsiveMnvr.Cartesian.Z  2.231373100000 km/sec  0.000000000000 km/sec   0.000000000000 km/sec
+
+
+Homotopy step   1 of   1
+
+Intermediate Goals Desired:
+Maneuver-Transfer_1 : Eccentricity        0.000000000000    
+Maneuver-Transfer_1 : Inclination        55.000000000000 deg
+Maneuver-Transfer_1 : Semimajor_Axis  11480.600000000000 km 
+
+
+
+---Running one step of the differential corrector...
+
+--------------------------------------------------------
+
+<<< Targeting Finished >>>
+    [Goals met]
+
+
+--------------------------------------------------------
+
+---Done. (running one step of the differential corrector.)
+
+Params from single diff corr
+
+Unscaled Controls:
+Name                                              Current Value            Last Update        Total Correction
+Maneuver-Transfer_1 : ImpulsiveMnvr.Cartesian.X  2.720045100000 km/sec  0.000000000000 km/sec   0.000000000000 km/sec
+Maneuver-Transfer_1 : ImpulsiveMnvr.Cartesian.Y -1.126679600000 km/sec  0.000000000000 km/sec   0.000000000000 km/sec
+Maneuver-Transfer_1 : ImpulsiveMnvr.Cartesian.Z  2.231373100000 km/sec  0.000000000000 km/sec   0.000000000000 km/sec
+
+
+Unscaled Intermediate Constraints:
+Name                                       Current Value                 Desired          Difference           Tolerance
+Maneuver-Transfer_1 : Eccentricity        0.000000060636          0.000000000000      0.000000060636      0.100000000000    
+Maneuver-Transfer_1 : Inclination        55.000010521560 deg     55.000000000000 deg  0.000010521560 deg  0.100000000000 deg
+Maneuver-Transfer_1 : Semimajor_Axis  11480.649057414803 km   11480.600000000000 km   0.049057414804 km   0.100000000000 km 
+
+
+
+----------------------------------------------
+Final Params from Homotopy Diff Corr
+
+Unscaled Controls:
+Name                                              Current Value            Last Update        Total Correction
+Maneuver-Transfer_1 : ImpulsiveMnvr.Cartesian.X  2.720045100000 km/sec  0.000000000000 km/sec   0.000000000000 km/sec
+Maneuver-Transfer_1 : ImpulsiveMnvr.Cartesian.Y -1.126679600000 km/sec  0.000000000000 km/sec   0.000000000000 km/sec
+Maneuver-Transfer_1 : ImpulsiveMnvr.Cartesian.Z  2.231373100000 km/sec  0.000000000000 km/sec   0.000000000000 km/sec
+
+
+Unscaled Intermediate Constraints:
+Name                                       Current Value                 Desired          Difference           Tolerance
+Maneuver-Transfer_1 : Eccentricity        0.000000060636          0.000000000000      0.000000060636      0.100000000000    
+Maneuver-Transfer_1 : Inclination        55.000010521560 deg     55.000000000000 deg  0.000010521560 deg  0.100000000000 deg
+Maneuver-Transfer_1 : Semimajor_Axis  11480.649057414803 km   11480.600000000000 km   0.049057414804 km   0.100000000000 km 
+
+
+
+----------------------------------------------
+
+*********** Done Targeting************************
+
+End targeter profile Target_Sequence.Differential_Corrector
