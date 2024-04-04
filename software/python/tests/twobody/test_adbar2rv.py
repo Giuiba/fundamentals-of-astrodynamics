@@ -1,5 +1,5 @@
 import numpy as np
-from src.valladopy.adbar2rv import adbar2rv
+from src.valladopy.twobody.adbar2rv import adbar2rv
 
 
 def test_adbar2rv():
