@@ -1,5 +1,4 @@
 # -----------------------------------------------------------------------------
-# Name: adbar2rv.py
 # Author: David Vallado
 # Date: 6 June 2002
 #
@@ -8,7 +7,12 @@
 # -----------------------------------------------------------------------------
 
 import numpy as np
+from ..constants import SMALL
 
+
+###############################################################################
+# Spherical Conversions
+###############################################################################
 
 def adbar2rv(rmag, vmag, rtasc, decl, fpav, az):
     """
@@ -53,3 +57,45 @@ def adbar2rv(rmag, vmag, rtasc, decl, fpav, az):
     )
 
     return r, v
+
+
+def rv2adbar(r, v):
+    """
+    This function transforms a position and velocity vector into the adbarv
+    elements: rtasc, decl, fpav, azimuth, position and velocity magnitude.
+
+    Args:
+        r (array-like): ECI position vector
+        v (array-like): ECI velocity vector
+
+    Returns:
+        rmag (float): ECI position vector magnitude in km
+        vmag: (float): ECI velocity vector magnitude in km/sec
+        rtasc (float): Right ascension of satellite in radians
+        decl (float): Declination of satellite in radians
+        fpav (float): Satellite flight path angle from vertical in radians
+        az (float): Satellite flight path azimuth in radians
+    """
+    rmag = np.linalg.norm(r)
+    vmag = np.linalg.norm(v)
+    rtemp = np.sqrt(r[0]**2 + r[1]**2)
+    vtemp = np.sqrt(v[0]**2 + v[1]**2)
+
+    # Right ascension of sateillite
+    if rtemp < SMALL:
+        rtasc = np.arctan2(v[1], v[0]) if vtemp > SMALL else 0
+    else:
+        rtasc = np.arctan2(r[1], r[0])
+
+    # Declination of satellite
+    decl = np.arcsin(r[2] / rmag)
+
+    # Flight path angle from vertical
+    h = np.cross(r, v)
+    fpav = np.arctan2(np.linalg.norm(h), np.dot(r, v))
+
+    # Flight path azimuth
+    hcrossr = np.cross(h, r)
+    az = np.arctan2(r[0] * hcrossr[1] - r[1] * hcrossr[0], hcrossr[2] * rmag)
+
+    return rmag, vmag, rtasc, decl, fpav, az
