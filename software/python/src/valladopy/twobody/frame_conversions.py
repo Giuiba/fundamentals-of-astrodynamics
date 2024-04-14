@@ -11,13 +11,19 @@ from ..constants import SMALL
 
 
 ###############################################################################
-# Spherical Conversions
+# Spherical Elements
 ###############################################################################
 
 def adbar2rv(rmag, vmag, rtasc, decl, fpav, az):
-    """
-    This function transforms the orbital elements (rtasc, decl, fpav, azimuth,
-    position and velocity magnitude) into ECI position and velocity vectors.
+    """Conversion from spherical elements to position & velocity vectors
+
+    This function transforms the orbital elements (rtasc, decl, fpav,
+    azimuth, position and velocity magnitude) into ECI position and velocity
+    vectors.
+
+    References:
+        vallado: 2001, xx
+        chobotov       70
 
     Args:
         rmag (float): ECI position vector magnitude in km
@@ -60,13 +66,18 @@ def adbar2rv(rmag, vmag, rtasc, decl, fpav, az):
 
 
 def rv2adbar(r, v):
-    """
+    """Conversion from position & velocity vectors to spherical elements
+
     This function transforms a position and velocity vector into the adbarv
     elements: rtasc, decl, fpav, azimuth, position and velocity magnitude.
 
+    References:
+    vallado: 2001, xx
+    chobotov       70
+
     Args:
-        r (array-like): ECI position vector
-        v (array-like): ECI velocity vector
+        r (array_like): ECI position vector
+        v (array_like): ECI velocity vector
 
     Returns:
         rmag (float): ECI position vector magnitude in km
