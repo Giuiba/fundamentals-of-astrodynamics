@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.valladopy.twobody.frame_conversions import adbar2rv, rv2adbar
+from src.valladopy.twobody.frame_conversions import adbar2rv, rv2adbar, coe2rv
 
 
 class TestSpherical:
@@ -46,3 +46,34 @@ class TestSpherical:
 
         # Check if the output is close to the expected values
         assert np.allclose(out, expected_elems, rtol=1e-12)
+
+
+class TestClassical:
+    @pytest.fixture
+    def coe(self):
+        p = 11067.790              # semi-latus rectum, km
+        ecc = 0.83285              # eccentricity
+        incl = np.radians(87.87)   # inclination, rad
+        raan = np.radians(227.89)  # RAAN, rad
+        argp = np.radians(53.38)   # arg. of periapsis, rad
+        nu = np.radians(92.335)    # true anomaly, rad
+        return p, ecc, incl, raan, argp, nu
+
+    @pytest.fixture
+    def rv(self):
+        # Position and velocity in km and km/s
+        r = np.array([-4.049198890323112e+03, -4.479765179366826e+03, 0])
+        v = np.array([0.303279847002191, -0.274130533804499, 10.9917080783198])
+        return r, v
+
+    def test_coe2rv(self, coe, rv):
+        # Reference: Vallado, 2007, p. 126, Ex. 2-5
+        p, ecc, incl, raan, _, nu = coe
+        r_expected, v_expected = rv
+
+        # Call the function with test inputs
+        r_out, v_out = coe2rv(p, ecc, incl, raan, nu)
+
+        # Check if the output is close to the expected values
+        assert np.allclose(r_out, r_expected, rtol=1e-12)
+        assert np.allclose(v_out, v_expected, rtol=1e-12)
