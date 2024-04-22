@@ -6,9 +6,44 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
+from enum import Enum
+
 import numpy as np
 
 from ..constants import SMALL
+
+
+class OrbitType(Enum):
+    CIR_EQUATORIAL = 1  # circular equatorial
+    CIR_INCLINED = 2    # circular inclined
+    EPH_EQUATORIAL = 3  # elliptical, parabolic, hyperbolic equatorial
+    EPH_INCLINED = 4    # elliptical, parabolic, hyperbolic inclined
+
+
+def determine_orbit_type(ecc, incl, tol=SMALL):
+    """Determine the type of orbit based on eccentricity and inclination
+
+    Args:
+        ecc (float): The eccentricity of the orbit
+        incl (float): The inclination of the orbit in radians.
+        tol (float, optional): Small value for tolerance
+
+    Returns:
+        OrbitType: The type of orbit categorized into one of the following:
+                   - circular equatorial
+                   - circular inclined
+                   - elliptical, parabolic, hyperbolic equatorial
+                   - elliptical, parabolic, hyperbolic inclined
+    """
+    if ecc < tol:
+        if (incl < tol) or (abs(incl - np.pi) < tol):
+            return OrbitType.CIR_EQUATORIAL
+        else:
+            return OrbitType.CIR_INCLINED
+    elif (incl < tol) or (abs(incl - np.pi) < tol):
+        return OrbitType.EPH_EQUATORIAL
+    else:
+        return OrbitType.EPH_INCLINED
 
 
 def newtonnu(ecc, nu, parabolic_lim_deg=168):
