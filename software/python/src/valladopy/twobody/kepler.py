@@ -17,7 +17,8 @@ def newtonnu(ecc, nu, parabolic_lim_deg=168):
     This function solves Kepler's equation when the true anomaly is known.
     The mean and eccentric, parabolic, or hyperbolic anomaly is also found.
     The default parabolic limit at 168 deg is arbitrary. The hyperbolic anomaly
-    is also limited. The hyperbolic sine is used because it's not double valued.
+    is also limited. The hyperbolic sine is used because it's not double
+    valued.
 
     References:
         vallado: 2007, p. 85, Algorithm 5
@@ -46,7 +47,9 @@ def newtonnu(ecc, nu, parabolic_lim_deg=168):
     # Hyperbolic case
     elif ecc > 1.0 + SMALL:
         if ecc > 1.0 and abs(nu) < np.pi - np.arccos(1.0 / ecc):
-            sine = (np.sqrt(ecc**2 - 1.0) * np.sin(nu)) / (1.0 + ecc * np.cos(nu))
+            sine = (
+                (np.sqrt(ecc**2 - 1.0) * np.sin(nu)) / (1.0 + ecc * np.cos(nu))
+            )
             e0 = np.arcsinh(sine)
             m = ecc * np.sinh(e0) - e0
     # Parabolic case
