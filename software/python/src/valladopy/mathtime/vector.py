@@ -89,16 +89,17 @@ def angle(v1, v2):
     This function computes the angle between two vectors using the dot product
     and the magnitudes of the vectors. The function handles cases where the dot
     product might slightly exceed the interval [-1, 1] due to numerical
-    precision issues by clipping the value. If either vector has zero magnitude,
-    the function returns `np.nan`to indicate that the angle is not computable.
+    precision issues by clipping the value. If either vector has zero
+    magnitude, the function returns `np.nan`to indicate that the angle is not
+    computable.
 
     Args:
         v1 (numpy.ndarray): The first vector.
         v2 (numpy.ndarray): The second vector.
 
     Returns:
-        float: The angle between the two vectors in radians. Returns `np.nan` if
-               either vector is zero.
+        float: The angle between the two vectors in radians. Returns `np.nan`
+               if either vector is zero.
     """
     mag_v1 = np.linalg.norm(v1)
     mag_v2 = np.linalg.norm(v2)
