@@ -9,7 +9,8 @@
 import numpy as np
 
 from ..constants import SMALL, MU
-from ..mathtime.vector import rot1, rot3
+from ..mathtime.vector import rot1, rot3, angle
+from .kepler import OrbitType, determine_orbit_type, newtonnu
 
 
 ###############################################################################
@@ -174,3 +175,126 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
     v = rot3(rot1(rot3(v_pqw, -argp), -incl), -raan)
 
     return r, v
+
+
+def rv2coe(r, v):
+    """Converts position and velocity vectors into classical orbital elements.
+
+    Args:
+        r (array-like): Position vector in km
+        v (array-like): Velocity vector in km/s
+
+    Returns:
+        p (float): Semilatus rectum in km
+        a (float): Semimajor axis in km
+        ecc (float): Eccentricity
+        incl (float): Inclination in radians
+        raan (float): Right ascension of the ascending node in radians
+        argp (float): Argument of perigee in radians
+        nu (float): True anomaly in radians
+        m (float): Mean anomaly in radians
+        arglat (float): Argument of latitude in radians
+        truelon (float): True longitude in radians
+        lonper (float): Longitude of periapsis in radians
+        orbit_type (enum): Type of orbit as defined in the OrbitType enum
+    """
+    (p, a, ecc, incl, raan, argp, nu,
+     m, arglat, truelon, lonper) = (np.nan,) * 11
+    orbit_type = None
+
+    # Make sure position and velocity vectors are numpy arrays
+    r = np.array(r)
+    v = np.array(v)
+
+    # Get magnitude of position and velocity vectors
+    r_mag = np.linalg.norm(r)
+    v_mag = np.linalg.norm(v)
+
+    # Get angular momentum
+    h = np.cross(r, v)
+    h_mag = np.linalg.norm(h)
+
+    # Elements are undefined for negative angular momentum
+    if h_mag < 0:
+        return (
+            p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper,
+            orbit_type
+        )
+
+    # Define line of nodes vector
+    n_vec = np.array([-h[1], h[0], 0])
+    n_mag = np.linalg.norm(n_vec)
+
+    # Get eccentricity vector
+    e_vec = ((v_mag ** 2 - MU / r_mag) * r - np.dot(r, v) * v) / MU
+    ecc = np.linalg.norm(e_vec)
+
+    # find a, e, and p (semi-latus rectum)
+    sme = (v_mag ** 2 / 2) - (MU / r_mag)
+    if abs(sme) > SMALL:
+        a = - MU / (2 * sme)
+    else:
+        a = np.inf
+
+    # Semi-latus rectum
+    p = h_mag ** 2 / MU
+
+    # Find inclination
+    incl = np.arccos(h[2] / h_mag)
+
+    # Determine orbit type
+    orbit_type = determine_orbit_type(ecc, incl, tol=SMALL)
+
+    # Find right ascension of ascending node
+    if n_mag > SMALL:
+        temp = n_vec[0] / n_mag
+        temp = np.clip(temp, -1, 1)
+        raan = np.arccos(temp)
+        if n_vec[1] < 0:
+            raan = 2 * np.pi - raan
+
+    # Find argument of periapsis
+    if orbit_type is OrbitType.EPH_INCLINED:
+        argp = angle(n_vec, e_vec)
+        if e_vec[2] < 0:
+            argp = 2 * np.pi - argp
+
+    # Find true anomaly at epoch
+    if orbit_type in [OrbitType.EPH_INCLINED, OrbitType.EPH_EQUATORIAL]:
+        nu = angle(e_vec, r)
+        if np.dot(r, v) < 0:
+            nu = 2 * np.pi - nu
+
+    # Find argument of latitude (inclined cases)
+    if orbit_type in [OrbitType.CIR_INCLINED, OrbitType.EPH_INCLINED]:
+        arglat = angle(n_vec, r)
+        if r[2] < 0:
+            arglat = 2 * np.pi - arglat
+        m = arglat
+
+    # Find longitude of periapsis
+    if ecc > SMALL and orbit_type is OrbitType.EPH_EQUATORIAL:
+        temp = e_vec[0] / ecc
+        temp = np.clip(temp, -1, 1)
+        lonper = np.arccos(temp)
+        if e_vec[1] < 0:
+            lonper = 2 * np.pi - lonper
+        if incl > np.pi / 2:
+            lonper = 2 * np.pi - lonper
+
+    # Find true longitude
+    if r_mag > SMALL and orbit_type is OrbitType.CIR_EQUATORIAL:
+        temp = r[0] / r_mag
+        temp = np.clip(temp, -1, 1)
+        truelon = np.arccos(temp)
+        if r[1] < 0:
+            truelon = 2 * np.pi - truelon
+        if incl > np.pi / 2:
+            truelon = 2 * np.pi - truelon
+
+    # Find mean anomaly for all orbits
+    e, m = newtonnu(ecc, nu)
+
+    return (
+        p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper, orbit_type
+    )

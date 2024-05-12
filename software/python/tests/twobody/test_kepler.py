@@ -24,6 +24,7 @@ def test_determine_orbit_type(ecc, incl, expected_orbit_type):
 
 
 def test_newtonnu():
+    # TODO: test all cases
     ecc = 0.1
     nu = np.radians(45)
     e0, m = newtonnu(ecc, nu)
