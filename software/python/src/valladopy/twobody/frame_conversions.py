@@ -198,6 +198,10 @@ def rv2coe(r, v):
         lonper (float): Longitude of periapsis in radians
         orbit_type (enum): Type of orbit as defined in the OrbitType enum
     """
+    def adjust_angle(ang):
+        """Adjust angle by subtracting it from 2pi"""
+        return 2 * np.pi - ang
+
     (p, a, ecc, incl, raan, argp, nu,
      m, arglat, truelon, lonper) = (np.nan,) * 11
     orbit_type = None
@@ -247,50 +251,43 @@ def rv2coe(r, v):
 
     # Find right ascension of ascending node
     if n_mag > SMALL:
-        temp = n_vec[0] / n_mag
-        temp = np.clip(temp, -1, 1)
-        raan = np.arccos(temp)
+        raan = np.arccos(np.clip(n_vec[0] / n_mag, -1, 1))
         if n_vec[1] < 0:
-            raan = 2 * np.pi - raan
+            raan = adjust_angle(raan)
 
     # Find argument of periapsis
     if orbit_type is OrbitType.EPH_INCLINED:
         argp = angle(n_vec, e_vec)
         if e_vec[2] < 0:
-            argp = 2 * np.pi - argp
+            argp = adjust_angle(argp)
 
     # Find true anomaly at epoch
     if orbit_type in [OrbitType.EPH_INCLINED, OrbitType.EPH_EQUATORIAL]:
         nu = angle(e_vec, r)
         if np.dot(r, v) < 0:
-            nu = 2 * np.pi - nu
+            nu = adjust_angle(nu)
 
     # Find argument of latitude (inclined cases)
     if orbit_type in [OrbitType.CIR_INCLINED, OrbitType.EPH_INCLINED]:
         arglat = angle(n_vec, r)
         if r[2] < 0:
-            arglat = 2 * np.pi - arglat
-        m = arglat
+            arglat = adjust_angle(arglat)
 
     # Find longitude of periapsis
     if ecc > SMALL and orbit_type is OrbitType.EPH_EQUATORIAL:
-        temp = e_vec[0] / ecc
-        temp = np.clip(temp, -1, 1)
-        lonper = np.arccos(temp)
+        lonper = np.arccos(np.clip(e_vec[0] / ecc, -1, 1))
         if e_vec[1] < 0:
-            lonper = 2 * np.pi - lonper
+            lonper = adjust_angle(lonper)
         if incl > np.pi / 2:
-            lonper = 2 * np.pi - lonper
+            lonper = adjust_angle(lonper)
 
     # Find true longitude
     if r_mag > SMALL and orbit_type is OrbitType.CIR_EQUATORIAL:
-        temp = r[0] / r_mag
-        temp = np.clip(temp, -1, 1)
-        truelon = np.arccos(temp)
+        truelon = np.arccos(np.clip(r[0] / r_mag, -1, 1))
         if r[1] < 0:
-            truelon = 2 * np.pi - truelon
+            truelon = adjust_angle(truelon)
         if incl > np.pi / 2:
-            truelon = 2 * np.pi - truelon
+            truelon = adjust_angle(truelon)
 
     # Find mean anomaly for all orbits
     e, m = newtonnu(ecc, nu)

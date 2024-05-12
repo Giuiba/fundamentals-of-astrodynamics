@@ -97,6 +97,7 @@ class TestClassical:
          m, arglat, truelon, lonper, orbit_type) = rv2coe(*rv)
 
         # Check if the output is close to the expected values
+        # TODO: lonper is not `nan` in the book example (but is in matlab)
         assert abs(p - 11067.798350991814) < DEFAULT_TOL
         assert abs(a - 36127.337763974785) < DEFAULT_TOL
         assert abs(ecc - 0.8328533990836885) < DEFAULT_TOL
