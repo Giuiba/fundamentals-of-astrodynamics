@@ -101,3 +101,84 @@ def newtonnu(ecc, nu, parabolic_lim_deg=168):
         e0 = np.fmod(e0, 2.0 * np.pi)
 
     return e0, m
+
+
+def newtonm(ecc, m, n_iter=50):
+    """
+    Calculates the eccentric anomaly and true anomaly given the mean anomaly
+    using Newton-Raphson iteration.
+
+    Args:
+        ecc (float): Eccentricity of the orbit
+        m (float): Mean anomaly in radians
+        n_iter (int): Number of iterations for eccentric anomaly solving
+
+    Returns:
+        e0 (float): Eccentric anomaly in radians
+        nu (float): True anomaly in radians
+    """
+    # Define eccentricity thresholds
+    # TODO: better definition/notes
+    ecc_thresh_mid = 1.6
+    ecc_thresh_high = 3.6
+
+    # Hyperbolic orbit
+    if (ecc - 1.0) > SMALL:
+        if ecc < ecc_thresh_mid:
+            if (0.0 > m > -np.pi) or (m > np.pi):
+                e0 = m - ecc
+            else:
+                e0 = m + ecc
+        else:
+            if ecc < ecc_thresh_high and abs(m) > np.pi:
+                e0 = m - np.sign(m) * ecc
+            else:
+                e0 = m / (ecc - 1.0)
+
+        e1 = e0 + ((m - ecc * np.sinh(e0) + e0) / (ecc * np.cosh(e0) - 1.0))
+        ktr = 1
+        while abs(e1 - e0) > SMALL and ktr <= n_iter:
+            e0 = e1
+            e1 = (
+                e0 + (m - ecc * np.sinh(e0) + e0) / (ecc * np.cosh(e0) - 1.0)
+            )
+            ktr += 1
+
+        sinv = (
+            -(np.sqrt(ecc ** 2 - 1.0) * np.sinh(e1))
+            / (1.0 - ecc * np.cosh(e1))
+        )
+        cosv = (np.cosh(e1) - ecc) / (1.0 - ecc * np.cosh(e1))
+        nu = np.arctan2(sinv, cosv)
+
+    # Parabolic orbit
+    elif abs(ecc - 1.0) < SMALL:
+        s = 0.5 * (np.pi * 0.5 - np.arctan(1.5 * m))
+        w = np.arctan(np.tan(s) ** (1.0 / 3.0))
+        e0 = 2.0 / np.tan(2.0 * w)
+        nu = 2.0 * np.arctan(e0)
+
+    # Elliptical orbit
+    elif ecc > SMALL:
+        if (0.0 > m > -np.pi) or (m > np.pi):
+            e0 = m - ecc
+        else:
+            e0 = m + ecc
+        e1 = e0 + (m - e0 + ecc * np.sin(e0)) / (1.0 - ecc * np.cos(e0))
+        ktr = 1
+        while abs(e1 - e0) > SMALL and ktr <= n_iter:
+            e0 = e1
+            e1 = e0 + (m - e0 + ecc * np.sin(e0)) / (1.0 - ecc * np.cos(e0))
+            ktr += 1
+
+        sinv = (
+            (np.sqrt(1.0 - ecc ** 2) * np.sin(e1)) / (1.0 - ecc * np.cos(e1))
+        )
+        cosv = (np.cos(e1) - ecc) / (1.0 - ecc * np.cos(e1))
+        nu = np.arctan2(sinv, cosv)
+
+    # Circular orbit
+    else:
+        nu, e0 = m, m
+
+    return e0, nu
