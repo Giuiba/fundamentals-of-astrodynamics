@@ -43,6 +43,7 @@
 
 function [reci, veci] = tradec2rv (rho, trtasc, tdecl, drho, dtrtasc, dtdecl, rseci, lod)
     constmath;
+    constastro;
 
     % --------------------- implementation ------------------------
     latgc = asin(rseci(3) / mag(rseci));
