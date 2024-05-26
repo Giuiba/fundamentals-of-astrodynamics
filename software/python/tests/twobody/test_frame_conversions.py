@@ -138,7 +138,8 @@ class TestTopocentric:
     def test_tradec2rv(self, tradec, rvseci):
         # Expected outputs
         r_eci_exp = [1752246215.6652846, -3759563434.243893, -1577568101.96675]
-        v_eci_exp = [-18.323497062513614, 18.332049491766764, 7.777041227057346]
+        v_eci_exp = [-18.323497062513614, 18.332049491766764,
+                     7.777041227057346]
 
         # Call the function with test inputs
         r_eci, v_eci = tradec2rv(*tradec, *rvseci)
