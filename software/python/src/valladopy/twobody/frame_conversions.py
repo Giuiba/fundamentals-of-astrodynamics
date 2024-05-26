@@ -301,16 +301,16 @@ def rv2coe(r, v):
 # Topocentric
 ###############################################################################
 
-def tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci, vseci):
+def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
     """Converts topocentric coordinates (range, right ascension, declination,
     and their rates) into geocentric equatorial (ECI) position and velocity
     vectors.
 
     Args:
-        trr (float): Satellite range from site in km
+        rho (float): Satellite range from site in km
         trtasc (float): Topocentric right ascension in radians
         tdecl (float): Topocentric declination in radians
-        tdrr (float): Range rate in km/s
+        drho (float): Range rate in km/s
         tdrtasc (float): Topocentric right ascension rate in rad/s
         tddecl (float): Topocentric declination rate in rad/s
         rseci (array-like): ECI site position vector in km
@@ -323,17 +323,17 @@ def tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci, vseci):
 
     # Calculate topocentric slant range vectors
     rhov = np.array([
-        trr * np.cos(tdecl) * np.cos(trtasc),
-        trr * np.cos(tdecl) * np.sin(trtasc),
-        trr * np.sin(tdecl)
+        rho * np.cos(tdecl) * np.cos(trtasc),
+        rho * np.cos(tdecl) * np.sin(trtasc),
+        rho * np.sin(tdecl)
     ])
 
     drhov = np.array([
-        tdrr * np.cos(tdecl) * np.cos(trtasc) - trr * np.sin(tdecl) * np.cos(
-            trtasc) * tddecl - trr * np.cos(tdecl) * np.sin(trtasc) * tdrtasc,
-        tdrr * np.cos(tdecl) * np.sin(trtasc) - trr * np.sin(tdecl) * np.sin(
-            trtasc) * tddecl + trr * np.cos(tdecl) * np.cos(trtasc) * tdrtasc,
-        tdrr * np.sin(tdecl) + trr * np.cos(tdecl) * tddecl
+        drho * np.cos(tdecl) * np.cos(trtasc) - rho * np.sin(tdecl) * np.cos(
+            trtasc) * tddecl - rho * np.cos(tdecl) * np.sin(trtasc) * tdrtasc,
+        drho * np.cos(tdecl) * np.sin(trtasc) - rho * np.sin(tdecl) * np.sin(
+            trtasc) * tddecl + rho * np.cos(tdecl) * np.cos(trtasc) * tdrtasc,
+        drho * np.sin(tdecl) + rho * np.cos(tdecl) * tddecl
     ])
 
     # ECI position and velocity vectors
@@ -341,3 +341,58 @@ def tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci, vseci):
     veci = drhov + vseci
 
     return reci, veci
+
+
+def rv2tradec(reci, veci, rseci, vseci):
+    """Converts geocentric equatorial (ECI) position and velocity vectors into
+    range, topocentric right ascension, declination, and rates.
+
+    Args:
+        reci (array-like): ECI position vector in km
+        veci (array-like)): ECI velocity vector in km/s
+        rseci (array-like)): ECI site position vector in km
+        vseci (array-like)): ECI site velocity vector in km/s
+
+    Returns:
+        rho (float): Satellite range from site in km
+        trtasc (float): Topocentric right ascension in radians
+        tdecl (float): Topocentric declination in radians
+        drho (float): Range rate in km/s
+        dtrtasc (float): Topocentric right ascension rate in rad/s
+        dtdecl (float): Topocentric declination rate in rad/s
+    """
+    # Find ECI slant range vector from site to satellite
+    rhoveci = np.array(reci) - np.array(rseci)
+    drhoveci = np.array(veci) - np.array(vseci)
+    rho = np.linalg.norm(rhoveci)
+
+    # Calculate topocentric right ascension and declination
+    temp = np.sqrt(rhoveci[0] ** 2 + rhoveci[1] ** 2)
+    if temp < SMALL:
+        trtasc = np.arctan2(drhoveci[1], drhoveci[0])
+    else:
+        trtasc = np.arctan2(rhoveci[1], rhoveci[0])
+
+    # Directly over the North Pole
+    if temp < SMALL:
+        tdecl = np.sign(rhoveci[2]) * np.pi / 2  # +- 90 deg
+    else:
+        tdecl = np.arcsin(rhoveci[2] / rho)
+
+    if trtasc < 0.0:
+        trtasc += 2.0 * np.pi
+
+    # Calculate topocentric right ascension and declination rates
+    temp1 = -rhoveci[1] ** 2 - rhoveci[0] ** 2
+    drho = np.dot(rhoveci, drhoveci) / rho
+    if abs(temp1) > SMALL:
+        dtrtasc = (drhoveci[0] * rhoveci[1] - drhoveci[1] * rhoveci[0]) / temp1
+    else:
+        dtrtasc = 0.0
+
+    if abs(temp) > SMALL:
+        dtdecl = (drhoveci[2] - drho * np.sin(tdecl)) / temp
+    else:
+        dtdecl = 0.0
+
+    return rho, trtasc, tdecl, drho, dtrtasc, dtdecl

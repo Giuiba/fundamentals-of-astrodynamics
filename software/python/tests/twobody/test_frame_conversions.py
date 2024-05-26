@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from src.valladopy.twobody.frame_conversions import (
-    adbar2rv, rv2adbar, coe2rv, rv2coe, tradec2rv
+    adbar2rv, rv2adbar, coe2rv, rv2coe, tradec2rv, rv2tradec
 )
 from src.valladopy.twobody.kepler import OrbitType
 
@@ -114,17 +114,6 @@ class TestClassical:
 
 class TestTopocentric:
     @pytest.fixture
-    def tradec(self):
-        # Topocentric coordinates
-        trr = 4.437731184421759e+09       # range, km
-        trtasc = 5.148532095674960        # right ascension, rad
-        tdecl = -0.363438990548242        # declination, rad
-        tdrr = -25.599038196399519        # range rate, km/s
-        tdrtasc = -2.051513501139983e-09  # right ascension rate, rad/s
-        tddecl = -3.189648164446254e-10   # declination rate, rad/s
-        return trr, trtasc, tdecl, tdrr, tdrtasc, tddecl
-
-    @pytest.fixture
     def rvseci(self):
         # ECI site position and velocity vector in km and km/s
         rseci = [
@@ -135,11 +124,26 @@ class TestTopocentric:
         vseci = [-0.290278922351514, -0.216325537609299, -0.000157672327972]
         return rseci, vseci
 
-    def test_tradec2rv(self, tradec, rvseci):
+    @pytest.fixture
+    def tradec(self):
+        # Topocentric coordinates
+        rho = 4.437731184421759e+09       # range, km
+        trtasc = 5.148532095674960        # right ascension, rad
+        tdecl = -0.363438990548242        # declination, rad
+        drho = -25.599038196399519        # range rate, km/s
+        tdrtasc = -2.051513501139983e-09  # right ascension rate, rad/s
+        tddecl = -3.189648164446254e-10   # declination rate, rad/s
+        return rho, trtasc, tdecl, drho, tdrtasc, tddecl
+
+    @pytest.fixture
+    def rveci(self):
+        r_eci = [1752246215.6652846, -3759563434.243893, -1577568101.96675]
+        v_eci = [-18.323497062513614, 18.332049491766764, 7.777041227057346]
+        return r_eci, v_eci
+
+    def test_tradec2rv(self, rvseci, tradec, rveci):
         # Expected outputs
-        r_eci_exp = [1752246215.6652846, -3759563434.243893, -1577568101.96675]
-        v_eci_exp = [-18.323497062513614, 18.332049491766764,
-                     7.777041227057346]
+        r_eci_exp, v_eci_exp = rveci
 
         # Call the function with test inputs
         r_eci, v_eci = tradec2rv(*tradec, *rvseci)
@@ -147,3 +151,10 @@ class TestTopocentric:
         # Check if the output is close to the expected values
         assert np.allclose(r_eci, r_eci_exp, rtol=DEFAULT_TOL)
         assert np.allclose(v_eci, v_eci_exp, rtol=DEFAULT_TOL)
+
+    def test_rv2tradec(self, rvseci, tradec, rveci):
+        # Call the function with test inputs
+        tradec_out = rv2tradec(*rveci, *rvseci)
+
+        # Check if the output is close to the expected values
+        assert np.allclose(tradec_out, np.array(tradec), rtol=DEFAULT_TOL)
