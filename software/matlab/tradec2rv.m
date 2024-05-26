@@ -38,35 +38,28 @@
 %  references    :
 %    vallado       2022, 254, eq 4-1 to 4-2
 %
-% [reci, veci] = tradec2rv (rho, trtasc, tdecl, drho, dtrtasc, dtdecl, rseci, lod)
+% [reci, veci] = tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci, vseci)
 % ------------------------------------------------------------------------------
-
-function [reci, veci] = tradec2rv (rho, trtasc, tdecl, drho, dtrtasc, dtdecl, rseci, lod)
+                                          
+function [reci, veci] = tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci, vseci)
     constmath;
-
-    % --------------------- implementation ------------------------
-    latgc = asin(rseci(3) / mag(rseci));
     
-    thetasa= earthrot * (1.0  - lod/86400.0 );
-    omegaearth = [0.0; 0.0; thetasa];
-    cross(omegaearth, rseci, vseci);
-
     % --------  calculate topocentric slant range vectors ------------------
-    rhov(1) = rho * cos(tdecl) * cos(trtasc);
-    rhov(2) = rho * cos(tdecl) * sin(trtasc);
-    rhov(3) = rho * sin(tdecl);
+    rhov(1) = trr * cos(tdecl) * cos(trtasc);
+    rhov(2) = trr * cos(tdecl) * sin(trtasc);
+    rhov(3) = trr * sin(tdecl);
 
-    drhov(1) = drho * cos(tdecl) * cos(trtasc) - ...
-        rho * sin(tdecl) * cos(trtasc) * dtdecl - ...
-        rho * cos(tdecl) * sin(trtasc) * dtrtasc;
-    drhov(2) = drho * cos(tdecl) * sin(trtasc) - ...
-        rho * sin(tdecl) * sin(trtasc) * dtdecl + ...
-        rho * cos(tdecl) * cos(trtasc) * dtrtasc;
-    drhov(3) = drho * sin(tdecl) + rho * cos(tdecl) * dtdecl;
+    drhov(1) = tdrr * cos(tdecl) * cos(trtasc) - ...
+        trr * sin(tdecl) * cos(trtasc) * tddecl - ...
+        trr * cos(tdecl) * sin(trtasc) * tdrtasc;
+    drhov(2) = tdrr * cos(tdecl) * sin(trtasc) - ...
+        trr * sin(tdecl) * sin(trtasc) * tddecl + ...
+        trr * cos(tdecl) * cos(trtasc) * tdrtasc;
+    drhov(3) = tdrr * sin(tdecl) + trr * cos(tdecl) * tddecl;
 
     % ------ find eci range vector from site to satellite ------
     reci = rhov + rseci;
-    veci = drhov + cos(latgc) * vseci;
+    veci = drhov + vseci;
     
     end  % tradec2rv
 

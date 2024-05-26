@@ -44,31 +44,14 @@
 %  references    :
 %    vallado       2022, 257, alg 26
 %
-%  [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( reci, veci, latgd, lon, alt, ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+%  [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( reci, veci, rseci, vseci )
 % ------------------------------------------------------------------------------
 
-function [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( reci, veci, latgd, lon, alt, ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+function [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( reci, veci, rseci, vseci )
 
     constmath;
 
     % --------------------- implementation ------------------------
-    % ----------------- get site vector in ecef -------------------
-    [rsecef, vsecef] = site ( latgd, lon, alt );
-
-    %rs
-    %vs
-    % -------------------- convert ecef to eci --------------------
-    a = [0;0;0];
-    [rseci, vseci, aeci] = ecef2eci(rsecef, vsecef, a, ttt, jdut1, lod, xp, yp, 2, ddpsi, ddeps);
-    %rseci
-    %vseci
-
-    %rseci = rs;
-    %vseci = vs;
-    %[recef,vecef,aecef] = eci2ecef(reci,veci,aeci,ttt,jdut1,lod,xp,yp,2,0,0);
-    %reci = recef;
-    %veci = vecef;
-
     % ------- find eci slant range vector from site to satellite ---------
     rhoveci  = reci - rseci;
     drhoveci = veci - vseci;
