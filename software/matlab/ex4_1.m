@@ -53,6 +53,11 @@
     order =  106;
     terms = 2;
 
+    % 1" to rad
+    convrt = pi / (3600.0*180.0);
+    ddpsi =  -0.116696* convrt;
+    ddeps =  -0.008264* convrt;
+
     % , tcg, jdtcg,jdtcgfrac, tcb, jdtcb,jdtcbfrac
     [ ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, ...
       tdb, ttdb, jdtdb, jdtdbfrac ] ...
@@ -161,8 +166,6 @@
     % additional tests
     rad    = 180.0 / pi;
     twopi = 2.0 * pi;
-    % 1" to rad
-    convrt = pi / (3600.0*180.0);
  
     latgd = 20.7071/rad;
     lon = -156.257/rad;
