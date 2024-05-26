@@ -129,7 +129,7 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
         vallado: 2007, p. 126, Algorithm 10
         chobotov       70
 
-    Parameters:
+    Args:
         p (float): Semi-latus rectum of the orbit in km
         ecc (float): Eccentricity of the orbit
         incl (float): Inclination of the orbit in radians
@@ -183,6 +183,9 @@ def rv2coe(r, v):
     Args:
         r (array-like): Position vector in km
         v (array-like): Velocity vector in km/s
+
+    References:
+        vallado: 2007, p. 121, Algorithm 9
 
     Returns:
         p (float): Semilatus rectum in km
@@ -306,6 +309,9 @@ def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
     and their rates) into geocentric equatorial (ECI) position and velocity
     vectors.
 
+    References:
+        vallado: 2022, p. 254, Eqs. 4-1 to 4-2
+
     Args:
         rho (float): Satellite range from site in km
         trtasc (float): Topocentric right ascension in radians
@@ -346,6 +352,9 @@ def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
 def rv2tradec(reci, veci, rseci, vseci):
     """Converts geocentric equatorial (ECI) position and velocity vectors into
     range, topocentric right ascension, declination, and rates.
+
+    References:
+        vallado: 2022, p. 257, Algorithm 26
 
     Args:
         reci (array-like): ECI position vector in km
