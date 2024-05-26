@@ -1,3 +1,11 @@
+# -----------------------------------------------------------------------------
+# Author: David Vallado
+# Date: 25 June 2002
+#
+# Copyright (c) 2024
+# For license information, see LICENSE file
+# -----------------------------------------------------------------------------
+
 import numpy as np
 
 from ..constants import RE, ECCEARTHSQRD
@@ -9,6 +17,9 @@ def site(latgd, lon, alt):
     The answer is returned in the geocentric equatorial (ECEF) coordinate
     system. Note that the velocity is zero because the coordinate system is
     fixed to the Earth.
+
+    References:
+        vallado: 2001, p. 404-407, Algorithm 47
 
     Args:
         latgd (float): Geodetic latitude in radians
