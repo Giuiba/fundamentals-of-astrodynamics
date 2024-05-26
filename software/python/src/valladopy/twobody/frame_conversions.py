@@ -295,3 +295,49 @@ def rv2coe(r, v):
     return (
         p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper, orbit_type
     )
+
+
+###############################################################################
+# Topocentric
+###############################################################################
+
+def tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci, vseci):
+    """Converts topocentric coordinates (range, right ascension, declination,
+    and their rates) into geocentric equatorial (ECI) position and velocity
+    vectors.
+
+    Args:
+        trr (float): Satellite range from site in km
+        trtasc (float): Topocentric right ascension in radians
+        tdecl (float): Topocentric declination in radians
+        tdrr (float): Range rate in km/s
+        tdrtasc (float): Topocentric right ascension rate in rad/s
+        tddecl (float): Topocentric declination rate in rad/s
+        rseci (array-like): ECI site position vector in km
+        vseci (np.array): ECI site velocity vector in km/s
+
+    Returns:
+        reci (np.array): ECI position vector in km
+        veci (np.array): ECI velocity vector in km/s
+    """
+
+    # Calculate topocentric slant range vectors
+    rhov = np.array([
+        trr * np.cos(tdecl) * np.cos(trtasc),
+        trr * np.cos(tdecl) * np.sin(trtasc),
+        trr * np.sin(tdecl)
+    ])
+
+    drhov = np.array([
+        tdrr * np.cos(tdecl) * np.cos(trtasc) - trr * np.sin(tdecl) * np.cos(
+            trtasc) * tddecl - trr * np.cos(tdecl) * np.sin(trtasc) * tdrtasc,
+        tdrr * np.cos(tdecl) * np.sin(trtasc) - trr * np.sin(tdecl) * np.sin(
+            trtasc) * tddecl + trr * np.cos(tdecl) * np.cos(trtasc) * tdrtasc,
+        tdrr * np.sin(tdecl) + trr * np.cos(tdecl) * tddecl
+    ])
+
+    # ECI position and velocity vectors
+    reci = rhov + rseci
+    veci = drhov + vseci
+
+    return reci, veci

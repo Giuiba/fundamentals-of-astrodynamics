@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from src.valladopy.twobody.frame_conversions import (
-    adbar2rv, rv2adbar, coe2rv, rv2coe
+    adbar2rv, rv2adbar, coe2rv, rv2coe, tradec2rv
 )
 from src.valladopy.twobody.kepler import OrbitType
 
@@ -110,3 +110,39 @@ class TestClassical:
         assert np.isnan(truelon)
         assert np.isnan(lonper)
         assert orbit_type is OrbitType.EPH_INCLINED
+
+
+class TestTopocentric:
+    @pytest.fixture
+    def tradec(self):
+        # Topocentric coordinates
+        trr = 4.437731184421759e+09       # range, km
+        trtasc = 5.148532095674960        # right ascension, rad
+        tdecl = -0.363438990548242        # declination, rad
+        tdrr = -25.599038196399519        # range rate, km/s
+        tdrtasc = -2.051513501139983e-09  # right ascension rate, rad/s
+        tddecl = -3.189648164446254e-10   # declination rate, rad/s
+        return trr, trtasc, tdecl, tdrr, tdrtasc, tddecl
+
+    @pytest.fixture
+    def rvseci(self):
+        # ECI site position and velocity vector in km and km/s
+        rseci = [
+            -2.968655122428691e+03,
+            3.980613919662232e+03,
+            3.992860345291290e+03
+        ]
+        vseci = [-0.290278922351514, -0.216325537609299, -0.000157672327972]
+        return rseci, vseci
+
+    def test_tradec2rv(self, tradec, rvseci):
+        # Expected outputs
+        r_eci_exp = [1752246215.6652846, -3759563434.243893, -1577568101.96675]
+        v_eci_exp = [-18.323497062513614, 18.332049491766764, 7.777041227057346]
+
+        # Call the function with test inputs
+        r_eci, v_eci = tradec2rv(*tradec, *rvseci)
+
+        # Check if the output is close to the expected values
+        assert np.allclose(r_eci, r_eci_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(v_eci, v_eci_exp, rtol=DEFAULT_TOL)
