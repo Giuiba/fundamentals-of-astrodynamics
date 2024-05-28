@@ -10,7 +10,7 @@ import numpy as np
 
 from ..constants import SMALL, MU
 from ..mathtime.vector import rot1, rot3, angle
-from .kepler import OrbitType, determine_orbit_type, newtonnu
+from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
 
 
 ###############################################################################
@@ -120,7 +120,7 @@ def rv2adbar(r, v):
 ###############################################################################
 
 def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
-    """Convert from classical elements to position & velocity vectors
+    """Convert from classical elements to position & velocity vectors.
 
     This function finds the position and velocity vectors in geocentric
     equatorial (ijk) system given the classical orbit elements.
@@ -301,7 +301,86 @@ def rv2coe(r, v):
 
 
 ###############################################################################
-# Topocentric
+# Equinoctial Elements
+###############################################################################
+
+def eq2rv(a, af, ag, chi, psi, meanlon, fr):
+    """Convert from equinoctial elements to position & velocity vectors.
+
+    This function finds the position and velocity vectors in geocentric
+    equatorial (ijk) system given the equinoctial orbit elements.
+
+    References:
+        vallado: 2013, p. 108
+
+    Args:
+        a (float): Semi-major axis in km
+        af (float): Component of eccentricity vector (also called k)
+        ag (float): Component of eccentricity vector (also called h)
+        chi (float): Component of node vector in eqw (also called p)
+        psi (float): Component of node vector in eqw (also called q)
+        meanlon (float): Mean longitude in radians
+        fr (float): Retrograde factor (+1 for prograde, -1 for retrograde)
+
+    Returns:
+        np.array: Position vector in km
+        np.array: Velocity vector in km/s
+    """
+    # Initialize variables
+    arglat, truelon, lonper = (0., ) * 3
+
+    # Compute eccentricity
+    ecc = np.sqrt(af**2 + ag**2)
+    p = a * (1.0 - ecc**2)
+    incl = (
+        np.pi * ((1.0 - fr) * 0.5)
+        + 2.0 * fr * np.arctan(np.sqrt(chi**2 + psi**2))
+    )
+    omega = np.arctan2(chi, psi)
+    argp = np.arctan2(ag, af) - fr * omega
+
+    if ecc < SMALL:
+        # Circular orbits
+        if incl < SMALL or abs(incl - np.pi) < SMALL:
+            # Circular equatorial
+            truelon = omega
+        else:
+            # Circular inclined
+            arglat = argp
+    else:
+        # Elliptical equatorial
+        if incl < SMALL or abs(incl - np.pi) < SMALL:
+            lonper = omega
+
+    # Mean anomaly
+    m = meanlon - fr * omega - argp
+    m = np.mod(m, 2.0 * np.pi)
+
+    # Solve for eccentric anomaly and true anomaly
+    e0, nu = newtonm(ecc, m)
+
+    if ecc < SMALL:
+        # Circular orbits
+        if incl < SMALL or abs(incl - np.pi) < SMALL:
+            # Circular equatorial
+            omega = np.nan
+            truelon = nu
+        else:
+            # Circular inclined
+            arglat = nu - fr * omega
+        nu = np.nan
+    else:
+        if incl < SMALL or abs(incl - np.pi) < SMALL:
+            # Elliptical equatorial
+            lonper = argp
+            omega = np.nan
+
+    # Convert back to position and velocity vectors
+    return coe2rv(p, ecc, incl, omega, nu, arglat, truelon, lonper)
+
+
+###############################################################################
+# Topocentric Elements
 ###############################################################################
 
 def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):

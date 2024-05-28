@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from src.valladopy.twobody.frame_conversions import (
-    adbar2rv, rv2adbar, coe2rv, rv2coe, tradec2rv, rv2tradec
+    adbar2rv, rv2adbar, coe2rv, rv2coe, eq2rv, tradec2rv, rv2tradec
 )
 from src.valladopy.twobody.kepler import OrbitType
 
@@ -110,6 +110,33 @@ class TestClassical:
         assert np.isnan(truelon)
         assert np.isnan(lonper)
         assert orbit_type is OrbitType.EPH_INCLINED
+
+
+class TestEquinoctial:
+    @pytest.fixture
+    def eq(self):
+        a = 7000           # semimajor axis, km
+        af = 0.001         # eccentricity component
+        ag = 0.001         # eccentricity component
+        chi = 0.001        # EQW node vector component
+        psi = 0.001        # EQW node vector component
+        meanlon = np.pi/4  # mean longitude, rad
+        fr = 1             # retrograde factor (+1 = prograde)
+        return a, af, ag, chi, psi, meanlon, fr
+
+    def test_eq2rv(self, eq):
+        # Expected outputs
+        r_exp = np.array([4942.747468305833, 4942.747468305833, 0])
+        v_exp = np.array(
+            [-5.34339547370427, 5.343395473704271, 0.021373624642066363]
+        )
+
+        # Call the function with test inputs
+        r_out, v_out = eq2rv(*eq)
+
+        # Check if the outputs are close to the expected values
+        assert np.allclose(r_out, r_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(v_out, v_exp, rtol=DEFAULT_TOL)
 
 
 class TestTopocentric:
