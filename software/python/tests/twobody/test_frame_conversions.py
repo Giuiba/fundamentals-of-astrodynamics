@@ -113,6 +113,7 @@ class TestClassical:
 
 
 class TestEquinoctial:
+    # TODO: validate with more test cases
     @pytest.fixture
     def eq(self):
         a = 7000           # semimajor axis, km
