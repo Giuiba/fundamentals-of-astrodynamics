@@ -326,6 +326,10 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
         np.array: Position vector in km
         np.array: Velocity vector in km/s
     """
+    def is_equatorial(inc):
+        """Equatorial check for inclinations"""
+        return inc < SMALL or abs(inc - np.pi) < SMALL
+
     # Initialize variables
     arglat, truelon, lonper = (0., ) * 3
 
@@ -341,16 +345,18 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
 
     if ecc < SMALL:
         # Circular orbits
-        if incl < SMALL or abs(incl - np.pi) < SMALL:
+        if is_equatorial(incl):
             # Circular equatorial
             truelon = omega
+            omega = 0
         else:
             # Circular inclined
             arglat = argp
     else:
         # Elliptical equatorial
-        if incl < SMALL or abs(incl - np.pi) < SMALL:
-            lonper = omega
+        if is_equatorial(incl):
+            lonper = argp
+            omega = 0
 
     # Mean anomaly
     m = meanlon - fr * omega - argp
@@ -361,19 +367,12 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
 
     if ecc < SMALL:
         # Circular orbits
-        if incl < SMALL or abs(incl - np.pi) < SMALL:
+        if is_equatorial(incl):
             # Circular equatorial
-            omega = np.nan
             truelon = nu
         else:
             # Circular inclined
             arglat = nu - fr * omega
-        nu = np.nan
-    else:
-        if incl < SMALL or abs(incl - np.pi) < SMALL:
-            # Elliptical equatorial
-            lonper = argp
-            omega = np.nan
 
     # Convert back to position and velocity vectors
     return coe2rv(p, ecc, incl, omega, nu, arglat, truelon, lonper)
