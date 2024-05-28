@@ -14,6 +14,15 @@ from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
 
 
 ###############################################################################
+# Local Utility Functions
+###############################################################################
+
+def is_equatorial(inc):
+    """Equatorial check for inclinations"""
+    return inc < SMALL or abs(inc - np.pi) < SMALL
+
+
+###############################################################################
 # Spherical Elements
 ###############################################################################
 
@@ -145,7 +154,7 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
     """
     # Handle special cases for orbit type
     if ecc < SMALL:
-        if incl < SMALL or abs(incl - np.pi) < SMALL:
+        if is_equatorial(incl):
             # Circular equatorial
             argp = 0.0
             raan = 0.0
@@ -156,7 +165,7 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
             nu = arglat
     else:
         # Elliptical equatorial
-        if incl < SMALL or abs(incl - np.pi) < SMALL:
+        if is_equatorial(incl):
             argp = lonper
             raan = 0.0
         else:
@@ -326,10 +335,6 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
         np.array: Position vector in km
         np.array: Velocity vector in km/s
     """
-    def is_equatorial(inc):
-        """Equatorial check for inclinations"""
-        return inc < SMALL or abs(inc - np.pi) < SMALL
-
     # Initialize variables
     arglat, truelon, lonper = (0., ) * 3
 
