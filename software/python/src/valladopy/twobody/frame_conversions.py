@@ -34,8 +34,8 @@ def adbar2rv(rmag, vmag, rtasc, decl, fpav, az):
     vectors.
 
     References:
-        vallado: 2001, xx
-        chobotov       70
+        Vallado: 2001, xx
+        Chobotov       70
 
     Args:
         rmag (float): ECI position vector magnitude in km
@@ -84,8 +84,8 @@ def rv2adbar(r, v):
     elements: rtasc, decl, fpav, azimuth, position and velocity magnitude.
 
     References:
-        vallado: 2001, xx
-        chobotov       70
+        Vallado: 2001, xx
+        Chobotov       70
 
     Args:
         r (array_like): ECI position vector
@@ -135,8 +135,8 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
     equatorial (ijk) system given the classical orbit elements.
 
     References:
-        vallado: 2007, p. 126, Algorithm 10
-        chobotov       70
+        Vallado: 2007, p. 126, Algorithm 10
+        Chobotov       70
 
     Args:
         p (float): Semi-latus rectum of the orbit in km
@@ -194,7 +194,7 @@ def rv2coe(r, v):
         v (array-like): Velocity vector in km/s
 
     References:
-        vallado: 2007, p. 121, Algorithm 9
+        Vallado: 2007, p. 121, Algorithm 9
 
     Returns:
         p (float): Semilatus rectum in km
@@ -320,7 +320,7 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
     equatorial (ijk) system given the equinoctial orbit elements.
 
     References:
-        vallado: 2013, p. 108
+        Vallado: 2013, p. 108
 
     Args:
         a (float): Semi-major axis in km
@@ -329,11 +329,14 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
         chi (float): Component of node vector in eqw (also called p)
         psi (float): Component of node vector in eqw (also called q)
         meanlon (float): Mean longitude in radians
-        fr (float): Retrograde factor (+1 for prograde, -1 for retrograde)
+        fr (int): Retrograde factor (+1 for prograde, -1 for retrograde)
 
     Returns:
         np.array: Position vector in km
         np.array: Velocity vector in km/s
+
+    TODO:
+        - Add vector option for conversion
     """
     # Initialize variables
     arglat, truelon, lonper = (0., ) * 3
@@ -383,6 +386,83 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
     return coe2rv(p, ecc, incl, omega, nu, arglat, truelon, lonper)
 
 
+def rv2eq(r, v):
+    """Convert from position & velocity vectors to equinoctial elements.
+
+    References:
+        Vallado: 2013, p. 108
+        Chobotov:       30
+
+    Args:
+        r (array-like): ECI position vector in km
+        v (array-like): ECI velocity vector in km/s
+
+    Returns:
+        tuple: A tuple containing:
+            - a (float): Semi-major axis in km
+            - n (float): Mean motion in rad/s
+            - af (float): Component of eccentricity vector
+            - ag (float): Component of eccentricity vector
+            - chi (float): Component of node vector in eqw
+            - psi (float): Component of node vector in eqw
+            - meanlon (float): Mean longitude in radians
+            - meanlonNu (float): True longitude in radians
+            - fr (int): Retrograde factor
+                        (+1 for prograde, -1 for retrograde)
+    """
+    twopi = 2.0 * np.pi
+
+    # Convert to classical orbital elements
+    p, a, ecc, incl, omega, argp, nu, m, arglat, truelon, lonper, _ = (
+        rv2coe(r, v)
+    )
+
+    # Determine retrograde factor
+    fr = -1 if abs(incl - np.pi) < SMALL else 1
+
+    if ecc < SMALL:
+        # Circular orbits
+        if is_equatorial(incl):
+            # Circular Equatorial
+            argp, omega = 0.0, 0.0
+            nu, m = truelon, truelon
+        else:
+            # Circular inclined
+            argp = 0.0
+            nu, m = arglat
+    else:
+        # Elliptical equatorial
+        if is_equatorial(incl):
+            argp = lonper
+            omega = 0.0
+
+    # Calculate mean motion
+    # TODO: put in separate utility function
+    n = np.sqrt(MU / (a**3))
+
+    # Get eccentricity vector components
+    af = ecc * np.cos(fr * omega + argp)
+    ag = ecc * np.sin(fr * omega + argp)
+
+    # Get EQW node vector components
+    if fr > 0:
+        chi = np.tan(incl * 0.5) * np.sin(omega)
+        psi = np.tan(incl * 0.5) * np.cos(omega)
+    else:
+        chi = 1 / np.tan(incl * 0.5) * np.sin(omega)
+        psi = 1 / np.tan(incl * 0.5) * np.cos(omega)
+
+    # Determine mean longitude
+    meanlon = fr * omega + argp + m
+    meanlon = np.mod(meanlon + twopi, twopi)
+
+    # Determine true longitude
+    truelon = fr * omega + argp + nu
+    truelon = np.mod(truelon + twopi, twopi)
+
+    return a, n, af, ag, chi, psi, meanlon, truelon, fr
+
+
 ###############################################################################
 # Topocentric Elements
 ###############################################################################
@@ -393,7 +473,7 @@ def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
     vectors.
 
     References:
-        vallado: 2022, p. 254, Eqs. 4-1 to 4-2
+        Vallado: 2022, p. 254, Eqs. 4-1 to 4-2
 
     Args:
         rho (float): Satellite range from site in km
@@ -437,7 +517,7 @@ def rv2tradec(reci, veci, rseci, vseci):
     range, topocentric right ascension, declination, and rates.
 
     References:
-        vallado: 2022, p. 257, Algorithm 26
+        Vallado: 2022, p. 257, Algorithm 26
 
     Args:
         reci (array-like): ECI position vector in km

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from src.valladopy.twobody.frame_conversions import (
-    adbar2rv, rv2adbar, coe2rv, rv2coe, eq2rv, tradec2rv, rv2tradec
+    adbar2rv, rv2adbar, coe2rv, rv2coe, eq2rv, rv2eq, tradec2rv, rv2tradec
 )
 from src.valladopy.twobody.kepler import OrbitType
 
@@ -125,12 +125,17 @@ class TestEquinoctial:
         fr = 1             # retrograde factor (+1 = prograde)
         return a, af, ag, chi, psi, meanlon, fr
 
-    def test_eq2rv(self, eq):
-        # Expected outputs
-        r_exp = np.array([4942.747468305833, 4942.747468305833, 0])
-        v_exp = np.array(
+    @pytest.fixture
+    def rv(self):
+        r = np.array([4942.747468305833, 4942.747468305833, 0])
+        v = np.array(
             [-5.34339547370427, 5.343395473704271, 0.021373624642066363]
         )
+        return r, v
+
+    def test_eq2rv(self, eq, rv):
+        # Expected outputs
+        r_exp, v_exp = rv
 
         # Call the function with test inputs
         r_out, v_out = eq2rv(*eq)
@@ -138,6 +143,24 @@ class TestEquinoctial:
         # Check if the outputs are close to the expected values
         assert np.allclose(r_out, r_exp, rtol=DEFAULT_TOL)
         assert np.allclose(v_out, v_exp, rtol=DEFAULT_TOL)
+
+    def test_rv2eq(self, rv, eq):
+        # expected outputs
+        a_exp, af_exp, ag_exp, chi_exp, psi_exp, meanlon_exp, fr_exp = eq
+
+        # Call the function with test inputs
+        a, n, af, ag, chi, psi, meanlon, truelon, fr = rv2eq(*rv)
+
+        # Check if the outputs are close to the expected values
+        assert abs(a - a_exp) < DEFAULT_TOL
+        assert abs(n - 0.001078007612466833) < DEFAULT_TOL
+        assert abs(af - af_exp) < DEFAULT_TOL
+        assert abs(ag - ag_exp) < DEFAULT_TOL
+        assert abs(chi - chi_exp) < DEFAULT_TOL
+        assert abs(psi - psi_exp) < DEFAULT_TOL
+        assert abs(meanlon - meanlon_exp) < DEFAULT_TOL
+        assert abs(truelon - np.pi/4) < DEFAULT_TOL
+        assert int(fr) == int(fr_exp)
 
 
 class TestTopocentric:
