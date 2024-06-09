@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from src.valladopy.twobody.frame_conversions import (
+from src.valladopy.astro.twobody.frame_conversions import (
     adbar2rv, rv2adbar, coe2rv, rv2coe, eq2rv, rv2eq, tradec2rv, rv2tradec
 )
-from src.valladopy.twobody.kepler import OrbitType
+from src.valladopy.astro.twobody.kepler import OrbitType
 
 
 DEFAULT_TOL = 1e-12

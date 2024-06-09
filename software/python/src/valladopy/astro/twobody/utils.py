@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from ..constants import RE, ECCEARTHSQRD
+from ...constants import RE, ECCEARTHSQRD
 
 
 def site(latgd, lon, alt):

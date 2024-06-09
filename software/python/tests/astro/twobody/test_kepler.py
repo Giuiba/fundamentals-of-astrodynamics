@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.valladopy.twobody.kepler import (
+from src.valladopy.astro.twobody.kepler import (
     OrbitType, determine_orbit_type,
     newtonnu, newtonm
 )

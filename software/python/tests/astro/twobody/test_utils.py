@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.valladopy.twobody.utils import site
+from src.valladopy.astro.twobody.utils import site
 
 
 DEFAULT_TOL = 1e-12

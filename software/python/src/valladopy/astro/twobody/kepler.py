@@ -10,7 +10,7 @@ from enum import Enum
 
 import numpy as np
 
-from ..constants import SMALL
+from ...constants import SMALL
 
 
 class OrbitType(Enum):

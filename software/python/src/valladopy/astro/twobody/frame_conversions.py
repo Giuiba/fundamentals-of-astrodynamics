@@ -8,8 +8,8 @@
 
 import numpy as np
 
-from ..constants import SMALL, MU
-from ..mathtime.vector import rot1, rot3, angle
+from ...constants import SMALL, MU
+from ...mathtime.vector import rot1, rot3, angle
 from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
 
 
