@@ -51,9 +51,9 @@
     constmath;
     constastro;
 
-    arglat  = 999999.1;
-    lonper  = 999999.1;
-    truelon = 999999.1;
+    arglat  = 0.0;
+    lonper  = 0.0;
+    truelon = 0.0;
 
     coe = true;  % pick coe or vector approaches
 
