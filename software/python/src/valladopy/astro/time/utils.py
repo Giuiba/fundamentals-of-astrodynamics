@@ -18,10 +18,23 @@ def precess(ttt, opt):
             - wa (float): Canonical precession angle in radians
             - ea (float): Canonical precession angle in radians
             - xa (float): Canonical precession angle in radians
+
+    TODO:
+        - Implement commented out methods (from m-file)?
+        - Use enums instead of strings for option/method?
     """
+    def calc_prec_angle(ttt, coeffs):
+        return (
+            (
+                (
+                    (coeffs[0] * ttt + coeffs[1]) * ttt + coeffs[2]
+                ) * ttt + coeffs[3]
+            ) * ttt + coeffs[4]
+        ) * ttt
+
+    # Initialize some variables
     ttt2 = ttt * ttt
     ttt3 = ttt2 * ttt
-
     prec = np.eye(3)
 
     if opt == '50':
@@ -64,61 +77,34 @@ def precess(ttt, opt):
 
     elif opt == '06':
         oblo = 84381.406
-        psia = (
-            (
-                (
-                    (-0.0000000951 * ttt + 0.000132851) * ttt - 0.00114045
-                ) * ttt - 1.0790069
-            ) * ttt + 5038.481507
-        ) * ttt
-
-        wa = (
-            (
-                (
-                    (0.0000003337 * ttt - 0.000000467) * ttt - 0.00772503
-                ) * ttt + 0.0512623
-            ) * ttt - 0.025754
-        ) * ttt + oblo
-
-        ea = (
-            (
-                (
-                    (-0.0000000434 * ttt - 0.000000576) * ttt + 0.00200340
-                ) * ttt - 0.0001831
-            ) * ttt - 46.836769
-        ) * ttt + oblo
-
-        xa = (
-            (
-                (
-                    (-0.0000000560 * ttt + 0.000170663) * ttt - 0.00121197
-                ) * ttt - 2.3814292
-            ) * ttt + 10.556403
-        ) * ttt
-
-        zeta = (
-            (
-                (
-                    (-0.0000003173 * ttt - 0.000005971) * ttt + 0.01801828
-                ) * ttt + 0.2988499
-            ) * ttt + 2306.083227
-        ) * ttt + 2.650545
-
-        theta = (
-            (
-                (
-                    (-0.0000001274 * ttt - 0.000007089) * ttt - 0.04182264
-                ) * ttt - 0.4294934
-            ) * ttt + 2004.191903
-        ) * ttt
-
-        z = (
-            (
-                (
-                    (0.0000002904 * ttt - 0.000028596) * ttt + 0.01826837
-                ) * ttt + 1.0927348
-            ) * ttt + 2306.077181
-        ) * ttt - 2.650545
+        psia = calc_prec_angle(
+            ttt,
+            [-0.0000000951, 0.000132851, -0.00114045, -1.0790069, 5038.481507]
+        )
+        wa = calc_prec_angle(
+            ttt,
+            [0.0000003337, -0.000000467, -0.00772503, 0.0512623, -0.025754]
+        ) + oblo
+        ea = calc_prec_angle(
+            ttt,
+            [-0.0000000434, -0.000000576, 0.00200340, -0.0001831, -46.836769]
+        ) + oblo
+        xa = calc_prec_angle(
+            ttt,
+            [-0.0000000560, 0.000170663, -0.00121197, -2.3814292, 10.556403]
+        )
+        zeta = calc_prec_angle(
+            ttt,
+            [-0.0000003173, -0.000005971, 0.01801828, 0.2988499, 2306.083227]
+        ) + 2.650545
+        theta = calc_prec_angle(
+            ttt,
+            [-0.0000001274, -0.000007089, -0.04182264, -0.4294934, 2004.191903]
+        )
+        z = calc_prec_angle(
+            ttt,
+            [0.0000002904, -0.000028596, 0.01826837, 1.0927348, 2306.077181]
+        ) - 2.650545
     else:
         raise ValueError(
             "Method must be one of the following: '50', '80', or '06'"
