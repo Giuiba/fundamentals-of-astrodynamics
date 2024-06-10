@@ -125,14 +125,9 @@ def precess(ttt, opt):
         )
 
     # Convert units to radians
-    psia = psia * ARCSEC2RAD
-    wa = wa * ARCSEC2RAD
-    ea = ea * ARCSEC2RAD
-    xa = xa * ARCSEC2RAD
-
-    zeta = zeta * ARCSEC2RAD
-    theta = theta * ARCSEC2RAD
-    z = z * ARCSEC2RAD
+    zeta *= ARCSEC2RAD
+    theta *= ARCSEC2RAD
+    z *= ARCSEC2RAD
 
     if opt in ['80', '06']:
         coszeta = np.cos(zeta)
@@ -153,4 +148,10 @@ def precess(ttt, opt):
         prec[2, 1] = -sintheta * sinz
         prec[2, 2] = costheta
 
-    return prec, psia, wa, ea, xa
+    return (
+        prec,
+        psia * ARCSEC2RAD,
+        wa * ARCSEC2RAD,
+        ea * ARCSEC2RAD,
+        xa * ARCSEC2RAD
+    )
