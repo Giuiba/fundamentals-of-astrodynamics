@@ -1,3 +1,12 @@
+# -----------------------------------------------------------------------------
+# Author: David Vallado
+# Date: 25 June 2002
+#
+# Copyright (c) 2024
+# For license information, see LICENSE file
+# -----------------------------------------------------------------------------
+
+
 import numpy as np
 
 from ...constants import ARCSEC2RAD
@@ -5,11 +14,18 @@ from ...constants import ARCSEC2RAD
 
 def precess(ttt, opt):
     """Calculates the transformation matrix that accounts for the effects of
-    precession. Both the 1980 and 2006 theories are handled.
+    precession. Both the 1980 and 2006 IAU theories are handled, as well as the
+
+
+    References:
+        Vallado: 2022, p. 219, 227-229
 
     Args:
         ttt (float): Julian centuries of Terrestrail Time (TT)
-        opt (str): Method option ('50', '80', '06')
+        opt (str): Method option ('50', '80', or '06')
+                   '50' = FK4 B1950
+                   '80' = IAU 1980
+                   '06' = IAU 2006
 
     Returns:
         tuple: A tuple containing:
@@ -37,6 +53,7 @@ def precess(ttt, opt):
     ttt3 = ttt2 * ttt
     prec = np.eye(3)
 
+    # FK4 B1950 precession angles
     if opt == '50':
         # Commenting these out because they seem important but not used
         # TODO: Decide if these need to be used instead of definitions below
@@ -45,10 +62,12 @@ def precess(ttt, opt):
         # ea = 84428.26 - 46.845 * ttt - 0.00059 * ttt2 + 0.00181 * ttt3
         xa = 0.1247 - 0.0188 * ttt
 
+        # GTDS pg 3-17 using days from 1950 - avoids long precession constants
         zeta = 2304.9969 * ttt + 0.302 * ttt2 + 0.01808 * ttt3
         theta = 2004.2980 * ttt - 0.425936 * ttt2 - 0.0416 * ttt3
         z = 2304.9969 * ttt + 1.092999 * ttt2 + 0.0192 * ttt3
 
+        # ttt is tropical centuries from 1950 (36524.22 days)
         prec[0, 0] = 1.0 - 2.9696e-4 * ttt2 - 1.3e-7 * ttt3
         prec[0, 1] = 2.234941e-2 * ttt + 6.76e-6 * ttt2 - 2.21e-6 * ttt3
         prec[0, 2] = 9.7169e-3 * ttt - 2.07e-6 * ttt2 - 9.6e-7 * ttt3
@@ -65,6 +84,7 @@ def precess(ttt, opt):
         wa = theta
         ea = z
 
+    # IAU 80 precession angles
     elif opt == '80':
         psia = 5038.7784 * ttt - 1.07259 * ttt2 - 0.001147 * ttt3
         wa = 84381.448 + 0.05127 * ttt2 - 0.007726 * ttt3
@@ -75,6 +95,7 @@ def precess(ttt, opt):
         theta = 2004.3109 * ttt - 0.42665 * ttt2 - 0.041833 * ttt3
         z = 2306.2181 * ttt + 1.09468 * ttt2 + 0.018203 * ttt3
 
+    # IAU 06 precession angles
     elif opt == '06':
         oblo = 84381.406
         psia = calc_prec_angle(
@@ -115,6 +136,7 @@ def precess(ttt, opt):
     theta *= ARCSEC2RAD
     z *= ARCSEC2RAD
 
+    # IAU precession angles
     if opt in ['80', '06']:
         coszeta = np.cos(zeta)
         sinzeta = np.sin(zeta)

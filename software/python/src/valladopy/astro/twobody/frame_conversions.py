@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from ...constants import SMALL, MU
+from ...constants import SMALL, MU, TWOPI
 from ...mathtime.vector import rot1, rot3, angle
 from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
 
@@ -410,8 +410,6 @@ def rv2eq(r, v):
             - fr (int): Retrograde factor
                         (+1 for prograde, -1 for retrograde)
     """
-    twopi = 2.0 * np.pi
-
     # Convert to classical orbital elements
     p, a, ecc, incl, omega, argp, nu, m, arglat, truelon, lonper, _ = (
         rv2coe(r, v)
@@ -454,11 +452,11 @@ def rv2eq(r, v):
 
     # Determine mean longitude
     meanlon = fr * omega + argp + m
-    meanlon = np.mod(meanlon + twopi, twopi)
+    meanlon = np.mod(meanlon + TWOPI, TWOPI)
 
     # Determine true longitude
     truelon = fr * omega + argp + nu
-    truelon = np.mod(truelon + twopi, twopi)
+    truelon = np.mod(truelon + TWOPI, TWOPI)
 
     return a, n, af, ag, chi, psi, meanlon, truelon, fr
 
