@@ -15,7 +15,7 @@ import numpy as np
 
 SMALL = 1e-10
 
-# Conversions
+# Distances
 FT2M = 0.3048
 MILE2M = 1609.344
 NM2M = 1852
@@ -26,6 +26,11 @@ NMPH2KMPH = 0.5144444
 # Time
 DAY2SEC = 86400
 MIN2SEC = 60
+
+# Angles
+DEG2MIN = 60
+DEG2ARCSEC = DEG2MIN * MIN2SEC
+ARCSEC2RAD = np.pi / (180.0 * DEG2ARCSEC)
 
 
 ###############################################################################
