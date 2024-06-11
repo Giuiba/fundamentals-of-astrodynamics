@@ -16,6 +16,9 @@ def fundarg(ttt, opt):
     """Calculates the Delaunay variables and planetary values for several
     theories.
 
+    References:
+        Vallado: 2022, p. 210-212, 226
+
     Args:
         ttt (float): Julian centuries of TT
         opt (str): Method option ('06', '02', '96', or '80')
@@ -207,7 +210,6 @@ def fundarg(ttt, opt):
 def precess(ttt, opt):
     """Calculates the transformation matrix that accounts for the effects of
     precession. Both the 1980 and 2006 IAU theories are handled, as well as the
-
 
     References:
         Vallado: 2022, p. 219, 227-229
