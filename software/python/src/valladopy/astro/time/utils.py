@@ -9,7 +9,199 @@
 
 import numpy as np
 
-from ...constants import ARCSEC2RAD
+from ...constants import ARCSEC2RAD, DEG2ARCSEC, TWOPI
+
+
+def fundarg(ttt, opt):
+    """Calculates the Delaunay variables and planetary values for several
+    theories.
+
+    Args:
+        ttt (float): Julian centuries of TT
+        opt (str): Method option ('06', '02', '96', or '80')
+
+    Returns:
+        tuple: A tuple containing:
+            - l (float): Delaunay element in radians
+            - l1 (float): Delaunay element in radians
+            - f (float): Delaunay element in radians
+            - d (float): Delaunay element in radians
+            - omega (float): Delaunay element in radians
+            - lonmer (float): Planetary longitude in radians
+            - lonven (float): Planetary longitude in radians
+            - lonear (float): Planetary longitude in radians
+            - lonmar (float): Planetary longitude in radians
+            - lonjup (float): Planetary longitude in radians
+            - lonsat (float): Planetary longitude in radians
+            - lonurn (float): Planetary longitude in radians
+            - lonnep (float): Planetary longitude in radians
+            - precrate (float): Precession rate in radians
+
+    TODO:
+        - Implement commented out methods (from m-file)?
+        - Use enums instead of strings for option/method
+    """
+    def calc_delunay_elem(ttt, coeffs):
+        """Delaunay fundamental arguments formed in arcsec, converted to deg"""
+        return (
+            (
+                (
+                    (coeffs[0] * ttt + coeffs[1]) * ttt + coeffs[2]
+                ) * ttt + coeffs[3]
+            ) * ttt + coeffs[4]
+        ) / DEG2ARCSEC
+
+    def calc_delunay_elem_80(ttt, coeffs, extra):
+        return (
+            (
+                (coeffs[0] * ttt + coeffs[1]) * ttt + coeffs[2]
+            ) * ttt
+        ) / DEG2ARCSEC + extra
+
+    # Determine coefficients from IAU 2006 nutation theory
+    if opt == '06':
+        # Delaunay fundamental arguments in deg
+        l = calc_delunay_elem(  # noqa
+            ttt,
+            [-0.00024470, 0.051635, 31.8792, 1717915923.2178, 485868.249036]
+        )
+
+        l1 = calc_delunay_elem(
+            ttt,
+            [-0.00001149, 0.000136, -0.5532, 129596581.0481, 1287104.793048]
+        )
+
+        f = calc_delunay_elem(
+            ttt,
+            [0.00000417, -0.001037, -12.7512, 1739527262.8478, 335779.526232]
+        )
+
+        d = calc_delunay_elem(
+            ttt,
+            [-0.00003169, 0.006593, -6.3706, 1602961601.2090, 1072260.703692]
+        )
+
+        omega = calc_delunay_elem(
+            ttt, [-0.00005939, 0.007702, 7.4722, -6962890.5431, 450160.398036]
+        )
+
+        # Planetary arguments in deg (from TN-36)
+        lonmer = np.mod((4.402608842 + 2608.7903141574 * ttt), TWOPI)
+        lonven = np.mod((3.176146697 + 1021.3285546211 * ttt), TWOPI)
+        lonear = np.mod((1.753470314 + 628.3075849991 * ttt), TWOPI)
+        lonmar = np.mod((6.203480913 + 334.0612426700 * ttt), TWOPI)
+        lonjup = np.mod((0.599546497 + 52.9690962641 * ttt), TWOPI)
+        lonsat = np.mod((0.874016757 + 21.3299104960 * ttt), TWOPI)
+        lonurn = np.mod((5.481293872 + 7.4781598567 * ttt), TWOPI)
+        lonnep = np.mod((5.311886287 + 3.8133035638 * ttt), TWOPI)
+        precrate = ((0.024381750 + 0.00000538691 * ttt) * ttt)
+
+    # Determine coefficients from IAU 2000b theory
+    elif opt == '02':
+        # Delaunay fundamental arguments in deg
+        l = 134.96340251 + (1717915923.2178 * ttt) / DEG2ARCSEC  # noqa
+        l1 = 357.52910918 + (129596581.0481 * ttt) / DEG2ARCSEC
+        f = 93.27209062 + (1739527262.8478 * ttt) / DEG2ARCSEC
+        d = 297.85019547 + (1602961601.2090 * ttt) / DEG2ARCSEC
+        omega = 125.04455501 + (-6962890.5431 * ttt) / DEG2ARCSEC
+
+        # Planetary arguments in deg
+        (lonmer, lonven, lonear, lonmar, lonjup,
+         lonsat, lonurn, lonnep, precrate) = (0.0,) * 9
+
+    # Determine coefficients from IAU 1996 theory
+    elif opt == '96':
+        # Delaunay fundamental arguments in deg
+        l = calc_delunay_elem(  # noqa
+            ttt,
+            [-0.00024470, 0.051635, 31.8792, 1717915923.2178, 0.0]
+        ) + 134.96340251
+
+        l1 = calc_delunay_elem(
+            ttt,
+            [-0.00001149, -0.000136, -0.5532, 129596581.0481, 0.0]
+        ) + 357.52910918
+
+        f = calc_delunay_elem(
+            ttt,
+            [0.00000417, 0.001037, -12.7512, 1739527262.8478, 0.0]
+        ) + 93.27209062
+
+        d = calc_delunay_elem(
+            ttt,
+            [-0.00003169, 0.006593, -6.3706, 1602961601.2090, 0.0]
+        ) + 297.85019547
+
+        omega = calc_delunay_elem(
+            ttt, [-0.00005939, 0.007702, 7.4722, -6962890.2665, 0.0]
+        ) + 125.04455501
+
+        # Planetary arguments in deg
+        lonmer, lonurn, lonnep = (0.0,) * 3
+        lonven = 181.979800853 + 58517.8156748 * ttt
+        lonear = 100.466448494 + 35999.3728521 * ttt
+        lonmar = 355.433274605 + 19140.299314 * ttt
+        lonjup = 34.351483900 + 3034.90567464 * ttt
+        lonsat = 50.0774713998 + 1222.11379404 * ttt
+        precrate = 1.39697137214 * ttt + 0.0003086 * ttt ** 2
+
+    elif opt == '80':
+        # Delaunay fundamental arguments in deg
+        l = calc_delunay_elem_80(  # noqa
+            ttt, [0.064, 31.310, 1717915922.6330], 134.96298139
+        )
+
+        l1 = calc_delunay_elem_80(
+            ttt, [-0.012, -0.577, 129596581.2240], 357.52772333
+        )
+
+        f = calc_delunay_elem_80(
+            ttt, [0.011, -13.257, 1739527263.1370], 93.27191028
+        )
+
+        d = calc_delunay_elem_80(
+            ttt, [0.019, -6.891, 1602961601.3280], 297.85036306
+        )
+
+        omega = calc_delunay_elem_80(
+            ttt, [0.008, 7.455, -6962890.5390], 125.04452222
+        )
+
+        # Planetary arguments in deg
+        lonmer = 252.3 + 149472.0 * ttt
+        lonven = 179.9 + 58517.8 * ttt
+        lonear = 98.4 + 35999.4 * ttt
+        lonmar = 353.3 + 19140.3 * ttt
+        lonjup = 32.3 + 3034.9 * ttt
+        lonsat = 48.0 + 1222.1 * ttt
+        lonurn, lonnep, precrate = (0.0,) * 3
+    else:
+        raise ValueError(
+            "Method must be one of the following: '50', '80', or '06'"
+        )
+
+    # Convert units to radians
+    twopi_deg = np.degrees(TWOPI)
+    l = np.radians(np.mod(l, twopi_deg))  # noqa
+    l1 = np.radians(np.mod(l1, twopi_deg))
+    f = np.radians(np.mod(f, twopi_deg))
+    d = np.radians(np.mod(d, twopi_deg))
+    omega = np.radians(np.mod(omega, twopi_deg))
+    lonmer = np.radians(np.mod(lonmer, twopi_deg))
+    lonven = np.radians(np.mod(lonven, twopi_deg))
+    lonear = np.radians(np.mod(lonear, twopi_deg))
+    lonmar = np.radians(np.mod(lonmar, twopi_deg))
+    lonjup = np.radians(np.mod(lonjup, twopi_deg))
+    lonsat = np.radians(np.mod(lonsat, twopi_deg))
+    lonurn = np.radians(np.mod(lonurn, twopi_deg))
+    lonnep = np.radians(np.mod(lonnep, twopi_deg))
+    precrate = np.radians(np.mod(precrate, twopi_deg))
+
+    return (
+        l, l1, f, d, omega,
+        lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep,
+        precrate
+    )
 
 
 def precess(ttt, opt):
@@ -37,7 +229,7 @@ def precess(ttt, opt):
 
     TODO:
         - Implement commented out methods (from m-file)?
-        - Use enums instead of strings for option/method?
+        - Use enums instead of strings for option/method
     """
     def calc_prec_angle(ttt, coeffs):
         return (
