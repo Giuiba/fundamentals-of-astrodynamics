@@ -9,6 +9,7 @@
 
 import numpy as np
 
+from .iaudata import iau80in
 from ...constants import ARCSEC2RAD, DEG2ARCSEC, TWOPI
 
 
@@ -148,6 +149,7 @@ def fundarg(ttt, opt):
         lonsat = 50.0774713998 + 1222.11379404 * ttt
         precrate = 1.39697137214 * ttt + 0.0003086 * ttt ** 2
 
+    # Determine coefficients from IAU 1980 theory
     elif opt == '80':
         # Delaunay fundamental arguments in deg
         l = calc_delunay_elem_80(  # noqa
@@ -180,7 +182,7 @@ def fundarg(ttt, opt):
         lonurn, lonnep, precrate = (0.0,) * 3
     else:
         raise ValueError(
-            "Method must be one of the following: '50', '80', or '06'"
+            "Method must be one of the following: '06', '02', '96', or '80'"
         )
 
     # Convert units to radians
@@ -210,6 +212,7 @@ def fundarg(ttt, opt):
 def precess(ttt, opt):
     """Calculates the transformation matrix that accounts for the effects of
     precession. Both the 1980 and 2006 IAU theories are handled, as well as the
+    FK B1950 theory.
 
     References:
         Vallado: 2022, p. 219, 227-229
@@ -357,3 +360,71 @@ def precess(ttt, opt):
         ea * ARCSEC2RAD,
         xa * ARCSEC2RAD
     )
+
+
+def nutation(ttt, ddpsi, ddeps):
+    """Calculates the transformation matrix that accounts for the effects of
+    nutation.
+
+    Args:
+        ttt (float): Julian centuries of TT
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta eps correction to GCRF in radians
+
+    Returns:
+        tuple: A tuple containing:
+            - deltapsi (float): Nutation angle in radians
+            - trueeps (float): True obliquity of the ecliptic in radians
+            - meaneps (float): Mean obliquity of the ecliptic in radians
+            - omega (float): Delaunay element in radians
+            - nut (np.ndarray): Transformation matrix for TOD - MOD
+    """
+    # Load nutation coefficients
+    iar80, rar80 = iau80in()
+
+    # Calculate powers of ttt
+    ttt2 = ttt * ttt
+    ttt3 = ttt2 * ttt
+
+    # Mean obliquity of the ecliptic
+    meaneps = -46.8150 * ttt - 0.00059 * ttt2 + 0.001813 * ttt3 + 84381.448
+    meaneps = np.radians(np.remainder(meaneps / DEG2ARCSEC, np.degrees(TWOPI)))
+
+    # Fundamental arguments using the IAU80 theory
+    (l, l1, f, d, omega, lonmer, lonven, lonear, lonmar, lonjup, lonsat,
+     lonurn, lonnep, precrate) = fundarg(ttt, '80')
+
+    # Calculate nutation parameters
+    deltapsi, deltaeps = 0.0, 0.0
+    for i in range(len(iar80)):
+        tempval = (iar80[i, 0] * l + iar80[i, 1] * l1 + iar80[i, 2] * f +
+                   iar80[i, 3] * d + iar80[i, 4] * omega)
+        deltapsi += (rar80[i, 0] + rar80[i, 1] * ttt) * np.sin(tempval)
+        deltaeps += (rar80[i, 2] + rar80[i, 3] * ttt) * np.cos(tempval)
+
+    # Add corrections
+    deltapsi = np.remainder(deltapsi + ddpsi, 2.0 * np.pi)
+    deltaeps = np.remainder(deltaeps + ddeps, 2.0 * np.pi)
+    trueeps = meaneps + deltaeps
+
+    # Sine/cosine values of psi and eps
+    cospsi = np.cos(deltapsi)
+    sinpsi = np.sin(deltapsi)
+    coseps = np.cos(meaneps)
+    sineps = np.sin(meaneps)
+    costrueeps = np.cos(trueeps)
+    sintrueeps = np.sin(trueeps)
+
+    # Construct nutation rotation matrix
+    nut = np.zeros((3, 3))
+    nut[0, 0] = cospsi
+    nut[0, 1] = costrueeps * sinpsi
+    nut[0, 2] = sintrueeps * sinpsi
+    nut[1, 0] = -coseps * sinpsi
+    nut[1, 1] = costrueeps * coseps * cospsi + sintrueeps * sineps
+    nut[1, 2] = sintrueeps * coseps * cospsi - sineps * costrueeps
+    nut[2, 0] = -sineps * sinpsi
+    nut[2, 1] = costrueeps * sineps * cospsi - sintrueeps * coseps
+    nut[2, 2] = sintrueeps * sineps * cospsi + costrueeps * coseps
+
+    return deltapsi, trueeps, meaneps, omega, nut

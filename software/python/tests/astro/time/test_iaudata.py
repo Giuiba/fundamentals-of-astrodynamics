@@ -42,4 +42,4 @@ def test_iau80in(iau80_mat_data):
 
     # Check that they are the same
     assert np.array_equal(iar80, matlab_iar80)
-    assert custom_allclose(rar80, matlab_rar80)
+    assert custom_allclose(rar80, matlab_rar80, rtol=1e-12)

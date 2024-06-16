@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.valladopy.astro.time.utils import fundarg, precess
+from src.valladopy.astro.time.utils import fundarg, precess, nutation
 from ...conftest import custom_isclose, custom_allclose
 
 DEFAULT_TOL = 1e-12
@@ -94,3 +94,29 @@ def test_precess_bad():
     # Test invalid option
     with pytest.raises(ValueError):
         _ = precess(0.5, '25')
+
+
+def test_nutation():
+    # Inputs
+    ttt = 0.2
+    ddpsi = np.radians(3.5)
+    ddeps = np.radians(5.7)
+
+    # Expected nutation transformation matrix
+    nut_exp = np.array(
+        [
+            [0.9981396814091349, 0.05325395821546375, 0.02968488387810016],
+            [-0.05593874439282744, 0.9935655167907828, 0.09848056011223039],
+            [-0.024249397357966784, -0.09995789002700262, 0.9946961279451756]
+        ]
+    )
+
+    # Call the function with test inputs
+    deltapsi, trueeps, meaneps, omega, nut = nutation(ttt, ddpsi, ddeps)
+
+    # Check if the outputs are close to the expected values
+    assert custom_isclose(deltapsi, 0.06100648612598722, rtol=DEFAULT_TOL)
+    assert custom_isclose(trueeps, 0.5085229888820868, rtol=DEFAULT_TOL)
+    assert custom_isclose(meaneps, 0.409047411073268, rtol=DEFAULT_TOL)
+    assert custom_isclose(omega, 1.7142161907757703, rtol=DEFAULT_TOL)
+    assert custom_allclose(nut, nut_exp, rtol=DEFAULT_TOL)
