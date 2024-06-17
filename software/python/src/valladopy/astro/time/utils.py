@@ -366,6 +366,9 @@ def nutation(ttt, ddpsi, ddeps):
     """Calculates the transformation matrix that accounts for the effects of
     nutation.
 
+    References:
+        Vallado: 2013, p. 224-226
+
     Args:
         ttt (float): Julian centuries of TT
         ddpsi (float): Delta psi correction to GCRF in radians
