@@ -1,6 +1,6 @@
 import numpy as np
 
-from ...constants import CENT2DAY, TWOPI, J2000, EARTHROT
+from ...constants import CENT2DAY, TWOPI, J2000, EARTHROT_APPROX
 
 
 def gstime(jdut1):
@@ -25,4 +25,4 @@ def gstime(jdut1):
     )
 
     # Convert to radians
-    return np.remainder(gst * EARTHROT, TWOPI)
+    return np.remainder(gst * EARTHROT_APPROX, TWOPI)
