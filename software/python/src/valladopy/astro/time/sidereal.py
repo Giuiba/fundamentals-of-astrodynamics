@@ -53,9 +53,11 @@ def sidereal(jdut1, deltapsi, meaneps, omega, lod, eqeterms=True):
 
     # Find mean apparent sidereal time
     if jdut1 > 2450449.5 and eqeterms > 0:
-        ast = gmst + deltapsi * np.cos(meaneps) + \
-              0.00264 * const.ARCSEC2RAD * np.sin(omega) + \
-              0.000063 * const.ARCSEC2RAD * np.sin(2.0 * omega)
+        ast = (
+            gmst + deltapsi * np.cos(meaneps)
+            + 0.00264 * const.ARCSEC2RAD * np.sin(omega)
+            + 0.000063 * const.ARCSEC2RAD * np.sin(2.0 * omega)
+        )
     else:
         ast = gmst + deltapsi * np.cos(meaneps)
 
