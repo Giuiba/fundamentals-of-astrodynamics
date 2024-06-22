@@ -34,8 +34,8 @@ CENT2DAY = CENT2YR * YR2DAY
 TWOPI = 2 * np.pi
 DEG2MIN = 60
 DEG2ARCSEC = DEG2MIN * MIN2SEC
-ARCSEC2RAD = np.pi / (180.0 * DEG2ARCSEC)
-DEG2SEC = np.degrees(TWOPI) / DAY2SEC  #
+ARCSEC2RAD = np.radians(1 / DEG2ARCSEC)
+DEG2SEC = np.degrees(TWOPI) / DAY2SEC
 
 ###############################################################################
 # Astrodynamic Operations

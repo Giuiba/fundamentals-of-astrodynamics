@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.valladopy.astro.time.utils import fundarg, precess, nutation
+from src.valladopy.astro.time.utils import fundarg, precess, nutation, polarm
 from ...conftest import custom_isclose, custom_allclose
 
 DEFAULT_TOL = 1e-12
@@ -120,3 +120,32 @@ def test_nutation():
     assert custom_isclose(meaneps, 0.409047411073268, rtol=DEFAULT_TOL)
     assert custom_isclose(omega, 1.7142161907757703, rtol=DEFAULT_TOL)
     assert custom_allclose(nut, nut_exp, rtol=DEFAULT_TOL)
+
+
+@pytest.mark.parametrize(
+    'xp, yp, ttt, use_iau80, pm_expected',
+    [
+        (0.1, 0.2, 0.042623631889, True,
+         np.array([
+             [0.9950041652780257, 0.0, -0.09983341664682815],
+             [0.019833838076209875, 0.9800665778412416, 0.19767681165408385],
+             [0.09784339500725571, -0.19866933079506122, 0.9751703272018158]
+         ])),
+        (0.1, 0.2, 0.042623631889, False,
+         np.array([
+             [0.9950041652780257, 0.0198338380857286, -0.09784339500532617],
+             [-9.663803175648039e-12, 0.980066577841049, 0.1986693307960115],
+             [0.09983341664682815, -0.19767681165408385, 0.9751703272018158]
+         ])),
+        (0.0, 0.0, 0.042623631889, True, np.identity(3)),
+        (0.0, 0.0, 0.042623631889, False,
+         np.array([
+             [1.0, 9.71232434283103e-12, 0.0],
+             [-9.71232434283103e-12, 1.0, 0.0],
+             [0.0, 0.0, 1.0]
+         ]))
+    ]
+)
+def test_polarm(xp, yp, ttt, use_iau80, pm_expected):
+    pm = polarm(xp, yp, ttt, use_iau80)
+    assert custom_allclose(pm, pm_expected, rtol=DEFAULT_TOL)

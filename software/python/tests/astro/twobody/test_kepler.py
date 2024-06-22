@@ -7,17 +7,20 @@ from src.valladopy.astro.twobody.kepler import (
 )
 
 
-@pytest.mark.parametrize('ecc, incl, expected_orbit_type', [
-    (0.0, 0.0, OrbitType.CIR_EQUATORIAL),  # Circular equatorial
-    (0.0, np.pi, OrbitType.CIR_EQUATORIAL),  # Circular equatorial
-    (0.0, 0.1, OrbitType.CIR_INCLINED),  # Circular inclined
-    (0.1, 0.0, OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
-    (0.1, np.pi, OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
-    (0.1, 0.1, OrbitType.EPH_INCLINED),  # Elliptical inclined
-    (1.1, 0.0, OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
-    (1.1, np.pi, OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
-    (1.1, 0.1, OrbitType.EPH_INCLINED),  # Hyperbolic inclined
-])
+@pytest.mark.parametrize(
+    'ecc, incl, expected_orbit_type',
+    [
+        (0.0, 0.0, OrbitType.CIR_EQUATORIAL),  # Circular equatorial
+        (0.0, np.pi, OrbitType.CIR_EQUATORIAL),  # Circular equatorial
+        (0.0, 0.1, OrbitType.CIR_INCLINED),  # Circular inclined
+        (0.1, 0.0, OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
+        (0.1, np.pi, OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
+        (0.1, 0.1, OrbitType.EPH_INCLINED),  # Elliptical inclined
+        (1.1, 0.0, OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
+        (1.1, np.pi, OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
+        (1.1, 0.1, OrbitType.EPH_INCLINED),  # Hyperbolic inclined
+    ]
+)
 def test_determine_orbit_type(ecc, incl, expected_orbit_type):
     assert determine_orbit_type(ecc, incl) == expected_orbit_type
 

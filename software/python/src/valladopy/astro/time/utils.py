@@ -431,3 +431,56 @@ def nutation(ttt, ddpsi, ddeps):
     nut[2, 2] = sintrueeps * sineps * cospsi + costrueeps * coseps
 
     return deltapsi, trueeps, meaneps, omega, nut
+
+
+def polarm(xp, yp, ttt, use_iau80=True):
+    """Calculate the transformation matrix that accounts for polar motion.
+
+    References:
+        Vallado: 2004, p. 207-209, 211, 223-224
+
+    Both the 1980 and 2000 theories are handled. Note that the rotation order
+    is different between 1980 and 2000.
+
+    Args:
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ttt (float): Julian centuries of TT (only used in IAU 2000 method)
+        use_iau80 (bool, optional): Whether to use the IAU 1980 method instead
+                                    of IAU 2000 method (defaults to True)
+
+    Returns:
+        pm (np.ndarray): Transformation matrix for ECEF to PEF
+    """
+    cosxp = np.cos(xp)
+    sinxp = np.sin(xp)
+    cosyp = np.cos(yp)
+    sinyp = np.sin(yp)
+
+    # Use IAU 1980 theory
+    if use_iau80:
+        pm = np.array([
+            [cosxp, 0.0, -sinxp],
+            [sinxp * sinyp, cosyp, cosxp * sinyp],
+            [sinxp * cosyp, -sinyp, cosxp * cosyp]
+        ])
+    # Use IAU 2000 theory
+    else:
+        # −47.0e-6 corresponds to a constant drift in the Terrestrial
+        # Intermediate Origin (TIO) locator 𝑠′, which is approximately −47
+        # microarcseconds per century (applied to the IAU 2000 theory)
+        # See: https://pyerfa.readthedocs.io/en/latest/api/erfa.pom00.html
+        # TODO: consider using pyerfa for this
+        sp = -47.0e-6 * ttt * ARCSEC2RAD
+        cossp = np.cos(sp)
+        sinsp = np.sin(sp)
+
+        pm = np.array([
+            [cosxp * cossp, -cosyp * sinsp + sinyp * sinxp * cossp,
+             -sinyp * sinsp - cosyp * sinxp * cossp],
+            [cosxp * sinsp, cosyp * cossp + sinyp * sinxp * sinsp,
+             sinyp * cossp - cosyp * sinxp * sinsp],
+            [sinxp, -sinyp * cosxp, cosyp * cosxp]
+        ])
+
+    return pm
