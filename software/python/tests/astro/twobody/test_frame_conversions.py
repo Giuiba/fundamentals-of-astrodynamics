@@ -1,10 +1,9 @@
 import numpy as np
 import pytest
 
-from src.valladopy.astro.twobody.frame_conversions import (
-    adbar2rv, rv2adbar, coe2rv, rv2coe, eq2rv, rv2eq, tradec2rv, rv2tradec
-)
+import src.valladopy.astro.twobody.frame_conversions as fc
 from src.valladopy.astro.twobody.kepler import OrbitType
+from src.valladopy.constants import ARCSEC2RAD
 
 
 DEFAULT_TOL = 1e-12
@@ -38,7 +37,7 @@ class TestSpherical:
         expected_r, expected_v = rv  # expected values
 
         # Call the function with test inputs
-        r, v = adbar2rv(rmag, vmag, rtasc, decl, fpav, az)
+        r, v = fc.adbar2rv(rmag, vmag, rtasc, decl, fpav, az)
 
         # Check if the output is close to the expected values
         assert np.allclose(r, expected_r, rtol=DEFAULT_TOL)
@@ -48,7 +47,7 @@ class TestSpherical:
         expected_elems = adbarv
 
         # Call the function with test inputs
-        out = rv2adbar(rv[0], rv[1])
+        out = fc.rv2adbar(rv[0], rv[1])
 
         # Check if the output is close to the expected values
         assert np.allclose(out, expected_elems, rtol=DEFAULT_TOL)
@@ -83,7 +82,7 @@ class TestClassical:
         )
 
         # Call the function with test inputs
-        r_out, v_out = coe2rv(p, ecc, incl, raan, nu)
+        r_out, v_out = fc.coe2rv(p, ecc, incl, raan, nu)
 
         # Check if the output is close to the expected values
         assert np.allclose(r_out, r_exp, rtol=DEFAULT_TOL)
@@ -94,7 +93,7 @@ class TestClassical:
         # TODO: add tests for other orbit type cases
         # Call the function with test inputs
         (p, a, ecc, incl, raan, argp, nu,
-         m, arglat, truelon, lonper, orbit_type) = rv2coe(*rv)
+         m, arglat, truelon, lonper, orbit_type) = fc.rv2coe(*rv)
 
         # Check if the output is close to the expected values
         # TODO: lonper is not `nan` in the book example (but is in matlab)
@@ -138,7 +137,7 @@ class TestEquinoctial:
         r_exp, v_exp = rv
 
         # Call the function with test inputs
-        r_out, v_out = eq2rv(*eq)
+        r_out, v_out = fc.eq2rv(*eq)
 
         # Check if the outputs are close to the expected values
         assert np.allclose(r_out, r_exp, rtol=DEFAULT_TOL)
@@ -149,7 +148,7 @@ class TestEquinoctial:
         a_exp, af_exp, ag_exp, chi_exp, psi_exp, meanlon_exp, fr_exp = eq
 
         # Call the function with test inputs
-        a, n, af, ag, chi, psi, meanlon, truelon, fr = rv2eq(*rv)
+        a, n, af, ag, chi, psi, meanlon, truelon, fr = fc.rv2eq(*rv)
 
         # Check if the outputs are close to the expected values
         assert abs(a - a_exp) < DEFAULT_TOL
@@ -197,7 +196,7 @@ class TestTopocentric:
         r_eci_exp, v_eci_exp = rveci
 
         # Call the function with test inputs
-        r_eci, v_eci = tradec2rv(*tradec, *rvseci)
+        r_eci, v_eci = fc.tradec2rv(*tradec, *rvseci)
 
         # Check if the output is close to the expected values
         assert np.allclose(r_eci, r_eci_exp, rtol=DEFAULT_TOL)
@@ -205,7 +204,52 @@ class TestTopocentric:
 
     def test_rv2tradec(self, rvseci, tradec, rveci):
         # Call the function with test inputs
-        tradec_out = rv2tradec(*rveci, *rvseci)
+        tradec_out = fc.rv2tradec(*rveci, *rvseci)
 
         # Check if the output is close to the expected values
         assert np.allclose(tradec_out, np.array(tradec), rtol=DEFAULT_TOL)
+
+
+class TestFlight:
+    @pytest.fixture
+    def rv(self):
+        reci = [1525.9870698051157, -5867.209915411114, 3499.601587508083]
+        veci = [1.4830443958075603, -7.093267951700349, 0.9565730381487033]
+        return np.array(reci), np.array(veci)
+
+    @pytest.fixture
+    def rvmag(self):
+        rmag = 7000   # position magnitude, km
+        vmag = 7.546  # velocity magnitude, km
+        return rmag, vmag
+
+    @pytest.fixture
+    def flight(self):
+        latgc = np.pi / 6  # 30 degrees
+        lon = np.pi / 2    # 90 degrees
+        fpa = -np.pi / 6   # -30 degrees
+        az = np.pi / 4     # 45 degrees
+        return latgc, lon, fpa, az
+
+    def test_flt2rv(self, rv, rvmag, flight):
+        # Expected outputs
+        reci_exp, veci_exp = rv
+
+        # Other input parameters
+        ttt = 0.042623631888994
+        jdut1 = 2.453101500000000e+06
+        lod = 0.0015563
+        xp = -0.140682 * ARCSEC2RAD
+        yp = 0.333309 * ARCSEC2RAD
+        ddpsi = -0.052195 * ARCSEC2RAD
+        ddeps = -0.003875 * ARCSEC2RAD
+        eqeterms = True
+
+        # Call the function with test inputs
+        reci, veci = fc.flt2rv(
+            *rvmag, *flight, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+        )
+
+        # Check if the output is close to the expected values
+        assert np.allclose(reci, reci_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(veci, veci_exp, rtol=DEFAULT_TOL)

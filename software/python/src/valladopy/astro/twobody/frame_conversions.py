@@ -10,6 +10,7 @@ import numpy as np
 
 from ...constants import SMALL, MU, TWOPI
 from ...mathtime.vector import rot1, rot3, angle
+from ..time.frame_conversions import ecef2eci
 from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
 
 
@@ -34,7 +35,7 @@ def adbar2rv(rmag, vmag, rtasc, decl, fpav, az):
     vectors.
 
     References:
-        Vallado: 2001, xx
+        Vallado: 2001, XX
         Chobotov       70
 
     Args:
@@ -399,16 +400,15 @@ def rv2eq(r, v):
 
     Returns:
         tuple: A tuple containing:
-            - a (float): Semi-major axis in km
-            - n (float): Mean motion in rad/s
-            - af (float): Component of eccentricity vector
-            - ag (float): Component of eccentricity vector
-            - chi (float): Component of node vector in eqw
-            - psi (float): Component of node vector in eqw
-            - meanlon (float): Mean longitude in radians
-            - meanlonNu (float): True longitude in radians
-            - fr (int): Retrograde factor
-                        (+1 for prograde, -1 for retrograde)
+            a (float): Semi-major axis in km
+            n (float): Mean motion in rad/s
+            af (float): Component of eccentricity vector
+            ag (float): Component of eccentricity vector
+            chi (float): Component of node vector in eqw
+            psi (float): Component of node vector in eqw
+            meanlon (float): Mean longitude in radians
+            meanlonNu (float): True longitude in radians
+            fr (int): Retrograde factor (+1 for prograde, -1 for retrograde)
     """
     # Convert to classical orbital elements
     p, a, ecc, incl, omega, argp, nu, m, arglat, truelon, lonper, _ = (
@@ -566,3 +566,81 @@ def rv2tradec(reci, veci, rseci, vseci):
         dtdecl = 0.0
 
     return rho, trtasc, tdecl, drho, dtrtasc, dtdecl
+
+
+###############################################################################
+# Flight Elements
+###############################################################################
+
+def flt2rv(rmag, vmag, latgc, lon, fpa, az, ttt, jdut1, lod, xp, yp, ddpsi,
+           ddeps, eqeterms=True):
+    """Converts flight elements into ECI position and velocity vectors.
+
+    References:
+        Vallado: 2013, XX
+        Escobal:      397
+        Chobotov:      67
+
+    Args:
+        rmag (float): ECI position vector magnitude in km
+        vmag (float): ECI velocity vector magnitude in km/s
+        latgc (float): Geocentric latitude in radians
+        lon (float): Longitude in radians
+        fpa (float): Flight path angle in radians
+        az (float): Flight path azimuth in radians
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple:
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+    """
+    # Form position vector
+    recef = np.array([
+        rmag * np.cos(latgc) * np.cos(lon),
+        rmag * np.cos(latgc) * np.sin(lon),
+        rmag * np.sin(latgc)
+    ])
+
+    # Convert r to ECI
+    vecef = np.zeros(3)  # this is a dummy for now
+    aecef = np.zeros(3)
+    reci, veci, aeci = ecef2eci(
+        recef, vecef, aecef, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+    )
+
+    # Calculate right ascension and declination
+    if np.sqrt(reci[0]**2 + reci[1]**2) < SMALL:
+        rtasc = np.arctan2(veci[1], veci[0])
+    else:
+        rtasc = np.arctan2(reci[1], reci[0])
+    decl = np.arcsin(reci[2] / rmag)
+
+    # Form velocity vector
+    fpav = np.pi * 0.5 - fpa
+    veci = vmag * np.array([
+        # First element
+        (-np.cos(rtasc) * np.sin(decl)
+         * (np.cos(az) * np.cos(fpav)
+            - np.sin(rtasc) * np.sin(az) * np.cos(fpav))
+         + np.cos(rtasc) * np.sin(decl) * np.sin(fpav)),
+
+        # Second element
+        (-np.sin(rtasc) * np.sin(decl)
+         * (np.cos(az) * np.cos(fpav)
+            + np.cos(rtasc) * np.sin(az) * np.cos(fpav))
+         + np.sin(rtasc) * np.cos(decl) * np.sin(fpav)),
+
+        # Third element
+        (np.sin(decl) * np.sin(fpav)
+         + np.cos(decl) * np.cos(az) * np.cos(fpav))
+    ])
+
+    return reci, veci
