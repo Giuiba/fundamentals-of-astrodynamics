@@ -45,6 +45,9 @@ function [ l, l1, f, d, omega, ...
         % arcsec to deg
         oo3600 = 1.0 / 3600.0;
 
+        ttt2 = ttt * ttt;
+        ttt3 = ttt2 * ttt;
+
         % ---- determine coefficients for iau 2000 nutation theory ----
         % ---- iau 2006 theory
         if opt == '06'

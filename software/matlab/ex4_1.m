@@ -53,6 +53,11 @@
     order =  106;
     terms = 2;
 
+    % 1" to rad
+    convrt = pi / (3600.0*180.0);
+    ddpsi =  -0.116696* convrt;
+    ddeps =  -0.008264* convrt;
+
     % , tcg, jdtcg,jdtcgfrac, tcb, jdtcb,jdtcbfrac
     [ ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, ...
       tdb, ttdb, jdtdb, jdtdbfrac ] ...
@@ -101,7 +106,7 @@
         fprintf(1,'            rho km       rtasc deg     decl deg      drho km/s      drtasc deg/s   ddecl deg/s \n' );
         if rtasc < 0.0
             rtasc = rtasc + twopi;
-        end;
+        end
         fprintf(1,'radec  %14.7f %14.7f %14.7f',rr,rtasc*rad,decl*rad );
         fprintf(1,' %14.7f %14.12f %14.12f\n',drr,drtasc*rad,ddecl*rad );
 
@@ -110,25 +115,29 @@
         fprintf(1,' v %14.9f %14.9f %14.9f\n',veci );
 
         % topoc
-        ddpsi = 0.0;
-        ddeps = 0.0;
-        [trr,trtasc,tdecl,tdrr,tdrtasc,tddecl] = rv2tradc( reci,veci,latgd,lon,alt,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+        % ----------------- get site vector in ecef -------------------
+        [rsecef, vsecef] = site ( latgd, lon, alt );
+        % -------------------- convert ecef to eci --------------------
+        a = [0;0;0];
+        [rseci, vseci, aeci] = ecef2eci(rsecef, vsecef, a, ttt, jdut1, lod, xp, yp, 2, ddpsi, ddeps);
+
+        [trr, trtasc, tdecl, tdrr, tdrtasc, tddecl] = rv2tradec( reci, veci, rseci, vseci );
         fprintf(1,'           trho km      trtasc deg    tdecl deg     tdrho km/s     tdrtasc deg/s  tddecl deg/s \n' );
         if trtasc < 0.0
             trtasc = trtasc + twopi;
-        end;
+        end
         fprintf(1,'tradec  %14.7f %14.7f %14.7f',trr,trtasc*rad,tdecl*rad );
-        fprintf(1,' %14.7f %14.12f %14.12f\n',tdrr,tdrtasc*rad,tddecl*rad );
+        fprintf(1,' %14.7f %14.12f %14.12f \n',tdrr,tdrtasc*rad,tddecl*rad );
 
-        %          [r,v] = tradc2rv(trr,trtasc,tdecl,tdrr,tdrtasc,tddecl,latgd,lon,alt,ttt,jdut1,lod,xp,yp,terms);
-        %         fprintf(1,'r    %14.7f%14.7f%14.7f',r );
-        %         fprintf(1,' v %14.9f%14.9f%14.9f\n',v );
+        [r1, v1] = tradec2rv (trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci', vseci');
+        fprintf(1,'tradec r    %14.7f%14.7f%14.7f',r1 );
+        fprintf(1,' v %14.9f%14.9f%14.9f \n',v1 );
 
         %horiz
         [rho,az,el,drho,daz,del] = rv2razel ( reci,veci, latgd,lon,alt,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
         if az < 0.0
             az = az + twopi;
-        end;
+        end
         fprintf(1,'rvraz   %14.7f %14.7f %14.7f',rho,az*rad,el*rad );
         fprintf(1,' %14.7f %14.12f %14.12f\n',drho,daz*rad,del*rad );
 
@@ -142,7 +151,7 @@
         fprintf(1,'            rho km        elon deg     elat deg      drho km/s       delon deg/s   delat deg/s \n' );
         if elon < 0.0
             elon = elon + twopi;
-        end;
+        end
         fprintf(1,'ell      %14.7f %14.7f %14.7f',rr,elon*rad,elat*rad );
         fprintf(1,' %14.7f %14.12f %14.12f\n',drr,delon*rad,delat*rad );
 
@@ -157,8 +166,6 @@
     % additional tests
     rad    = 180.0 / pi;
     twopi = 2.0 * pi;
-    % 1" to rad
-    convrt = pi / (3600.0*180.0);
  
     latgd = 20.7071/rad;
     lon = -156.257/rad;
@@ -246,7 +253,7 @@
     % topocentric
     ddpsi = 0.0;
     ddeps = 0.0;
-    [trr,trtasc,tdecl,tdrr,tdrtasc,tddecl] = rv2tradc( reci, veci,latgd,lon,alt,ttt,jdut1+jdut1frac,lod,xp,yp,terms,ddpsi,ddeps );
+    [trr,trtasc,tdecl,tdrr,tdrtasc,tddecl] = rv2tradec( reci, veci, rseci, vseci );
     fprintf(1,'           trho km      trtasc deg    tdecl deg     tdrho km/s     tdrtasc deg/s  tddecl deg/s \n' );
     if trtasc < 0.0
         trtasc = trtasc + twopi;

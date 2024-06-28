@@ -38,7 +38,7 @@
 % [rs,vs] = site ( latgd,lon,alt );
 % -----------------------------------------------------------------------------
 
-function [rs,vs] = site ( latgd,lon,alt );
+function [rsecef, vsecef] = site ( latgd,lon,alt );
 
         constastro;
 
@@ -51,14 +51,11 @@ function [rs,vs] = site ( latgd,lon,alt );
         rk    = ( (1.0-eccearthsqrd)*cearth + alt )*sinlat;
 
         % ---------------  find site position vector  -----------------
-        rs(1) = rdel * cos( lon );
-        rs(2) = rdel * sin( lon );
-        rs(3) = rk;
-        rs = rs';
+        rsecef(1) = rdel * cos( lon );
+        rsecef(2) = rdel * sin( lon );
+        rsecef(3) = rk;
+        rsecef = rsecef';
         
         % ---------------  find site velocity vector  -----------------
-        %ome = [0.0; 0.0; omegaearth];
-        %[vs] = cross(ome, rs);
-        
-        vs = [0.0; 0.0; 0.0];
+        vsecef = [0.0; 0.0; 0.0];
 
