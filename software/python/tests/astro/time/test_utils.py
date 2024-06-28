@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
 
-from src.valladopy.astro.time.utils import fundarg, precess, nutation, polarm
+import src.valladopy.astro.time.utils as utils
+from src.valladopy.constants import ARCSEC2RAD
 from ...conftest import custom_isclose, custom_allclose
 
 DEFAULT_TOL = 1e-12
@@ -42,7 +43,7 @@ def test_fundarg(ttt, opt, results):
     `np.mod` always returning a positive angle (unlike the `rem` function) but
     they are still equivalent
     """
-    results_out = fundarg(ttt, opt)
+    results_out = utils.fundarg(ttt, opt)
     assert custom_allclose(results, results_out, rtol=DEFAULT_TOL)
 
 
@@ -82,7 +83,7 @@ def test_fundarg(ttt, opt, results):
     ]
 )
 def test_precess(ttt, opt, prec, psia, wa, ea, xa):
-    prec_out, psia_out, wa_out, ea_out, xa_out = precess(ttt, opt)
+    prec_out, psia_out, wa_out, ea_out, xa_out = utils.precess(ttt, opt)
     assert np.allclose(prec, prec_out, rtol=DEFAULT_TOL)
     assert custom_isclose(psia, psia_out)
     assert custom_isclose(wa, wa_out)
@@ -93,32 +94,32 @@ def test_precess(ttt, opt, prec, psia, wa, ea, xa):
 def test_precess_bad():
     # Test invalid option
     with pytest.raises(ValueError):
-        _ = precess(0.5, '25')
+        _ = utils.precess(0.5, '25')
 
 
 def test_nutation():
     # Inputs
-    ttt = 0.2
-    ddpsi = np.radians(3.5)
-    ddeps = np.radians(5.7)
+    ttt = 0.042623631888994
+    ddpsi = -0.052195 * ARCSEC2RAD
+    ddeps = -0.003875 * ARCSEC2RAD
 
     # Expected nutation transformation matrix
     nut_exp = np.array(
         [
-            [0.9981396814091349, 0.05325395821546375, 0.02968488387810016],
-            [-0.05593874439282744, 0.9935655167907828, 0.09848056011223039],
-            [-0.024249397357966784, -0.09995789002700262, 0.9946961279451756]
+            [0.999999998212977, -5.484951020917109e-05, -2.37818519260497e-05],
+            [5.4850353003009e-05, 0.9999999978677465, 3.5439324690356155e-05],
+            [2.377990804573938e-05, -3.544062907001599e-05, 0.9999999990892389]
         ]
     )
 
     # Call the function with test inputs
-    deltapsi, trueeps, meaneps, omega, nut = nutation(ttt, ddpsi, ddeps)
+    deltapsi, trueeps, meaneps, omega, nut = utils.nutation(ttt, ddpsi, ddeps)
 
     # Check if the outputs are close to the expected values
-    assert custom_isclose(deltapsi, 0.06100648612598722, rtol=DEFAULT_TOL)
-    assert custom_isclose(trueeps, 0.5085229888820868, rtol=DEFAULT_TOL)
-    assert custom_isclose(meaneps, 0.409047411073268, rtol=DEFAULT_TOL)
-    assert custom_isclose(omega, 1.7142161907757703, rtol=DEFAULT_TOL)
+    assert custom_isclose(deltapsi, -5.978331920752922e-05, rtol=DEFAULT_TOL)
+    assert custom_isclose(trueeps, 0.4091185700997511, rtol=DEFAULT_TOL)
+    assert custom_isclose(meaneps, 0.40908313012283176, rtol=DEFAULT_TOL)
+    assert custom_isclose(omega, 0.7435907904484494, rtol=DEFAULT_TOL)
     assert custom_allclose(nut, nut_exp, rtol=DEFAULT_TOL)
 
 
@@ -147,5 +148,5 @@ def test_nutation():
     ]
 )
 def test_polarm(xp, yp, ttt, use_iau80, pm_expected):
-    pm = polarm(xp, yp, ttt, use_iau80)
+    pm = utils.polarm(xp, yp, ttt, use_iau80)
     assert custom_allclose(pm, pm_expected, rtol=DEFAULT_TOL)

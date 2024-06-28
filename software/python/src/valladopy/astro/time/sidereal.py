@@ -1,3 +1,12 @@
+# -----------------------------------------------------------------------------
+# Author: David Vallado
+# Date: 7 June 2002
+#
+# Copyright (c) 2024
+# For license information, see LICENSE file
+# -----------------------------------------------------------------------------
+
+
 import numpy as np
 
 from ... import constants as const

@@ -7,6 +7,7 @@
 # -----------------------------------------------------------------------------
 
 
+import math
 import numpy as np
 
 from .iaudata import iau80in
@@ -406,8 +407,8 @@ def nutation(ttt, ddpsi, ddeps):
         deltaeps += (rar80[i, 2] + rar80[i, 3] * ttt) * np.cos(tempval)
 
     # Add corrections
-    deltapsi = np.remainder(deltapsi + ddpsi, 2.0 * np.pi)
-    deltaeps = np.remainder(deltaeps + ddeps, 2.0 * np.pi)
+    deltapsi = math.remainder(deltapsi + ddpsi, TWOPI)
+    deltaeps = math.remainder(deltaeps + ddeps, TWOPI)
     trueeps = meaneps + deltaeps
 
     # Sine/cosine values of psi and eps
