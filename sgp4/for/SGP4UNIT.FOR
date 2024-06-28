@@ -10,17 +10,19 @@
 *
 *                            companion code for
 *               fundamentals of astrodynamics and applications
-*                                    2007
+*                                    2022
 *                              by david vallado
 *
-*       (w) 719-573-2600, email dvallado@agi.com
+*                         email dvallado@comspoc.com
 *
 *    current :
+*              28 Jun 24  david vallado
+*                           add Opsmode to formal parameters of sgp4init           
+*    changes :
 *              26 Aug 08  david vallado
 *                           fix atime for faster operation in dspace
 *                           add operationmode for afspc (a) or improved (i)
 *                           performance mode
-*    changes :
 *              16 jun 08  david vallado
 *                           update small eccentricity check
 *              16 nov 07  david vallado
@@ -1327,7 +1329,7 @@ c        INCLUDE 'debug5.for'
 *    vallado, crawford, hujsak, kelso  2006
 * ---------------------------------------------------------------------------- }
 
-      SUBROUTINE SGP4Init ( whichconst,
+      SUBROUTINE SGP4Init ( whichconst, Opsmode,
      &                      Satn,   xBStar, xEcco,  Epoch, xArgpo,
      &                      xInclo, xMo,    xNo,    xnodeo, Error )
         IMPLICIT NONE
