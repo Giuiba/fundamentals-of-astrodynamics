@@ -54,8 +54,8 @@ def sidereal(jdut1, deltapsi, meaneps, omega, lod, eqeterms=True):
 
     Returns:
         tuple:
-            - st (np.ndarray): Transformation matrix for PEF to TOD
-            - stdot (np.ndarray): Transformation rate matrix
+            st (np.ndarray): Transformation matrix for PEF to TOD
+            stdot (np.ndarray): Transformation rate matrix
     """
     # Find GMST
     gmst = gstime(jdut1)

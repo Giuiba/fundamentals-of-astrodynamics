@@ -27,20 +27,20 @@ def fundarg(ttt, opt):
 
     Returns:
         tuple: A tuple containing:
-            - l (float): Delaunay element in radians
-            - l1 (float): Delaunay element in radians
-            - f (float): Delaunay element in radians
-            - d (float): Delaunay element in radians
-            - omega (float): Delaunay element in radians
-            - lonmer (float): Planetary longitude in radians
-            - lonven (float): Planetary longitude in radians
-            - lonear (float): Planetary longitude in radians
-            - lonmar (float): Planetary longitude in radians
-            - lonjup (float): Planetary longitude in radians
-            - lonsat (float): Planetary longitude in radians
-            - lonurn (float): Planetary longitude in radians
-            - lonnep (float): Planetary longitude in radians
-            - precrate (float): Precession rate in radians
+            l (float): Delaunay element in radians
+            l1 (float): Delaunay element in radians
+            f (float): Delaunay element in radians
+            d (float): Delaunay element in radians
+            omega (float): Delaunay element in radians
+            lonmer (float): Planetary longitude in radians
+            lonven (float): Planetary longitude in radians
+            lonear (float): Planetary longitude in radians
+            lonmar (float): Planetary longitude in radians
+            lonjup (float): Planetary longitude in radians
+            lonsat (float): Planetary longitude in radians
+            lonurn (float): Planetary longitude in radians
+            lonnep (float): Planetary longitude in radians
+            precrate (float): Precession rate in radians
 
     TODO:
         - Implement commented out methods (from m-file)?
@@ -227,11 +227,11 @@ def precess(ttt, opt):
 
     Returns:
         tuple: A tuple containing:
-            - prec (np.array): Transformation matrix for MOD to J2000
-            - psia (float): Canonical precession angle in radians
-            - wa (float): Canonical precession angle in radians
-            - ea (float): Canonical precession angle in radians
-            - xa (float): Canonical precession angle in radians
+            prec (np.array): Transformation matrix for MOD to J2000
+            psia (float): Canonical precession angle in radians
+            wa (float): Canonical precession angle in radians
+            ea (float): Canonical precession angle in radians
+            xa (float): Canonical precession angle in radians
 
     TODO:
         - Implement commented out methods (from m-file)?
@@ -377,11 +377,11 @@ def nutation(ttt, ddpsi, ddeps):
 
     Returns:
         tuple: A tuple containing:
-            - deltapsi (float): Nutation angle in radians
-            - trueeps (float): True obliquity of the ecliptic in radians
-            - meaneps (float): Mean obliquity of the ecliptic in radians
-            - omega (float): Delaunay element in radians
-            - nut (np.ndarray): Transformation matrix for TOD - MOD
+            deltapsi (float): Nutation angle in radians
+            trueeps (float): True obliquity of the ecliptic in radians
+            meaneps (float): Mean obliquity of the ecliptic in radians
+            omega (float): Delaunay element in radians
+            nut (np.ndarray): Transformation matrix for TOD - MOD
     """
     # Load nutation coefficients
     iar80, rar80 = iau80in()
