@@ -10,7 +10,7 @@ import numpy as np
 
 from ...constants import SMALL, MU, TWOPI
 from ...mathtime.vector import rot1, rot3, angle
-from ..time.frame_conversions import ecef2eci
+from ..time.frame_conversions import ecef2eci, eci2ecef
 from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
 
 
@@ -484,8 +484,9 @@ def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
         vseci (np.array): ECI site velocity vector in km/s
 
     Returns:
-        reci (np.array): ECI position vector in km
-        veci (np.array): ECI velocity vector in km/s
+        tuple: A tuple containing:
+            reci (np.array): ECI position vector in km
+            veci (np.array): ECI velocity vector in km/s
     """
 
     # Calculate topocentric slant range vectors
@@ -524,12 +525,13 @@ def rv2tradec(reci, veci, rseci, vseci):
         vseci (array-like)): ECI site velocity vector in km/s
 
     Returns:
-        rho (float): Satellite range from site in km
-        trtasc (float): Topocentric right ascension in radians
-        tdecl (float): Topocentric declination in radians
-        drho (float): Range rate in km/s
-        dtrtasc (float): Topocentric right ascension rate in rad/s
-        dtdecl (float): Topocentric declination rate in rad/s
+        tuple: A tuple containing:
+            rho (float): Satellite range from site in km
+            trtasc (float): Topocentric right ascension in radians
+            tdecl (float): Topocentric declination in radians
+            drho (float): Range rate in km/s
+            dtrtasc (float): Topocentric right ascension rate in rad/s
+            dtdecl (float): Topocentric declination rate in rad/s
     """
     # Find ECI slant range vector from site to satellite
     rhoveci = np.array(reci) - np.array(rseci)
@@ -582,8 +584,8 @@ def flt2rv(rmag, vmag, latgc, lon, fpa, az, ttt, jdut1, lod, xp, yp, ddpsi,
         Chobotov:      67
 
     Args:
-        rmag (float): ECI position vector magnitude in km
-        vmag (float): ECI velocity vector magnitude in km/s
+        rmag (float): Position vector magnitude in km
+        vmag (float): Velocity vector magnitude in km/s
         latgc (float): Geocentric latitude in radians
         lon (float): Longitude in radians
         fpa (float): Flight path angle in radians
@@ -598,7 +600,7 @@ def flt2rv(rmag, vmag, latgc, lon, fpa, az, ttt, jdut1, lod, xp, yp, ddpsi,
         eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
-        tuple:
+        tuple: A tuple containing:
             reci (np.ndarray): ECI position vector in km
             veci (np.ndarray): ECI velocity vector in km/s
     """
@@ -612,7 +614,7 @@ def flt2rv(rmag, vmag, latgc, lon, fpa, az, ttt, jdut1, lod, xp, yp, ddpsi,
     # Convert r to ECI
     vecef = np.zeros(3)  # this is a dummy for now
     aecef = np.zeros(3)
-    reci, veci, aeci = ecef2eci(
+    reci, veci, _ = ecef2eci(
         recef, vecef, aecef, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
     )
 
@@ -644,3 +646,71 @@ def flt2rv(rmag, vmag, latgc, lon, fpa, az, ttt, jdut1, lod, xp, yp, ddpsi,
     ])
 
     return reci, veci
+
+
+def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms):
+    """Transforms a position and velocity vector into the flight elements.
+
+    Args:
+        reci (array-like): ECI position vector in km
+        veci (array-like): ECI velocity vector in km/s
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: A tuple containing:
+            lon (float): Longitude in radians
+            latgc (float): Geocentric latitude in radians
+            rtasc (float): Right ascension angle in radians
+            decl (float): Declination angle in radians
+            fpa (float): Flight path angle in radians
+            az (float): Flight path azimuth in radians
+            rmag (float): Position vector magnitude in km
+            vmag (float): Velocity vector magnitude in km/s
+    """
+    # Get magnitude of position and velocity vectors
+    rmag = np.linalg.norm(reci)
+    vmag = np.linalg.norm(veci)
+
+    # Convert r to ECEF for lat/lon calculations
+    aecef = np.zeros(3)
+    recef, vecef, aecef = eci2ecef(
+        reci, veci, aecef, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+    )
+
+    # Calculate longitude
+    if np.sqrt(recef[0]**2 + recef[1]**2) < SMALL:
+        lon = np.arctan2(vecef[1], vecef[0])
+    else:
+        lon = np.arctan2(recef[1], recef[0])
+
+    latgc = np.arcsin(recef[2] / rmag)
+
+    # Calculate right ascension and declination
+    if np.sqrt(reci[0]**2 + reci[1]**2) < SMALL:
+        rtasc = np.arctan2(veci[1], veci[0])
+    else:
+        rtasc = np.arctan2(reci[1], reci[0])
+
+    decl = np.arcsin(reci[2] / rmag)
+
+    # Calculate flight path angle
+    h = np.cross(reci, veci)
+    hmag = np.linalg.norm(h)
+    rdotv = np.dot(reci, veci)
+    fpav = np.arctan2(hmag, rdotv)
+    fpa = np.pi / 2 - fpav
+
+    # Calculte azimuth
+    hcrossr = np.cross(h, reci)
+    az = np.arctan2(
+        reci[0] * hcrossr[1] - reci[1] * hcrossr[0], hcrossr[2] * rmag
+    )
+
+    return lon, latgc, rtasc, decl, fpa, az, rmag, vmag

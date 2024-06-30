@@ -231,10 +231,8 @@ class TestFlight:
         az = np.pi / 4     # 45 degrees
         return latgc, lon, fpa, az
 
-    def test_flt2rv(self, rv, rvmag, flight):
-        # Expected outputs
-        reci_exp, veci_exp = rv
-
+    @pytest.fixture
+    def other_inputs(self):
         # Other input parameters
         ttt = 0.042623631888994
         jdut1 = 2.453101500000000e+06
@@ -244,12 +242,36 @@ class TestFlight:
         ddpsi = -0.052195 * ARCSEC2RAD
         ddeps = -0.003875 * ARCSEC2RAD
         eqeterms = True
+        return ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+
+    def test_flt2rv(self, rv, rvmag, flight, other_inputs):
+        # Expected outputs
+        reci_exp, veci_exp = rv
 
         # Call the function with test inputs
-        reci, veci = fc.flt2rv(
-            *rvmag, *flight, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
-        )
+        reci, veci = fc.flt2rv(*rvmag, *flight, *other_inputs)
 
         # Check if the output is close to the expected values
         assert np.allclose(reci, reci_exp, rtol=DEFAULT_TOL)
         assert np.allclose(veci, veci_exp, rtol=DEFAULT_TOL)
+
+    def test_rv2flt(self, rv, rvmag, flight, other_inputs):
+        # Expected outputs
+        rmag_exp, _ = rvmag                # vmag will not match original
+        latgc_exp, lon_exp, _, _ = flight  # fpa and az will not match original
+
+        # Call the function with test inputs
+        lon, latgc, rtasc, decl, fpa, az, rmag, vmag = fc.rv2flt(
+            *rv, *other_inputs
+        )
+
+        # Check if the output is close to the expected values
+        # Some values differ from the orignal ones inputted in the test above
+        assert np.isclose(lon, lon_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(latgc, latgc_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(rtasc, -1.3163464523837871, rtol=DEFAULT_TOL)
+        assert np.isclose(decl, 0.5235330558280773, rtol=DEFAULT_TOL)
+        assert np.isclose(fpa, 1.1758912957606626, rtol=DEFAULT_TOL)
+        assert np.isclose(az, -3.016745055466374, rtol=DEFAULT_TOL)
+        assert np.isclose(rmag, rmag_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(vmag, 7.309507705165137, rtol=DEFAULT_TOL)
