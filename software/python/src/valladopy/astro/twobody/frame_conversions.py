@@ -651,6 +651,9 @@ def flt2rv(rmag, vmag, latgc, lon, fpa, az, ttt, jdut1, lod, xp, yp, ddpsi,
 def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms):
     """Transforms a position and velocity vector into the flight elements.
 
+    References:
+        Vallado: 2001, XX
+
     Args:
         reci (array-like): ECI position vector in km
         veci (array-like): ECI velocity vector in km/s
