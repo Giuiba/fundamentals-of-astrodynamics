@@ -44,7 +44,7 @@ def test_fundarg(ttt, opt, results):
     they are still equivalent
     """
     results_out = utils.fundarg(ttt, opt)
-    assert custom_allclose(results, results_out, rtol=DEFAULT_TOL)
+    assert custom_allclose(results, results_out)
 
 
 @pytest.mark.parametrize(
@@ -84,7 +84,7 @@ def test_fundarg(ttt, opt, results):
 )
 def test_precess(ttt, opt, prec, psia, wa, ea, xa):
     prec_out, psia_out, wa_out, ea_out, xa_out = utils.precess(ttt, opt)
-    assert np.allclose(prec, prec_out, rtol=DEFAULT_TOL)
+    assert np.allclose(prec, prec_out)
     assert custom_isclose(psia, psia_out)
     assert custom_isclose(wa, wa_out)
     assert custom_isclose(ea, ea_out)
@@ -116,11 +116,11 @@ def test_nutation():
     deltapsi, trueeps, meaneps, omega, nut = utils.nutation(ttt, ddpsi, ddeps)
 
     # Check if the outputs are close to the expected values
-    assert custom_isclose(deltapsi, -5.978331920752922e-05, rtol=DEFAULT_TOL)
-    assert custom_isclose(trueeps, 0.4091185700997511, rtol=DEFAULT_TOL)
-    assert custom_isclose(meaneps, 0.40908313012283176, rtol=DEFAULT_TOL)
-    assert custom_isclose(omega, 0.7435907904484494, rtol=DEFAULT_TOL)
-    assert custom_allclose(nut, nut_exp, rtol=DEFAULT_TOL)
+    assert custom_isclose(deltapsi, -5.978331920752922e-05)
+    assert custom_isclose(trueeps, 0.4091185700997511)
+    assert custom_isclose(meaneps, 0.40908313012283176)
+    assert custom_isclose(omega, 0.7435907904484494)
+    assert custom_allclose(nut, nut_exp)
 
 
 @pytest.mark.parametrize(
@@ -149,4 +149,4 @@ def test_nutation():
 )
 def test_polarm(xp, yp, ttt, use_iau80, pm_expected):
     pm = utils.polarm(xp, yp, ttt, use_iau80)
-    assert custom_allclose(pm, pm_expected, rtol=DEFAULT_TOL)
+    assert custom_allclose(pm, pm_expected)
