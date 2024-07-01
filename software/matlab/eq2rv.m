@@ -51,9 +51,9 @@
     constmath;
     constastro;
 
-    arglat  = 0.0;
-    lonper  = 0.0;
-    truelon = 0.0;
+    arglat  = 999999.1;
+    lonper  = 999999.1;
+    truelon = 999999.1;
 
     coe = true;  % pick coe or vector approaches
 
@@ -148,7 +148,11 @@
         
         n  = sqrt(mu/(a*a*a));
         
-        b = 1.0 / (1.0 + sqrt(1.0 - af^2 - ag^2));
+        temp = (af^2 + ag^2);
+        if abs(temp) > 1.0
+            temp = 1.0;
+        end
+        b = 1.0 / (1.0 + sqrt(1.0 - temp));
         
         sinL = ((1.0 - af^2*b)*sin(F) + ag*af*b*cos(F) - ag) / (1.0 - ag*sin(F) - af*cos(F));
         cosL = ((1.0 - ag^2*b)*cos(F) + ag*af*b*sin(F) - af) / (1.0 - ag*sin(F) - af*cos(F));
