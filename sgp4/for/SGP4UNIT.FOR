@@ -12,13 +12,12 @@
 *               fundamentals of astrodynamics and applications
 *                                    2022
 *                              by david vallado
-*
 *                         email dvallado@comspoc.com
 *
-*    current :
-*              28 Jun 24  david vallado
-*                           add Opsmode to formal parameters of sgp4init           
-*    changes :
+*  current :
+*               2 jul 24  david vallado
+*                           fix formal paramaters in sgp4init call to support direct call
+*  changes :
 *              26 Aug 08  david vallado
 *                           fix atime for faster operation in dspace
 *                           add operationmode for afspc (a) or improved (i)
@@ -1329,7 +1328,7 @@ c        INCLUDE 'debug5.for'
 *    vallado, crawford, hujsak, kelso  2006
 * ---------------------------------------------------------------------------- }
 
-      SUBROUTINE SGP4Init ( whichconst, Opsmode,
+      SUBROUTINE SGP4Init ( whichconst, 
      &                      Satn,   xBStar, xEcco,  Epoch, xArgpo,
      &                      xInclo, xMo,    xNo,    xnodeo, Error )
         IMPLICIT NONE
