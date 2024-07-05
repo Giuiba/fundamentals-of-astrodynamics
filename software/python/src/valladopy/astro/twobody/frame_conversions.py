@@ -133,7 +133,7 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
     """Convert from classical elements to position & velocity vectors.
 
     This function finds the position and velocity vectors in geocentric
-    equatorial (ijk) system given the classical orbit elements.
+    equatorial (ECI) system given the classical orbit elements.
 
     References:
         Vallado: 2007, p. 126, Algorithm 10
@@ -150,15 +150,15 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
         lonper (float, optional): Longitude of periapsis in radians
 
     Returns:
-        r (numpy.ndarray): ijk position vector in km
-        v (numpy.ndarray): ijk velocity vector in km/s
+        tuple: (r, v)
+            r (numpy.ndarray): ECI position vector in km
+            v (numpy.ndarray): ECI velocity vector in km/s
     """
     # Handle special cases for orbit type
     if ecc < SMALL:
         if is_equatorial(incl):
             # Circular equatorial
-            argp = 0.0
-            raan = 0.0
+            argp, raan = 0.0, 0.0
             nu = truelon
         else:
             # Circular inclined
@@ -198,18 +198,20 @@ def rv2coe(r, v):
         Vallado: 2007, p. 121, Algorithm 9
 
     Returns:
-        p (float): Semilatus rectum in km
-        a (float): Semimajor axis in km
-        ecc (float): Eccentricity
-        incl (float): Inclination in radians
-        raan (float): Right ascension of the ascending node in radians
-        argp (float): Argument of perigee in radians
-        nu (float): True anomaly in radians
-        m (float): Mean anomaly in radians
-        arglat (float): Argument of latitude in radians
-        truelon (float): True longitude in radians
-        lonper (float): Longitude of periapsis in radians
-        orbit_type (enum): Type of orbit as defined in the OrbitType enum
+        tuple: (p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper,
+                orbit_type)
+            p (float): Semilatus rectum in km
+            a (float): Semimajor axis in km
+            ecc (float): Eccentricity
+            incl (float): Inclination in radians
+            raan (float): Right ascension of the ascending node in radians
+            argp (float): Argument of perigee in radians
+            nu (float): True anomaly in radians
+            m (float): Mean anomaly in radians
+            arglat (float): Argument of latitude in radians
+            truelon (float): True longitude in radians
+            lonper (float): Longitude of periapsis in radians
+            orbit_type (enum): Type of orbit as defined in the OrbitType enum
     """
     def adjust_angle(ang):
         """Adjust angle by subtracting it from 2pi"""
@@ -333,8 +335,9 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
         fr (int): Retrograde factor (+1 for prograde, -1 for retrograde)
 
     Returns:
-        np.array: Position vector in km
-        np.array: Velocity vector in km/s
+        tuple:
+            np.array: Position vector in km
+            np.array: Velocity vector in km/s
 
     TODO:
         - Add vector option for conversion
@@ -399,7 +402,7 @@ def rv2eq(r, v):
         v (array-like): ECI velocity vector in km/s
 
     Returns:
-        tuple: A tuple containing:
+        tuple: (a, n, af, ag, chi, psi, meanlon, truelon, fr)
             a (float): Semi-major axis in km
             n (float): Mean motion in rad/s
             af (float): Component of eccentricity vector
@@ -484,7 +487,7 @@ def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
         vseci (np.array): ECI site velocity vector in km/s
 
     Returns:
-        tuple: A tuple containing:
+        tuple: (reci, veci)
             reci (np.array): ECI position vector in km
             veci (np.array): ECI velocity vector in km/s
     """
@@ -496,6 +499,7 @@ def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
         rho * np.sin(tdecl)
     ])
 
+    # Slant range rate vectors
     drhov = np.array([
         drho * np.cos(tdecl) * np.cos(trtasc) - rho * np.sin(tdecl) * np.cos(
             trtasc) * tddecl - rho * np.cos(tdecl) * np.sin(trtasc) * tdrtasc,
@@ -525,7 +529,7 @@ def rv2tradec(reci, veci, rseci, vseci):
         vseci (array-like)): ECI site velocity vector in km/s
 
     Returns:
-        tuple: A tuple containing:
+        tuple: (rho, trtasc, tdecl, drho, dtrtasc, dtdecl)
             rho (float): Satellite range from site in km
             trtasc (float): Topocentric right ascension in radians
             tdecl (float): Topocentric declination in radians
@@ -600,7 +604,7 @@ def flt2rv(rmag, vmag, latgc, lon, fpa, az, ttt, jdut1, lod, xp, yp, ddpsi,
         eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
-        tuple: A tuple containing:
+        tuple: (reci, veci)
             reci (np.ndarray): ECI position vector in km
             veci (np.ndarray): ECI velocity vector in km/s
     """
@@ -667,7 +671,7 @@ def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms):
         eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
-        tuple: A tuple containing:
+        tuple: (lon, latgc, rtasc, decl, fpa, az, rmag, vmag)
             lon (float): Longitude in radians
             latgc (float): Geocentric latitude in radians
             rtasc (float): Right ascension angle in radians
@@ -731,15 +735,15 @@ def ell2rv(rr, ecllon, ecllat, drr, decllon, decllat):
         Vallado: 2004, XX
 
     Args:
-        rr (float): Position vector magnitude in km
+        rr (float): Radius of the satellite in km
         ecllon (float): Ecliptic longitude in radians
         ecllat (float): Ecliptic latitude in radians
-        drr (float): Radial velocity in km/s
+        drr (float): Radius of the satellite rate in km/s
         decllon (float): Ecliptic longitude rate of change in rad/s
         decllat (float): Ecliptic latitude rate of change in rad/s
 
     Returns:
-        tuple:
+        tuple: (reci, veci)
             reci (np.ndarray): ECI position vector in km
             veci (np.ndarray): ECI velocity vector in km/s
     """
@@ -780,15 +784,15 @@ def rv2ell(reci, veci):
         Vallado: 2004, XX
 
     Args:
-        reci (np.array): ECI position vector in km
-        veci (np.array): ECI velocity vector in km/s
+        reci (array-like): ECI position vector in km
+        veci (array-like): ECI velocity vector in km/s
 
     Returns:
-        tuple:
-            rr (float): Position vector magnitude in km
+        tuple: (rr, ecllon, ecllat, drr, decllon, decllat)
+            rr (float): Radius of the satellite in km
             ecllon (float): Ecliptic longitude in radians
             ecllat (float): Ecliptic latitude in radians
-            drr (float): Radial velocity in km/s
+            drr (float): Radius of the satellite rate in km/s
             decllon (float): Ecliptic longitude rate of change in rad/s
             decllat (float): Ecliptic latitude rate of change in rad/s
     """
@@ -817,3 +821,48 @@ def rv2ell(reci, veci):
     decllat = (v[2] - drr * np.sin(ecllat)) / temp if abs(temp) > SMALL else 0
 
     return rr, ecllon, ecllat, drr, decllon, decllat
+
+
+###############################################################################
+# Celestial Elements
+###############################################################################
+
+def rv2radec(r, v):
+    """Transforms position and velocity vectors to celestial (right
+    ascension and declination) elements.
+
+    Args:
+        r (array-like): Position vector in km
+        v (array-like): Velocity vector in km/s
+
+    Returns:
+        tuple: (rr, rtasc, decl, drr, drtasc, ddecl)
+            rr (float): Radius of the satellite in km
+            rtasc (float): Right ascension in radians
+            decl (float): Declination in radians
+            drr (float): Radius of the satellite rate in km/s
+            drtasc (float): Right ascension rate in rad/s
+            ddecl (float): Declination rate in rad/s
+    """
+    # Calculate the magnitude of the position vector
+    rr = np.linalg.norm(r)
+    temp = np.sqrt(r[0] ** 2 + r[1] ** 2)
+
+    # Calculate right ascension
+    rtasc = np.arctan2(v[1], v[0]) if temp < SMALL else np.arctan2(r[1], r[0])
+    rtasc += TWOPI if rtasc < 0.0 else rtasc
+
+    # Calculate declination
+    decl = np.arcsin(r[2] / rr)
+
+    # Calculate radius rate
+    drr = np.dot(r, v) / rr
+    temp1 = -r[1] * r[1] - r[0] * r[0]
+
+    # Calculate right ascension rate
+    drtasc = (v[0] * r[1] - v[1] * r[0]) / temp1 if abs(temp1) > SMALL else 0
+
+    # Calculate declination rate
+    ddecl = (v[2] - drr * np.sin(decl)) / temp if abs(temp) > SMALL else 0
+
+    return rr, rtasc, decl, drr, drtasc, ddecl

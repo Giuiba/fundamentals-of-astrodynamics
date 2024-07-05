@@ -4,9 +4,18 @@ import pytest
 import src.valladopy.astro.twobody.frame_conversions as fc
 from src.valladopy.astro.twobody.kepler import OrbitType
 from src.valladopy.constants import ARCSEC2RAD
+from ...conftest import custom_isclose
 
 
 DEFAULT_TOL = 1e-12
+
+
+# ECI position/velocity vectors for a number of tests
+@pytest.fixture
+def rv():
+    reci = [1525.9870698051157, -5867.209915411114, 3499.601587508083]
+    veci = [1.4830443958075603, -7.093267951700349, 0.9565730381487033]
+    return np.array(reci), np.array(veci)
 
 
 class TestSpherical:
@@ -212,12 +221,6 @@ class TestTopocentric:
 
 class TestFlight:
     @pytest.fixture
-    def rv(self):
-        reci = [1525.9870698051157, -5867.209915411114, 3499.601587508083]
-        veci = [1.4830443958075603, -7.093267951700349, 0.9565730381487033]
-        return np.array(reci), np.array(veci)
-
-    @pytest.fixture
     def rvmag(self):
         rmag = 7000   # position magnitude, km
         vmag = 7.546  # velocity magnitude, km
@@ -279,12 +282,6 @@ class TestFlight:
 
 class TestEcliptic:
     @pytest.fixture
-    def rv(self):
-        reci = [1525.9870698051157, -5867.209915411114, 3499.601587508083]
-        veci = [1.4830443958075603, -7.093267951700349, 0.9565730381487033]
-        return np.array(reci), np.array(veci)
-
-    @pytest.fixture
     def ell(self):
         rr = 7000
         ecllon = -1.2055911326998556
@@ -317,5 +314,32 @@ class TestEcliptic:
         assert np.isclose(ecllon, ecllon_exp, rtol=DEFAULT_TOL)
         assert np.isclose(ecllat, ecllat_exp, rtol=DEFAULT_TOL)
         assert np.isclose(drr, drr_exp, rtol=DEFAULT_TOL)
-        assert np.isclose(decllon, decllon_exp, rtol=DEFAULT_TOL)
-        assert np.isclose(decllat, decllat_exp, rtol=DEFAULT_TOL)
+        assert custom_isclose(decllon, decllon_exp)
+        assert custom_isclose(decllat, decllat_exp)
+
+
+class TestCelestial:
+    @pytest.fixture
+    def radec(self):
+        rr = 7000
+        rtasc = 4.9668388547958
+        decl = 0.5235330558280773
+        drr = 6.746917593386583
+        drtasc = -5.776166833354767e-05
+        ddecl = -0.0003986042868175495
+        return rr, rtasc, decl, drr, drtasc, ddecl
+
+    def test_rv2radec(self, rv, radec):
+        # Expected outputs
+        rr_exp, rtasc_exp, decl_exp, drr_exp, drtasc_exp, ddecl_exp = radec
+
+        # Call function with test inputs
+        rr, rtasc, decl, drr, drtasc, ddecl = fc.rv2radec(*rv)
+
+        # Check if output values are close
+        assert np.isclose(rr, rr_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(rtasc, rtasc_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(decl, decl_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(drr, drr_exp, rtol=DEFAULT_TOL)
+        assert custom_isclose(drtasc, drtasc_exp)
+        assert custom_isclose(ddecl, ddecl_exp)
