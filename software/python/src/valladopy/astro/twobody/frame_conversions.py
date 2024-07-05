@@ -723,6 +723,55 @@ def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms):
 # Ecliptic Elements
 ###############################################################################
 
+def ell2rv(rr, ecllon, ecllat, drr, decllon, decllat):
+    """Transforms ecliptic latitude and longitude to position and velocity
+    vectors.
+
+    References:
+        Vallado: 2004, XX
+
+    Args:
+        rr (float): Position vector magnitude in km
+        ecllon (float): Ecliptic longitude in radians
+        ecllat (float): Ecliptic latitude in radians
+        drr (float): Radial velocity in km/s
+        decllon (float): Ecliptic longitude rate of change in rad/s
+        decllat (float): Ecliptic latitude rate of change in rad/s
+
+    Returns:
+        tuple:
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+    """
+
+    # Calculate position vector in ecliptic coordinates
+    r = np.array([
+        rr * np.cos(ecllat) * np.cos(ecllon),
+        rr * np.cos(ecllat) * np.sin(ecllon),
+        rr * np.sin(ecllat)
+    ])
+
+    # Calculate velocity vector in ecliptic coordinates
+    v = np.array([
+        # X component
+        drr * np.cos(ecllat) * np.cos(ecllon)
+        - rr * np.sin(ecllat) * np.cos(ecllon) * decllat
+        - rr * np.cos(ecllat) * np.sin(ecllon) * decllon,
+        # Y component
+        drr * np.cos(ecllat) * np.sin(ecllon)
+        - rr * np.sin(ecllat) * np.sin(ecllon) * decllat
+        + rr * np.cos(ecllat) * np.cos(ecllon) * decllon,
+        # Z component
+        drr * np.sin(ecllat) + rr * np.cos(ecllat) * decllat
+    ])
+
+    # Rotate position and velocity vectors to the ECI frame
+    reci = rot1(r, -OBLIQUITYEARTH)
+    veci = rot1(v, -OBLIQUITYEARTH)
+
+    return reci, veci
+
+
 def rv2ell(reci, veci):
     """Transforms position and velocity vectors to ecliptic latitude and
     longitude.
@@ -739,9 +788,9 @@ def rv2ell(reci, veci):
             rr (float): Position vector magnitude in km
             ecllon (float): Ecliptic longitude in radians
             ecllat (float): Ecliptic latitude in radians
-            drr (float): Velocity radial magnitude in km/s
-            decllon (float): Time rate of change of ecliptic longitude in rad/s
-            decllat (float): Time rate of change of ecliptic latitude in rad/s
+            drr (float): Radial velocity in km/s
+            decllon (float): Ecliptic longitude rate of change in rad/s
+            decllat (float): Ecliptic latitude rate of change in rad/s
     """
     # Perform rotation about the x-axis by the obliquity
     r = rot1(reci, OBLIQUITYEARTH)

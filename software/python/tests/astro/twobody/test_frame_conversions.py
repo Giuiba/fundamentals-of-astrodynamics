@@ -294,6 +294,17 @@ class TestEcliptic:
         decllat = -0.0003849993357129581
         return rr, ecllon, ecllat, drr, decllon, decllat
 
+    def test_ell2rv(self, rv, ell):
+        # Expected outputs
+        reci_exp, veci_exp = rv
+
+        # Call function with test inputs
+        reci, veci = fc.ell2rv(*ell)
+
+        # Check if output values are close
+        assert np.allclose(reci, reci_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(veci, veci_exp, rtol=DEFAULT_TOL)
+
     def test_rv2ell(self, rv, ell):
         # Expected outputs
         rr_exp, ecllon_exp, ecllat_exp, drr_exp, decllon_exp, decllat_exp = ell
