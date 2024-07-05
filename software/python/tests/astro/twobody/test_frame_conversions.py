@@ -329,6 +329,17 @@ class TestCelestial:
         ddecl = -0.0003986042868175495
         return rr, rtasc, decl, drr, drtasc, ddecl
 
+    def test_radec2rv(self, rv, radec):
+        # Expected outputs
+        reci_exp, veci_exp = rv
+
+        # Call function with test inputs
+        reci, veci = fc.radec2rv(*radec)
+
+        # Check if output values are close
+        assert np.allclose(reci, reci_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(veci, veci_exp, rtol=DEFAULT_TOL)
+
     def test_rv2radec(self, rv, radec):
         # Expected outputs
         rr_exp, rtasc_exp, decl_exp, drr_exp, drtasc_exp, ddecl_exp = radec

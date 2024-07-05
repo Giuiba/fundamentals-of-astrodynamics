@@ -827,9 +827,56 @@ def rv2ell(reci, veci):
 # Celestial Elements
 ###############################################################################
 
+def radec2rv(rr, rtasc, decl, drr, drtasc, ddecl):
+    """Transforms celestial (right ascension and declination) elements to
+    position and velocity vectors.
+
+    References:
+        Vallado: 2001, p. 246-248, Algorithm 25
+
+    Args:
+        rr (float): Radius of the satellite in km
+        rtasc (float): Right ascension in radians
+        decl (float): Declination in radians
+        drr (float): Radius of the satellite rate in km/s
+        drtasc (float): Right ascension rate in rad/s
+        ddecl (float): Declination rate in rad/s
+
+    Returns:
+        tuple: (r, v)
+            r (np.ndarray): ECI position vector in km
+            v (np.ndarray): ECI velocity vector in km/s
+    """
+    # Position vector
+    r = np.array([
+        rr * np.cos(decl) * np.cos(rtasc),
+        rr * np.cos(decl) * np.sin(rtasc),
+        rr * np.sin(decl)
+    ])
+
+    # Velocity vector
+    v = np.array([
+        # X component
+        drr * np.cos(decl) * np.cos(rtasc)
+        - rr * np.sin(decl) * np.cos(rtasc) * ddecl
+        - rr * np.cos(decl) * np.sin(rtasc) * drtasc,
+        # Y component
+        drr * np.cos(decl) * np.sin(rtasc)
+        - rr * np.sin(decl) * np.sin(rtasc) * ddecl
+        + rr * np.cos(decl) * np.cos(rtasc) * drtasc,
+        # Z component
+        drr * np.sin(decl) + rr * np.cos(decl) * ddecl
+    ])
+
+    return r, v
+
+
 def rv2radec(r, v):
     """Transforms position and velocity vectors to celestial (right
     ascension and declination) elements.
+
+    References:
+        Vallado: 2001, p. 246-248, Algorithm 25
 
     Args:
         r (array-like): Position vector in km
