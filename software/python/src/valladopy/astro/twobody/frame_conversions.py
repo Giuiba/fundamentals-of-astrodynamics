@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from ...constants import SMALL, MU, TWOPI
+from ...constants import SMALL, MU, TWOPI, OBLIQUITYEARTH
 from ...mathtime.vector import rot1, rot3, angle
 from ..time.frame_conversions import ecef2eci, eci2ecef
 from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
@@ -649,7 +649,7 @@ def flt2rv(rmag, vmag, latgc, lon, fpa, az, ttt, jdut1, lod, xp, yp, ddpsi,
 
 
 def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms):
-    """Transforms a position and velocity vector into the flight elements.
+    """Transforms a position and velocity vector to flight elements.
 
     References:
         Vallado: 2001, XX
@@ -717,3 +717,54 @@ def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms):
     )
 
     return lon, latgc, rtasc, decl, fpa, az, rmag, vmag
+
+
+###############################################################################
+# Ecliptic Elements
+###############################################################################
+
+def rv2ell(reci, veci):
+    """Transforms position and velocity vectors to ecliptic latitude and
+    longitude.
+
+    References:
+        Vallado: 2004, XX
+
+    Args:
+        reci (np.array): ECI position vector in km
+        veci (np.array): ECI velocity vector in km/s
+
+    Returns:
+        tuple:
+            rr (float): Position vector magnitude in km
+            ecllon (float): Ecliptic longitude in radians
+            ecllat (float): Ecliptic latitude in radians
+            drr (float): Velocity radial magnitude in km/s
+            decllon (float): Time rate of change of ecliptic longitude in rad/s
+            decllat (float): Time rate of change of ecliptic latitude in rad/s
+    """
+    # Perform rotation about the x-axis by the obliquity
+    r = rot1(reci, OBLIQUITYEARTH)
+    v = rot1(veci, OBLIQUITYEARTH)
+
+    # Calculate magnitudes
+    rr = np.linalg.norm(r)
+    temp = np.sqrt(r[0]**2 + r[1]**2)
+
+    # Calculate ecliptic longitude
+    if temp < SMALL:
+        temp1 = np.sqrt(v[0]**2 + v[1]**2)
+        ecllon = np.arctan2(v[1], v[0]) if abs(temp1) > SMALL else 0
+    else:
+        ecllon = np.arctan2(r[1], r[0])
+
+    # Calculate ecliptic latitude
+    ecllat = np.arcsin(r[2] / rr)
+
+    # Calculate rates
+    temp1 = -r[1]**2 - r[0]**2  # Different now
+    drr = np.dot(r, v) / rr
+    decllon = (v[0] * r[1] - v[1] * r[0]) / temp1 if abs(temp1) > SMALL else 0
+    decllat = (v[2] - drr * np.sin(ecllat)) / temp if abs(temp) > SMALL else 0
+
+    return rr, ecllon, ecllat, drr, decllon, decllat

@@ -275,3 +275,36 @@ class TestFlight:
         assert np.isclose(az, -3.016745055466374, rtol=DEFAULT_TOL)
         assert np.isclose(rmag, rmag_exp, rtol=DEFAULT_TOL)
         assert np.isclose(vmag, 7.309507705165137, rtol=DEFAULT_TOL)
+
+
+class TestEcliptic:
+    @pytest.fixture
+    def rv(self):
+        reci = [1525.9870698051157, -5867.209915411114, 3499.601587508083]
+        veci = [1.4830443958075603, -7.093267951700349, 0.9565730381487033]
+        return np.array(reci), np.array(veci)
+
+    @pytest.fixture
+    def ell(self):
+        rr = 7000
+        ecllon = -1.2055911326998556
+        ecllat = 0.9142332870570866
+        drr = 6.746917593386582
+        decllon = -0.00018796226538078577
+        decllat = -0.0003849993357129581
+        return rr, ecllon, ecllat, drr, decllon, decllat
+
+    def test_rv2ell(self, rv, ell):
+        # Expected outputs
+        rr_exp, ecllon_exp, ecllat_exp, drr_exp, decllon_exp, decllat_exp = ell
+
+        # Call function with test inputs
+        rr, ecllon, ecllat, drr, decllon, decllat = fc.rv2ell(*rv)
+
+        # Check if output values are close
+        assert np.isclose(rr, rr_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(ecllon, ecllon_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(ecllat, ecllat_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(drr, drr_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(decllon, decllon_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(decllat, decllat_exp, rtol=DEFAULT_TOL)

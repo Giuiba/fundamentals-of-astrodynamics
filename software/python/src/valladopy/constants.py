@@ -96,3 +96,6 @@ MASSMOON = 7.3483e22
 # Standard gravitational parameters in km^3/s^2
 MUSUN = 1.32712428e11
 MUMOON = 4902.799
+
+# Obliquities
+OBLIQUITYEARTH = 0.4090928  # 23.439291 degrees in radians
