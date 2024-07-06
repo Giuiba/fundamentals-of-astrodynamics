@@ -963,6 +963,59 @@ def raz2rvs(rho, az, el, drho, daz, del_el):
     return rhosez, drhosez
 
 
+def razel2rv(rho, az, el, drho, daz, del_el, latgd, lon, alt, ttt, jdut1, lod,
+             xp, yp, ddpsi, ddeps, eqeterms):
+    """Transforms range, azimuth, elevation, and their rates to the geocentric
+    equatorial (ECI) position and velocity vectors.
+
+    References:
+        Vallado: 2001, p. 250-255, Algorithm 27
+
+    Args:
+        rho (float): Satellite range from site [km]
+        az (float): Azimuth [rad]
+        el (float): Elevation [rad]
+        drho (float): Range rate [km/s]
+        daz (float): Azimuth rate [rad/s]
+        del_el (float): Elevation rate [rad/s]
+        latgd (float): Geodetic latitude of site in radians
+        lon (float): Longitude of site in radians
+        alt (float): Altitude of site in km
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (reci, veci)
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+    """
+    # Find SEZ range and velocity vectors
+    rhosez, drhosez = raz2rvs(rho, az, el, drho, daz, del_el)
+
+    # Perform SEZ to ECEF transformation
+    rhoecef = rot3(rot2(rhosez, latgd - HALFPI), -lon).T
+    drhoecef = rot3(rot2(drhosez, latgd - HALFPI), -lon).T
+
+    # Find ECEF range and velocity vectors
+    rs, vs = site(latgd, lon, alt)
+    recef = rhoecef + rs
+    vecef = drhoecef
+
+    # Convert ECEF to ECI
+    a = np.array([0, 0, 0])
+    reci, veci, aeci = ecef2eci(
+        recef, vecef, a, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+    )
+
+    return reci, veci
+
+
 def rv2razel(reci, veci, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi,
              ddeps, eqeterms=True):
     """Transforms ECI position and velocity vectors to range, azimuth,

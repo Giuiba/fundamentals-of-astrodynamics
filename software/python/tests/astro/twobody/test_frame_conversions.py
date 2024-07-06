@@ -388,6 +388,17 @@ class TestAzEl:
         assert np.allclose(rhosez_out, rhosez, rtol=DEFAULT_TOL)
         assert np.allclose(drhosez_out, drhosez, rtol=DEFAULT_TOL)
 
+    def test_razel2rv(self, rv, ecef_inputs, lla, azel):
+        # Expected outputs
+        reci_exp, veci_exp = rv
+
+        # Call function with test inputs
+        reci, veci = fc.razel2rv(*azel, *lla, *ecef_inputs)
+
+        # Check if output values are close
+        assert np.allclose(reci, reci_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(veci, veci_exp, rtol=DEFAULT_TOL)
+
     def test_rv2razel(self, rv, ecef_inputs, lla, azel):
         # Expected outputs
         rho_exp, az_exp, el_exp, drho_exp, daz_exp, del_el_exp = azel
