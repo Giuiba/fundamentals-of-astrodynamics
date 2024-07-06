@@ -18,6 +18,20 @@ def rv():
     return np.array(reci), np.array(veci)
 
 
+# Input parameters related to ECEF conversions
+@pytest.fixture
+def ecef_inputs():
+    ttt = 0.042623631888994
+    jdut1 = 2.4531015e+06
+    lod = 0.0015563
+    xp = -0.140682 * ARCSEC2RAD
+    yp = 0.333309 * ARCSEC2RAD
+    ddpsi = -0.052195 * ARCSEC2RAD
+    ddeps = -0.003875 * ARCSEC2RAD
+    eqeterms = True
+    return ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+
+
 class TestSpherical:
     @pytest.fixture
     def rv(self):
@@ -234,38 +248,25 @@ class TestFlight:
         az = np.pi / 4     # 45 degrees
         return latgc, lon, fpa, az
 
-    @pytest.fixture
-    def other_inputs(self):
-        # Other input parameters
-        ttt = 0.042623631888994
-        jdut1 = 2.453101500000000e+06
-        lod = 0.0015563
-        xp = -0.140682 * ARCSEC2RAD
-        yp = 0.333309 * ARCSEC2RAD
-        ddpsi = -0.052195 * ARCSEC2RAD
-        ddeps = -0.003875 * ARCSEC2RAD
-        eqeterms = True
-        return ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
-
-    def test_flt2rv(self, rv, rvmag, flight, other_inputs):
+    def test_flt2rv(self, rv, rvmag, flight, ecef_inputs):
         # Expected outputs
         reci_exp, veci_exp = rv
 
         # Call the function with test inputs
-        reci, veci = fc.flt2rv(*rvmag, *flight, *other_inputs)
+        reci, veci = fc.flt2rv(*rvmag, *flight, *ecef_inputs)
 
         # Check if the output is close to the expected values
         assert np.allclose(reci, reci_exp, rtol=DEFAULT_TOL)
         assert np.allclose(veci, veci_exp, rtol=DEFAULT_TOL)
 
-    def test_rv2flt(self, rv, rvmag, flight, other_inputs):
+    def test_rv2flt(self, rv, rvmag, flight, ecef_inputs):
         # Expected outputs
         rmag_exp, _ = rvmag                # vmag will not match original
         latgc_exp, lon_exp, _, _ = flight  # fpa and az will not match original
 
         # Call the function with test inputs
         lon, latgc, rtasc, decl, fpa, az, rmag, vmag = fc.rv2flt(
-            *rv, *other_inputs
+            *rv, *ecef_inputs
         )
 
         # Check if the output is close to the expected values
@@ -354,3 +355,38 @@ class TestCelestial:
         assert np.isclose(drr, drr_exp, rtol=DEFAULT_TOL)
         assert custom_isclose(drtasc, drtasc_exp)
         assert custom_isclose(ddecl, ddecl_exp)
+
+
+class TestAzEl:
+    @pytest.fixture
+    def lla(self):
+        # Site geodetic coordinates
+        latgd = np.radians(39.007)
+        lon = np.radians(-104.883)
+        alt = 2.102
+        return latgd, lon, alt
+
+    @pytest.fixture
+    def azel(self):
+        rho = 10945.866573777928
+        az = -0.23764149046447058
+        el = -0.9219582731125407
+        drho = 7.23041762873178
+        daz = 2.6879275635246247e-05
+        del_el = 0.00011636209431787936
+        return rho, az, el, drho, daz, del_el
+
+    def test_rv2razel(self, rv, ecef_inputs, lla, azel):
+        # Expected outputs
+        rho_exp, az_exp, el_exp, drho_exp, daz_exp, del_el_exp = azel
+
+        # Call function with test inputs
+        rho, az, el, drho, daz, del_el = fc.rv2razel(*rv, *lla, *ecef_inputs)
+
+        # Check if output values are close
+        assert np.isclose(rho, rho_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(az, az_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(el, el_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(drho, drho_exp, rtol=DEFAULT_TOL)
+        assert custom_isclose(daz, daz_exp)
+        assert custom_isclose(del_el, del_el_exp)

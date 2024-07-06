@@ -8,10 +8,11 @@
 
 import numpy as np
 
-from ...constants import SMALL, MU, TWOPI, OBLIQUITYEARTH
-from ...mathtime.vector import rot1, rot3, angle
+from ...constants import SMALL, MU, HALFPI, TWOPI, OBLIQUITYEARTH
+from ...mathtime.vector import rot1, rot2, rot3, angle
 from ..time.frame_conversions import ecef2eci, eci2ecef
 from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
+from .utils import site
 
 
 ###############################################################################
@@ -913,3 +914,92 @@ def rv2radec(r, v):
     ddecl = (v[2] - drr * np.sin(decl)) / temp if abs(temp) > SMALL else 0
 
     return rr, rtasc, decl, drr, drtasc, ddecl
+
+
+###############################################################################
+# Azimuth-Elevation Elements
+###############################################################################
+
+def rv2razel(reci, veci, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi,
+             ddeps, eqeterms=True):
+    """Transforms ECI position and velocity vectors to range, azimuth,
+    elevation, and their rates.
+
+    The value of `SMALL` can affect the rate term calculations. the solution
+    uses the velocity vector to find the singular cases. also, the elevation
+    and azimuth rate terms are not observable unless the acceleration vector is
+    available.
+
+    References:
+        Vallado: 2007, p. 268-269, Algorithm 27
+
+    Args:
+        reci (array): ECI position vector in km
+        veci (array): ECI velocity vector in km/s
+        latgd (float): Geodetic latitude of site in radians
+        lon (float): Longitude of site in radians
+        alt (float): Altitude of site in km
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (rho, az, el, drho, daz, del_el)
+            rho (float): Satellite range from site in km
+            az (float): Azimuth in radians (0 to 2pi)
+            el (float): Elevation in radians (-pi/2 to pi/2)
+            drho (float): Range rate in km/s
+            daz (float): Azimuth rate in rad/s
+            del_el (float): Elevation rate in rad/s
+    """
+    # Get site vector in ECEF
+    rsecef, vsecef = site(latgd, lon, alt)
+
+    # Convert ECI to ECEF
+    a = np.array([0, 0, 0])
+    recef, vecef, aecef = eci2ecef(
+        reci, veci, a, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+    )
+
+    # Find ECEF range vector from site to satellite
+    rhoecef = recef - rsecef
+    drhoecef = vecef
+    rho = np.linalg.norm(rhoecef)
+
+    # Convert to SEZ for calculations
+    tempvec = rot3(rhoecef, lon)
+    rhosez = rot2(tempvec, HALFPI - latgd)
+
+    tempvec = rot3(drhoecef, lon)
+    drhosez = rot2(tempvec, HALFPI - latgd)
+
+    # Calculate azimuth and elevation
+    temp = np.sqrt(rhosez[0]**2 + rhosez[1]**2)
+    if temp < SMALL:
+        el = np.sign(rhosez[2]) * HALFPI
+    else:
+        magrhosez = np.linalg.norm(rhosez)
+        el = np.arcsin(rhosez[2] / magrhosez)
+
+    if temp < SMALL:
+        az = np.arctan2(drhosez[1], -drhosez[0])
+    else:
+        az = np.arctan2(rhosez[1] / temp, -rhosez[0] / temp)
+
+    # Calculate range, azimuth, and elevation rates
+    drho = np.dot(rhosez, drhosez) / rho
+    if abs(temp * temp) > SMALL:
+        daz = (drhosez[0] * rhosez[1] - drhosez[1] * rhosez[0]) / (temp * temp)
+    else:
+        daz = 0.0
+
+    del_el = (
+        (drhosez[2] - drho * np.sin(el)) / temp if abs(temp) > SMALL else 0.0
+    )
+
+    return rho, az, el, drho, daz, del_el
