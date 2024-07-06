@@ -920,6 +920,49 @@ def rv2radec(r, v):
 # Azimuth-Elevation Elements
 ###############################################################################
 
+
+def raz2rvs(rho, az, el, drho, daz, del_el):
+    """Converts range, azimuth, and elevation values with slant range and
+    velocity vectors  for a satellite from a radar site in the topocentric
+    horizon (SEZ) system.
+
+    References:
+        Vallado: 2001, p. 250-251, Eqs. 4-4 and 4-5
+
+    Args:
+        rho (float): Satellite range from site in km
+        az (float): Azimuth in radians (0 to 2pi)
+        el (float): Elevation in radians (-pi/2 to pi/2)
+        drho (float): Range rate in km/s
+        daz (float): Azimuth rate in rad/s
+        del_el (float): Elevation rate in rad/s
+
+    Returns:
+        tuple:
+            rhosez (np.ndarray): SEZ range vector in km
+            drhosez (np.ndarray): SEZ velocity vector in km/s
+    """
+    # Initialize values
+    sinel, cosel = np.sin(el), np.cos(el)
+    sinaz, cosaz = np.sin(az), np.cos(az)
+
+    # Form SEZ range vector
+    rhosez = np.array([
+        -rho * cosel * cosaz,
+        rho * cosel * sinaz,
+        rho * sinel
+    ])
+
+    # Form SEZ velocity vector
+    drhosez = np.array([
+        -drho * cosel * cosaz + rhosez[2] * del_el * cosaz + rhosez[1] * daz,
+        drho * cosel * sinaz - rhosez[2] * del_el * sinaz - rhosez[0] * daz,
+        drho * sinel + rho * del_el * cosel
+    ])
+
+    return rhosez, drhosez
+
+
 def rv2razel(reci, veci, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi,
              ddeps, eqeterms=True):
     """Transforms ECI position and velocity vectors to range, azimuth,
@@ -993,11 +1036,10 @@ def rv2razel(reci, veci, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi,
 
     # Calculate range, azimuth, and elevation rates
     drho = np.dot(rhosez, drhosez) / rho
-    if abs(temp * temp) > SMALL:
-        daz = (drhosez[0] * rhosez[1] - drhosez[1] * rhosez[0]) / (temp * temp)
-    else:
-        daz = 0.0
-
+    daz = (
+        (drhosez[0] * rhosez[1] - drhosez[1] * rhosez[0]) / (temp * temp)
+        if temp > SMALL else 0.0
+    )
     del_el = (
         (drhosez[2] - drho * np.sin(el)) / temp if abs(temp) > SMALL else 0.0
     )
