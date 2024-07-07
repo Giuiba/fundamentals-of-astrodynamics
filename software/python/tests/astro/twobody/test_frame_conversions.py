@@ -376,17 +376,37 @@ class TestAzEl:
         del_el = 0.00011636209431787936
         return rho, az, el, drho, daz, del_el
 
-    def test_raz2rvs(self, azel):
-        # Expected outputs
+    @pytest.fixture
+    def rvsez(self):
         rhosez = [-6428.275139591688, -1557.046442989286, -8721.518225345335]
         drhosez = [-5.27445566709053, -1.0946453788629804, -4.991461300527905]
+        return np.array(rhosez), np.array(drhosez)
+
+    def test_raz2rvs(self, azel, rvsez):
+        # Expected outputs
+        rhosez_exp, drhosez_exp = rvsez
 
         # Call function with test inputs
-        rhosez_out, drhosez_out = fc.raz2rvs(*azel)
+        rhosez, drhosez = fc.raz2rvs(*azel)
 
         # Check if output values are close
-        assert np.allclose(rhosez_out, rhosez, rtol=DEFAULT_TOL)
-        assert np.allclose(drhosez_out, drhosez, rtol=DEFAULT_TOL)
+        assert np.allclose(rhosez, rhosez_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(drhosez, drhosez_exp, rtol=DEFAULT_TOL)
+
+    def test_rvs2raz(self, azel, rvsez):
+        # Expected outputs
+        rho_exp, az_exp, el_exp, drho_exp, daz_exp, del_el_exp = azel
+
+        # Call function with test inputs
+        rho, az, el, drho, daz, del_el = fc.rvs2raz(*rvsez)
+
+        # Check if output values are close
+        assert np.isclose(rho, rho_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(az, az_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(el, el_exp, rtol=DEFAULT_TOL)
+        assert np.isclose(drho, drho_exp, rtol=DEFAULT_TOL)
+        assert custom_isclose(daz, daz_exp)
+        assert custom_isclose(del_el, del_el_exp)
 
     def test_razel2rv(self, rv, ecef_inputs, lla, azel):
         # Expected outputs

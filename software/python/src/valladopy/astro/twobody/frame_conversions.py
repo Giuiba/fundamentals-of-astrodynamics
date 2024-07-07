@@ -963,6 +963,62 @@ def raz2rvs(rho, az, el, drho, daz, del_el):
     return rhosez, drhosez
 
 
+def rvs2raz(rhosez, drhosez):
+    """Transforms SEZ range and velocity vectors to range, azimuth, and
+    elevation values and their rates.
+
+    References:
+        Vallado: 2001, p. 250-251, Eqs. 4-4 and 4-5
+
+    Args:
+        rhosez (array-like): SEZ range vector in km
+        drhosez (array-like): SEZ velocity vector in km/s
+
+    Returns:
+        tuple:
+            rho (float): Satellite range from site in km
+            az (float): Azimuth in radians (0 to 2pi)
+            el (float): Elevation in radians (-pi/2 to pi/2)
+            drho (float): Range rate in km/s
+            daz (float): Azimuth rate in rad/s
+            del_el (float): Elevation rate in rad/s
+    """
+    # Calculate azimuth
+    temp = np.sqrt(rhosez[0] ** 2 + rhosez[1] ** 2)
+    if abs(rhosez[1]) < SMALL:
+        if temp < SMALL:
+            az = np.arctan2(drhosez[1], -drhosez[0])
+        else:
+            az = np.pi if rhosez[0] > 0.0 else 0.0
+    else:
+        az = np.arctan2(rhosez[1], -rhosez[0])
+
+    # Calculate elevation
+    el = (
+        np.sign(rhosez[2]) * SMALL if temp < SMALL
+        else np.arcsin(rhosez[2] / np.linalg.norm(rhosez))
+    )
+
+    # Calculate range
+    rho = np.linalg.norm(rhosez)
+
+    # Range rate
+    drho = np.dot(rhosez, drhosez) / rho
+
+    # Azimuth rate
+    daz = (
+        (drhosez[0] * rhosez[1] - drhosez[1] * rhosez[0]) / (temp ** 2)
+        if abs(temp ** 2) > SMALL else 0.0
+    )
+
+    # Elevation rate
+    del_el = (
+        (drhosez[2] - drho * np.sin(el)) / temp if abs(temp) > SMALL else 0.0
+    )
+
+    return rho, az, el, drho, daz, del_el
+
+
 def razel2rv(rho, az, el, drho, daz, del_el, latgd, lon, alt, ttt, jdut1, lod,
              xp, yp, ddpsi, ddeps, eqeterms):
     """Transforms range, azimuth, elevation, and their rates to the geocentric
