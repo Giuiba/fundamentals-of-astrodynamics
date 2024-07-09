@@ -9,7 +9,7 @@
 import numpy as np
 
 from ...constants import SMALL, MU, HALFPI, TWOPI, OBLIQUITYEARTH
-from ...mathtime.vector import rot1, rot2, rot3, angle
+from ...mathtime.vector import rot1, rot2, rot3, angle, unit
 from ..time.frame_conversions import ecef2eci, eci2ecef
 from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
 from .utils import site
@@ -192,8 +192,8 @@ def rv2coe(r, v):
     """Converts position and velocity vectors into classical orbital elements.
 
     Args:
-        r (array-like): Position vector in km
-        v (array-like): Velocity vector in km/s
+        r (array_like): Position vector in km
+        v (array_like): Velocity vector in km/s
 
     References:
         Vallado: 2007, p. 121, Algorithm 9
@@ -399,8 +399,8 @@ def rv2eq(r, v):
         Chobotov:       30
 
     Args:
-        r (array-like): ECI position vector in km
-        v (array-like): ECI velocity vector in km/s
+        r (array_like): ECI position vector in km
+        v (array_like): ECI velocity vector in km/s
 
     Returns:
         tuple: (a, n, af, ag, chi, psi, meanlon, truelon, fr)
@@ -484,7 +484,7 @@ def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
         drho (float): Range rate in km/s
         tdrtasc (float): Topocentric right ascension rate in rad/s
         tddecl (float): Topocentric declination rate in rad/s
-        rseci (array-like): ECI site position vector in km
+        rseci (array_like): ECI site position vector in km
         vseci (np.array): ECI site velocity vector in km/s
 
     Returns:
@@ -524,10 +524,10 @@ def rv2tradec(reci, veci, rseci, vseci):
         Vallado: 2022, p. 257, Algorithm 26
 
     Args:
-        reci (array-like): ECI position vector in km
-        veci (array-like)): ECI velocity vector in km/s
-        rseci (array-like)): ECI site position vector in km
-        vseci (array-like)): ECI site velocity vector in km/s
+        reci (array_like): ECI position vector in km
+        veci (array_like)): ECI velocity vector in km/s
+        rseci (array_like)): ECI site position vector in km
+        vseci (array_like)): ECI site velocity vector in km/s
 
     Returns:
         tuple: (rho, trtasc, tdecl, drho, dtrtasc, dtdecl)
@@ -660,8 +660,8 @@ def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms):
         Vallado: 2001, XX
 
     Args:
-        reci (array-like): ECI position vector in km
-        veci (array-like): ECI velocity vector in km/s
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
         ttt (float): Julian centuries of TT
         jdut1 (float): Julian date of UT1
         lod (float): Excess length of day in seconds
@@ -785,8 +785,8 @@ def rv2ell(reci, veci):
         Vallado: 2004, XX
 
     Args:
-        reci (array-like): ECI position vector in km
-        veci (array-like): ECI velocity vector in km/s
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
 
     Returns:
         tuple: (rr, ecllon, ecllat, drr, decllon, decllat)
@@ -880,8 +880,8 @@ def rv2radec(r, v):
         Vallado: 2001, p. 246-248, Algorithm 25
 
     Args:
-        r (array-like): Position vector in km
-        v (array-like): Velocity vector in km/s
+        r (array_like): Position vector in km
+        v (array_like): Velocity vector in km/s
 
     Returns:
         tuple: (rr, rtasc, decl, drr, drtasc, ddecl)
@@ -919,7 +919,6 @@ def rv2radec(r, v):
 ###############################################################################
 # Azimuth-Elevation Elements
 ###############################################################################
-
 
 def raz2rvs(rho, az, el, drho, daz, del_el):
     """Converts range, azimuth, and elevation values with slant range and
@@ -971,8 +970,8 @@ def rvs2raz(rhosez, drhosez):
         Vallado: 2001, p. 250-251, Eqs. 4-4 and 4-5
 
     Args:
-        rhosez (array-like): SEZ range vector in km
-        drhosez (array-like): SEZ velocity vector in km/s
+        rhosez (array_like): SEZ range vector in km
+        drhosez (array_like): SEZ velocity vector in km/s
 
     Returns:
         tuple:
@@ -1154,3 +1153,46 @@ def rv2razel(reci, veci, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi,
     )
 
     return rho, az, el, drho, daz, del_el
+
+
+###############################################################################
+# Satellite Coordinate Systems
+###############################################################################
+
+def rv2rsw(reci, veci):
+    """Transforms position and velocity vectors into radial, tangential
+    (in-track), and normal (cross-track) coordinates, i.e. RSW frame.
+
+    Note: There are numerous nomenclatures for these systems. This is the RSW
+    system of Vallado. Rhe reverse values are found using the transmat
+    transpose.
+
+    References:
+        Vallado: 2007, p. 172
+
+    Args:
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
+
+    Returns:
+        tuple: (rrsw, vrsw, transmat)
+            rrsw (np.ndarray): RSW position vector in km
+            vrsw (np.ndarray): RSW velocity vector in km/s
+            transmat (np.ndarray): Transformation matrix from ECI to RSW
+    """
+    # Radial component
+    rvec = unit(reci)
+
+    # Cross-track component
+    wvec = unit(np.cross(reci, veci))
+
+    # Along-track component
+    svec = unit(np.cross(wvec, rvec))
+
+    # Assemble transformation matrix from ECI to RSW frame
+    transmat = np.vstack([rvec, svec, wvec])
+
+    rrsw = np.dot(transmat, reci)
+    vrsw = np.dot(transmat, veci)
+
+    return rrsw, vrsw, transmat

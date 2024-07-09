@@ -110,3 +110,17 @@ def angle(v1, v2):
         return np.arccos(cos_angle)
     else:
         return np.nan
+
+
+def unit(v):
+    """Returns the unit vector of a given vector
+
+    Args:
+        v (array-like): The input vector
+
+    Returns:
+        numpy.ndarray: The unit vector of the input vector
+                       (v / ||v|| if ||v|| > 0, 0 otherwise)
+    """
+    mag = np.linalg.norm(v)
+    return v / mag if mag > SMALL else np.zeros_like(v)

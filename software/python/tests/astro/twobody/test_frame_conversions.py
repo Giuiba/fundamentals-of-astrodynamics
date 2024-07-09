@@ -4,7 +4,7 @@ import pytest
 import src.valladopy.astro.twobody.frame_conversions as fc
 from src.valladopy.astro.twobody.kepler import OrbitType
 from src.valladopy.constants import ARCSEC2RAD
-from ...conftest import custom_isclose
+from ...conftest import custom_isclose, custom_allclose
 
 
 DEFAULT_TOL = 1e-12
@@ -433,3 +433,29 @@ class TestAzEl:
         assert np.isclose(drho, drho_exp, rtol=DEFAULT_TOL)
         assert custom_isclose(daz, daz_exp)
         assert custom_isclose(del_el, del_el_exp)
+
+
+class TestSatCoord:
+    def test_rv2rsw(self, rv):
+        # Expected outputs
+        rrsw_exp = np.array(
+            [6999.999999999998, -4.547473508864641e-13, 2.2737367544323206e-13]
+        )
+        vrsw_exp = np.array(
+            [6.746917593386584, 2.8121176860009087, 2.220446049250313e-16]
+        )
+        transmat_exp = np.array(
+            [
+                [0.21799815282930227, -0.8381728450587307, 0.4999430839297262],
+                [0.0043486171359898, -0.5114241285968169, -0.8593174327441467],
+                [0.9759394934584914, 0.18950367409403857, -0.10784462254949785]
+            ]
+        )
+
+        # Call function with test inputs
+        rrsw, vrsw, transmat = fc.rv2rsw(*rv)
+
+        # Check if output values are close
+        assert custom_allclose(rrsw, rrsw_exp)
+        assert custom_allclose(vrsw, vrsw_exp)
+        assert custom_allclose(transmat, transmat_exp)
