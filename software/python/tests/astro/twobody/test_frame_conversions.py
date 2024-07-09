@@ -456,6 +456,6 @@ class TestSatCoord:
         rrsw, vrsw, transmat = fc.rv2rsw(*rv)
 
         # Check if output values are close
-        assert custom_allclose(rrsw, rrsw_exp)
-        assert custom_allclose(vrsw, vrsw_exp)
+        assert np.allclose(rrsw, rrsw_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(vrsw, vrsw_exp, rtol=DEFAULT_TOL)
         assert custom_allclose(transmat, transmat_exp)
