@@ -1196,3 +1196,42 @@ def rv2rsw(reci, veci):
     vrsw = np.dot(transmat, veci)
 
     return rrsw, vrsw, transmat
+
+
+def rv2ntw(reci, veci):
+    """Transforms position and velocity vectors into normal (in-radial),
+    tangential (velocity), and normal (cross-track) coordinates.
+
+    Note that sometimes the first vector is called "along-radial". the
+    tangential direction is always aligned with the velocity vector. this is
+    the NTW system of Vallado.
+
+    References:
+        Vallado: 2007, p. 172
+
+    Args:
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
+
+    Returns:
+        tuple: (rntw, vntw, transmat)
+            rntw (np.ndarray): NTW position vector in km
+            vntw (np.ndarray): NTW velocity vector in km/s
+            transmat (np.ndarray): Transformation matrix from ECI to NTW
+    """
+    # In-velocity component
+    tvec = unit(veci)
+
+    # Cross-track component
+    wvec = unit(np.cross(reci, veci))
+
+    # Along-radial component
+    nvec = unit(np.cross(tvec, wvec))
+
+    # Assemble transformation matrix from ECI to NTW frame
+    transmat = np.array([nvec, tvec, wvec])
+
+    rntw = np.dot(transmat, reci)
+    vntw = np.dot(transmat, veci)
+
+    return rntw, vntw, transmat

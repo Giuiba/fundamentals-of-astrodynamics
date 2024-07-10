@@ -459,3 +459,27 @@ class TestSatCoord:
         assert np.allclose(rrsw, rrsw_exp, rtol=DEFAULT_TOL)
         assert np.allclose(vrsw, vrsw_exp, rtol=DEFAULT_TOL)
         assert custom_allclose(transmat, transmat_exp)
+
+    def test_rv2ntw(self, rv):
+        # Expected outputs
+        rntw_exp = np.array(
+            [2693.043717307586, 6461.231735255294, 2.2737367544323206e-13]
+        )
+        vntw_exp = np.array(
+            [2.220446049250313e-16, 7.309507705165138, 2.220446049250313e-16]
+        )
+        transmat_exp = np.array(
+            [
+                [0.07985444754543984, 0.1495990993516855, 0.9855168068989881],
+                [0.2028925141921107, -0.9704166460742649, 0.13086695804051995],
+                [0.9759394934584914, 0.18950367409403857, -0.10784462254949785]
+            ]
+        )
+
+        # Call function with test inputs
+        rntw, vntw, transmat = fc.rv2ntw(*rv)
+
+        # Check if output values are close
+        assert np.allclose(rntw, rntw_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(vntw, vntw_exp, rtol=DEFAULT_TOL)
+        assert custom_allclose(transmat, transmat_exp)
