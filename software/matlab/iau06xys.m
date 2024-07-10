@@ -51,7 +51,9 @@
         % [x,y,s,nut] = iau06xys (jdtt, ttt, ddx, ddy, interp);
         % ----------------------------------------------------------------------------
 
-        function [x,y,s,nut] = iau06xys (jdtt, ttt, ddx, ddy, interpopt)
+        %function [x,y,s,nut] = iau06xys (jdtt, ttt, ddx, ddy, interpopt)
+        function [x,y,s,nut] = iau06xys (ttt, ddx, ddy)
+
         sethelp;
 
         rad = 180.0 / pi;

@@ -51,7 +51,12 @@ function [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq ( r,v )
     % ---------- set this so it is -1 only for orbits near 180 deg !! ---------
     if abs(incl - pi) < 0.0001
         fr = -1.0;
+        incl*rad
     end
+
+    % truelon = 0.0;
+    % lonper = 0.0;
+    % arglat = 0.0;
 
     coe = true;  % pick coe or vector approaches
 
@@ -88,7 +93,7 @@ function [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq ( r,v )
         else
             chi = cot(incl*0.5) * sin(omega);
             psi = cot(incl*0.5) * cos(omega);
-        end;
+        end
 
         meanlonM = fr*omega + argp + m;
         meanlonM = rem(meanlonM+twopi, twopi);
@@ -144,17 +149,21 @@ function [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq ( r,v )
         X = dot(r, fvec);
         Y = dot(r, gvec);
 
-        b = 1.0 / (1.0 + sqrt(1.0 - af^2 - ag^2));
+        temp = (af^2 + ag^2);
+        if abs(temp) > 1.0
+            temp = 1.0;
+        end
+        b = 1.0 / (1.0 + sqrt(1.0 - temp));
 
-        sinF =  ag + ((1.0-ag^2*b)*Y - ag*af*b*X)/(a*sqrt(1.0 - ag^2 - af^2));
-        cosF =  af + ((1.0-af^2*b)*X - ag*af*b*Y)/(a*sqrt(1.0 - ag^2 - af^2));
+        sinF =  ag + ((1.0-ag^2*b)*Y - ag*af*b*X)/(a*sqrt(1.0 - temp));
+        cosF =  af + ((1.0-af^2*b)*X - ag*af*b*Y)/(a*sqrt(1.0 - temp));
         F = atan2( sinF, cosF);
 
 %        fprintf(1,'rv2eq fe %11.7f %11.7f %11.7f ge %11.7f  %11.7f %11.7f \n X %11.7f Y %11.7f b %11.7f sF %11.7f cF %11.7f \n', fe, fq, fw, ge, gq, gw, X, Y, b, sinF, cosF);
 %        fprintf(1,'F = 316.20515  L = 13.61834  M = 288.88793 \n');
                     
-        sinZeta = ag / sqrt(af^2 + ag^2);
-        cosZeta = af / sqrt(af^2 + ag^2);
+        sinZeta = ag / sqrt(temp);
+        cosZeta = af / sqrt(temp);
         zeta = atan2( sinZeta, cosZeta );
 
         meanlonM = F + ag*cos(F) - af*sin(F);
@@ -165,7 +174,7 @@ function [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq ( r,v )
         M = Eccanom - ecc*sin(Eccanom);
         if M < 0.0
             M = 2.0*pi + M;
-        end;
+        end
         %M = meanlonM - zeta;  % same
         
         sinL = ((1.0 - af^2*b)*sin(F) + ag*af*b*cos(F) - ag) / (1.0 - ag*sin(F) - af*cos(F));

@@ -8,15 +8,16 @@
 *
 *                            companion code for
 *               fundamentals of astrodynamics and applications
-*                                    2007
-*                              by david vallado
-*
-*       (w) 719-573-2600, email dvallado@agi.com
+*                                  2022
+*                            by david vallado
+*                         email dvallado@comspoc.com
 *
 *  current :
-*             3 jul 08  david vallado
-*                        add switch for afspc compatibility and improved operation
+*               2 jul 24  david vallado
+*                           fix formal paramaters in sgp4init call to support direct call
 *  changes :
+*               3 jul 08  david vallado
+*                           add switch for afspc compatibility and improved operation
 *              14 mar 07  david vallado
 *                           misc fixes and manual operation
 *              15 aug 06  david vallado
@@ -72,7 +73,7 @@
 *------------------------------------------------------------------------------
 
       SUBROUTINE TwoLine2RVSGP4 ( NumSats, Typerun, typeinput, 
-     &                            whichconst, 
+     &                            whichconst,  
      &                            startmfe, stopmfe, deltamin, Code )
         IMPLICIT NONE
         Character Typerun, typeinput
@@ -101,7 +102,7 @@
         xpdotp =  1440.0D0 / (2.0D0 * pi) ! 229.1831180523293
 
         CALL getgravconst( whichconst, tumin, mu, radiusearthkm, xke,  
-     &       j2, j3, j4, j3oj2 );
+     &       j2, j3, j4, j3oj2 )
         VKmPerSec     =  RadiusEarthKm * xke / 60.0D0
 
 c        make sure the main program opens this file, otherwise do so here
@@ -252,7 +253,7 @@ c     &       RECL=1000,STATUS='UNKNOWN')
 
 * ------------------- MAKE INITIAL PREDICTION AT EPOCH ----------------
         ! 2433281.5 - 2400000.5 = 33281.0, thus time from 1950
-        CALL SGP4Init( whichconst,
+        CALL SGP4Init( whichconst, 
      &                 SatNum,BStar, Ecco, JDSatEpoch+JDSatEpochF
      &                 -2433281.5D0,
      &                 Argpo,Inclo,Mo,no_kozai, nodeo, Error )

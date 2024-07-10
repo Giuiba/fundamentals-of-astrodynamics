@@ -7,10 +7,9 @@
 *
 *                            companion code for
 *               fundamentals of astrodynamics and applications
-*                                    2007
-*                              by david vallado
-*
-*       (w) 719-573-2600, email dvallado@agi.com
+*                                  2022
+*                            by david vallado
+*                         email dvallado@comspoc.com
 *
 *    current :
 *               2 apr 07  david vallado
@@ -706,7 +705,7 @@ c              ENDIF
         ! --------------------  Implementation   ----------------------
 		! check jdfrac for multiple days
 		if (ABS(jdFrac) .ge. 1.0D0) THEN
-			dtt = IDINT(jdFrac);
+			dtt = IDINT(jdFrac)
 			jd = jd + dtt
 			jdFrac = jdFrac - dtt
 		ENDIF
@@ -714,7 +713,7 @@ c              ENDIF
 		! check for fraction of a day included in the jd
 		dt = jd - IDINT(jd) - 0.5
 		if (ABS(dt) .gt. 0.00000001D0) THEN
-			jd = jd - dt;
+			jd = jd - dt
 			jdFrac = jdFrac + dt
         ENDIF 
          

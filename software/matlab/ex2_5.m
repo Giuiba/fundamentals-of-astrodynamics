@@ -57,10 +57,10 @@ for j = 1:2
     if j == 1
         fprintf(1,'coe tests ----------------------------\n' );
     else
-        pause;
         fprintf(1,'\n\neq tests ----------------------------\n' );
+        %pause;
     end
-    for i = 21:21
+    for i = 1:21
         if i == 1
             r=[ 6524.834;6862.875;6448.296];
             v=[ 4.901327;5.533756;-1.976341];
@@ -200,7 +200,7 @@ for j = 1:2
             % is nu, but the magnitude is off...?
             if abs(ecc-1.0) < 0.0000001
                  p = mag(r)*1.301;
-             end
+            end
             [rn,vn] = coe2rv(p,ecc,incl,omega,argp,nu,arglat,truelon,lonper);
             fprintf(1,'rn    %15.9f %15.9f %15.9f',rn );
             fprintf(1,' vn %15.10f %15.10f %15.10f\n',vn );
@@ -213,9 +213,9 @@ for j = 1:2
         else
             % --------  rv2eq       - position and velocity vectors to classical elements
             [ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (r,v);
-            fprintf(1,'          a km       n rad     af        ag       chi        psi      meanlonnu deg   meanlonm deg \n');
-            fprintf(1,'eqs %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f \n',...
-                a,n,af,ag,chi,psi,meanlonNu*rad,meanlonM*rad );
+            fprintf(1,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg \n');
+            fprintf(1,'eqs    %2d %11.4f %11.4f %13.9g %13.7g %11.5g %11.5g %11.5f %11.5f \n',...
+                fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
             
             % --------  eq2rv       - classical elements to position and velocity
             [rn,vn] = eq2rv( a, af, ag, chi, psi, meanlonM, fr);
@@ -227,8 +227,52 @@ for j = 1:2
             if mag(dr) > 0.01
                 fprintf(1,'ERROR in this case dr = %11.7f \n', mag(dr));
             end
-        end;
+        end
         
-    end;  % for
-end; % for through coe/eq tests
+    end  % for
+end % for through coe/eq tests
+
+
+fprintf(1,'\n\n\n tests \n');
+r = [4942.74746831, 4942.74746831, 0.];
+v = [-5.34339547, 5.34339547, 0.02137362];
+            fprintf(1,'r    %15.9f %15.9f %15.9f',r );
+            fprintf(1,' v %15.10f %15.10f %15.10f\n',v );
+[ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (r, v);
+            fprintf(1,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg \n');
+            fprintf(1,'eqs    %2d %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f \n',...
+                fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
+[p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v);
+            fprintf(1,'          p km         a km         ecc        incl deg     raan deg     argp deg      nu deg      m deg      arglat   truelon    lonper\n');
+            fprintf(1,'coes %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f\n',...
+                p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad, ...
+                arglat*rad,truelon*rad,lonper*rad );
+
+fprintf(1,'\n\ STK ? tests \n');
+r = [4942.72769736, -4942.72769736,  19.77095033];
+v = [-5.34341685, -5.34341685, 0];
+            fprintf(1,'r    %15.9f %15.9f %15.9f',r );
+            fprintf(1,' v %15.10f %15.10f %15.10f\n',v );
+[ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (r, v);
+            fprintf(1,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg \n');
+            fprintf(1,'eqs    %2d %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f \n',...
+                fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
+[p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v);
+            fprintf(1,'          p km         a km         ecc        incl deg     raan deg     argp deg      nu deg      m deg      arglat   truelon    lonper\n');
+            fprintf(1,'coes %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f\n',...
+                p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad, ...
+                arglat*rad,truelon*rad,lonper*rad );
+
+
+fprintf(1,'\n other tests \n');    
+[rn,vn] = eq2rv( 7000.0, 0.001, 0.001, 0.001, 0.001, 45.0/rad, fr);
+            fprintf(1,'rn    %15.9f %15.9f %15.9f',rn );
+            fprintf(1,' vn %15.10f %15.10f %15.10f\n',vn );
+[ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (rn,vn);
+            fprintf(1,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg \n');
+            fprintf(1,'eqs    %2d %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f \n',...
+                fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
+
+
+
 

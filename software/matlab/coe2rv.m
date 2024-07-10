@@ -70,9 +70,6 @@ function [r,v] = coe2rv ( p,ecc,incl,raan,argp,nu,arglat,truelon,lonper );
             if ( ( incl<small) || (abs(incl-pi)<small) )
                 argp = lonper;
                 raan= 0.0;
-            else % rectilinear orbits
-                nu = arglat;
-                argp = 0.0;
             end
        end
 

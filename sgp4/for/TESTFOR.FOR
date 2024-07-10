@@ -6,15 +6,16 @@
 *
 *                          companion code for
 *             fundamentals of astrodynamics and applications
-*                                  2007
+*                                  2022
 *                            by david vallado
-*
-*     (w) 719-573-2600, email dvallado@agi.com
+*                         email dvallado@comspoc.com
 *     *****************************************************************
 *  current :
+*             2 jul 24  david vallado
+*                        fix formal paramaters in sgp4init call to support direct call
+*  changes :
 *             3 jul 08  david vallado
 *                        add switch for afspc compatibility and improved operation
-*  changes :
 *             2 apr 07  david vallado
 *                        misc fixes for manual operation
 *            15 aug 06  david vallado
@@ -59,7 +60,8 @@
      &         jdFrac
         INTEGER i,j, Year,yr,mon,day,hr,min
         Real*8 deg2rad
-        Integer elnum, revnum, tsince
+        Integer elnum, revnum
+        Real*8 tsince
 
         INCLUDE 'SGP4.CMN'
 
@@ -145,7 +147,7 @@
         CALL TwoLine2RVSGP4 ( NumSats,typerun,typeinput,whichconst,
      &                        startmfe,stopmfe,deltamin,Code )
         DOWHILE (Code.ne.999)
-            Write(11,*) '',SatNum,' xx'
+            Write(11,*) ' ',SatNum,' xx'
             Write(*,*) SatNum
             ! write out epoch value 
             T = 0.0D0
@@ -200,8 +202,8 @@ c     &                   T,ro(1),ro(2),ro(3),vo(1),vo(2),vo(3)
         			 jd = JDSatEpoch
 					 jdFrac = JDSatEpochF + T / 1440.0D0
 					 IF (jdFrac .lt. 0.0D0) THEN
-						jd = jd - 1.0D0;
-						jdFrac = jdFrac + 1.0D0;
+						jd = jd - 1.0D0
+						jdFrac = jdFrac + 1.0D0
 					 ENDIF	
 					 CALL invjday(jd, jdFrac, year, mon, day, hr, min, sec)
 
@@ -310,7 +312,8 @@ c     &                   T,ro(1),ro(2),ro(3),vo(1),vo(2),vo(3)
         whichconst = 72
 	    opsmode = 'a'
 		satnum = 8195
-		jdsatepoch = 2453911.8321544402D0
+		jdsatepoch = 2453911.5D0
+		jdsatepochF = 0.3321544402D0
     	no_kozai = 2.00491383D0
 		ecco = 0.6877146D0
 		inclo = 64.1586D0
@@ -337,11 +340,11 @@ c     &                   T,ro(1),ro(2),ro(3),vo(1),vo(2),vo(3)
         stopmfe  =  2880.0D0
         deltamin =   120.0D0
 
-		CALL sgp4init( whichconst, opsmode, satnum, 
+		CALL sgp4init( whichconst, satnum, 
      &  		jdsatepoch+jdsatepochF-2433281.5D0, bstar,
-     &          ndot, nddot, ecco, argpo, inclo, mo, no_kozai,
+     &          ecco, argpo, inclo, mo, no_kozai,
      &          nodeo, error)
-
+    
         tsince = startmfe
 		dowhile ((tsince .lt. stopmfe).and.(error .eq. 0))
             tsince = tsince + deltamin

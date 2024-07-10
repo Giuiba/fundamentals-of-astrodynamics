@@ -44,7 +44,7 @@
     % [reci,veci,aeci] = ecef2eciiau06 ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,option, ddx, ddy );
     % ----------------------------------------------------------------------------
 
-    function [reci,veci,aeci] = ecef2eciiau06 ( recef,vecef,aecef,jdtt, ttt, jdut1, lod, xp, yp, option, ddx, ddy );
+    function [reci,veci,aeci] = ecef2eciiau06 ( recef,vecef,aecef,jdtt, ttt, jdut1, lod, xp, yp, option, ddx, ddy )
 
     sethelp;
     constastro;
@@ -54,7 +54,8 @@
     
     % ---- ceo based, iau2006
     if option == 'c'
-        [x,y,s,pnb] = iau06xys (jdtt, ttt, ddx, ddy, 'c');
+        %[x,y,s,pnb] = iau06xys (jdtt, ttt, ddx, ddy, 'c');
+        [x,y,s,pnb] = iau06xys (ttt, ddx, ddy);
 
         [st]  = iau06era (jdut1 );
     end
@@ -77,7 +78,7 @@
             lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
     end
 
-    [pm] = polarm(xp,yp,ttt,'06');
+    [pm] = polarm(xp,yp,ttt,"06");
 
     % ---- setup parameters for velocity transformations
     thetasa= earthrot * (1.0  - lod/86400.0 );
