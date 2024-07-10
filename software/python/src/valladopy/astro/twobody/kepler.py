@@ -25,7 +25,7 @@ def determine_orbit_type(ecc, incl, tol=SMALL):
 
     Args:
         ecc (float): The eccentricity of the orbit
-        incl (float): The inclination of the orbit in radians.
+        incl (float): The inclination of the orbit in radians
         tol (float, optional): Small value for tolerance
 
     Returns:
@@ -46,8 +46,55 @@ def determine_orbit_type(ecc, incl, tol=SMALL):
         return OrbitType.EPH_INCLINED
 
 
+def newtone(ecc, e0):
+    """Solves for the mean anomaly and true anomaly given the eccentric,
+    parabolic, or hyperbolic anomalies.
+
+    References:
+        vallado: 2001, p. 85, Algorithm 6
+
+    Args:
+        ecc (float): Eccentricity
+        e0 (float): Eccentric anomaly in radians (-2pi to 2pi)
+
+    Returns:
+        tuple: (m, nu)
+            m (float): Mean anomaly in radians (0 to 2pi)
+            nu (float): True anomaly in radians (0 to 2pi)
+    """
+    # Circular orbit case - values are same as eccentric anomaly
+    if abs(ecc) < SMALL:
+        return e0, e0
+
+    # Non-circular cases
+    if ecc < 0.999:
+        # Elliptical orbit
+        m = e0 - ecc * np.sin(e0)
+        sinv = (
+            (np.sqrt(1.0 - ecc * ecc) * np.sin(e0)) / (1.0 - ecc * np.cos(e0))
+        )
+        cosv = (np.cos(e0) - ecc) / (1.0 - ecc * np.cos(e0))
+        nu = np.arctan2(sinv, cosv)
+    elif ecc > 1.0001:
+        # Hyperbolic orbit
+        m = ecc * np.sinh(e0) - e0
+        sinv = (
+            (np.sqrt(ecc * ecc - 1.0) * np.sinh(e0))
+            / (1.0 - ecc * np.cosh(e0))
+        )
+        cosv = (np.cosh(e0) - ecc) / (1.0 - ecc * np.cosh(e0))
+        nu = np.arctan2(sinv, cosv)
+    else:
+        # Parabolic orbit
+        m = e0 + (1.0 / 3.0) * e0 * e0 * e0
+        nu = 2.0 * np.arctan(e0)
+
+    return m, nu
+
+
 def newtonnu(ecc, nu, parabolic_lim_deg=168):
-    """Solve Kepler's equation given the true anomaly and eccentricity.
+    """Solves for the eccentric anomaly and mean anomaly given the true
+    anomaly.
 
     This function solves Kepler's equation when the true anomaly is known.
     The mean and eccentric, parabolic, or hyperbolic anomaly is also found.
@@ -104,9 +151,11 @@ def newtonnu(ecc, nu, parabolic_lim_deg=168):
 
 
 def newtonm(ecc, m, n_iter=50):
-    """
-    Calculates the eccentric anomaly and true anomaly given the mean anomaly
+    """Solves for the eccentric anomaly and true anomaly given the mean anomaly
     using Newton-Raphson iteration.
+
+    References:
+        vallado: 2001, p. 72-75, Algorithm 2, Ex. 2-1
 
     Args:
         ecc (float): Eccentricity of the orbit

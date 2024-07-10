@@ -1,35 +1,52 @@
 import numpy as np
 import pytest
 
-from src.valladopy.astro.twobody.kepler import (
-    OrbitType, determine_orbit_type,
-    newtonnu, newtonm
-)
+import src.valladopy.astro.twobody.kepler as kepler
+from ...conftest import custom_isclose
 
 
 @pytest.mark.parametrize(
     'ecc, incl, expected_orbit_type',
     [
-        (0.0, 0.0, OrbitType.CIR_EQUATORIAL),  # Circular equatorial
-        (0.0, np.pi, OrbitType.CIR_EQUATORIAL),  # Circular equatorial
-        (0.0, 0.1, OrbitType.CIR_INCLINED),  # Circular inclined
-        (0.1, 0.0, OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
-        (0.1, np.pi, OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
-        (0.1, 0.1, OrbitType.EPH_INCLINED),  # Elliptical inclined
-        (1.1, 0.0, OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
-        (1.1, np.pi, OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
-        (1.1, 0.1, OrbitType.EPH_INCLINED),  # Hyperbolic inclined
+        (0.0, 0.0, kepler.OrbitType.CIR_EQUATORIAL),  # Circular equatorial
+        (0.0, np.pi, kepler.OrbitType.CIR_EQUATORIAL),  # Circular equatorial
+        (0.0, 0.1, kepler.OrbitType.CIR_INCLINED),  # Circular inclined
+        (0.1, 0.0, kepler.OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
+        (0.1, np.pi, kepler.OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
+        (0.1, 0.1, kepler.OrbitType.EPH_INCLINED),  # Elliptical inclined
+        (1.1, 0.0, kepler.OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
+        (1.1, np.pi, kepler.OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
+        (1.1, 0.1, kepler.OrbitType.EPH_INCLINED),  # Hyperbolic inclined
     ]
 )
 def test_determine_orbit_type(ecc, incl, expected_orbit_type):
-    assert determine_orbit_type(ecc, incl) == expected_orbit_type
+    assert kepler.determine_orbit_type(ecc, incl) == expected_orbit_type
+
+
+@pytest.mark.parametrize(
+    'ecc, e0, expected_m, expected_nu',
+    [
+        # Test circular orbit (ecc = 0)
+        (0, np.radians(42.42), np.radians(42.42), np.radians(42.42)),
+        # Test elliptical orbit (0 < ecc < 1)
+        (0.4, np.radians(334.566986), 6.011077700843401, -0.6639000611931205),
+        # Test hyperbolic orbit (ecc > 1)
+        (1.05, np.radians(123.45), 2.3123894903995055, -2.752304611108218),
+        # Test parabolic orbit (ecc = 1)
+        (1, np.radians(30), 0.5714479680061689, 0.9646958142020499)
+    ]
+)
+def test_newtone(ecc, e0, expected_m, expected_nu):
+    m, nu = kepler.newtone(ecc, e0)
+    assert custom_isclose(m, expected_m)
+    assert custom_isclose(nu, expected_nu)
 
 
 def test_newtonnu():
     # TODO: test all cases
     ecc = 0.1
     nu = np.radians(45)
-    e0, m = newtonnu(ecc, nu)
+    e0, m = kepler.newtonnu(ecc, nu)
     assert abs(np.degrees(e0) - 41.078960346507934) < 1e-12
     assert abs(np.degrees(m)) - 37.31406335764441 < 1e-12
 
@@ -52,6 +69,6 @@ def test_newtonnu():
     ]
 )
 def test_newtonm(ecc, m, expected_e0, expected_nu):
-    e0, nu = newtonm(ecc, m)
-    assert abs(e0 - expected_e0) < 1e-11
-    assert abs(nu - expected_nu) < 1e-12
+    e0, nu = kepler.newtonm(ecc, m)
+    assert custom_isclose(e0, expected_e0, atol=1e-11)
+    assert custom_isclose(nu, expected_nu)
