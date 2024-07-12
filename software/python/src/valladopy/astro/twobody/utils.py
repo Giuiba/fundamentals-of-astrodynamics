@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
 # Author: David Vallado
-# Date: 25 June 2002
+# Date: 27 May 2002
 #
 # Copyright (c) 2024
 # For license information, see LICENSE file
@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from ...constants import RE, ECCEARTHSQRD
+from ...constants import RE, ECCEARTHSQRD, SMALL
 
 
 def site(latgd, lon, alt):
@@ -19,7 +19,7 @@ def site(latgd, lon, alt):
     fixed to the Earth.
 
     References:
-        vallado: 2001, p. 404-407, Algorithm 47
+        Vallado: 2001, p. 404-407, Algorithm 47
 
     Args:
         latgd (float): Geodetic latitude in radians
@@ -46,3 +46,32 @@ def site(latgd, lon, alt):
     vsecef = np.array([0.0, 0.0, 0.0])
 
     return rsecef, vsecef
+
+
+def findc2c3(znew):
+    """Calculates the c2 and c3 functions for the universal variable z.
+
+    References:
+        Vallado: 2001, p. 70-71, Algorithm 1
+
+    Args:
+        znew (float): z variable (rad^2)
+
+    Returns:
+        tuple: (c2new, c3new)
+            c2new (float): c2 function value
+            c3new (float): c3 function value
+    """
+    if znew > SMALL:
+        sqrtz = np.sqrt(znew)
+        c2new = (1.0 - np.cos(sqrtz)) / znew
+        c3new = (sqrtz - np.sin(sqrtz)) / (sqrtz ** 3)
+    elif znew < -SMALL:
+        sqrtz = np.sqrt(-znew)
+        c2new = (1.0 - np.cosh(sqrtz)) / znew
+        c3new = (np.sinh(sqrtz) - sqrtz) / (sqrtz ** 3)
+    else:
+        c2new = 0.5
+        c3new = 1.0 / 6.0
+
+    return c2new, c3new
