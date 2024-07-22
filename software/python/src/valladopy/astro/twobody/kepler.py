@@ -6,11 +6,16 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
+import logging
 from enum import Enum
 
 import numpy as np
 
-from ...constants import SMALL
+from ...constants import SMALL, MU, TWOPI
+from .utils import findc2c3
+
+
+logger = logging.getLogger(__name__)
 
 
 class OrbitType(Enum):
@@ -231,3 +236,122 @@ def newtonm(ecc, m, n_iter=50):
         nu, e0 = m, m
 
     return e0, nu
+
+
+def kepler(ro, vo, dtsec, n_iters=50):
+    """Solves Kepler's problem for orbit determination and returns a future
+    geocentric equatorial (ECI) position and velocity vector using universal
+    variables.
+
+    Args:
+        ro (array_like): Initial ECI position vector in km
+        vo (array_like): Initial ECI velocity vector in km/s
+        dtsec (float): Time interval to propagate in seconds
+        n_iters (int, optional): Number of iterations for Newton-Raphson
+                                 method
+
+    Returns:
+        tuple: (r, v)
+            r (np.array): Propagated ECI position vector in km
+            v (np.array): Propagated ECI velocity vector in km/s
+    """
+    # Convert to numpy arrays
+    ro, vo = np.array(ro), np.array(vo)
+
+    # Initialize values
+    ktr = 0
+    xnew, znew, c2new, c3new = 0.0, 0.0, 0.0, 0.0
+    dtnew = -10.0
+    smu = np.sqrt(MU)
+    magro = np.linalg.norm(ro)
+    magvo = np.linalg.norm(vo)
+    rdotv = np.dot(ro, vo)
+
+    # Find specific mechanical energy, alpha, and semi-major axis
+    sme = (magvo ** 2 / 2) - (MU / magro)
+    alpha = -2 * sme / MU
+    a = -MU / (2 * sme) if np.abs(sme) > SMALL else np.inf
+    alpha = 0.0 if np.abs(alpha) < SMALL else alpha
+
+    # Setup initial guess for x
+    if alpha >= SMALL:
+        # Circular and elliptical orbits
+        period = TWOPI * np.sqrt(np.abs(a) ** 3 / MU)
+        if np.abs(dtsec) > np.abs(period):
+            dtsec = dtsec % period
+        xold = smu * dtsec * alpha
+    elif np.abs(alpha) < SMALL:
+        # Parabolic orbit
+        h = np.cross(ro, vo)
+        magh = np.linalg.norm(h)
+        p = magh ** 2 / MU
+        s = 0.5 * (np.pi / 2 - np.arctan(3.0 * np.sqrt(MU / (p ** 3)) * dtsec))
+        w = np.arctan(np.tan(s) ** (1 / 3))
+        xold = np.sqrt(p) * (2.0 / np.tan(2.0 * w))
+        alpha = 0.0
+    else:
+        # Hyperbolic orbit
+        temp = (
+            -2.0 * MU * dtsec
+            / (a * (rdotv + np.sign(dtsec) * np.sqrt(-MU * a)
+                    * (1.0 - magro * alpha)))
+        )
+        xold = np.sign(dtsec) * np.sqrt(-a) * np.log(temp)
+
+    # Newton-Raphson iteration to find x
+    tmp = 1.0 / smu
+    while (np.abs(dtnew * tmp - dtsec) >= SMALL) and (ktr < n_iters):
+        xoldsqrd = xold * xold
+        znew = xoldsqrd * alpha
+
+        # Find c2 and c3 functions
+        c2new, c3new = findc2c3(znew)
+
+        # Use a newton iteration for new values
+        rval = (
+            xoldsqrd * c2new
+            + rdotv * tmp * xold * (1.0 - znew * c3new)
+            + magro * (1.0 - znew * c2new)
+        )
+        dtnew = (
+            xoldsqrd * xold * c3new
+            + rdotv * tmp * xoldsqrd * c2new
+            + magro * xold * (1.0 - znew * c3new)
+        )
+
+        # Calculate new value for x
+        temp1 = (dtsec * smu - dtnew) / rval
+        xnew = xold + temp1
+
+        # Check if the univ param goes negative; if so, use bissection
+        if (xnew < 0.0) and (dtsec > 0.0):
+            xnew = xold * 0.5
+
+        ktr += 1
+        xold = xnew
+
+    # Check for convergence
+    if ktr >= n_iters:
+        logger.error(
+            f'Kepler not converged in {n_iters} iterations for dtsec = {dtsec}'
+        )
+        return np.zeros(3), np.zeros(3)
+
+    # Find f and g values
+    xnewsqrd = xnew * xnew
+    f = 1.0 - (xnewsqrd * c2new / magro)
+    g = dtsec - xnewsqrd * xnew * c3new / smu
+
+    # Find position and velocity vectors at new time
+    r = f * ro + g * vo
+    magr = np.linalg.norm(r)
+    gdot = 1.0 - (xnewsqrd * c2new / magr)
+    fdot = (smu * xnew / (magro * magr)) * (znew * c3new - 1.0)
+    v = fdot * ro + gdot * vo
+
+    # Check if f and g values are consistent
+    temp = f * gdot - fdot * g
+    if np.abs(temp - 1.0) > 0.00001:
+        logger.warning('f and g values are inconsistent')
+
+    return r, v
