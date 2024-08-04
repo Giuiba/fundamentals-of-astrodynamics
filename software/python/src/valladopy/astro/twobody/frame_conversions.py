@@ -533,8 +533,8 @@ def rv2tradec(reci, veci, rseci, vseci):
     Returns:
         tuple: (rho, trtasc, tdecl, drho, dtrtasc, dtdecl)
             rho (float): Satellite range from site in km
-            trtasc (float): Topocentric right ascension in radians
-            tdecl (float): Topocentric declination in radians
+            trtasc (float): Topocentric right ascension in radians (0 to 2pi)
+            tdecl (float): Topocentric declination in radians (-pi/2 to pi/2)
             drho (float): Range rate in km/s
             dtrtasc (float): Topocentric right ascension rate in rad/s
             dtdecl (float): Topocentric declination rate in rad/s
