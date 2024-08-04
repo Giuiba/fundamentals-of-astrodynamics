@@ -204,14 +204,15 @@ def rv2coe(r, v):
             p (float): Semilatus rectum in km
             a (float): Semimajor axis in km
             ecc (float): Eccentricity
-            incl (float): Inclination in radians
+            incl (float): Inclination in radians (0 to 2pi)
             raan (float): Right ascension of the ascending node in radians
-            argp (float): Argument of perigee in radians
-            nu (float): True anomaly in radians
-            m (float): Mean anomaly in radians
-            arglat (float): Argument of latitude in radians
-            truelon (float): True longitude in radians
-            lonper (float): Longitude of periapsis in radians
+                          (0 to 2pi)
+            argp (float): Argument of perigee in radians (0 to 2pi)
+            nu (float): True anomaly in radians (0 to 2pi)
+            m (float): Mean anomaly in radians (0 to 2pi)
+            arglat (float): Argument of latitude in radians (0 to 2pi)
+            truelon (float): True longitude in radians (0 to 2pi)
+            lonper (float): Longitude of periapsis in radians (0 to 2pi)
             orbit_type (enum): Type of orbit as defined in the OrbitType enum
     """
     def adjust_angle(ang):
