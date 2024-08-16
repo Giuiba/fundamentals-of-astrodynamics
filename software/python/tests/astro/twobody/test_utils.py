@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.valladopy.astro.twobody.utils import site, findc2c3
+from src.valladopy.astro.twobody.utils import site, findc2c3, lon2nu
 
 
 DEFAULT_TOL = 1e-12
@@ -38,3 +38,13 @@ def test_findc2c3(znew, c2new_exp, c3new_exp):
     c2new, c3new = findc2c3(znew)
     assert np.isclose(c2new, c2new_exp, rtol=DEFAULT_TOL)
     assert np.isclose(c3new, c3new_exp, rtol=DEFAULT_TOL)
+
+
+def test_lon2nu():
+    jdut1 = 2456864.5
+    lon = np.radians(7.020438698)
+    incl = np.radians(0.070273056)
+    raan = np.radians(19.90450011)
+    argp = np.radians(352.5056022)
+    nu = lon2nu(jdut1, lon, incl, raan, argp)
+    assert np.isclose(nu, 5.204957786050412, rtol=DEFAULT_TOL)

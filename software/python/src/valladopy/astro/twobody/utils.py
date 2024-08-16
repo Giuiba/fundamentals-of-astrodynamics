@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from ...constants import RE, ECCEARTHSQRD, SMALL
+from ...constants import RE, ECCEARTHSQRD, SMALL, TWOPI
 
 
 def site(latgd, lon, alt):
@@ -55,7 +55,7 @@ def findc2c3(znew):
         Vallado: 2001, p. 70-71, Algorithm 1
 
     Args:
-        znew (float): z variable (rad^2)
+        znew (float): z variable in rad^2
 
     Returns:
         tuple: (c2new, c3new)
@@ -75,3 +75,45 @@ def findc2c3(znew):
         c3new = 1.0 / 6.0
 
     return c2new, c3new
+
+
+def lon2nu(jdut1, lon, incl, raan, argp):
+    """Converts the longitude of the ascending node to the true anomaly.
+
+    This function calculates the true anomaly (`nu`) of an object
+    at a given Julian date (`jdut1`) using the Greenwich Mean Sidereal Time
+    (GMST) and orbital elements.
+
+    Args:
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lon (float): Longitude of the ascending node in radians
+        incl (float): Orbital inclination in radians
+        raan (float): Right ascension of the ascending node in radians
+        argp (float): Argument of periapsis in radians
+
+    Returns:
+        float: True anomaly (`nu`) in radians (0 to 2pi)
+    """
+    # Calculate GMST
+    ed = jdut1 - 2451544.5  # Elapsed days from 1 Jan 2000, 0 hrs
+    gmst = 99.96779469 + 360.9856473662860 * ed + 0.29079e-12 * ed * ed  # deg
+    gmst = np.remainder(np.radians(gmst), TWOPI)
+
+    # Check quadrants
+    if gmst < 0.0:
+        gmst += TWOPI
+
+    # Calculate lambdau
+    lambdau = gmst + lon - raan
+
+    # Ensure lambdau is within 0 to 2pi radians
+    lambdau = np.mod(lambdau, TWOPI)
+
+    # Calculate argument of latitude
+    arglat = np.arctan(np.tan(lambdau) / np.cos(incl))
+
+    # Adjust arglat for quadrants
+    if (lambdau >= 0.5 * np.pi) and (lambdau < 1.5 * np.pi):
+        arglat += np.pi
+
+    return np.mod(arglat - argp, TWOPI)
