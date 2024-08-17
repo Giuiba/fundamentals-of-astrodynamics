@@ -11,10 +11,10 @@
 %                -
 %
 %  inputs          description                    range / units
-%    latgd       - geodetic latitude              -pi to pi rad
+%    latgd       - geodetic latitude              -pi/2 to pi/2 rad
 %
 %  outputs       :
-%    latgc       - geocentric latitude            -pi to pi rad
+%    latgc       - geocentric latitude            -pi/2 to pi/2 rad
 %
 %  locals        :
 %    none.
