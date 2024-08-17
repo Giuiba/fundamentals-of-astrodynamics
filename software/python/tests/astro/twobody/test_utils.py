@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.valladopy.astro.twobody.utils import site, findc2c3, lon2nu
+import src.valladopy.astro.twobody.utils as utils
 
 
 DEFAULT_TOL = 1e-12
@@ -20,7 +20,7 @@ DEFAULT_TOL = 1e-12
     ]
 )
 def test_site(latgd, lon, alt, rsecef_exp):
-    rsecef, vsecef = site(latgd, lon, alt)
+    rsecef, vsecef = utils.site(latgd, lon, alt)
     assert np.allclose(rsecef, rsecef_exp, rtol=DEFAULT_TOL)
     assert np.allclose(vsecef, [0.0, 0.0, 0.0], rtol=DEFAULT_TOL)
 
@@ -35,7 +35,7 @@ def test_site(latgd, lon, alt, rsecef_exp):
     ]
 )
 def test_findc2c3(znew, c2new_exp, c3new_exp):
-    c2new, c3new = findc2c3(znew)
+    c2new, c3new = utils.findc2c3(znew)
     assert np.isclose(c2new, c2new_exp, rtol=DEFAULT_TOL)
     assert np.isclose(c3new, c3new_exp, rtol=DEFAULT_TOL)
 
@@ -46,5 +46,15 @@ def test_lon2nu():
     incl = np.radians(0.070273056)
     raan = np.radians(19.90450011)
     argp = np.radians(352.5056022)
-    nu = lon2nu(jdut1, lon, incl, raan, argp)
+    nu = utils.lon2nu(jdut1, lon, incl, raan, argp)
     assert np.isclose(nu, 5.204957786050412, rtol=DEFAULT_TOL)
+
+
+def test_gc2gd():
+    latgd = utils.gc2gd(np.radians(34.25))
+    assert np.isclose(latgd, 0.6009038529757992, rtol=DEFAULT_TOL)
+
+
+def test_gd2gc():
+    latgc = utils.gd2gc(np.radians(125.79))
+    assert np.isclose(latgc, -0.9429532487023382, rtol=DEFAULT_TOL)

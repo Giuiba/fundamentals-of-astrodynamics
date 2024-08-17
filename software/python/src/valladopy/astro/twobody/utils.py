@@ -117,3 +117,35 @@ def lon2nu(jdut1, lon, incl, raan, argp):
         arglat += np.pi
 
     return np.mod(arglat - argp, TWOPI)
+
+
+def gc2gd(latgc):
+    """Converts geocentric latitude to geodetic latitude for positions on the
+    surface of the Earth.
+
+    References:
+        Vallado: 2001, p. 146, Eq. 3-11
+
+    Args:
+        latgc (float): Geocentric latitude in radians
+
+    Returns:
+        (float): Geodetic latitude in radians (-pi/2 to pi/2)
+    """
+    return np.arctan(np.tan(latgc) / (1.0 - ECCEARTHSQRD))
+
+
+def gd2gc(latgd):
+    """Converts geodetic latitude to geocentric latitude for positions on the
+    surface of the Earth.
+
+    References:
+        Vallado: 2001, p. 146, Eq. 3-11
+
+    Args:
+        latgd (float): Geodetic latitude in radians
+
+    Returns:
+        (float): Geocentric latitude in radians (-pi/2 to pi/2)
+    """
+    return np.arctan((1.0 - ECCEARTHSQRD) * np.tan(latgd))
