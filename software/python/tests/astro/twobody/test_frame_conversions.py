@@ -492,8 +492,17 @@ class TestGeodetic:
         return np.array([6524.834, 6862.875, 6448.296])
 
     def test_ecef2ll(self, recef):
+        # Astronomical Almanac method
         latgc, latgd, lon, hellp = fc.ecef2ll(recef)
         assert np.isclose(latgc, 0.597826066235814, rtol=DEFAULT_TOL)
         assert np.isclose(latgd, 0.5995641464668334, rtol=DEFAULT_TOL)
         assert np.isclose(lon, 0.8106428999047803, rtol=DEFAULT_TOL)
         assert np.isclose(hellp, 5085.219430346959, rtol=DEFAULT_TOL)
+
+    def test_ecef2llb(self, recef):
+        # Borkowski method
+        latgc, latgd, lon, hellp = fc.ecef2llb(recef)
+        assert np.isclose(latgc, 0.597826066235814, rtol=DEFAULT_TOL)
+        assert np.isclose(latgd, 0.5995641464669065, rtol=DEFAULT_TOL)
+        assert np.isclose(lon, 0.8106428999047803, rtol=DEFAULT_TOL)
+        assert np.isclose(hellp, 5085.2194303451715, rtol=DEFAULT_TOL)

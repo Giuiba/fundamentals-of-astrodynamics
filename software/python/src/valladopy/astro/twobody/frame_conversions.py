@@ -1264,7 +1264,7 @@ def ecef2ll(r):
         Vallado: 2001, p. 174-179, Algorithm 12, Example 3-3
 
     Args:
-        r (array_like): ECEF position vector [km]
+        r (array_like): ECEF position vector in km
 
     Returns:
         tuple: (latgc, latgd, lon, hellp)
@@ -1307,6 +1307,73 @@ def ecef2ll(r):
     else:
         s = c * (1.0 - const.ECCEARTHSQRD)
         hellp = r[2] / np.sin(latgd) - s
+
+    # Compute geocentric latitude
+    latgc = np.arcsin(r[2] / magr)
+
+    return latgc, latgd, lon, hellp
+
+
+def ecef2llb(r):
+    """Converts an ECEF position vector into geodetic and geocentric latitude,
+    longitude, and height above the ellipsoid using the Borkowski method.
+
+    References:
+        Vallado: 2001, p. 174-179, Algorithm 13
+
+    Args:
+        r (array_like): ECEF position vector in km
+
+    Returns:
+        tuple: (latgc, latgd, lon, hellp)
+            latgc (float): Geocentric latitude in radians (-pi to pi)
+            latgd (float): Geodetic latitude in radians (-pi to pi)
+            lon (float): Longitude in radians (-2pi to 2pi)
+            hellp (float): Height above the ellipsoid in km
+    """
+    # Constants
+    third = 1.0 / 3.0
+
+    # Compute magnitude of the position vector
+    magr = np.linalg.norm(r)
+
+    # Earth semi-major and semi-minor axes
+    a = const.RE
+    b = np.sign(r[2]) * a * np.sqrt(1.0 - const.ECCEARTHSQRD)
+
+    # Compute longitude (right ascension approximation)
+    temp = np.sqrt(r[0] ** 2 + r[1] ** 2)
+    if np.abs(temp) < const.SMALL:
+        lon = np.sign(r[2]) * np.pi * 0.5
+    else:
+        lon = np.arctan2(r[1], r[0])
+
+    # Adjust longitude to be within [-2π, 2π] range
+    if np.abs(lon) >= np.pi:
+        lon += const.TWOPI if lon < 0.0 else -const.TWOPI
+
+    # Intermediate variables for polynomial solution
+    atemp = 1.0 / (a * temp)
+    e = (b * r[2] - a ** 2 + b ** 2) * atemp
+    f = (b * r[2] + a ** 2 - b ** 2) * atemp
+    p = 4.0 * third * (e * f + 1.0)
+    q = 2.0 * (e ** 2 - f ** 2)
+    d = p ** 3 + q ** 2
+
+    # Solve the cubic equation based on the discriminant `d`
+    if d > 0.0:
+        nu = (np.sqrt(d) - q) ** third - (np.sqrt(d) + q) ** third
+    else:
+        sqrtp = np.sqrt(-p)
+        nu = 2.0 * sqrtp * np.cos(third * np.arccos(q / (p * sqrtp)))
+
+    # Intermediate variables for latitude and height computations
+    g = 0.5 * (np.sqrt(e ** 2 + nu) + e)
+    t = np.sqrt(g ** 2 + (f - nu * g) / (2.0 * g - e)) - g
+
+    # Compute geodetic latitude and height above the ellipsoid
+    latgd = np.arctan(a * (1.0 - t ** 2) / (2.0 * b * t))
+    hellp = (temp - a * t) * np.cos(latgd) + (r[2] - b) * np.sin(latgd)
 
     # Compute geocentric latitude
     latgc = np.arcsin(r[2] / magr)
