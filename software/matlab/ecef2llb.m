@@ -48,6 +48,8 @@
     small =     0.00000001;
 
     % -------------------------  implementation   -------------------------
+    magr = mag( r );
+
     % ---------------- find longitude value  ----------------------
     temp = sqrt( r(1)*r(1) + r(2)*r(2) );
     if ( abs( temp ) < small )
