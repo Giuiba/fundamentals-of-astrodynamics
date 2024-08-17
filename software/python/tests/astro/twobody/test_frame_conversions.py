@@ -483,3 +483,17 @@ class TestSatCoord:
         assert np.allclose(rntw, rntw_exp, rtol=DEFAULT_TOL)
         assert np.allclose(vntw, vntw_exp, rtol=DEFAULT_TOL)
         assert custom_allclose(transmat, transmat_exp)
+
+
+class TestGeodetic:
+    @pytest.fixture
+    def recef(self):
+        # ECEF position vector in km (Example 3-3, Vallado, 2001)
+        return np.array([6524.834, 6862.875, 6448.296])
+
+    def test_ecef2ll(self, recef):
+        latgc, latgd, lon, hellp = fc.ecef2ll(recef)
+        assert np.isclose(latgc, 0.597826066235814, rtol=DEFAULT_TOL)
+        assert np.isclose(latgd, 0.5995641464668334, rtol=DEFAULT_TOL)
+        assert np.isclose(lon, 0.8106428999047803, rtol=DEFAULT_TOL)
+        assert np.isclose(hellp, 5085.219430346959, rtol=DEFAULT_TOL)

@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from ...constants import SMALL, MU, HALFPI, TWOPI, OBLIQUITYEARTH
+from ... import constants as const
 from ...mathtime.vector import rot1, rot2, rot3, angle, unit
 from ..time.frame_conversions import ecef2eci, eci2ecef
 from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
@@ -21,7 +21,7 @@ from .utils import site
 
 def is_equatorial(inc):
     """Equatorial check for inclinations"""
-    return inc < SMALL or abs(inc - np.pi) < SMALL
+    return inc < const.SMALL or abs(inc - np.pi) < const.SMALL
 
 
 ###############################################################################
@@ -107,8 +107,8 @@ def rv2adbar(r, v):
     vtemp = np.sqrt(v[0]**2 + v[1]**2)
 
     # Right ascension of sateillite
-    if rtemp < SMALL:
-        rtasc = np.arctan2(v[1], v[0]) if vtemp > SMALL else 0
+    if rtemp < const.SMALL:
+        rtasc = np.arctan2(v[1], v[0]) if vtemp > const.SMALL else 0
     else:
         rtasc = np.arctan2(r[1], r[0])
 
@@ -156,7 +156,7 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
             v (numpy.ndarray): ECI velocity vector in km/s
     """
     # Handle special cases for orbit type
-    if ecc < SMALL:
+    if ecc < const.SMALL:
         if is_equatorial(incl):
             # Circular equatorial
             argp, raan = 0.0, 0.0
@@ -179,7 +179,7 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
     cosnu = np.cos(nu)
     sinnu = np.sin(nu)
     r_pqw = np.array([cosnu, sinnu, 0.0]) * (p / (1 + ecc * cosnu))
-    v_pqw = np.array([-sinnu, ecc + cosnu, 0.0]) * (np.sqrt(MU / p))
+    v_pqw = np.array([-sinnu, ecc + cosnu, 0.0]) * (np.sqrt(const.MU / p))
 
     # Transform from PQW to IJK (GEC)
     r = rot3(rot1(rot3(r_pqw, -argp), -incl), -raan)
@@ -247,27 +247,27 @@ def rv2coe(r, v):
     n_mag = np.linalg.norm(n_vec)
 
     # Get eccentricity vector
-    e_vec = ((v_mag ** 2 - MU / r_mag) * r - np.dot(r, v) * v) / MU
+    e_vec = ((v_mag ** 2 - const.MU / r_mag) * r - np.dot(r, v) * v) / const.MU
     ecc = np.linalg.norm(e_vec)
 
     # find a, e, and p (semi-latus rectum)
-    sme = (v_mag ** 2 / 2) - (MU / r_mag)
-    if abs(sme) > SMALL:
-        a = - MU / (2 * sme)
+    sme = (v_mag ** 2 / 2) - (const.MU / r_mag)
+    if abs(sme) > const.SMALL:
+        a = - const.MU / (2 * sme)
     else:
         a = np.inf
 
     # Semi-latus rectum
-    p = h_mag ** 2 / MU
+    p = h_mag ** 2 / const.MU
 
     # Find inclination
     incl = np.arccos(h[2] / h_mag)
 
     # Determine orbit type
-    orbit_type = determine_orbit_type(ecc, incl, tol=SMALL)
+    orbit_type = determine_orbit_type(ecc, incl, tol=const.SMALL)
 
     # Find right ascension of ascending node
-    if n_mag > SMALL:
+    if n_mag > const.SMALL:
         raan = np.arccos(np.clip(n_vec[0] / n_mag, -1, 1))
         if n_vec[1] < 0:
             raan = adjust_angle(raan)
@@ -291,7 +291,7 @@ def rv2coe(r, v):
             arglat = adjust_angle(arglat)
 
     # Find longitude of periapsis
-    if ecc > SMALL and orbit_type is OrbitType.EPH_EQUATORIAL:
+    if ecc > const.SMALL and orbit_type is OrbitType.EPH_EQUATORIAL:
         lonper = np.arccos(np.clip(e_vec[0] / ecc, -1, 1))
         if e_vec[1] < 0:
             lonper = adjust_angle(lonper)
@@ -299,7 +299,7 @@ def rv2coe(r, v):
             lonper = adjust_angle(lonper)
 
     # Find true longitude
-    if r_mag > SMALL and orbit_type is OrbitType.CIR_EQUATORIAL:
+    if r_mag > const.SMALL and orbit_type is OrbitType.CIR_EQUATORIAL:
         truelon = np.arccos(np.clip(r[0] / r_mag, -1, 1))
         if r[1] < 0:
             truelon = adjust_angle(truelon)
@@ -357,7 +357,7 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
     omega = np.arctan2(chi, psi)
     argp = np.arctan2(ag, af) - fr * omega
 
-    if ecc < SMALL:
+    if ecc < const.SMALL:
         # Circular orbits
         if is_equatorial(incl):
             # Circular equatorial
@@ -379,7 +379,7 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
     # Solve for eccentric anomaly and true anomaly
     e0, nu = newtonm(ecc, m)
 
-    if ecc < SMALL:
+    if ecc < const.SMALL:
         # Circular orbits
         if is_equatorial(incl):
             # Circular equatorial
@@ -421,9 +421,9 @@ def rv2eq(r, v):
     )
 
     # Determine retrograde factor
-    fr = -1 if abs(incl - np.pi) < SMALL else 1
+    fr = -1 if abs(incl - np.pi) < const.SMALL else 1
 
-    if ecc < SMALL:
+    if ecc < const.SMALL:
         # Circular orbits
         if is_equatorial(incl):
             # Circular Equatorial
@@ -441,7 +441,7 @@ def rv2eq(r, v):
 
     # Calculate mean motion
     # TODO: put in separate utility function
-    n = np.sqrt(MU / (a**3))
+    n = np.sqrt(const.MU / (a**3))
 
     # Get eccentricity vector components
     af = ecc * np.cos(fr * omega + argp)
@@ -457,11 +457,11 @@ def rv2eq(r, v):
 
     # Determine mean longitude
     meanlon = fr * omega + argp + m
-    meanlon = np.mod(meanlon + TWOPI, TWOPI)
+    meanlon = np.mod(meanlon + const.TWOPI, const.TWOPI)
 
     # Determine true longitude
     truelon = fr * omega + argp + nu
-    truelon = np.mod(truelon + TWOPI, TWOPI)
+    truelon = np.mod(truelon + const.TWOPI, const.TWOPI)
 
     return a, n, af, ag, chi, psi, meanlon, truelon, fr
 
@@ -546,13 +546,13 @@ def rv2tradec(reci, veci, rseci, vseci):
 
     # Calculate topocentric right ascension and declination
     temp = np.sqrt(rhoveci[0] ** 2 + rhoveci[1] ** 2)
-    if temp < SMALL:
+    if temp < const.SMALL:
         trtasc = np.arctan2(drhoveci[1], drhoveci[0])
     else:
         trtasc = np.arctan2(rhoveci[1], rhoveci[0])
 
     # Directly over the North Pole
-    if temp < SMALL:
+    if temp < const.SMALL:
         tdecl = np.sign(rhoveci[2]) * np.pi / 2  # +- 90 deg
     else:
         tdecl = np.arcsin(rhoveci[2] / rho)
@@ -563,12 +563,12 @@ def rv2tradec(reci, veci, rseci, vseci):
     # Calculate topocentric right ascension and declination rates
     temp1 = -rhoveci[1] ** 2 - rhoveci[0] ** 2
     drho = np.dot(rhoveci, drhoveci) / rho
-    if abs(temp1) > SMALL:
+    if abs(temp1) > const.SMALL:
         dtrtasc = (drhoveci[0] * rhoveci[1] - drhoveci[1] * rhoveci[0]) / temp1
     else:
         dtrtasc = 0.0
 
-    if abs(temp) > SMALL:
+    if abs(temp) > const.SMALL:
         dtdecl = (drhoveci[2] - drho * np.sin(tdecl)) / temp
     else:
         dtdecl = 0.0
@@ -625,7 +625,7 @@ def flt2rv(rmag, vmag, latgc, lon, fpa, az, ttt, jdut1, lod, xp, yp, ddpsi,
     )
 
     # Calculate right ascension and declination
-    if np.sqrt(reci[0]**2 + reci[1]**2) < SMALL:
+    if np.sqrt(reci[0]**2 + reci[1]**2) < const.SMALL:
         rtasc = np.arctan2(veci[1], veci[0])
     else:
         rtasc = np.arctan2(reci[1], reci[0])
@@ -694,7 +694,7 @@ def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms):
     )
 
     # Calculate longitude
-    if np.sqrt(recef[0]**2 + recef[1]**2) < SMALL:
+    if np.sqrt(recef[0]**2 + recef[1]**2) < const.SMALL:
         lon = np.arctan2(vecef[1], vecef[0])
     else:
         lon = np.arctan2(recef[1], recef[0])
@@ -702,7 +702,7 @@ def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms):
     latgc = np.arcsin(recef[2] / rmag)
 
     # Calculate right ascension and declination
-    if np.sqrt(reci[0]**2 + reci[1]**2) < SMALL:
+    if np.sqrt(reci[0]**2 + reci[1]**2) < const.SMALL:
         rtasc = np.arctan2(veci[1], veci[0])
     else:
         rtasc = np.arctan2(reci[1], reci[0])
@@ -772,8 +772,8 @@ def ell2rv(rr, ecllon, ecllat, drr, decllon, decllat):
     ])
 
     # Rotate position and velocity vectors to the ECI frame
-    reci = rot1(r, -OBLIQUITYEARTH)
-    veci = rot1(v, -OBLIQUITYEARTH)
+    reci = rot1(r, -const.OBLIQUITYEARTH)
+    veci = rot1(v, -const.OBLIQUITYEARTH)
 
     return reci, veci
 
@@ -799,17 +799,17 @@ def rv2ell(reci, veci):
             decllat (float): Ecliptic latitude rate of change in rad/s
     """
     # Perform rotation about the x-axis by the obliquity
-    r = rot1(reci, OBLIQUITYEARTH)
-    v = rot1(veci, OBLIQUITYEARTH)
+    r = rot1(reci, const.OBLIQUITYEARTH)
+    v = rot1(veci, const.OBLIQUITYEARTH)
 
     # Calculate magnitudes
     rr = np.linalg.norm(r)
     temp = np.sqrt(r[0]**2 + r[1]**2)
 
     # Calculate ecliptic longitude
-    if temp < SMALL:
+    if temp < const.SMALL:
         temp1 = np.sqrt(v[0]**2 + v[1]**2)
-        ecllon = np.arctan2(v[1], v[0]) if abs(temp1) > SMALL else 0
+        ecllon = np.arctan2(v[1], v[0]) if abs(temp1) > const.SMALL else 0
     else:
         ecllon = np.arctan2(r[1], r[0])
 
@@ -819,8 +819,12 @@ def rv2ell(reci, veci):
     # Calculate rates
     temp1 = -r[1]**2 - r[0]**2  # Different now
     drr = np.dot(r, v) / rr
-    decllon = (v[0] * r[1] - v[1] * r[0]) / temp1 if abs(temp1) > SMALL else 0
-    decllat = (v[2] - drr * np.sin(ecllat)) / temp if abs(temp) > SMALL else 0
+    decllon = (
+        (v[0] * r[1] - v[1] * r[0]) / temp1 if abs(temp1) > const.SMALL else 0
+    )
+    decllat = (
+        (v[2] - drr * np.sin(ecllat)) / temp if abs(temp) > const.SMALL else 0
+    )
 
     return rr, ecllon, ecllat, drr, decllon, decllat
 
@@ -898,8 +902,11 @@ def rv2radec(r, v):
     temp = np.sqrt(r[0] ** 2 + r[1] ** 2)
 
     # Calculate right ascension
-    rtasc = np.arctan2(v[1], v[0]) if temp < SMALL else np.arctan2(r[1], r[0])
-    rtasc += TWOPI if rtasc < 0.0 else rtasc
+    rtasc = (
+        np.arctan2(v[1], v[0]) if temp < const.SMALL
+        else np.arctan2(r[1], r[0])
+    )
+    rtasc += const.TWOPI if rtasc < 0.0 else rtasc
 
     # Calculate declination
     decl = np.arcsin(r[2] / rr)
@@ -909,10 +916,14 @@ def rv2radec(r, v):
     temp1 = -r[1] * r[1] - r[0] * r[0]
 
     # Calculate right ascension rate
-    drtasc = (v[0] * r[1] - v[1] * r[0]) / temp1 if abs(temp1) > SMALL else 0
+    drtasc = (
+        (v[0] * r[1] - v[1] * r[0]) / temp1 if abs(temp1) > const.SMALL else 0
+    )
 
     # Calculate declination rate
-    ddecl = (v[2] - drr * np.sin(decl)) / temp if abs(temp) > SMALL else 0
+    ddecl = (
+        (v[2] - drr * np.sin(decl)) / temp if abs(temp) > const.SMALL else 0
+    )
 
     return rr, rtasc, decl, drr, drtasc, ddecl
 
@@ -985,8 +996,8 @@ def rvs2raz(rhosez, drhosez):
     """
     # Calculate azimuth
     temp = np.sqrt(rhosez[0] ** 2 + rhosez[1] ** 2)
-    if abs(rhosez[1]) < SMALL:
-        if temp < SMALL:
+    if abs(rhosez[1]) < const.SMALL:
+        if temp < const.SMALL:
             az = np.arctan2(drhosez[1], -drhosez[0])
         else:
             az = np.pi if rhosez[0] > 0.0 else 0.0
@@ -995,7 +1006,7 @@ def rvs2raz(rhosez, drhosez):
 
     # Calculate elevation
     el = (
-        np.sign(rhosez[2]) * SMALL if temp < SMALL
+        np.sign(rhosez[2]) * const.SMALL if temp < const.SMALL
         else np.arcsin(rhosez[2] / np.linalg.norm(rhosez))
     )
 
@@ -1008,12 +1019,13 @@ def rvs2raz(rhosez, drhosez):
     # Azimuth rate
     daz = (
         (drhosez[0] * rhosez[1] - drhosez[1] * rhosez[0]) / (temp ** 2)
-        if abs(temp ** 2) > SMALL else 0.0
+        if abs(temp ** 2) > const.SMALL else 0.0
     )
 
     # Elevation rate
     del_el = (
-        (drhosez[2] - drho * np.sin(el)) / temp if abs(temp) > SMALL else 0.0
+        (drhosez[2] - drho * np.sin(el)) / temp
+        if abs(temp) > const.SMALL else 0.0
     )
 
     return rho, az, el, drho, daz, del_el
@@ -1055,8 +1067,8 @@ def razel2rv(rho, az, el, drho, daz, del_el, latgd, lon, alt, ttt, jdut1, lod,
     rhosez, drhosez = raz2rvs(rho, az, el, drho, daz, del_el)
 
     # Perform SEZ to ECEF transformation
-    rhoecef = rot3(rot2(rhosez, latgd - HALFPI), -lon).T
-    drhoecef = rot3(rot2(drhosez, latgd - HALFPI), -lon).T
+    rhoecef = rot3(rot2(rhosez, latgd - const.HALFPI), -lon).T
+    drhoecef = rot3(rot2(drhosez, latgd - const.HALFPI), -lon).T
 
     # Find ECEF range and velocity vectors
     rs, vs = site(latgd, lon, alt)
@@ -1125,20 +1137,20 @@ def rv2razel(reci, veci, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi,
 
     # Convert to SEZ for calculations
     tempvec = rot3(rhoecef, lon)
-    rhosez = rot2(tempvec, HALFPI - latgd)
+    rhosez = rot2(tempvec, const.HALFPI - latgd)
 
     tempvec = rot3(drhoecef, lon)
-    drhosez = rot2(tempvec, HALFPI - latgd)
+    drhosez = rot2(tempvec, const.HALFPI - latgd)
 
     # Calculate azimuth and elevation
     temp = np.sqrt(rhosez[0]**2 + rhosez[1]**2)
-    if temp < SMALL:
-        el = np.sign(rhosez[2]) * HALFPI
+    if temp < const.SMALL:
+        el = np.sign(rhosez[2]) * const.HALFPI
     else:
         magrhosez = np.linalg.norm(rhosez)
         el = np.arcsin(rhosez[2] / magrhosez)
 
-    if temp < SMALL:
+    if temp < const.SMALL:
         az = np.arctan2(drhosez[1], -drhosez[0])
     else:
         az = np.arctan2(rhosez[1] / temp, -rhosez[0] / temp)
@@ -1147,10 +1159,11 @@ def rv2razel(reci, veci, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi,
     drho = np.dot(rhosez, drhosez) / rho
     daz = (
         (drhosez[0] * rhosez[1] - drhosez[1] * rhosez[0]) / (temp * temp)
-        if temp > SMALL else 0.0
+        if temp > const.SMALL else 0.0
     )
     del_el = (
-        (drhosez[2] - drho * np.sin(el)) / temp if abs(temp) > SMALL else 0.0
+        (drhosez[2] - drho * np.sin(el)) / temp
+        if abs(temp) > const.SMALL else 0.0
     )
 
     return rho, az, el, drho, daz, del_el
@@ -1236,3 +1249,66 @@ def rv2ntw(reci, veci):
     vntw = np.dot(transmat, veci)
 
     return rntw, vntw, transmat
+
+
+###############################################################################
+# Geodetic Elements
+###############################################################################
+
+def ecef2ll(r):
+    """Converts an ECEF position vector into geodetic and geocentric latitude,
+    longitude, and height above the ellipsoid using the Astronomical Almanac
+    method.
+
+    References:
+        Vallado: 2001, p. 174-179, Algorithm 12, Example 3-3
+
+    Args:
+        r (array_like): ECEF position vector [km]
+
+    Returns:
+        tuple: (latgc, latgd, lon, hellp)
+            latgc (float): Geocentric latitude in radians (-pi to pi)
+            latgd (float): Geodetic latitude in radians (-pi to pi)
+            lon (float): Longitude in radians (-2pi to 2pi)
+            hellp (float): Height above the ellipsoid in km
+    """
+    # Compute magnitude of the position vector
+    magr = np.linalg.norm(r)
+
+    # Compute longitude (right ascension approximation)
+    temp = np.sqrt(r[0] ** 2 + r[1] ** 2)
+    if np.abs(temp) < const.SMALL:
+        lon = np.sign(r[2]) * np.pi * 0.5
+    else:
+        lon = np.arctan2(r[1], r[0])
+
+    # Adjust longitude to be within [-2π, 2π] range
+    if np.abs(lon) >= np.pi:
+        lon += const.TWOPI if lon < 0.0 else -const.TWOPI
+
+    # Compute geodetic latitude as an initial approximation (declination)
+    latgd = np.arcsin(r[2] / magr)
+
+    # Iterate to refine geodetic latitude
+    i, c = 0, 0
+    olddelta = latgd + 10.0
+
+    while np.abs(olddelta - latgd) >= const.SMALL and i < 10:
+        olddelta = latgd
+        sintemp = np.sin(latgd)
+        c = const.RE / np.sqrt(1.0 - const.ECCEARTHSQRD * sintemp ** 2)
+        latgd = np.arctan((r[2] + c * const.ECCEARTHSQRD * sintemp) / temp)
+        i += 1
+
+    # Calculate height above the ellipsoid
+    if np.pi * 0.5 - np.abs(latgd) < np.radians(1):  # within 1 deg of poles
+        hellp = (temp / np.cos(latgd)) - c
+    else:
+        s = c * (1.0 - const.ECCEARTHSQRD)
+        hellp = r[2] / np.sin(latgd) - s
+
+    # Compute geocentric latitude
+    latgc = np.arcsin(r[2] / magr)
+
+    return latgc, latgd, lon, hellp
