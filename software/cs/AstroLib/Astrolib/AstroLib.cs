@@ -6,13 +6,13 @@
 *
 *                            companion code for
 *               fundamentals of astrodynamics and applications
-*                                    2013
+*                                    2022
 *                              by david vallado
 *
 *               email dvallado@comspoc.com, davallado@gmail.com
 *
 *    current :
-*              17 jun 20  david vallado
+*               5 aug 24  david vallado
 *                           misc fixes
 *    changes :
 *              15 jan 19  david vallado
@@ -33,6 +33,13 @@ using System.Text.RegularExpressions;
 
 using MathTimeMethods;  // Edirection, globals
 using EOPSPWMethods;    // EOPDataClass, SPWDataClass, iau80Class, iau06Class
+using System.Net.NetworkInformation;
+using System.Security.Policy;
+using System.Security.Cryptography;
+using System.Configuration;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Net;
 
 namespace AstroLibMethods
 {
@@ -3853,8 +3860,8 @@ namespace AstroLibMethods
                 ecc = undefined; // 1.0;
                 incl = undefined; // calc
                 raan = undefined; // calc
-                argp = undefined; 
-                nu = undefined; 
+                argp = undefined;
+                nu = undefined;
                 m = undefined;
                 arglat = undefined; // calc because no perigee
                 truelon = undefined;
@@ -4262,7 +4269,7 @@ namespace AstroLibMethods
         *  outputs       :
         *    magr        - eci position vector magnitude                   km
         *    magv        - eci velocity vector magnitude                   km/sec
-        *    latgc       - geocentric latitude                             rad
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
         *    lon         - longitude                                       rad
         *    fpa         - sat flight path angle                           rad
         *    az          - sat flight path az                              rad
@@ -4687,7 +4694,7 @@ namespace AstroLibMethods
         *  locals        :
         *    rhov        - eci range vector from site             km
         *    drhov       - eci velocity vector from site          km/s
-        *    latgc       - geocentric latitude                    rad
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
         *
         *  coupling      :
         *    mag         - magnitude of a vector
@@ -4702,8 +4709,8 @@ namespace AstroLibMethods
         (
         ref double[] reci, ref double[] veci, double[] rseci,
         Enum direct,
-        ref double rho, ref double trtasc, ref double tdecl,
-        ref double drho, ref double dtrtasc, ref double dtdecl
+        ref double trr, ref double trtasc, ref double tdecl,
+        ref double tdrr, ref double tdrtasc, ref double tddecl
         )
         {
             const double small = 0.00000001;
@@ -4712,9 +4719,9 @@ namespace AstroLibMethods
             double[] rhov = new double[3];
             double[] drhov = new double[3];
             double[] vseci = new double[3];
-            double latgc, temp, temp1;
+            double temp, temp1;
 
-            latgc = Math.Asin(rseci[2] / MathTimeLibr.mag(rseci));
+            //latgc = Math.Asin(rseci[2] / MathTimeLibr.mag(rseci));
 
             earthrate[0] = 0.0;
             earthrate[1] = 0.0;
@@ -4724,30 +4731,30 @@ namespace AstroLibMethods
             if (direct.Equals(MathTimeLib.Edirection.efrom))
             {
                 // --------  calculate topocentric slant range vectors ------------------ 
-                rhov[0] = (rho * Math.Cos(tdecl) * Math.Cos(trtasc));
-                rhov[1] = (rho * Math.Cos(tdecl) * Math.Sin(trtasc));
-                rhov[2] = (rho * Math.Sin(tdecl));
+                rhov[0] = (trr * Math.Cos(tdecl) * Math.Cos(trtasc));
+                rhov[1] = (trr * Math.Cos(tdecl) * Math.Sin(trtasc));
+                rhov[2] = (trr * Math.Sin(tdecl));
 
-                drhov[0] = (drho * Math.Cos(tdecl) * Math.Cos(trtasc) -
-                    rho * Math.Sin(tdecl) * Math.Cos(trtasc) * dtdecl -
-                    rho * Math.Cos(tdecl) * Math.Sin(trtasc) * dtrtasc);
-                drhov[1] = (drho * Math.Cos(tdecl) * Math.Sin(trtasc) -
-                    rho * Math.Sin(tdecl) * Math.Sin(trtasc) * dtdecl +
-                    rho * Math.Cos(tdecl) * Math.Cos(trtasc) * dtrtasc);
-                drhov[2] = (drho * Math.Sin(tdecl) + rho * Math.Cos(tdecl) * dtdecl);
+                drhov[0] = (tdrr * Math.Cos(tdecl) * Math.Cos(trtasc) -
+                    trr * Math.Sin(tdecl) * Math.Cos(trtasc) * tddecl -
+                    trr * Math.Cos(tdecl) * Math.Sin(trtasc) * tdrtasc);
+                drhov[1] = (tdrr * Math.Cos(tdecl) * Math.Sin(trtasc) -
+                    trr * Math.Sin(tdecl) * Math.Sin(trtasc) * tddecl +
+                    trr * Math.Cos(tdecl) * Math.Cos(trtasc) * tdrtasc);
+                drhov[2] = (tdrr * Math.Sin(tdecl) + trr * Math.Cos(tdecl) * tddecl);
 
                 // ------ find eci range vector from geocenter to satellite ------ 
                 MathTimeLibr.addvec(1.0, rhov, 1.0, rseci, out reci);
-                MathTimeLibr.addvec(1.0, drhov, Math.Cos(latgc), vseci, out veci);
+                MathTimeLibr.addvec(1.0, drhov, 1.0, vseci, out veci);
             }
             else
             {
                 // ------ find eci range vector from site to satellite ------  
                 MathTimeLibr.addvec(1.0, reci, -1.0, rseci, out rhov);
-                MathTimeLibr.addvec(1.0, veci, -Math.Cos(latgc), vseci, out drhov);
+                MathTimeLibr.addvec(1.0, veci, -1.0, vseci, out drhov);
 
                 // -------- calculate topocentric angle and rate values -----  
-                rho = MathTimeLibr.mag(rhov);
+                trr = MathTimeLibr.mag(rhov);
                 temp = Math.Sqrt(rhov[0] * rhov[0] + rhov[1] * rhov[1]);
                 if (temp < small)
                 {
@@ -4762,15 +4769,15 @@ namespace AstroLibMethods
                 tdecl = Math.Asin(rhov[2] / MathTimeLibr.mag(rhov));
 
                 temp1 = -rhov[1] * rhov[1] - rhov[0] * rhov[0];
-                drho = MathTimeLibr.dot(rhov, drhov) / rho;
+                tdrr = MathTimeLibr.dot(rhov, drhov) / trr;
                 if (Math.Abs(temp1) > small)
-                    dtrtasc = (drhov[0] * rhov[1] - drhov[1] * rhov[0]) / temp1;
+                    tdrtasc = (drhov[0] * rhov[1] - drhov[1] * rhov[0]) / temp1;
                 else
-                    dtrtasc = 0.0;
+                    tdrtasc = 0.0;
                 if (Math.Abs(temp) > small)
-                    dtdecl = (drhov[2] - drho * Math.Sin(tdecl)) / temp;
+                    tddecl = (drhov[2] - tdrr * Math.Sin(tdecl)) / temp;
                 else
-                    dtdecl = 0.0;
+                    tddecl = 0.0;
             }
         } //  rv_tradec
 
@@ -5404,7 +5411,7 @@ namespace AstroLibMethods
           *    eccanom     - eccentric anomaly              0.0 to 2pi rad
           *
           *  outputs       :
-          *    m           - mean anomaly                   -2pi to 2pi rad
+          *    m           - mean anomaly                   0.0 to 2pi rad
           *    nu          - true anomaly                   0.0 to 2pi rad
           *
           *  locals        :
@@ -5484,7 +5491,7 @@ namespace AstroLibMethods
          *
          *  inputs          description                    range / units
          *    ecc         - eccentricity                   0.0 to
-         *    m           - mean anomaly                   -2pi to 2pi rad
+         *    m           - mean anomaly                         0.0 to 2pi rad
          *
          *  outputs       :
          *    eccanom          - eccentric anomaly              0.0 to 2pi rad
@@ -5496,7 +5503,7 @@ namespace AstroLibMethods
          *    cosv        - cosine of nu
          *    ktr         - index
          *    r1r         - cubic roots - 1 to 3
-         *    r1i         - iMathTimeLibr.maginary component
+         *    r1i         - MathTimeLibr imaginary component
          *    r2r         -
          *    r2i         -
          *    r3r         -
@@ -5628,7 +5635,7 @@ namespace AstroLibMethods
         *
         *  inputs          description                    range / units
         *    ecc         - eccentricity                   0.0 to
-        *    m           - mean anomaly                   -2pi to 2pi rad
+        *    m           - mean anomaly                   0.0 to 2pi rad
         *
         *  outputs       :
         *    eccanom          - eccentric anomaly              0.0 to 2pi rad
@@ -5636,11 +5643,11 @@ namespace AstroLibMethods
         *
         *  locals        :
         *    e1          - eccentric anomaly, next value  rad
-        *    Math.Sinv        - Math.Sine of nu
-        *    Math.Cosv        - Math.Cosine of nu
+        *    sinv        - sine of nu
+        *    cosv        - cosine of nu
         *    ktr         - index
         *    r1r         - cubic roots - 1 to 3
-        *    r1i         - iMathTimeLibr.maginary component
+        *    r1i         - MathTimeLibr imaginary component
         *    r2r         -
         *    r2i         -
         *    r3r         -
@@ -5649,12 +5656,12 @@ namespace AstroLibMethods
         *    w           - variables for parabolic solution
         *
         *  coupling      :
-        *    Math.Atan2       - arc tangent function which also resloves quadrants
+        *    atan2       - arc tangent function which also resloves quadrants
         *    cubic       - solves a cubic polynomial
         *    power       - raises a base number to an arbitrary power
-        *    Math.Sinh        - hyperbolic Math.Sine
-        *    Math.Cosh        - hyperbolic Math.Cosine
-        *    Math.Sign         - returns the sign of an argument
+        *    sinh        - hyperbolic sine
+        *    cosh        - hyperbolic cosine
+        *    sgn         - returns the sign of an argument
         *
         *  references    :
         *    vallado       2013, 73, alg 2, ex 2-1
@@ -5765,7 +5772,7 @@ namespace AstroLibMethods
         *  this function solves keplers equation when the true anomaly is known.
         *    the mean and eccentric, parabolic, or hyperbolic anomaly is also found.
         *    the parabolic limit at 168ø is arbitrary. the hyperbolic anomaly is also
-        *    limited. the hyperbolic Math.Sine is used because it's not double valued.
+        *    limited. the hyperbolic sine is used because it's not double valued.
         *
         *  author        : david vallado           davallado@gmail.com   27 may 2002
         *
@@ -5774,7 +5781,7 @@ namespace AstroLibMethods
         *
         *  inputs          description                    range / units
         *    ecc         - eccentricity                   0.0  to
-        *    nu          - true anomaly                   -2pi to 2pi rad
+        *    nu          - true anomaly                             0.0 to 2pi rad
         *
         *  outputs       :
         *    eccanom          - eccentric anomaly              0.0  to 2pi rad       153.02 ø
@@ -5788,7 +5795,7 @@ namespace AstroLibMethods
         *
         *  coupling      :
         *    arcsinh     - arc hyperbolic Math.Sine
-        *    Math.Sinh        - hyperbolic Math.Sine
+        *    sinh        - hyperbolic Math.Sine
         *
         *  references    :
         *    vallado       2007, 85, alg 5
@@ -6567,9 +6574,9 @@ namespace AstroLibMethods
           *    r           - ecef position vector           km
           *
           *  outputs       :
-          *    latgc       - geocentric latitude            -Math.PI to Math.PI rad
-          *    latgd       - geodetic latitude              -Math.PI to Math.PI rad
-          *    lon         - longitude (west -)             -2pi to 2pi rad
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+          *    latgd       - geodetic latitude              -pi/2 to pi/2 rad
+          *    lon         - longitude (west -)             0 to 2pi rad
           *    hellp       - height above the ellipsoid     km
           *
           *  locals        :
@@ -6668,9 +6675,9 @@ namespace AstroLibMethods
         *    r           - ecef position vector                km
         *
         *  outputs       :
-        *    latgc       - geocentric latitude                 -Math.PI to Math.PI rad
-        *    latgd       - geodetic latitude                   -Math.PI to Math.PI rad
-        *    lon         - longitude (west -)                  -2pi to 2pi rad
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        *    latgd       - geodetic latitude                   -pi/2 to pi/2 rad  
+        *    lon         - longitude (west -)                  0 to 2pi rad
         *    hellp       - height above the ellipsoid           km
         *
         *  locals        :
@@ -6769,7 +6776,7 @@ namespace AstroLibMethods
         *    latgd       - geodetic latitude              -Math.PI to Math.PI rad
         *
         *  outputs       :
-        *    latgc       - geocentric latitude            -Math.PI to Math.PI rad
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
         *
         *  locals        :
         *    none.
@@ -8951,7 +8958,7 @@ namespace AstroLibMethods
                     kk = kk + 1;
                 }
 
-//                if (show == 'y' || show == 'a')
+                //                if (show == 'y' || show == 'a')
                 {
                     errstr = errstr + "Poly--------- " + poly[1] + " " + poly[3] + " " + poly[6] + " " + poly[9]
                     + " tau " + tau12.ToString() + " " + tau32.ToString() + " sec ";
@@ -9741,7 +9748,7 @@ namespace AstroLibMethods
         (
             double cc1, double cc2, double magrsite1, double magrsite2, double magr1in, double magr2in,
             double[] los1, double[] los2, double[] los3,
-            double[] rsite1, double[] rsite2, double[] rsite3, double t1, double t3, 
+            double[] rsite1, double[] rsite2, double[] rsite3, double t1, double t3,
             int n12, int n13, int n23,
             out double[] r2, out double[] r3, out double f1, out double f2, out double q1,
             out double magr2, out double a, out double deltae32, out string errstr
@@ -9816,8 +9823,8 @@ namespace AstroLibMethods
             double raan = Math.Acos(temp1);
             if (nbar[1] < 0.0)
                 raan = twopi - raan;
-            errstr = errstr + "w3  " + w[0].ToString() + " " + w[1].ToString() + " " + w[2].ToString() 
-                + " " + incl*rad1 + " " + raan * rad1 + "\n";
+            errstr = errstr + "w3  " + w[0].ToString() + " " + w[1].ToString() + " " + w[2].ToString()
+                + " " + incl * rad1 + " " + raan * rad1 + "\n";
 
             // change to negative sign, from gtds
             rho3 = -MathTimeLibr.dot(rsite3, w) / MathTimeLibr.dot(los3, w);
@@ -9840,8 +9847,8 @@ namespace AstroLibMethods
                 temp1 = Math.Sign(temp1);
             raan = Math.Acos(temp1);
             if (nbar[1] < 0.0)
-                raan = twopi - raan; 
-            errstr = errstr + "w31 " + w1[0].ToString() + " " + w1[1].ToString() + " " + w1[2].ToString() 
+                raan = twopi - raan;
+            errstr = errstr + "w31 " + w1[0].ToString() + " " + w1[1].ToString() + " " + w1[2].ToString()
                 + " " + incl * rad1 + " " + raan * rad1 + "\n";
 
 
@@ -9963,7 +9970,7 @@ namespace AstroLibMethods
                 // pass back as deltae32, only used in hyerbolic portion though
                 deltae32 = deltah32; // fix??
             }
-            
+
             // ders test cases work a little better, but others are off
             // perhaps it's adding it twice dnu "and" here???
             //f1 = t1 - (deltam12 + twopi * n12) / n;
@@ -10098,9 +10105,9 @@ namespace AstroLibMethods
             // haven't tested this for LEO orbits yet
             // but using 2pi DEFINES use of 86400
             double period = 86400.0;
-            n12 = Math.Abs( (int) (tau1 / period) );
-            n13 = Math.Abs( (int) (tau2 / period) );
-            n23 = Math.Abs( (int) ((tau1 + tau3) / period) );
+            n12 = Math.Abs((int)(tau1 / period));
+            n13 = Math.Abs((int)(tau2 / period));
+            n23 = Math.Abs((int)((tau1 + tau3) / period));
 
             //n12 = 0;
             //n13 = 0;
@@ -10142,9 +10149,9 @@ namespace AstroLibMethods
             // main loop to get three values of the double-r for Newton iteration
             // use 10 iterations, but also check for 2 in a row that increase in abs(), if so, stop, that run is no good
             // 12 iterations helps a little on 16, 17, 21
-            while ((Math.Abs(magr1in - magr1old) > tol || Math.Abs(magr2in - magr2old) > tol) 
+            while ((Math.Abs(magr1in - magr1old) > tol || Math.Abs(magr2in - magr2old) > tol)
                 && ktr <= 15
-                && newqr < oldqr) 
+                && newqr < oldqr)
                 {
                 oldqr = newqr;
                     ktr = ktr + 1;
@@ -10226,12 +10233,12 @@ namespace AstroLibMethods
                 delta2 = pf1pr1 * f2 - pf2pr1 * f1;
 
                 errstr = errstr + "delta1 " + delta1.ToString() + " delta2 " + delta2.ToString() + " mag " + delta.ToString() + "\n";
-                
+
                 if (Math.Abs(delta) < 0.0000001)
                 {
                     deltar1 = -delta1;
                     deltar2 = -delta2;
-                    
+
                     errstr = errstr + "delta was 0 dr1 " + deltar1.ToString() + " dr2 " + deltar2.ToString() + "\n";
                     //Console.WriteLine("delta was 0 dr1 " + deltar1.ToString() + " dr2 " + deltar2.ToString());
                 }
@@ -10262,12 +10269,12 @@ namespace AstroLibMethods
                 magr2old = magr2in;
 
                 magr1in = magr1in + deltar1;
-                magr2in = magr2in + deltar2;  
-               
+                magr2in = magr2in + deltar2;
+
                 // fprintf(1,'magr1o %11.7f delr1 %11.7f magr1 %11.7f %11.7f  \n', magr1o, deltar1, magr1in, magr1old);
                 // fprintf(1,'magr2o %11.7f delr2 %11.7f magr2 %11.7f %11.7f  \n', magr2o, deltar2, magr2in, magr2old);
-                newqr = Math.Sqrt(q1*q1+q2*q2+q3*q3);
-    
+                newqr = Math.Sqrt(q1 * q1 + q2 * q2 + q3 * q3);
+
                 errstr = errstr + "\n";
                 errstr = errstr + "q1 " + q1.ToString() + " q2 " + q2.ToString() + " q3 " + q3.ToString()
                     + " qr " + newqr.ToString() + "\n";
@@ -10281,7 +10288,7 @@ namespace AstroLibMethods
                 rs1, rs2, rs3, tau1, tau3, n12, n13, n23,
                 out r2, out r3, out f1, out f2, out q1, out magr2,
                 out a, out deltae32, out tmpstr);
- 
+
             errstr = errstr + tmpstr + " loop last " + ktr.ToString() + " magr1in " + magr1in.ToString()
                 + " magr2in " + magr2in.ToString()
                  + " a== " + a.ToString() + " q1 " + q1.ToString() + "\n";
@@ -10480,7 +10487,7 @@ namespace AstroLibMethods
             tau13 = (jd3 - jd1) * 86400.0 + (jdf3 - jdf1) * 86400.0;
 
             if (tau12 > 86400.0)
-                numhalfrev = 2 * (int) Math.Floor(tau12 / 86400.0);
+                numhalfrev = 2 * (int)Math.Floor(tau12 / 86400.0);
             if (tau13 > 86400.0)
                 numhalfrev = 2 * (int)Math.Floor(tau13 / 86400.0);
 
@@ -11360,11 +11367,11 @@ namespace AstroLibMethods
             //dm = 'L';  // unlikely to be going the long way
             de = 'L';
             //de = 'H';  // unlikely to be high energy if nrev = 0
-            
+
             // this seems to help in the multi-rev cases
             if (tau12 >= 86400.0 && tau13 >= 86400.0)
                 nrev = 1;
-            else  
+            else
                 nrev = 0;
 
             // lambert solution to get radial and transverse velocity components at time t1
@@ -11688,7 +11695,7 @@ namespace AstroLibMethods
                 (1.0 / (dt32 * dt31) + gravConst.mu / (12.0 * MathTimeLibr.mag(r3) * MathTimeLibr.mag(r3) * MathTimeLibr.mag(r3)));
             MathTimeLibr.addvec3(term1, r1, term2, r2, term3, r3, out v2);
         }  // herrgibbs
-                     
+
 
         /*------------------------------------------------------------------------------
         *
@@ -11768,7 +11775,7 @@ namespace AstroLibMethods
  //           if (error.Equals("ok"))
             {
                 //        lambertuniv(rint, r1tgt, dm, de, nrev, dtsec, tbi, altpad, out v1t, out v2t, out hitearth, out error);
-//                if (error.Equals("ok"))
+                //                if (error.Equals("ok"))
                 {
                     MathTimeLibr.addvec(1.0, v1t, -1.0, vint, out dv1);
                     MathTimeLibr.addvec(1.0, v1tgt, -1.0, v2t, out dv2);
@@ -11834,7 +11841,7 @@ namespace AstroLibMethods
 
             // determine if file has hours or not
             string[] linedata = Regex.Split(fileData[0], patternd);
-            char dayorhr ='h';
+            char dayorhr = 'h';
             try
             {
                 int hrr = Convert.ToInt32(linedata[4]);
@@ -11961,13 +11968,16 @@ namespace AstroLibMethods
             mfme = (jdtdb + jdtdbF - jdb) * 1440.0;
             if (mfme < 0.0)
                 mfme = 1440.0 + mfme;
+            // needed if using every 12 our data
+            if (mfme > 720.0)
+                mfme = mfme - 720.0;
 
             //printf("jdtdb %lf  %lf  %lf  %lf \n ", jdtdb, jdtdbF, jdb, mfme);x[recnum]
 
             // ---- read data for day of interest
             jdjpldestarto = Math.Floor(jdtdb + jdtdbF - jdjpldestart);
             //recnum = Convert.ToInt32(jdjpldestarto);  // for 1 day centers
-            recnum = Convert.ToInt32(jdjpldestarto) * 2 - 1;
+            recnum = Convert.ToInt32(jdjpldestarto) * 2;  // for 12 hr centers
 
             // check for out of bound values
             if ((recnum >= 1) && (recnum < jpldesize - 2))
@@ -12354,61 +12364,52 @@ namespace AstroLibMethods
         *
         *                           function InitGravityField
         *
-        *  this function reads and stores the gravity field coefficients. the routine can be 
-        *  configured for either normalized or unnormalized values. note that in practice,
-        *  the factorial can only return results to n = 170 due to computer precision limits.  
-        *  arrays are dimensioned from 0 since L,m go from 0.
+        *  this function reads and stores the gravity field coefficients. the routine is 
+        *  can process either un-normalized or normalized coefficients. it's important to 
+        *  set the normal parameter correctly as the gravData will contain c,s, or cNor, sNor 
+        *  as needed. this should help minimize confusion with future use. because large 
+        *  (>170) gravity fields cause normalization  problems, it's preferable to use 
+        *  normalized gravity fields but you must also use a recursion that normalizes the
+        *  legendre functions. arrays are dimensioned from 0 because L,m go from 0. this may 
+        *  cause difficulties in FOR, Matlab and languages that don't permit 0 array indices.
         *      
-        *  author        : david vallado             davallado@gmail.com   9 oct 2019
+        *  author        : david vallado             davallado@gmail.com        5 aug 2024
         *
         *  inputs        description                                     range / units
         *    fname       - filename for gravity field            
-        *    normal      - normalized coeff in file                        'y', 'n'
+        *    normalized  - normalized or unnormalized                           'y', 'n'                        
+        *    startKtr    - first line of ata in the gravity file                0, 1, ...
         *
         *  outputs       :
-        *    order       - Size of gravity field                           1..2160..
-        *    gravData.c  - gravitational coefficients (in gravityConst)
-        *    gravData.s  - gravitational coefficients (in gravityConst)
-        *    unnormArr   - normalization values for unnormalized formulations (precomputed)
-        *                  uses factorials so it only is good to about 170
-        *    normArr     - normalization values for normalized formulations (precomputed)
-        *                  should be good to 1000, 2160, etc.
+        *    order       - size of gravity field                                1..2160..
+        *    gravData    - structure containing the gravity field coefficients, 
+        *                  radius of the Earth, and gravitational parameter
         *
         *  locals :
         *    L, m        - degree and order indices
         *    ktr         - starting line of data in each gravity file
-        *    conv        - conversion to un-normalize
         *
         *  coupling      :
         *    none
         *
         *  references :
-        *    vallado       2013, 597
+        *    vallado       2022, 550-551
         * ----------------------------------------------------------------------------*/
 
         public void initGravityField
             (
                 string fname,
+                char normalized,
                 Int32 startKtr,
-                char normal,
                 out Int32 order,
-                out gravityConst gravData,
-                out double[,] unnormArr,
-                out double[,,] normArr
+                out gravityConst gravData
             )
         {
-            int L, m, ktr, begincol;
-            // 150 is arbitrary, but sufficiently large for satellite applications
-            Int32 maxsizeGravField = 2100;
+            Int32 maxsizeGravField = 2500;
+            Int32 L, m, ktr, begincol;
             string line, line1;
             double conv;
-            normArr = new double[maxsizeGravField + 2, maxsizeGravField + 2, 8];
             L = 0;
-
-            unnormArr = new double[maxsizeGravField + 2, maxsizeGravField + 2];
-            unnormArr[0, 0] = 1.0;
-            unnormArr[1, 0] = Math.Sqrt(3);
-            unnormArr[1, 1] = unnormArr[1, 0];
 
             gravData = new gravityConst();
             // beware as many models have sigmas (EGM-08, GGM-03C, ), while others are blank (JGM-3, )
@@ -12442,7 +12443,7 @@ namespace AstroLibMethods
 
                 L = Convert.ToInt32(linesplt[begincol]);
                 m = Convert.ToInt32(linesplt[begincol + 1]);
-                if (normal == 'y')
+                if (normalized == 'y')
                 {
                     gravData.cNor[L, m] = Convert.ToDouble(linesplt[begincol + 2]);
                     gravData.sNor[L, m] = Convert.ToDouble(linesplt[begincol + 3]);
@@ -12461,31 +12462,6 @@ namespace AstroLibMethods
                 catch
                 { }
 
-                // find unnormalized normalization constant depending on which is already in file
-                // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
-                if (L <= 170 && m <= 170)
-                {
-                    if (m == 0)
-                        conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
-                    else
-                        conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
-
-                    // ----- store these for later use
-                    unnormArr[L, m] = conv;
-
-                    if (normal == 'y')  // data in file was already normalized
-                    {
-                        gravData.c[L, m] = conv * gravData.cNor[L, m];
-                        gravData.s[L, m] = conv * gravData.sNor[L, m];
-                    }
-                    else
-                    {
-                        double temp = 1.0 / conv;
-                        gravData.cNor[L, m] = temp * gravData.c[L, m];
-                        gravData.sNor[L, m] = temp * gravData.s[L, m];
-                    }
-                }
-
                 ktr = ktr + 1;
             }
 
@@ -12495,172 +12471,29 @@ namespace AstroLibMethods
             else
                 order = L;
 
-            // note these normalization recursions should work for higher than 150 since factorials are "not" used. 
-            // calculate normalization constants and store for later for Gottlieb approach
-            // note that these normalizations are self sufficient - that is, index 5 does "not" depend on values from index 3, etc
-            // constants for normalized diagonal (L,L) terms (index 4)
-            for (L = 1; L <= order + 2; L++)
-            {
-                // constants for Gottlieb fully normalized (L,L) terms (index 4)
-                normArr[L, L, 4] = Math.Sqrt((2.0 * L + 1) / (2.0 * L));
-                // constants for fully normalized (L,0) terms (index 5, Gottlieb calls it delta)
-                // normArr[L, L - 1, 5] = Math.Sqrt(2.0 * L + 1);
-                if (L - 1 == 0)
-                    normArr[L, L - 1, 5] = Math.Sqrt((L + 1) * L * 0.5);
-                else
-                    normArr[L, L - 1, 5] = Math.Sqrt(2.0 * L);
-
-                normArr[L, L - 1, 7] = Math.Sqrt(2.0 * L + 1);  // old approach alt ver for Fukushima
-
-                // constants for fully normalized (L,0) terms (index 2 and 3, Gottlieb calls them alpha and beta)
-                // these do not need recursive values, 00 and 11 do not exist
-                normArr[L, 0, 2] = Math.Sqrt((2.0 * L + 1) * (2.0 * L - 1)) / L;
-                normArr[L, 0, 3] = (L - 1.0) / L * Math.Sqrt((2.0 * L + 1) / (2.0 * L - 3));
-            }
-
-            // constants for fully normalized general (L,m) terms (index 0 and 1, Gottlieb calls eta and zeta)
-            normArr[0, 0, 0] = 1.0;
-            normArr[1, 1, 0] = Math.Sqrt(3.0);  // no sine because we're not doing the latgc yet. just the coefficients
-            for (L = 2; L <= order + 2; L++)
-            {
-                for (m = 0; m < L; m++)
-                {
-                    normArr[L, m, 0] = Math.Sqrt(((2.0 * L + 1) * (2.0 * L - 1)) / ((L + m) * (L - m)));
-                    if (m > 0)
-                    {
-                        normArr[L, m, 1] = Math.Sqrt(((2.0 * L + 1) * (L + m - 1) * (L - m - 1)) / ((L + m) * (L - m) * (2.0 * L - 3)));
-                        normArr[L, m, 6] = Math.Sqrt((L - m) * (L + m + 1));  // m >= 1
-                        // simpler recursive approach for these (blm)
-                        //  normArr[L, m, 1] = normArr[L, m, 0] / normArr[L, m - 1, 0];
-                    }
-                    else
-                    {
-                        normArr[L, 0, 1] = Math.Sqrt((2.0 * L + 1) * (L - 1) * (L - 1) / (L * L * (2.0 * L - 3)));
-                        normArr[L, 0, 6] = Math.Sqrt(L * (L + 1) / 2.0);  // m = 0
-                    }
-
-                }
-            }
-
         } // initGravityField
 
 
-        /* ----------------------------------------------------------------------------
-         *LEGFGL          93 / 03 / 23            0000.0    PGMR: FGL
-         *
-         * FUNCTION:  COMPUTES LEGENDRE AND ASSOCIATED LEGENDRE FUNCTIONS UP TO
-         *DEGREE N AND ORDER M, N.GE.M
-         *
-         * I/O PARAMETERS:
-         *NAME I/O A/S DESCRIPTION OF PARAMETERS
-         * ------------------------------------------------------------
-         * N   IS DEGREE OF SPHERICAL HARMONICS
-         * M   IS    ORDER OF SPHERICAL HARMONICS
-         * X   IS Math.Sin(LATITUDE)
-         * POA    2-D LEGENDRE FUNCTIONS
-         *
-         * REFERENCES
-         * JPL EM 312 / 87 - 153, 20 APRIL 1987
-         ---------------------------------------------------------------------------- */
-        public void geodynlegp
-            (
-               double latgc,
-               Int32 degree,
-               Int32 order,
-               out double[,] LegArrOU,
-               out double[,] LegArrON
-            )
-        {
-            int i, j;
-            double y, conv;
-            double x = Math.Sin(latgc);
-            LegArrOU = new double[degree + 2, order + 2];
-            LegArrON = new double[degree + 2, order + 2];
-
-            // zero all out
-            for (i = 1; i <= degree + 1; i++)
-            {
-                for (j = 1; j <= order + 1; j++)
-                    LegArrOU[i, j] = 0.0;
-            }
-
-            // recursions
-            LegArrOU[1, 1] = 1.0;
-            LegArrOU[2, 1] = x;
-
-            // COMPUTE LEGENDRE FUNCTIONS UP TO DEGREE 
-            for (i = 2; i <= degree; i++)
-                LegArrOU[i + 1, 1] = (Convert.ToDouble(2 * i - 1) * x * LegArrOU[i, 1] - (i - 1) * LegArrOU[i - 1, 1]) / Convert.ToDouble(i);
-            if (order == 0)
-                return;  // just do zonals
-
-            // COMPUTE ASSOCIATED LEGENDRE FUNCTIONS UP TO ORDER 
-            y = Math.Sqrt(1.0 - x * x);
-            LegArrOU[2, 2] = y;
-            if (order != 1)
-            {
-                // THIS IS THE SECTORIAL PART OF THE ASSOCIATED FUNCTIONS
-                for (i = 2; i <= order; i++)
-                {
-                    LegArrOU[i + 1, i + 1] = (2 * i - 1) * y * LegArrOU[i, i];
-                }
-            }
-            // THIS THE TESSERAL PART OF THE ASSOCIATED FUNCTIONS
-            for (i = 2; i <= degree; i++)
-            {
-                // int i1 = i - 1;
-                for (j = 1; j <= i - 1; j++)
-                {
-                    if (j <= order)
-                    {
-                        LegArrOU[i + 1, j + 1] = Convert.ToDouble(2 * i - 1) * y * LegArrOU[i, j];
-                        if (i - 2 >= j)
-                            LegArrOU[i + 1, j + 1] = LegArrOU[i + 1, j + 1] + LegArrOU[i - 1, j + 1];
-                    }
-                }
-            }
-
-            // normalize after the polynomials are found because they are intertwined in the recursion
-            // indicies are +1
-            for (i = 3; i <= order; i++)
-            {
-                for (j = 1; j <= i; j++)
-                {
-                    // find normalized or unnormalized depending on which is already in file
-                    // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
-                    if (j == 1)
-                        conv = Math.Sqrt((MathTimeLibr.factorial(i - j) * (2 * i + 1)) / MathTimeLibr.factorial(i + j));
-                    else
-                        conv = Math.Sqrt((MathTimeLibr.factorial(i - j) * 2 * (2 * i + 1)) / MathTimeLibr.factorial(i + j));
-
-                    LegArrON[i, j] = conv * LegArrOU[i, j];
-                } // for m
-
-            } // for L
-        }  // geodynlegp
 
 
 
         /* ----------------------------------------------------------------------------
         *
-        *                           function LegPolyG
+        *                           function LegPolyGTDS
         *
-        *   this function finds the unnormalized Legendre polynomials for the gravity field.             
-        *   the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21 
-        *   in my text). fortran and matlab implementations will have indicies of 1 greater  
-        *   as they start at 1. note that some recursions at high degree tesseral terms 
-        *   experience error for resonant orbits. these are valid for normalized and 
-        *   unnormalized expressions, as long as the remaining equations are consistent. 
-        *   for satellite operations, orders up to about 120 are valid. this routine uses 
-        *   the GTDS normalization formulation.
+        *   this function finds the unnormalized and normalized Legendre polynomials for the 
+        *   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
+        *   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 greater  
+        *   as they start at 1. these functions are valid for normalized and unnormalized expressions, 
+        *   up to degree and order ~170. larger gravity fields should use alternate formulations
+        *   designed for larger gravity fields. this is the GTDS approach. 
         *      
-        *  author        : david vallado             davallado@gmail.com  10 oct 2019
+        *  author        : david vallado             davallado@gmail.com        5 aug 2024
         *
         *  inputs        description                                   range / units
-        *    latgc       - geocentric lat of satellite, not nadir point  pi to pi rad          
+        *    latgc       - geocentric lat of satellite, not nadir point         -pi/2 to pi/2 rad          
         *    order       - size of gravity field                         1..~170
-        *    unnormArr   - normalization values for unnormalized formulations (precomputed)
-        *    normArr     - normalization values for normalized formulations (precomputed)
+        *    normalized  - normalized or unnormalized                           'y', 'n'                        
         *
         *  outputs       :
         *    LegArrGU     - array of un normalized Legendre polynomials, gtds
@@ -12673,16 +12506,14 @@ namespace AstroLibMethods
         *   none
         *
         *  references :
-        *    vallado       2013, 597, Eq 8-57
+        *    vallado       2022, 500, Eq 8-56
           ----------------------------------------------------------------------------*/
 
-        public void LegPolyG
+        public void LegPolyGTDS
            (
                double latgc,
                Int32 order,
                char normalized,
-               double[,] unnormArr,
-               double[,,] normArr,  // needed only for Fukushima approach
                out double[,] legarrGU,
                out double[,] legarrGN
            )
@@ -12702,7 +12533,7 @@ namespace AstroLibMethods
             {
                 for (m = 0; m <= L; m++)
                 {
-                    // Legendre functions, zonal gtds
+                    // Legendre functions, zonal 
                     if (m == 0)
                         legarrGU[L, 0] = ((2 * L - 1) * legarrGU[1, 0] * legarrGU[L - 1, 0] - (L - 1) * legarrGU[L - 2, 0]) / L;
                     else
@@ -12716,29 +12547,7 @@ namespace AstroLibMethods
                 }   // for m
             }   // for L
 
-            // Legendre functions, zonal gtds
-            // alt approach
-            //for (L = 2; L <= order; L++)
-            //{
-            //    legarrGU[L, 0] = ((2 * L - 1) * legarrGU[1, 0] * legarrGU[L - 1, 0] - (L - 1) * legarrGU[L - 2, 0]) / L;
-            //}
-            // diagonal terms
-            //for (L = 2; L <= order; L++)
-            //{
-            //    legarrGU[L, L] = (2 * L - 1) * legarrGU[1, 1] * legarrGU[L - 1, L - 1];  // sectoral part
-            //}
-            // tesseral terms
-            //for (L = 2; L <= order; L++)
-            //{
-            //    for (m = 1; m <= L - 1; m++)
-            //    {
-            //        legarrGU[L, m] = (2 * L - 1) * legarrGU[1, 1] * legarrGU[L - 1, m - 1];
-            //        if (L - 2 >= m)
-            //            legarrGU[L, m] = legarrGU[L, m] + legarrGU[L - 2, m];  // tesseral part
-            //    }
-            //}
-
-            // my simple approach to normalize
+            // my simple approach to normalize the recursion
             // normalize after the polynomials are found because they are intertwined in the recursion
             Int32 orderlim = order;
             if (normalized == 'y')
@@ -12746,9 +12555,7 @@ namespace AstroLibMethods
                 if (order > 170)
                     orderlim = 170;
                 else
-                {
-                    // can't do it...
-                }
+                    orderlim = order;
                 legarrGN[0, 0] = 1.0;
                 legarrGN[0, 1] = 0.0;
                 legarrGN[1, 0] = Math.Sin(latgc);
@@ -12758,39 +12565,42 @@ namespace AstroLibMethods
                     for (m = 0; m <= L; m++)
                     {
                         // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
-                        conv = unnormArr[L, m];
+                        if (m == 0)
+                            conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
+                        else
+                            conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
+
                         legarrGN[L, m] = conv * legarrGU[L, m];
                     } // for m
                 } // for L
             }
 
-        } // LegPolyG
+        } // LegPolyGTDS
+
 
 
         /* ----------------------------------------------------------------------------
         *
-        *                           function LegPolyGot
+         *                           function LegPolyMont
         *
-        *   this function finds the Legendre polynomials for the gravity field, unnormalized 
-        *   and normalized. Uses Gottlieb approach.          
-        *   the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21 
-        *   in my text). fortran and matlab implementations will have indicies of 1 greater  
-        *   as they start at 1. note that some recursions at high degree tesseral terms 
+         *   this function finds the unnormalized and normalized Legendre polynomials for the 
+         *   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
+         *   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 
+         *   greater as they start at 1. note that some recursions at high degree tesseral terms 
         *   experience error for resonant orbits. these are valid for normalized and 
-        *   unnormalized expressions, as long as the remaining equations are consistent. 
-        *   for satellite operations, orders up to about 120 are valid. 
+         *   unnormalized expressions. for satellite operations, orders up to about 120 are valid. 
+         *   this is the montenbruck formulation. 
         *      
-        *  author        : david vallado             davallado@gmail.com  10 oct 2019
+         *  author        : david vallado             davallado@gmail.com       5 aug 2024
         *
         *  inputs        description                                   range / units
-        *    latgc       - geocentric lat of satellite, not nadir point  pi to pi rad          
+         *    latgc       - geocentric lat of satellite, not nadir point          -pi/2 to pi/2 rad          
         *    order       - size of gravity field                         1..~170
-        *    unnormArr   - normalization values for unnormalized formulations (precomputed)
-        *    normArr     - normalization values for normalized formulations (precomputed)
+         *    normalized  - normalized or unnormalized                            'y', 'n'                        
         *
         *  outputs       :
-        *    LegArrGU    - array of un normalized Legendre polynomials, gtds
-        *    LegArrGN    - array of normalized Legendre polynomials, gtds
+         *    LegArrMU    - array of unnormalized Legendre polynomials, montenbruck
+         *    LegArrMN    - array of normalized Legendre polynomials, montenbruck
         *
         *  locals :
         *    L,m         - degree and order indices
@@ -12799,117 +12609,14 @@ namespace AstroLibMethods
         *   none
         *
         *  references :
-        *    vallado       2013, 597, Eq 8-57
+         *    vallado       2022, 600
           ----------------------------------------------------------------------------*/
 
-        public void LegPolyGot
+        public void LegPolyMont
            (
                double latgc,
                Int32 order,
                char normalized,
-               double[,] unnormArr,
-               double[,,] normArr,  // needed for constants
-               out double[,] legarrGotU,
-               out double[,] legarrGotN
-           )
-        {
-            Int32 L, m;
-            legarrGotU = new double[order + 2, order + 2];
-            legarrGotN = new double[order + 2, order + 2];
-
-            legarrGotU[0, 0] = 1.0;
-            legarrGotU[0, 1] = 0.0;
-            legarrGotU[1, 0] = Math.Sin(latgc);
-            legarrGotU[1, 1] = Math.Cos(latgc);
-            double slat = legarrGotU[1, 0];
-            double clat = legarrGotU[1, 1];
-
-            // -------------------- perform recursions ---------------------- }
-            for (L = 2; L <= order; L++)
-            {
-                for (m = 0; m <= L; m++)
-                {
-                    //  process across each row 
-                    if (m == 0)
-                        legarrGotU[L, 0] = ((2 * L - 1) * slat * legarrGotU[L - 1, 0] - (L - 1) * legarrGotU[L - 2, 0]) / L;
-                    else if (m == L - 1)
-                        legarrGotU[L, L - 1] = (2 * L - 1) * slat * legarrGotU[L - 1, L - 1];   // inner diagonal
-                    else if (m == L)
-                        legarrGotU[L, L] = (2 * L - 1) * clat * legarrGotU[L - 1, L - 1];  // diagonal
-                    else
-                        legarrGotU[L, m] = ((2 * L - 1) * slat * legarrGotU[L - 1, m] - (L + m - 1) * legarrGotU[L - 2, m]) / (L - m);  // tesseral part
-                }   // for m
-            }   // for L
-
-            // Gottlieb approach does normalization directly
-            // note initial conditions are different!!
-            legarrGotN[0, 0] = 1.0;
-            legarrGotN[0, 1] = 0.0;
-            legarrGotN[1, 0] = normArr[1, 1, 0] * Math.Sin(latgc);
-            legarrGotN[1, 1] = normArr[1, 1, 0] * Math.Cos(latgc); // sqrt3
-            //slat = Math.Sin(latgc);
-            //clat = Math.Cos(latgc);
-
-            for (L = 2; L <= order; L++)
-            {
-                for (m = 0; m <= L; m++)
-                {
-                    //  process across each row 
-                    if (m == 0)
-                        legarrGotN[L, 0] = normArr[L, 0, 2] * slat * legarrGotN[L - 1, 0] - normArr[L, 0, 3] * legarrGotN[L - 2, 0];
-                    else if (m == L - 1)
-                        legarrGotN[L, L - 1] = normArr[L, L - 1, 7] * slat * legarrGotN[L - 1, L - 1];   // inner diagonal
-                    else if (m == L)
-                        legarrGotN[L, L] = normArr[L, L, 4] * clat * legarrGotN[L - 1, L - 1];  // diagonal
-                    else
-                        legarrGotN[L, m] = normArr[L, m, 0] * slat * legarrGotN[L - 1, m] - normArr[L, m, 1] * legarrGotN[L - 2, m];  // tesseral part
-                }   // for m
-
-            }   // for L
-
-        } // LegPolyGot
-
-
-
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function LegPolyM
-         *
-         *   this function finds the unnormalized and normalized Legendre polynomials for the 
-         *   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
-         *   (eq 8-21 in my text). fortran and matlab implementations will have indicies of 1 
-         *   greater as they start at 1. note that some recursions at high degree tesseral terms 
-         *   experience error for resonant orbits. these are valid for normalized and 
-         *   unnormalized expressions. for satellite operations, orders up to about 120 are valid. 
-         *   this is the montenbruck formulation. 
-         *      
-         *  author        : david vallado             davallado@gmail.com  10 oct 2019
-         *
-         *  inputs        description                                   range / units
-         *    latgc       - geocentric lat of satellite, not nadir point  pi to pi rad          
-         *    order       - size of gravity field                         1..~170
-         *    unnormArr   - array of normalization values                  
-         *
-         *  outputs       :
-         *    LegArrMU     - array of unnormalized Legendre polynomials, montenbruck
-         *    LegArrMN     - array of normalized Legendre polynomials, montenbruck
-         *
-         *  locals :
-         *    L,m         - degree and order indices
-         *
-         *  coupling      :
-         *   none
-         *
-         *  references :
-         *    vallado       2013, 597, Eq 8-57
-           ----------------------------------------------------------------------------*/
-
-        public void LegPolyM
-           (
-               double latgc,
-               Int32 order,
-               char normalized,
-               double[,] unnormArr,
                out double[,] legarrMU,
                out double[,] legarrMN
            )
@@ -12918,6 +12625,7 @@ namespace AstroLibMethods
             double conv;
             legarrMU = new double[order + 2, order + 2];
             legarrMN = new double[order + 2, order + 2];
+            Int32 orderlim;
 
             // --------------------  montenbruck approach
             legarrMU[0, 0] = 1.0;
@@ -12927,7 +12635,7 @@ namespace AstroLibMethods
             double slat = legarrMU[1, 0];
             double clat = legarrMU[1, 1];
 
-            // Legendre functions, zonal gtds
+            // Legendre functions, zonal 
             for (L = 2; L <= order; L++)
             {
                 legarrMU[L, L] = (2 * L - 1) * clat * legarrMU[L - 1, L - 1];
@@ -12945,25 +12653,170 @@ namespace AstroLibMethods
                 }
             }
 
-            // my simple approach to normalization
+            // my simple approach to normalize the recursion
             // normalize after the polynomials are found because they are intertwined in the recursion
             if (normalized == 'y')
             {
+                if (order > 170)
+                    orderlim = 170;
+                else
+                    orderlim = order;
                 legarrMN[0, 0] = 1.0;
                 legarrMN[0, 1] = 0.0;
                 legarrMN[1, 0] = Math.Sin(latgc);
                 legarrMN[1, 1] = Math.Cos(latgc);
-                for (L = 1; L <= order; L++)
+                for (L = 1; L <= orderlim; L++)
+            {
+                for (m = 0; m <= L; m++)
                 {
-                    for (m = 0; m <= L; m++)
-                    {
                         // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
-                        conv = unnormArr[L, m];
+                    if (m == 0)
+                            conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
+                    else
+                            conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
+
                         legarrMN[L, m] = conv * legarrMU[L, m];
-                    } // for m
-                } // for L
+                }   // for m
+            }   // for L
             }
-        } // LegPolyM
+        } // LegPolyMont
+
+
+
+
+        /* ----------------------------------------------------------------------------
+         *
+        *                           function LegPolyGottN
+         *
+        *   this function finds the legendre functions and associated legendre functions for the 
+        *   gravity field using the normalized Gottlieb approach. the arrays are indexed from 0 to 
+        *   coincide with the usual nomenclature (eq 8-21 in my text). fortran and matlab 
+        *   implementations will have indices of 1 greater as they start at 1. note that this 
+        *   formulation is able to handle degree and order terms larger then 170 due to the formulation. 
+         *      
+        *  author        : david vallado             davallado@gmail.com           2 aug 2024
+         *
+         *  inputs        description                                   range / units
+        *    latgc       - geocentric lat of satellite, not nadir point            -pi/2 to pi/2 rad          
+         *    order       - size of gravity field                         1..~170
+        *    normalized  - normalized or unnormalized                              'y', 'n'                        
+         *
+         *  outputs       :
+        *    LAGottN     - array of normalized Legendre polynomials, gottlieb 
+         *
+         *  locals :
+         *    L,m         - degree and order indices
+         *
+         *  coupling      :
+         *   none
+         *
+         *  references :
+        *    eckman, brown, adamo 2016 paper and code in matlab
+        *    vallado       2022, 600, Eq 8-56
+           ----------------------------------------------------------------------------*/
+
+        public void LegPolyGottN
+           (
+               double latgc,
+               Int32 order,
+               out double[,] LegGottN
+           )
+        {
+            Int32 L, m;
+            LegGottN = new double[order + 2, order + 2];
+            double[] norm1 = new double[order + 2];
+            double[] norm10 = new double[order + 2];
+            double[] normn10 = new double[order + 2];
+            double[] norm11 = new double[order + 2];
+            double[] norm2 = new double[order + 2];
+            double[] ctil = new double[order + 2];
+            double[] stil = new double[order + 2];
+            double[,] g = new double[3, 3];
+            double[,] normn1 = new double[order + 2, order + 2];
+            double[,] norm1m = new double[order + 2, order + 2];
+            double[,] norm2m = new double[order + 2, order + 2];
+            double ep;
+            double n2m1;
+            Int32 lim, nm1, np1, mm1, mp1;
+            char fastapp = 'n';
+
+            // -------------------- perform recursions ---------------------- }
+            for (L = 2; L < order + 1; L++) // L = 2:order + 1  
+            {
+                norm1[L] = Math.Sqrt((2.0 * L + 1) / (2 * L - 1.0));    // eq 3-1 
+                norm2[L] = Math.Sqrt((2.0 * L + 1) / (2 * L - 3.0));    // eq 3-2 
+                norm11[L] = Math.Sqrt((2.0 * L + 1) / (2 * L)) / (2.0 * L - 1); // eq 3-3 
+                normn10[L] = Math.Sqrt((L + 1) * L / 2.0);
+
+                for (m = 1; m < L; m++) // m = 1:L 
+            {
+                    norm1m[L, m] = Math.Sqrt((L - m) * (2.0 * L + 1.0) / ((L + m) * (2.0 * L - 1)));    // eq 3-4 
+                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1) / ((L + m) * (L + m - 1) * (2.0 * L - 3.0)));   // eq 3-5 
+                    normn1[L, m] = Math.Sqrt((L + m + 1.0) * (L - m));    // part of eq 3-9 
+                }
+            }
+
+            LegGottN[0, 0] = 1.0;
+            LegGottN[0, 1] = 0.0;
+            LegGottN[0, 2] = 0.0;
+            if (fastapp == 'y')
+                LegGottN[1, 1] = Math.Sqrt(3.0);
+            else
+                // add ep here to match hand calcs. leave out if doing acceleration calcs for speed
+                LegGottN[1, 1] = Math.Sqrt(3.0) * Math.Cos(latgc);
+            LegGottN[1, 2] = 0.0;
+            LegGottN[1, 3] = 0.0;
+
+            // ---------------sectoral
+            for (L = 2; L < order; L++)   // L = 2:nax 
+                {
+                if (fastapp == 'y')
+                    LegGottN[L, L] = norm11[L] * LegGottN[L - 1, L - 1] * (2.0 * L - 1.0);   // eq 3-15 
+                    else
+                    // dav add ep to this to make it match hand calcs!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    LegGottN[L, L] = norm11[L] * LegGottN[L - 1, L - 1] * (2.0 * L - 1.0) * Math.Cos(latgc);   // eq 3-15 
+                LegGottN[L, L + 1] = 0.0;
+                LegGottN[L, L + 2] = 0.0;
+            }
+
+            //magr = MathTimeLibr.mag(recef);
+            //double[] runit = MathTimeLibr.norm(recef);
+            //ep = runit[2];
+            ep = 0.509196268627347;   // ------------------ placeholder!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            LegGottN[1, 0] = Math.Sqrt(3) * ep;
+            LegGottN[1, 1] = Math.Sqrt(3) * Math.Cos(latgc);  // extra/????????????????????????????????
+
+            for (L = 2; L < order; L++)   //  L = 2:nax
+            {
+                //reorn = reorn * reor;
+                n2m1 = L + L - 1.0;
+                nm1 = L - 1;
+                np1 = L + 1;
+
+                // --------------- tesserals(L, m = L - 1) initial value
+                LegGottN[L, L - 1] = normn1[L, L - 1] * ep * LegGottN[L, L];
+
+                // --------------- zonals(L, m = 1)
+                LegGottN[L, 0] = (n2m1 * ep * norm1[L] * LegGottN[L - 1, 0] - nm1 * norm2[L] * LegGottN[nm1, 0]) / L;   // eq 3-17  
+
+                // --------------- tesseral(L, m = 2) initial value
+                LegGottN[L, 1] = (n2m1 * ep * norm1m[L, 1] * LegGottN[L, 1] - L * norm2m[L, 1] * LegGottN[nm1, 1]) / (nm1);
+
+                //    sumhn = normn10[L] * legarrGotN[L, 1] * gravData.cNor[L, 1];
+                //    sumgmn = legarrGotN[L, 0] * gravData.cNor[L, 1] * np1;
+                if (order > 0)
+                {
+                    for (m = 2; m < L - 2; m++)   // m = 2:L-2
+                    {
+                        // ---------------tesseral(L, m)
+                        LegGottN[L, m] = (n2m1 * ep * norm1m[L, m] * LegGottN[L - 1, m] -
+                                   (nm1 + m) * norm2m[L, m] * LegGottN[nm1, m]) / (L - m); // eq 3-18 
+                    }
+                }
+            }
+        } // LegPolyGottN
+
 
 
         /* ----------------------------------------------------------------------------
@@ -13169,7 +13022,7 @@ namespace AstroLibMethods
 
         /* ----------------------------------------------------------------------------
          *
-         *                           function LegPolyF
+         *                           function LegPolyFN
          *
          *   this function finds the unnormalized and normalized Legendre polynomials for the 
          *   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
@@ -13179,15 +13032,13 @@ namespace AstroLibMethods
          *   unnormalized expressions. for satellite operations, orders up to about 120 are valid. 
          *   this is the fukushima formulation. 
          *      
-         *  author        : david vallado             davallado@gmail.com  10 oct 2019
+         *  author        : david vallado             davallado@gmail.com           5 aug 2024
          *
          *  inputs        description                                   range / units
-         *    latgc       - geocentric lat of satellite, not nadir point  pi to pi rad          
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
          *    order       - size of gravity field                         1..~170
-         *    unnormArr   - array of normalization values                  
          *
          *  outputs       :
-         *    LegArrFU     - array of unnormalized Legendre polynomials, fukushima
          *    LegArrFN     - array of normalized Legendre polynomials, fukushima
          *
          *  locals :
@@ -13200,11 +13051,10 @@ namespace AstroLibMethods
          *    fukushima 2012a
            ----------------------------------------------------------------------------*/
 
-        public void LegPolyF
+        public void LegPolyFN
            (
                double latgc,
                Int32 order,
-               char normalized,
                double[,,] normArr,
                out double[,] legarrFN
            )
@@ -13222,7 +13072,170 @@ namespace AstroLibMethods
             for (m = 0; m <= order; m++)
                 alfmx(Math.Sin(latgc), m, order, normArr, psm[m], ipsm[m], ref legarrFN);
 
-        }  // LegPolyF
+        }  // LegPolyFN
+
+
+
+        /* ----------------------------------------------------------------------------
+         * GEODYN approach
+         *LEGFGL          93 / 03 / 23            0000.0    PGMR: FGL
+         *
+         * FUNCTION:  COMPUTES LEGENDRE AND ASSOCIATED LEGENDRE FUNCTIONS UP TO
+         *DEGREE N AND ORDER M, N.GE.M
+         *
+         * I/O PARAMETERS:
+         *NAME I/O A/S DESCRIPTION OF PARAMETERS
+         * ------------------------------------------------------------
+         * N   IS DEGREE OF SPHERICAL HARMONICS
+         * M   IS    ORDER OF SPHERICAL HARMONICS
+         * X   IS Math.Sin(LATITUDE)
+         * POA    2-D LEGENDRE FUNCTIONS
+         *
+         * REFERENCES
+         * JPL EM 312 / 87 - 153, 20 APRIL 1987
+         ---------------------------------------------------------------------------- */
+        public void geodynlegp
+            (
+               double latgc,
+               Int32 degree,
+               Int32 order,
+               out double[,] LegArrOU,
+               out double[,] LegArrON
+            )
+        {
+            int i, j;
+            double y, conv;
+            double x = Math.Sin(latgc);
+            LegArrOU = new double[degree + 2, order + 2];
+            LegArrON = new double[degree + 2, order + 2];
+
+            // zero all out
+            for (i = 1; i <= degree + 1; i++)
+            {
+                for (j = 1; j <= order + 1; j++)
+                    LegArrOU[i, j] = 0.0;
+            }
+
+            // recursions
+            LegArrOU[1, 1] = 1.0;
+            LegArrOU[2, 1] = x;
+
+            // COMPUTE LEGENDRE FUNCTIONS UP TO DEGREE 
+            for (i = 2; i <= degree; i++)
+                LegArrOU[i + 1, 1] = (Convert.ToDouble(2 * i - 1) * x * LegArrOU[i, 1] - (i - 1) * LegArrOU[i - 1, 1]) / Convert.ToDouble(i);
+            if (order == 0)
+                return;  // just do zonals
+
+            // COMPUTE ASSOCIATED LEGENDRE FUNCTIONS UP TO ORDER 
+            y = Math.Sqrt(1.0 - x * x);
+            LegArrOU[2, 2] = y;
+            if (order != 1)
+            {
+                // THIS IS THE SECTORIAL PART OF THE ASSOCIATED FUNCTIONS
+                for (i = 2; i <= order; i++)
+                {
+                    LegArrOU[i + 1, i + 1] = (2 * i - 1) * y * LegArrOU[i, i];
+                }
+            }
+            // THIS THE TESSERAL PART OF THE ASSOCIATED FUNCTIONS
+            for (i = 2; i <= degree; i++)
+            {
+                // int i1 = i - 1;
+                for (j = 1; j <= i - 1; j++)
+                {
+                    if (j <= order)
+                    {
+                        LegArrOU[i + 1, j + 1] = Convert.ToDouble(2 * i - 1) * y * LegArrOU[i, j];
+                        if (i - 2 >= j)
+                            LegArrOU[i + 1, j + 1] = LegArrOU[i + 1, j + 1] + LegArrOU[i - 1, j + 1];
+                    }
+                }
+            }
+
+            // normalize after the polynomials are found because they are intertwined in the recursion
+            // indicies are +1
+            for (i = 3; i <= order; i++)
+            {
+                for (j = 1; j <= i; j++)
+                {
+                    // find normalized or unnormalized depending on which is already in file
+                    // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
+                    if (j == 1)
+                        conv = Math.Sqrt((MathTimeLibr.factorial(i - j) * (2 * i + 1)) / MathTimeLibr.factorial(i + j));
+                    else
+                        conv = Math.Sqrt((MathTimeLibr.factorial(i - j) * 2 * (2 * i + 1)) / MathTimeLibr.factorial(i + j));
+
+                    LegArrON[i, j] = conv * LegArrOU[i, j];
+                } // for m
+
+            } // for L
+        }  // geodynlegp
+
+
+        // web approach willmert
+        public double[,] legendre(int L, int m, double x)  //SphereNorm norm,
+        {
+            //SphereNorm norm = new SphereNorm();
+            double[,] P = new double[L + 1, m + 1];
+            double y, u, v, Pmin1, Pmin2;
+            Pmin1 = 0.0;
+            Pmin2 = 0.0;
+
+            x = Math.Sin(x);
+
+            // P[0, 0] = 1.0 / Math.Sqrt(4.0 * Math.PI);
+            P[0, 0] = 1.0;
+            P[0, 1] = 0.0;
+            P[1, 1] = Math.Cos(x);
+
+            // Use recurrence equation 1 to increase to the target m
+            y = Math.Sqrt(1.0 - x * x);
+            for (int mi = 2; mi <= m; mi++)
+            {
+                // this is the normalization for L = m ??
+                u = Math.Sqrt(1.0 + 1.0 / (2.0 * mi));
+                // his negative is not correct
+                P[mi, mi] = u * y * P[mi - 1, mi - 1];
+            }
+
+            // Setup for 2-term recurrence, using recurrence relation 2 to set Pmin1
+            //for (int mi = 2; mi < L; mi++)
+            //{
+            //    v = Math.Sqrt(1.0 + 2.0 * (mi + 1));  // 1 + 2l,  1 + 2(m+1)
+            //    Pmin2 = P[mi - 2, mi - 2];
+            //    Pmin1 = v * x * Pmin2;
+
+            //    if (L == mi + 1)
+            //        P[L, mi] = Pmin1;
+            //}
+
+            v = Math.Sqrt(1.0 + 2.0 * (0 + 1));  // 1 + 2l,  1 + 2(m+1)
+            Pmin2 = P[0, 0];
+            Pmin1 = v * x * Pmin2;
+
+
+            //does it need del for kroneker delta????????
+            for (int mi = 2; mi < L; mi++)
+            {
+                for (int Li = mi; Li < L; Li++)  // +2??
+                {
+                    v = Math.Sqrt(1.0 + 2.0 * (mi + 1));  // 1 + 2l,  1 + 2(m+1)
+                    Pmin2 = P[mi - 2, mi - 2];
+                    Pmin1 = v * x * Pmin2;
+
+                    if (Li == mi + 1)
+                        P[Li, mi] = Pmin1;
+                    // Use recurrence relation 3
+                    double temp = 1.0 / ((2 * Li - 3.0) * (Li * Li - mi * mi));
+                    double a = Math.Sqrt((2 * Li + 1) * (4.0 * Math.Pow(Li - 1, 2) - 1)) * temp;
+                    double b = Math.Sqrt((2 * Li + 1) * (Math.Pow(Li - 1, 2) - mi * mi)) * temp;
+                    P[Li, mi] = a * x * Pmin1 - b * Pmin2;
+                    Pmin2 = Pmin1;
+                    Pmin1 = P[Li - 1, mi];
+                }
+            }
+            return P;
+        }  // wilmert
 
 
 
@@ -13230,13 +13243,14 @@ namespace AstroLibMethods
         *
         *                           function TrigPoly
         *
-        *   this function finds the accumulated trigonmetric terms for satellite 
-        *   operations, orders up to about 120 are valid. this is the gtds approach. 
+        *   this function finds the accumulated trigonometric terms for satellite 
+        *   operations, orders up to about 120 are valid. this is the GTDS approach. 
         *   
         *  author        : david vallado             davallado@gmail.com  10 oct 2019
         *
         *  inputs        description                                   range / units
         *    lon         - longitude of satellite                        0 - 2pi rad
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
         *    order       - size of gravity field                         1..2160..
         *
         *  outputs       :
@@ -13249,7 +13263,7 @@ namespace AstroLibMethods
         *   none
         *
         *  references :
-        *    vallado       2013, 597, Eq 8-57
+        *    vallado       2022, 600, Eq 8-56
         * ----------------------------------------------------------------------------*/
 
         public void TrigPoly
@@ -13267,16 +13281,16 @@ namespace AstroLibMethods
             trigArr[0, 0] = 0.0;    // Math.Sin terms
             trigArr[0, 1] = 1.0;    // Math.Cos terms
             trigArr[0, 2] = 0.0;
-             
+
             trigArr[1, 0] = slon = Math.Sin(lon);
             trigArr[1, 1] = clon = Math.Cos(lon);
             trigArr[1, 2] = tlon = Math.Tan(latgc);
 
             for (m = 2; m <= order; m++)
             {
-                trigArr[m, 0] = 2.0 * clon * trigArr[m - 1, 0] - trigArr[m - 2, 0];  // Math.Sin terms
-                trigArr[m, 1] = 2.0 * clon * trigArr[m - 1, 1] - trigArr[m - 2, 1];  // Math.Cos terms
-                trigArr[m, 2] = (m - 1) * tlon + tlon;  // m tan
+                trigArr[m, 0] = 2.0 * clon * trigArr[m - 1, 0] - trigArr[m - 2, 0];  // sin terms
+                trigArr[m, 1] = 2.0 * clon * trigArr[m - 1, 1] - trigArr[m - 2, 1];  // cos terms
+                trigArr[m, 2] = (m - 1) * tlon + tlon;   // m tan terms
             }
         } // TrigPoly
 
@@ -13286,7 +13300,7 @@ namespace AstroLibMethods
         *
         *                           function TrigPolyLeg
         *
-        *   this function finds the accumulated legendre polynomials and trigonmetric
+        *   this function finds the accumulated legendre polynomials and trigonometric
         *   terms for satellite operations, orders up to about 120 are valid. this is the 
         *   montenbruck approach. 
         *   
@@ -13294,9 +13308,9 @@ namespace AstroLibMethods
         *
         *  inputs        description                                   range / units
         *    recef       - satellite position vector, earth fixed        km
-        *    latgc       - geocentric lat of satellite, not nadir point  pi to pi rad          
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
         *    order       - size of gravity field                         1..2160..
-        *    unnormArr     - array of normalization values                  
+        *    normalized  - normalized or unnormalized                              'y', 'n'                        
         *
         *  outputs       :
         *    VArr        - array of trig terms
@@ -13311,7 +13325,7 @@ namespace AstroLibMethods
         *   none
         *
         *  references :
-        *    vallado       2013, 597, Eq 8-57
+        *    vallado       2022, 602
         * ----------------------------------------------------------------------------*/
 
         public void TrigPolyLeg
@@ -13320,7 +13334,6 @@ namespace AstroLibMethods
                double latgc,
                Int32 order,
                char normalized,
-               double[,] unnormArr,
                out double[,] VArr,
                out double[,] WArr,
                out double[,] VArrN,
@@ -13329,7 +13342,7 @@ namespace AstroLibMethods
         {
             double conv;
             double magr;
-            Int32 L, m;
+            Int32 L, m, orderlim;
 
             // unnormalized
             VArr = new double[order + 2, order + 2];
@@ -13377,13 +13390,23 @@ namespace AstroLibMethods
             // note this is only good for equally indexed functions [L, m], others have to be corrected later
             if (normalized == 'y')
             {
+                // my simple approach to normalize the recursion
+                // normalize after the polynomials are found because they are intertwined in the recursion
+                if (order > 170)
+                    orderlim = 170;
+                else
+                    orderlim = order;
                 VArrN[0, 0] = gravConst.re / magr;
                 WArrN[0, 0] = 0.0;
-                for (L = 1; L <= order + 1; L++)
+                for (L = 1; L <= orderlim + 1; L++)
                 {
                     for (m = 0; m <= L; m++)
                     {
-                        conv = unnormArr[L, m];
+                        // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
+                        if (m == 0)
+                            conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
+                        else
+                            conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
                         VArrN[L, m] = conv * VArr[L, m];
                         WArrN[L, m] = conv * WArr[L, m];
                     }
@@ -13391,6 +13414,7 @@ namespace AstroLibMethods
             }
 
         } // TrigPolyLeg
+
 
 
         /* ----------------------------------------------------------------------------
@@ -13408,8 +13432,8 @@ namespace AstroLibMethods
         *    order       - size of gravity field                         1..360
         *    normalized  - normalized in file                            'y', 'n'
         *    unnormArr   - array of normalization values                  
-        *    gravData.c  - gravitational coefficients (in gravData)
-        *    gravData.s  - gravitational coefficients (in gravData)
+        *    gravData    - structure containing the gravity field coefficients, 
+        *                  radius of the Earth, and gravitational parameter
         *
         *  outputs       :
         *    apertG      - efc perturbation acceleration                  km / s^2
@@ -13429,7 +13453,7 @@ namespace AstroLibMethods
         *   TrigPoly     - find the trigonmetric terms through recursion
         *
         *  references :
-        *    vallado       2013, 597, Eq 8-57
+        *    vallado       2022, 600, Eq 8-56
         * ----------------------------------------------------------------------------*/
 
         public void FullGeopG
@@ -13463,7 +13487,7 @@ namespace AstroLibMethods
             ecef2ll(recef, out latgc, out latgd, out lon, out hellp);
 
             // ---------------------Find Legendre polynomials -------------- }
-            LegPolyG(latgc, order, normalized, unnormArr, normArr, out legarrGU, out legarrGN);
+            LegPolyGTDS(latgc, order, normalized, out legarrGU, out legarrGN);
             TrigPoly(lon, latgc, order, out trigArr);
 
             // ----------Partial derivatives of disturbing potential ------- }
@@ -13487,7 +13511,7 @@ namespace AstroLibMethods
                 for (m = 0; m <= L; m++)
                 {
                     // unnormalized should sum in reverse to preserve accuracy
-                    if (normalized == 'n')  
+                    if (normalized == 'n')
                     {
                         temparg = gravData.c[L, m] * trigArr[m, 1] + gravData.s[L, m] * trigArr[m, 0];
                         sumM1 = sumM1 + legarrGU[L, m] * temparg;
@@ -13574,8 +13598,8 @@ namespace AstroLibMethods
         *    order       - size of gravity field                         1..360
         *    normalized  - normalized in file                            'y', 'n'
         *    unnormArr   - array of normalization values                  
-        *    gravData.c  - gravitational coefficients (in gravData)
-        *    gravData.s  - gravitational coefficients (in gravData)
+        *    gravData    - structure containing the gravity field coefficients, 
+        *                  radius of the Earth, and gravitational parameter
         *
         *  outputs       :
         *    apert       - efc perturbation acceleration                  km / s^2
@@ -13621,14 +13645,14 @@ namespace AstroLibMethods
             aPertM = new double[3];
             straccum = "";
 
-            // note, lat/lon could be done by Cartesian terms to erase any concenrs about proximity to 90 deg lat cases.
+            // note, lat/lon could be done by Cartesian terms to erase any concerns about proximity to 90 deg lat cases.
 
             // --------------------find latgc and lon---------------------- }
             ecef2ll(recef, out latgc, out latgd, out lon, out hellp);
 
             // ---------------------Find Legendre polynomials -------------- }
-            LegPolyM(latgc, order, normalized, unnormArr, out legarrMU, out legarrMN);
-            TrigPolyLeg(recef, latgc, order, normalized, unnormArr, out VArr, out WArr, out VArrN, out WArrN);
+            LegPolyMont(latgc, order, normalized, out legarrMU, out legarrMN);
+            TrigPolyLeg(recef, latgc, order, normalized, out VArr, out WArr, out VArrN, out WArrN);
 
             // correction term for method of formulating VArr and WArr
             temp = gravConst.mu / (gravConst.re * gravConst.re);
@@ -13770,8 +13794,8 @@ namespace AstroLibMethods
         *    order       - size of gravity field                         1..360
         *    normalized  - normalized in file                            'y', 'n'
         *    unnormArr   - array of normalization values                  
-        *    gravData.c  - gravitational coefficients (in gravData)
-        *    gravData.s  - gravitational coefficients (in gravData)
+        *    gravData    - structure containing the gravity field coefficients, 
+        *                  radius of the Earth, and gravitational parameter
         *
         *  outputs       :
         *    apertMC     - efc perturbation acceleration                  km / s^2
@@ -13787,7 +13811,8 @@ namespace AstroLibMethods
         *   LegPoly      - find the unnormalized Legendre polynomials through recursion
         *
         *  references :
-        *    vallado       2013, 597, Eq 8-57
+        *    montenbruck   2012
+        *    vallado       2022, 602
         * ----------------------------------------------------------------------------*/
 
         public void FullGeopMC
@@ -13879,7 +13904,7 @@ namespace AstroLibMethods
                 }
             }
 
-            // Calculate accelerations,note order switched here
+            // Calculate accelerations, note the order is switched here
             for (m = 0; m <= order; m++)
             {
                 for (n = m; n <= order; n++)
@@ -13994,7 +14019,568 @@ namespace AstroLibMethods
         }  // FullGeopMC 
 
 
+        /* ----------------------------------------------------------------------------
+        *
+        *                           function FullGeopGott
+        *
+        *   this function finds the acceleration for the gravity field using the normalized Gottlieb approach.  
+        *   the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21 in my text). Fortran 
+        *   and MATLAB implementations will have indices of 1 greater as they start at 1. note that this formulation
+        *   is able to handle degree and order terms larger then 170 due to the formulation. 
+        *      
+        *  author        : david vallado             davallado@gmail.com   2 aug 2024
+        *
+        *  inputs        description                                              range / units
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        *    order       - size of gravity field                                  1.. 170 .. 2000
+        *    gravData    - structure containing the gravity field coefficients, 
+        *                  radius of the Earth, and gravitational parameter
+        *    recef       - earth fixed position vector for satellite              km
+        *
+        *  outputs       :
+        *    LegGottN    - array of normalized Legendre polynomials, Gottlieb 
+        *    accel       - acceleration from gravity                              km/s^2
+        *
+        *  locals :
+        *    L,m         - degree and order indices
+        *
+        *  coupling      :
+        *   none
+        *
+        *  references :
+        *    eckman, brown, adamo 2016 paper and code in matlab
+        *    vallado       2022, 600-601, Eq 8-62
+          ----------------------------------------------------------------------------*/
 
+        public void FullGeopGott
+           (
+               double latgc,
+               Int32 order,
+               gravityConst gravData,
+               double[] recef,
+               out double[,] LegGottN,
+               out double[] accel
+           )
+        {
+            Int32 L, m;
+            LegGottN = new double[order + 2, order + 2];
+            accel = new double[3];
+
+            double[] norm1 = new double[order + 2];
+            double[] norm10 = new double[order + 2];
+            double[] normn10 = new double[order + 2];
+            double[] norm11 = new double[order + 2];
+            double[] norm2 = new double[order + 2];
+            double[] ctil = new double[order + 2];
+            double[] stil = new double[order + 2];
+            double[,] g = new double[3, 3];
+            double[,] normn1 = new double[order + 2, order + 2];
+            double[,] norm1m = new double[order + 2, order + 2];
+            double[,] norm2m = new double[order + 2, order + 2];
+            double reorn, sumhn, sumgmn, magr, ep, mxpnm, bnmtil, anmtm1, bnmtm1, anmt1, sumj, sumjn,
+                sumkn, sumk, sumh, sumgm, lambda, reor, muor2;
+            double n2m1;
+            Int32 lim, nm1, np1, mm1, mp1;
+            char fastapp = 'y';
+
+            sumjn = 0.0;
+            sumkn = 0.0;
+
+            magr = MathTimeLibr.mag(recef);
+            double[] runit = MathTimeLibr.norm(recef);
+            ep = runit[2];  // this is sin(latgc)
+            reor = gravData.re / magr;
+            reorn = reor;
+            muor2 = gravData.mu / (magr * magr);
+
+            // note this whole section can be calculated ahead of time (without latgc) for speed...
+            // -------------------- perform recursions ---------------------- }
+            for (L = 2; L < order + 1; L++) // L = 2:order + 1  
+            {
+                norm1[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 1.0));    // eq 3-1 
+                norm2[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 3.0));    // eq 3-2 
+                norm11[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L)) / (2.0 * L - 1.0); // eq 3-3 
+                normn10[L] = Math.Sqrt((L + 1.0) * L / 2.0);  // eq 3-13
+
+                for (m = 1; m < L; m++) // m = 1:L 
+                {
+                    norm1m[L, m] = Math.Sqrt((L - m) * (2.0 * L + 1.0) / ((L + m) * (2.0 * L - 1.0)));    // eq 3-4 
+                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1.0) / ((L + m) * (L + m - 1.0) * (2.0 * L - 3.0)));   // eq 3-5 
+                    normn1[L, m] = Math.Sqrt((L + m + 1.0) * (L - m));    // part of eq 3-9 
+                }
+            }
+
+            LegGottN[0, 0] = 1.0;
+            LegGottN[0, 1] = 0.0;
+            LegGottN[0, 2] = 0.0;
+            if (fastapp == 'y')
+                LegGottN[1, 1] = Math.Sqrt(3.0);
+            else
+                // add ep here to match hand calcs. leave out if doing acceleration calcs for speed
+                LegGottN[1, 1] = Math.Sqrt(3.0) * Math.Cos(latgc);
+            LegGottN[1, 2] = 0.0;
+            LegGottN[1, 3] = 0.0;
+
+            // --------------- sectoral
+            for (L = 2; L < order; L++)   // L = 2:nax 
+            {
+                if (fastapp == 'y')
+                    LegGottN[L, L] = norm11[L] * LegGottN[L - 1, L - 1] * (2.0 * L - 1.0);   // eq 3-15 
+                else
+                    // dav add ep to this to make it match hand calcs!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    LegGottN[L, L] = norm11[L] * LegGottN[L - 1, L - 1] * (2.0 * L - 1.0) * Math.Cos(latgc);   // eq 3-15 
+                LegGottN[L, L + 1] = 0.0;
+                LegGottN[L, L + 2] = 0.0;
+            }
+
+            // --------------- now for the acceleration recursions
+            ctil[0] = 1.0;
+            stil[0] = 0.0;
+            ctil[1] = runit[0];
+            stil[1] = runit[1];
+            sumh = 0.0;
+            sumgm = 1.0;
+            sumj = 0.0;
+            sumk = 0.0;
+            LegGottN[1, 0] = Math.Sqrt(3) * ep;
+
+            for (L = 2; L < order; L++)   //  L = 2:nax
+            {
+                reorn = reorn * reor;
+                n2m1 = L + L - 1;
+                nm1 = L - 1;
+                np1 = L + 1;
+
+                // note he adds ep back in here for the specific case!!!!! So this is where the complete ALFs would be
+                // --------------- tesserals(L, m = L - 1) initial value
+                LegGottN[L, L - 1] = normn1[L, L - 1] * ep * LegGottN[L, L];  // eq 3-16
+
+                // --------------- zonals(L, m = 1)
+                LegGottN[L, 0] = (n2m1 * ep * norm1[L] * LegGottN[L - 1, 0]
+                    - nm1 * norm2[L] * LegGottN[L - 2, 0]) / L;   // eq 3-17  
+
+                // --------------- tesseral(L, m = 2) initial value
+                LegGottN[L, 1] = (n2m1 * ep * norm1m[L, 1] * LegGottN[L - 1, 1]
+                    - L * norm2m[L, 1] * LegGottN[L - 2, 1]) / (nm1);  // eq 3-
+
+                sumhn = normn10[L] * LegGottN[L, 1] * gravData.cNor[L, 0];
+                sumgmn = LegGottN[L, 0] * gravData.cNor[L, 0] * np1;
+                if (order > 0)
+                {
+                    for (m = 2; m < L - 2; m++)   // m = 2:L-2
+                    {
+                        LegGottN[L, m] = (n2m1 * ep * norm1m[L, m] * LegGottN[L - 1, m] -
+                               (nm1 + m) * norm2m[L, m] * LegGottN[L - 2, m]) / (L - m); // eq 3-18 
+                    }
+                    sumjn = 0.0;
+                    sumkn = 0.0;
+                    ctil[L] = ctil[1] * ctil[L - 2] - stil[1] * stil[L - 2];
+                    stil[L] = stil[1] * ctil[L - 2] + ctil[1] * stil[L - 2];
+                    // handle non-square fields
+                    if (L < order)
+                        lim = L;
+                    else
+                        lim = order;
+                    for (m = 1; m < lim; m++)   // m = 1:lim
+                    {
+                        mm1 = m - 1;
+                        mp1 = m + 1;
+                        mxpnm = m * LegGottN[L, m];
+                        bnmtil = gravData.cNor[L, m] * ctil[m] + gravData.sNor[L, m] * stil[m];
+                        sumhn = sumhn + normn1[L, m] * LegGottN[L, mp1 + 1] * bnmtil;  // mp2???
+                        sumgmn = sumgmn + (L + m + 1) * LegGottN[L, m] * bnmtil;
+                        bnmtm1 = gravData.cNor[L, m] * ctil[mm1] + gravData.sNor[L, m] * stil[mm1];
+                        anmtm1 = gravData.cNor[L, m] * stil[mm1] - gravData.sNor[L, m] * ctil[mm1];
+                        sumjn = sumjn + mxpnm * bnmtm1;
+                        sumkn = sumkn - mxpnm * anmtm1;
+                    }
+                }
+
+                sumj = sumj + reorn * sumjn;
+                sumk = sumk + reorn * sumkn;
+                sumh = sumh + reorn * sumhn;
+                sumgm = sumgm + reorn * sumgmn;
+            }
+
+            lambda = sumgm + ep * sumh;
+            accel[0] = -muor2 * (lambda * runit[0] - sumj);
+            accel[1] = -muor2 * (lambda * runit[1] - sumk);
+            accel[2] = -muor2 * (lambda * runit[2] - sumh);
+        }  // FullGeopGott
+
+
+
+        /* ----------------------------------------------------------------------------
+        *
+        *                           function FullGeopLear
+        *
+        *   this function finds the acceleration for the gravity field using the normalized Lear approach.  
+        *   the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21 in my text). Fortran 
+        *   and MATLAB implementations will have indices of 1 greater as they start at 1. note that this formulation
+        *   is able to handle degree and order terms larger then 170 due to the formulation. 
+        *      
+        *  author        : david vallado             davallado@gmail.com   20 aug 2024
+        *
+        *  inputs        description                                              range / units
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        *    order       - size of gravity field                                  1.. 170 .. 2000
+        *    gravData    - structure containing the gravity field coefficients, 
+        *                  radius of the Earth, and gravitational parameter
+        *    recef       - earth fixed position vector for satellite              km
+        *
+        *  outputs       :
+        *    LegLearN    - array of normalized Legendre polynomials, Lear 
+        *    accel       - acceleration from gravity                              km/s^2
+        *
+        *  locals :
+        *    L,m         - degree and order indices
+        *
+        *  coupling      :
+        *   none
+        *
+        *  references :
+        *    eckman, brown, adamo 2016 paper and code in matlab
+        *    vallado       2022, 600-601, Eq 8-62
+          ----------------------------------------------------------------------------*/
+
+        public void FullGeopLear
+           (
+               double latgc,
+               Int32 order,
+               gravityConst gravData,
+               double[] recef,
+               out double[,] LegLearN,
+               out double[] accel
+           )
+        {
+            Int32 L, m;
+            LegLearN = new double[order + 2, order + 2];
+            accel = new double[3];
+
+            double[] norm1 = new double[order + 2];
+            double[] norm10 = new double[order + 2];
+            double[] norm11 = new double[order + 2];
+            double[] norm2 = new double[order + 2];
+            double[] cm = new double[order + 2];
+            double[] sm = new double[order + 2];
+            double[,] g = new double[3, 3];
+            double[,] norm1m = new double[order + 2, order + 2];
+            double[,] norm2m = new double[order + 2, order + 2];
+            double[,] pnm = new double[order + 2, order + 2];
+            double t1, t3, r1, r2;
+            double n2m1, e1, e2, e3, e4, e5;
+            Int32 nm1, nm2, mmax, Li, nmodel;
+            double magr, sphi, cphi, root3, root5;
+            double[] rn = new double[4];
+            double[] asph = new double[4];
+            double[] pn = new double[order + 2];
+            double[] ppn = new double[order + 2];
+            double[] rb = new double[order + 2];
+            double tsnm, tcnm, tsm, tcm, tpnm;
+
+            // keep square field for now
+            mmax = order;
+
+            // setup the lear normalization factors
+            for (L = 1; L < order; L++)
+            {
+                norm1[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 1.0));   // eq 3-1
+                norm2[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 3.0));   // eq 3-2
+                norm11[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L)) / (2.0 * L - 1.0);  // eq 3-3
+                for (m = 1; m < L; m++)
+                {
+                    norm1m[L, m] = Math.Sqrt((L - m) * (2.0 * L + 1.0) / ((L + m) * (2.0 * L - 1.0)));  // eq 3-4
+                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1.0) / 
+                        ((L + m) * (L + m - 1.0) * (2.0 * L - 3.0)));  // eq 3-5
+                }
+            }
+
+            // initialization for tesseral eq 3-9
+            for (L = 1; L < order; L++)
+            {
+                pnm[L - 1, L] = 0.0;
+            }
+
+            e1 = recef[0] * recef[0] + recef[1] * recef[1];
+            magr = MathTimeLibr.mag(recef);
+            r1 = Math.Sqrt(e1);
+            sphi = recef[2] / magr;  // sin(latgd) NOT latgc!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            cphi = Math.Sqrt(e1) / magr;  // cos(decl) or cos(latgd)
+            sm[0] = 0.0;
+            cm[0] = 1.0;
+
+            if (r1 != 0.0)
+            {
+                sm[0] = recef[1] / r1;
+                cm[0] = recef[0] / r1;
+            }
+            rb[0] = gravData.re / magr;   // this appears to be an initial value only for the recursions
+            rb[1] = rb[0] * rb[0];  // this is cos(latgd)*cos(latgd) ????????????????????????????
+            sm[1] = 2.0 * cm[0] * sm[0];
+            cm[1] = 2.0 * cm[0] * cm[0] - 1.0;
+            root3 = Math.Sqrt(3.0);
+            root5 = Math.Sqrt(5.0);
+            // zonal initialization norm
+           //dav pn[0] = 1.0;  // dav add
+            pn[0] = root3 * sphi; // inc norm
+            pn[1] = root5 * (3.0 * sphi * sphi - 1.0) * 0.5; // inc norm
+            // zonal initialization deriv norm
+            ppn[0] = root3; // norm
+            ppn[1] = root5 * 3.0 * sphi; // norm
+            // sectoral initialization norm
+            pnm[0, 0] = root3; // norm
+            pnm[1, 1] = root5 * root3 * cphi * 0.5; // norm
+            pnm[1, 0] = root5 * root3 * sphi; // norm 
+            LegLearN[0, 0] = -root3 * sphi; // norm
+            LegLearN[1, 1] = -root3 * root5 * sphi * cphi; // norm
+            LegLearN[1, 0] = root5 * root3 * (1.0 - 2.0 * sphi * sphi); // norm
+            if (order >= 2)
+            {
+                for (L = 2; L <= order; L++)
+                {
+                    nm1 = L - 1;
+                    nm2 = L - 2;
+                    rb[L] = rb[nm1] * rb[0];
+                    sm[L] = 2.0 * cm[0] * sm[nm1] - sm[nm2];
+                    cm[L] = 2.0 * cm[0] * cm[nm1] - cm[nm2];
+                    e1 = 2.0 * L - 1.0;
+                    pn[L] = (e1 * sphi * norm1[L] * pn[nm1] - nm1 * norm2[L] * pn[nm2]) / L; // zonal eq 3-6
+                    LegLearN[L, 0] = pn[L];  // dav 
+                    ppn[L] = norm1[L] * (sphi * ppn[nm1] + L * pn[nm1]); // zonal deriv eq 3-7
+                    pnm[L, L] = e1 * cphi * norm11[L] * pnm[nm1, nm1]; // sectoral eq 3-8 
+                    LegLearN[L, L] = -L * sphi * pnm[L, L];  // sectoral deriv eq 3-10
+                }
+                for (L = 2; L <= order; L++)
+                {
+                    nm1 = L - 1;
+                    e1 = (2.0 * L - 1.0) * sphi;
+                    e2 = -L * sphi;
+                    for (m = 1; m <= nm1; m++)
+                    {
+                        e3 = norm1m[L, m] * pnm[nm1, m]; // norm
+                        e4 = L + m;
+                        e5 = (e1 * e3 - (e4 - 1.0) * norm2m[L, m] * pnm[L - 2, m]) / (L - m); // tesseral eq 3-9
+                        pnm[L, m] = e5;
+                        LegLearN[L, m] = e2 * e5 + e4 * e3;  // tesseral deriv eq 3-11
+                    }
+                }
+            }
+            asph[1] = -1.0;
+            asph[3] = 0.0;
+            for (L = 2; L <= order; L++)
+            {
+                //Li = L + 1; matlab
+                e1 = gravData.cNor[L, 0] * rb[L-1];
+                asph[1] = asph[1] - (L + 1.0) * e1 * pn[L-1];
+                asph[3] = asph[3] + e1 * ppn[L-1];
+            }
+            asph[3] = cphi * asph[3];
+            t1 = 0.0;
+            t3 = 0.0;
+            asph[2] = 0.0;
+            for (L = 2; L <= order; L++)
+            {
+                //ni = L + 1; matlab
+                e1 = 0.0;
+                e2 = 0.0;
+                e3 = 0.0;
+                if (L > mmax)
+                    nmodel = mmax;
+                else
+                    nmodel = L;
+
+                for (m = 1; m <= nmodel; m++)
+                {
+                    //mi = m + 1; matlab
+                    tsnm = gravData.sNor[L, m];
+                    tcnm = gravData.cNor[L, m];
+                    tsm = sm[m-1];
+                    tcm = cm[m-1];
+                    tpnm = pnm[L-1, m-1];
+                    e4 = tsnm * tsm + tcnm * tcm;
+                    e1 = e1 + e4 * tpnm;
+                    e2 = e2 + m * (tsnm * tcm - tcnm * tsm) * tpnm;
+                    e3 = e3 + e4 * LegLearN[L-1, m-1];
+                }
+                t1 = t1 + (L + 1) * rb[L-1] * e1;
+                asph[2] = asph[2] + rb[L-1] * e2;
+                t3 = t3 + rb[L-1] * e3;
+            }
+            e4 = gravData.mu / (magr * magr);
+            asph[1] = e4 * (asph[1] - cphi * t1);
+            asph[2] = e4 * asph[2];
+            asph[3] = e4 * (asph[3] + t3);
+            e5 = asph[1] * cphi - asph[3] * sphi;
+
+            accel[0] = e5 * cm[1] - asph[2] * sm[1];
+            accel[1] = e5 * sm[1] + asph[2] * cm[1];
+            accel[2] = asph[1] * sphi + asph[3] * cphi;
+        }   // FullGeopLear
+
+
+
+        /* ----------------------------------------------------------------------------
+        *
+        *                           function FullGeopPines
+        *
+        *   this function finds the acceleration for the gravity field using the normalized Pines approach.  
+        *   the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21 in my text). Fortran 
+        *   and MATLAB implementations will have indices of 1 greater as they start at 1. note that this formulation
+        *   is able to handle degree and order terms larger then 170 due to the formulation. 
+        *      
+        *  author        : david vallado             davallado@gmail.com   20 aug 2024
+        *
+        *  inputs        description                                              range / units
+        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        *    order       - size of gravity field                                  1.. 170 .. 2000
+        *    gravData    - structure containing the gravity field coefficients, 
+        *                  radius of the Earth, and gravitational parameter
+        *    recef       - earth fixed position vector for satellite              km
+        *
+        *  outputs       :
+        *    LegPineN    - array of normalized Legendre polynomials, Pines 
+        *    accel       - acceleration from gravity                              km/s^2
+        *
+        *  locals :
+        *    L,m         - degree and order indices
+        *
+        *  coupling      :
+        *   none
+        *
+        *  references :
+        *    eckman, brown, adamo 2016 paper and code in matlab
+        *    vallado       2022, 600-601, Eq 8-62
+          ----------------------------------------------------------------------------*/
+
+        public void FullGeopPines
+           (
+               double latgc,
+               Int32 order,
+               gravityConst gravData,
+               double[] recef,
+               out double[,] LegPineN,
+               out double[] accel
+           )
+        {
+            Int32 L, m;
+            LegPineN = new double[order + 3, order + 3];
+            accel = new double[3];
+
+            double[] runit = new double[3];
+            double[] rm = new double[order + 2];
+            double[] im = new double[order + 2];
+            Int32 lim, mp2;
+            double g1, g2, g3, g4, g1temp, g2temp, g3temp, g4temp, magr;
+            double alpha_num, alpha, beta, beta_num, beta_den, alpha_den;
+            double dnm, enm, fnm, muor, ror, SM;
+
+            alpha_num = 0.0;
+            alpha_den = 0.0;
+            lim = order;
+            SM = 0.0;
+            g1temp = g2temp = g3temp = g4temp = 0.0;
+
+            magr = MathTimeLibr.mag(recef);
+            runit = MathTimeLibr.norm(recef);
+
+            LegPineN[0, 0] = Math.Sqrt(2.0);
+            for (m = 0; m < order + 2; m++)
+            {
+                //mi = m + 1;
+                // DIAGONAL RECURSION
+                if (m != 0)
+                {
+                    LegPineN[m, m] = Math.Sqrt(1.0 + (1.0 / (2.0 * m))) * LegPineN[m - 1, m - 1]; // norm
+                }
+                // FIRST OFF - DIAGONAL RECURSION 
+                if (m != order + 2)
+                {
+                    LegPineN[m + 1, m] = Math.Sqrt(2.0 * m + 3.0) * runit[2] * LegPineN[m, m]; // norm
+                }
+                // COLUMN RECURSION 
+                if (m < order + 1)
+                {
+                    for (L = m + 2; L < order + 2; L++)
+                    {
+                        //Li = L + 1;
+                        alpha_num = (2.0 * L + 1.0) * (2.0 * L - 1.0);
+                        alpha_den = (L - m) * (L + m);
+                        alpha = Math.Sqrt(alpha_num / alpha_den);
+                        beta_num = (2.0 * L + 1.0) * (L - m - 1.0) * (L + m - 1.0);
+                        beta_den = (2.0 * L - 3.0) * (L + m) * (L - m);
+                        beta = Math.Sqrt(beta_num / beta_den);
+                        LegPineN[L, m] = alpha * runit[2] * LegPineN[L - 1, m] - beta * LegPineN[L - 2, m]; // norm
+                    }
+                }
+            }
+
+            for (L = 0; L < order + 2; L++)
+            {
+                //Li = L + 1;
+                LegPineN[L, 0] = LegPineN[L, 0] * Math.Sqrt(0.5); // norm
+            }
+
+            rm[1] = 0.0;
+            im[1] = 0.0;
+            rm[2] = 1.0;
+            im[2] = 0.0;
+            for (m = 1; m < order; m++)
+            {
+                mp2 = m + 2;
+                rm[mp2] = runit[0] * rm[mp2 - 1] - runit[1] * im[mp2 - 1];
+                im[mp2] = runit[0] * im[mp2 - 1] + runit[1] * rm[mp2 - 1];
+            }
+
+            muor = gravData.mu / (gravData.re * magr);
+            ror = gravData.re / (magr);
+            g1 = 0.0;
+            g2 = 0.0;
+            g3 = 0.0;
+            g4 = 0.0;
+            for (L = 0; L <= order; L++)
+            {
+                //Li = L + 1;  matlab
+                g1temp = 0.0;
+                g2temp = 0.0;
+                g3temp = 0.0;
+                g4temp = 0.0;
+                SM = 0.5;
+                // keep square field
+                if (L > order)
+                    lim = order;
+                else
+                    lim = L;
+                for (m = 0; m < lim; m++)
+                {
+                    //mi = m + 1;  matlab
+                    mp2 = m + 2;
+                    dnm = gravData.cNor[L, m] * rm[mp2] + gravData.sNor[L, m] * im[mp2];
+                    enm = gravData.cNor[L, m] * rm[mp2 - 1] + gravData.sNor[L, m] * im[mp2 - 1];
+                    fnm = gravData.sNor[L, m] * rm[mp2 - 1] - gravData.cNor[L, m] * im[mp2 - 1];
+
+                    alpha = Math.Sqrt(SM * (L - m) * (L + m + 1)); // norm
+
+                    g1temp = g1temp + LegPineN[L, m] * m * enm;
+                    g2temp = g2temp + LegPineN[L, m] * m * fnm;
+                    g3temp = g3temp + alpha * LegPineN[L, m + 1] * dnm; // norm
+                    g4temp = g4temp + ((L + m + 1) * LegPineN[L, m] + alpha * runit[2] * LegPineN[L, m + 1]) * dnm;  // norm
+
+                    if (m == 0)
+                    {
+                        SM = 1.0;
+                    } // norm
+                }
+                muor = ror * muor;
+                g1 = g1 + muor * g1temp;
+                g2 = g2 + muor * g2temp;
+                g3 = g3 + muor * g3temp;
+                g4 = g4 + muor * g4temp;
+            }
+
+            accel[0] = g1 - g4 * runit[0];
+            accel[1] = g2 - g4 * runit[1];
+            accel[2] = g3 - g4 * runit[2];
+        }    // FullGeopPines
 
 
         /* ---------------------------------------------------------------------------- 
