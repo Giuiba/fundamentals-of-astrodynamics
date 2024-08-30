@@ -13,7 +13,7 @@ namespace SGP4Methods
     public class SGP4Lib
     {
 
-        public string SGP4Version = "SGP4 Version 2020-03-12";
+        public string SGP4Version = "SGP4 Version 2024-08-29";
 
         // setup a structure to hold all the TLE information
         public class elsetrec
@@ -2179,9 +2179,10 @@ namespace SGP4Methods
         *    included at the end of the second line of data. this only works with the
         *    verification mode. the catalog mode simply propagates from -1440 to 1440 min
         *    from epoch and is useful when performing entire catalog runs.
-        *    Update for Alhpa 5 numbering system, 4 mar 2021. 
+        *    update for Alhpa 5 numbering system, 4 mar 2021. 
+        *    update to check and not process if ephtype = 4 (sgp4-xp tle)
         *
-        *  author        : david vallado                  719-573-2600    1 mar 2001
+        *  author        : david vallado                  719-573-2600    29 aug 2024
         *
         *  inputs        :
         *    longstr1    - first line of the tle
@@ -2279,226 +2280,178 @@ namespace SGP4Methods
             {
                 ibexp = 0;
             }
+            // sgp4fix note that the ephtype must be 0 for SGP4. SGP4-XP uses 4.
             try
             {
                 satrec.ephtype = Convert.ToInt16(linedata[12]);
             }
             catch
             {
-                satrec.ephtype = 0;
+                satrec.ephtype = -1;
             }
             satrec.elnum = Convert.ToInt16(linedata[13]);
 
-
-            if (typerun.Equals('v'))  // run for specified times from the file
+            if (satrec.ephtype == 0)
             {
-                if (longstr2[52].Equals(" "))
+                if (typerun.Equals('v'))  // run for specified times from the file
                 {
-                    if (longstr2.Length < 68)
-                    {
-                        //sscanf(longstr2, "%2d %5ld %9lf %9lf %8lf %9lf %9lf %10lf %6ld %lf %lf %lf \n",
+                    //sscanf(longstr2, "%2d %5ld %9lf %9lf %8lf %9lf %9lf %10lf %6ld %lf %lf %lf \n",
 
-                        linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
-                                                     @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{12})([-0-9 ]{6})\s+(\S+)\s+(\S+)\s+(\S+)");
-                    }
-                    else
-                    {
-                        // old tle format (one character shorter)
-                        linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
-                                                     @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{12})([-0-9 ]{5})\s+(\S+)\s+(\S+)\s+(\S+)");
-                    }
+                    linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
+                                                 @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{12})([-0-9 ]{6})\s+(\S+)\s+(\S+)\s+(\S+)");
+                    cardnumb = Convert.ToInt16(linedata[1]);
+                    satrec.satnum = linedata[2];    // now a string for alpha5 or 9-digit
+                    satrec.inclo = Convert.ToDouble(linedata[3]);
+                    satrec.nodeo = Convert.ToDouble(linedata[4]);
+                    satrec.ecco = Convert.ToDouble(linedata[5]) * 0.0000001;
+                    satrec.argpo = Convert.ToDouble(linedata[6]);
+                    satrec.mo = Convert.ToDouble(linedata[7]);
+                    satrec.no_kozai = Convert.ToDouble(linedata[8]);
+                    satrec.revnum = Convert.ToInt32(linedata[9]);
+                    startmfe = Convert.ToDouble(linedata[10]);
+                    stopmfe = Convert.ToDouble(linedata[11]);
+                    deltamin = Convert.ToDouble(linedata[12]);
+
                 }
+                else  // simply run -1 day to +1 day or user input times
+                {
+                    linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
+                                                @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{10})([-0-9 ]{6})");
+                    cardnumb = Convert.ToInt16(linedata[1]);
+                    satrec.satnum = linedata[2];   // now a string for alpha5 or 9-digit
+                    satrec.inclo = Convert.ToDouble(linedata[3]);
+                    satrec.nodeo = Convert.ToDouble(linedata[4]);
+                    satrec.ecco = Convert.ToDouble(linedata[5]) * 0.0000001;
+                    satrec.argpo = Convert.ToDouble(linedata[6]);
+                    satrec.mo = Convert.ToDouble(linedata[7]);
+                    satrec.no_kozai = Convert.ToDouble(linedata[8]);
+                    satrec.revnum = Convert.ToInt32(linedata[9]);
+                }
+
+
+                // ---- find no, ndot, nddot ----
+                satrec.no_kozai = satrec.no_kozai / xpdotp; //* rad/min
+                satrec.nddot = satrec.nddot * Math.Pow(10.0, nexp);
+                satrec.bstar = satrec.bstar * 0.00001 * Math.Pow(10.0, ibexp);
+
+                // ---- convert to sgp4 units ----
+                // satrec.a    = Math.Pow( satrec.no_unkozai*tumin , (-2.0/3.0) );
+                satrec.ndot = satrec.ndot / (xpdotp * 1440.0);  //* ? * minperday
+                satrec.nddot = satrec.nddot / (xpdotp * 1440.0 * 1440);
+
+                // ---- find standard orbital elements ----
+                satrec.inclo = satrec.inclo * deg2rad;
+                satrec.nodeo = satrec.nodeo * deg2rad;
+                satrec.argpo = satrec.argpo * deg2rad;
+                satrec.mo = satrec.mo * deg2rad;
+
+                // sgp4fix not needed here
+                // satrec.alta = satrec.a*(1.0 + satrec.ecco) - 1.0;
+                // satrec.altp = satrec.a*(1.0 - satrec.ecco) - 1.0;
+
+                // ----------------------------------------------------------------
+                // find sgp4epoch time of element set
+                // remember that sgp4 uses units of days from 0 jan 1950 (sgp4epoch)
+                // and minutes from the epoch (time)
+                // ----------------------------------------------------------------
+
+                // ---------------- temp fix for years from 1957-2056 -------------------
+                // --------- correct fix will occur when year is 4-digit in tle ---------
+                if (satrec.epochyr < 57)
+                    year = satrec.epochyr + 2000;
                 else
+                    year = satrec.epochyr + 1900;
+
+                days2mdhms(year, satrec.epochdays, out mon, out day, out hr, out minute, out sec);
+                jday(year, mon, day, hr, minute, sec, out satrec.jdsatepoch, out satrec.jdsatepochF);
+
+                // ---- input start stop times manually
+                if ((!typerun.Equals('v')) && (!typerun.Equals('c')))
                 {
-                    if (longstr2.Length < 68)
+                    // ------------- enter start/stop ymd hms values --------------------
+                    if (typeinput.Equals('e'))
                     {
-                        //sscanf(longstr2, "%2d %5ld %9lf %9lf %8lf %9lf %9lf %11lf %6ld %lf %lf %lf \n",
-                        linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
-                                                           @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{12})([-0-9 ]{6})\s+(\S+)\s+(\S+)\s+(\S+)");
+                        string value1 = "2015-01-12 12:00:00.000";
+                        string value2 = "2015-01-14 12:00:00.000";
+                        if (InputBox.Show("Input start/stop times", "Start - Stop:", ref value1, ref value2) == DialogResult.OK)
+                        {
+                        }
+                        startyear = Convert.ToInt16(value1.Split('-')[0].Substring(0, 2));
+                        startmon = Convert.ToInt16(value1.Split('-')[1]);
+                        startday = Convert.ToInt16(value1.Split('-')[2]);
+                        starthr = Convert.ToInt16(value1.Split(':')[0].Substring(value1.Split(':')[0].Length - 2, 2));
+                        startmin = Convert.ToInt16(value1.Split(':')[1]);
+                        startsec = Convert.ToDouble(value1.Split(':')[2]);
+                        jday(startyear, startmon, startday, starthr, startmin, startsec, out jdstart, out jdstartF);
+
+                        stopyear = Convert.ToInt16(value1.Split('-')[0].Substring(0, 2));
+                        stopmon = Convert.ToInt16(value1.Split('-')[1]);
+                        stopday = Convert.ToInt16(value1.Split('-')[2]);
+                        stophr = Convert.ToInt16(value1.Split(':')[0].Substring(value1.Split(':')[0].Length - 2, 2));
+                        stopmin = Convert.ToInt16(value1.Split(':')[1]);
+                        stopsec = Convert.ToDouble(value1.Split(':')[2]);
+                        jday(stopyear, stopmon, stopday, stophr, stopmin, stopsec, out jdstop, out jdstopF);
+                        jday(stopyear, stopmon, stopday, stophr, stopmin, stopsec, out jdstop, out jdstopF);
+
+                        startmfe = (jdstart - satrec.jdsatepoch) * 1440.0 + (jdstartF - satrec.jdsatepochF) * 1440.0;
+                        stopmfe = (jdstop - satrec.jdsatepoch) * 1440.0 + (jdstopF - satrec.jdsatepochF) * 1440.0;
+
+                        //printf("input time step in minutes \n");
+                        //scanf("%lf", deltamin);
                     }
-                    else
+                    // -------- enter start/stop year and days of year values -----------
+                    if (typeinput.Equals('d'))
                     {
-                        // old tle format (one character shorter)
-                        linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
-                                                           @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{12})([-0-9 ]{5})\s+(\S+)\s+(\S+)\s+(\S+)");
+                        Console.Write("input start year dayofyr \n");
+                        linex = Console.ReadLine().Split(' '); // Read string from console
+                        int.TryParse(linex[0], out startyear);
+                        double.TryParse(linex[1], out startdayofyr);
+
+                        Console.Write("input stop year dayofyr \n");
+                        linex = Console.ReadLine().Split(' '); // Read string from console
+                        int.TryParse(linex[0], out stopyear);
+                        double.TryParse(linex[1], out stopdayofyr);
+
+                        days2mdhms(startyear, startdayofyr, out mon, out day, out hr, out minute, out sec);
+                        jday(startyear, mon, day, hr, minute, sec, out jdstart, out jdstartF);
+                        days2mdhms(stopyear, stopdayofyr, out mon, out day, out hr, out minute, out sec);
+                        jday(stopyear, mon, day, hr, minute, sec, out jdstop, out jdstop);
+
+                        startmfe = (jdstart - satrec.jdsatepoch) * 1440.0;
+                        stopmfe = (jdstop - satrec.jdsatepoch) * 1440.0;
+
+                        Console.Write("input time step in minutes \n");
+                        linex = Console.ReadLine().Split(' '); // Read string from console
+                        double.TryParse(linex[0], out deltamin);
+                    }
+                    // ------------------ enter start/stop mfe values -------------------
+                    if (typeinput.Equals('m'))
+                    {
+                        Console.Write("input start min from epoch \n");
+                        linex = Console.ReadLine().Split(' '); // Read string from console
+                        double.TryParse(linex[0], out startmfe);
+                        Console.Write("input stop min from epoch \n");
+                        linex = Console.ReadLine().Split(' '); // Read string from console
+                        double.TryParse(linex[0], out stopmfe);
+                        Console.Write("input time step in minutes \n");
+                        linex = Console.ReadLine().Split(' '); // Read string from console
+                        double.TryParse(linex[0], out deltamin);
                     }
                 }
-                cardnumb = Convert.ToInt16(linedata[1]);
-                satrec.satnum = linedata[2];    // now a string for alpha5 or 9-digit
-                satrec.inclo = Convert.ToDouble(linedata[3]);
-                satrec.nodeo = Convert.ToDouble(linedata[4]);
-                satrec.ecco = Convert.ToDouble(linedata[5]) * 0.0000001;
-                satrec.argpo = Convert.ToDouble(linedata[6]);
-                satrec.mo = Convert.ToDouble(linedata[7]);
-                satrec.no_kozai = Convert.ToDouble(linedata[8]);
-                satrec.revnum = Convert.ToInt32(linedata[9]);
-                startmfe = Convert.ToDouble(linedata[10]);
-                stopmfe = Convert.ToDouble(linedata[11]);
-                deltamin = Convert.ToDouble(linedata[12]);
 
-            }
-            else  // simply run -1 day to +1 day or user input times
-            {
-                if (longstr2[52].Equals(" "))
+                // ------------ perform complete catalog evaluation, -+ 1 day ----------- 
+                if (typerun.Equals('c'))
                 {
-                    if (longstr2.Length < 68)
-                        linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
-                                                     @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{10})([-0-9 ]{6})");
-                    else
-                    {
-                        // old tle format (one character shorter)
-                        linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
-                                                     @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{10})([-0-9 ]{5})");
-                    }
+                    startmfe = -1440.0;
+                    stopmfe = 1440.0;
+                    deltamin = 10.0;
                 }
-                else
-                {
-                    if (longstr2.Length < 68)
-                    {
-                        linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
-                                                       @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{12})([-0-9 ]{6})");
-                    }
-                    else
-                    {
-                        // old tle format (one character shorter)
-                        linedata = Regex.Split(longstr2, "^([0-9 ]{2})([0-9 A-Z]{5})([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{8})" +
-                                                       @"([-0-9. ]{9})([-0-9. ]{9})([-0-9. ]{12})([-0-9 ]{5})");
-                    }
-                }
-                cardnumb = Convert.ToInt16(linedata[1]);
-                satrec.satnum = linedata[2];   // now a string for alpha5 or 9-digit
-                satrec.inclo = Convert.ToDouble(linedata[3]);
-                satrec.nodeo = Convert.ToDouble(linedata[4]);
-                satrec.ecco = Convert.ToDouble(linedata[5]) * 0.0000001;
-                satrec.argpo = Convert.ToDouble(linedata[6]);
-                satrec.mo = Convert.ToDouble(linedata[7]);
-                satrec.no_kozai = Convert.ToDouble(linedata[8]);
-                satrec.revnum = Convert.ToInt32(linedata[9]);
-            }
 
-
-            // ---- find no, ndot, nddot ----
-            satrec.no_kozai = satrec.no_kozai / xpdotp; //* rad/min
-            satrec.nddot = satrec.nddot * Math.Pow(10.0, nexp);
-            satrec.bstar = satrec.bstar * 0.00001 * Math.Pow(10.0, ibexp);
-
-            // ---- convert to sgp4 units ----
-            // satrec.a    = Math.Pow( satrec.no_unkozai*tumin , (-2.0/3.0) );
-            satrec.ndot = satrec.ndot / (xpdotp * 1440.0);  //* ? * minperday
-            satrec.nddot = satrec.nddot / (xpdotp * 1440.0 * 1440);
-
-            // ---- find standard orbital elements ----
-            satrec.inclo = satrec.inclo * deg2rad;
-            satrec.nodeo = satrec.nodeo * deg2rad;
-            satrec.argpo = satrec.argpo * deg2rad;
-            satrec.mo = satrec.mo * deg2rad;
-
-            // sgp4fix not needed here
-            // satrec.alta = satrec.a*(1.0 + satrec.ecco) - 1.0;
-            // satrec.altp = satrec.a*(1.0 - satrec.ecco) - 1.0;
-
-            // ----------------------------------------------------------------
-            // find sgp4epoch time of element set
-            // remember that sgp4 uses units of days from 0 jan 1950 (sgp4epoch)
-            // and minutes from the epoch (time)
-            // ----------------------------------------------------------------
-
-            // ---------------- temp fix for years from 1957-2056 -------------------
-            // --------- correct fix will occur when year is 4-digit in tle ---------
-            if (satrec.epochyr < 57)
-                year = satrec.epochyr + 2000;
-            else
-                year = satrec.epochyr + 1900;
-
-            days2mdhms(year, satrec.epochdays, out mon, out day, out hr, out minute, out sec);
-            jday(year, mon, day, hr, minute, sec, out satrec.jdsatepoch, out satrec.jdsatepochF);
-
-            // ---- input start stop times manually
-            if ((!typerun.Equals('v')) && (!typerun.Equals('c')))
-            {
-                // ------------- enter start/stop ymd hms values --------------------
-                if (typeinput.Equals('e'))
-                {
-                    string value1 = "2015-01-12 12:00:00.000";
-                    string value2 = "2015-01-14 12:00:00.000";
-                    if (InputBox.Show("Input start/stop times", "Start - Stop:", ref value1, ref value2) == DialogResult.OK)
-                    {
-                    }
-                    startyear = Convert.ToInt16(value1.Split('-')[0].Substring(0,2));
-                    startmon  = Convert.ToInt16(value1.Split('-')[1]);
-                    startday  = Convert.ToInt16(value1.Split('-')[2]);
-                    starthr = Convert.ToInt16(value1.Split(':')[0].Substring(value1.Split(':')[0].Length-2, 2));
-                    startmin  = Convert.ToInt16(value1.Split(':')[1]);
-                    startsec  = Convert.ToDouble(value1.Split(':')[2]);
-                    jday(startyear, startmon, startday, starthr, startmin, startsec, out jdstart, out jdstartF);
-
-                    stopyear = Convert.ToInt16(value1.Split('-')[0].Substring(0, 2));
-                    stopmon = Convert.ToInt16(value1.Split('-')[1]);
-                    stopday = Convert.ToInt16(value1.Split('-')[2]);
-                    stophr = Convert.ToInt16(value1.Split(':')[0].Substring(value1.Split(':')[0].Length - 2, 2));
-                    stopmin = Convert.ToInt16(value1.Split(':')[1]);
-                    stopsec = Convert.ToDouble(value1.Split(':')[2]);
-                    jday(stopyear, stopmon, stopday, stophr, stopmin, stopsec, out jdstop, out jdstopF);
-                    jday(stopyear, stopmon, stopday, stophr, stopmin, stopsec, out jdstop, out jdstopF);
-
-                    startmfe = (jdstart - satrec.jdsatepoch) * 1440.0 + (jdstartF - satrec.jdsatepochF) * 1440.0;
-                    stopmfe = (jdstop - satrec.jdsatepoch) * 1440.0 + (jdstopF - satrec.jdsatepochF) * 1440.0;
-
-                    //printf("input time step in minutes \n");
-                    //scanf("%lf", deltamin);
-                }
-                // -------- enter start/stop year and days of year values -----------
-                if (typeinput.Equals('d'))
-                {
-                    Console.Write("input start year dayofyr \n");
-                    linex = Console.ReadLine().Split(' '); // Read string from console
-                    int.TryParse(linex[0], out startyear);
-                    double.TryParse(linex[1], out startdayofyr);
-
-                    Console.Write("input stop year dayofyr \n");
-                    linex = Console.ReadLine().Split(' '); // Read string from console
-                    int.TryParse(linex[0], out stopyear);
-                    double.TryParse(linex[1], out stopdayofyr);
-
-                    days2mdhms(startyear, startdayofyr, out mon, out day, out hr, out minute, out sec);
-                    jday(startyear, mon, day, hr, minute, sec, out jdstart, out jdstartF);
-                    days2mdhms(stopyear, stopdayofyr, out mon, out day, out hr, out minute, out sec);
-                    jday(stopyear, mon, day, hr, minute, sec, out jdstop, out jdstop);
-
-                    startmfe = (jdstart - satrec.jdsatepoch) * 1440.0;
-                    stopmfe = (jdstop - satrec.jdsatepoch) * 1440.0;
-
-                    Console.Write("input time step in minutes \n");
-                    linex = Console.ReadLine().Split(' '); // Read string from console
-                    double.TryParse(linex[0], out deltamin);
-                }
-                // ------------------ enter start/stop mfe values -------------------
-                if (typeinput.Equals('m'))
-                {
-                    Console.Write("input start min from epoch \n");
-                    linex = Console.ReadLine().Split(' '); // Read string from console
-                    double.TryParse(linex[0], out startmfe);
-                    Console.Write("input stop min from epoch \n");
-                    linex = Console.ReadLine().Split(' '); // Read string from console
-                    double.TryParse(linex[0], out stopmfe);
-                    Console.Write("input time step in minutes \n");
-                    linex = Console.ReadLine().Split(' '); // Read string from console
-                    double.TryParse(linex[0], out deltamin);
-                }
-            }
-
-            // ------------ perform complete catalog evaluation, -+ 1 day ----------- 
-            if (typerun.Equals('c'))
-            {
-                startmfe = -1440.0;
-                stopmfe = 1440.0;
-                deltamin = 10.0;
-            }
-
-            // ---------------- initialize the orbit at sgp4epoch -------------------
-            sgp4init(whichconst, opsmode, satrec.satnum, (satrec.jdsatepoch + satrec.jdsatepochF) - 2433281.5, satrec.bstar,
-                      satrec.ndot, satrec.nddot, satrec.ecco, satrec.argpo, satrec.inclo, satrec.mo, satrec.no_kozai,
-                      satrec.nodeo, ref satrec);
+                // ---------------- initialize the orbit at sgp4epoch -------------------
+                sgp4init(whichconst, opsmode, satrec.satnum, (satrec.jdsatepoch + satrec.jdsatepochF) - 2433281.5, satrec.bstar,
+                          satrec.ndot, satrec.nddot, satrec.ecco, satrec.argpo, satrec.inclo, satrec.mo, satrec.no_kozai,
+                          satrec.nodeo, ref satrec);
+            } // if ephtype = 0
         } // end twoline2rv
 
 

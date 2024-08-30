@@ -1,0 +1,187 @@
+stk.v.12.0
+WrittenBy    STK_v12.0.0
+BEGIN Access
+    Scenario/Scenario1/Facility/Facility1
+    Scenario/Scenario1/Satellite/Satellite1
+
+    IsComputed		 Yes
+    SaveComputedData		 Yes
+    UpdateOnReference		 Yes
+    DupIsDifferent		 No
+    UIOrderReversed		 No
+    UITimePeriod		 Object
+    UseLightTimeDelay		 Yes
+    ClockHost		 Base
+    TimeSense		 Transmit
+    AberrationType		 Annual
+    TimeDelayConvergence		 5e-05
+    SetMaxStepFromInsts		 Yes
+    MaxTimeStep		 360
+    MinTimeStep		 0.01
+    TimeConvergence		 0.005
+    AbsValueConvergence		 1e-14
+    RelValueConvergence		 1e-08
+    DetectEventsUsingSamplesOnly		 No
+
+    BEGIN ConsideredIntervals
+
+        2012-08-20T06:00:00.000000000 2012-08-20T18:00:00.000000000
+
+    END ConsideredIntervals
+
+    BEGIN AccessIntervals
+
+        2012-08-20T06:00:00.000000000 2012-08-20T06:28:58.593524859
+        2012-08-20T09:50:45.459738380 2012-08-20T10:45:08.139954903
+        2012-08-20T13:53:17.354994763 2012-08-20T15:11:42.915173112
+        2012-08-20T17:56:49.139448224 2012-08-20T18:00:00.000000000
+
+    END AccessIntervals
+
+    BEGIN StageList
+
+        BEGIN Stage
+
+            StartConstrainedByAvailability		 No
+            StopConstrainedByAvailability		 No
+            MaxTimeStep		 0
+            MaxRelMotion		 0.34
+
+            BEGIN StageSatisfaction
+
+                2012-08-20T06:00:00.000000000 2012-08-20T06:28:58.593524859
+                2012-08-20T09:50:45.459738380 2012-08-20T10:45:08.139954903
+                2012-08-20T13:53:17.354994763 2012-08-20T15:11:42.915173112
+                2012-08-20T17:56:49.139448224 2012-08-20T18:00:00.000000000
+
+            END StageSatisfaction
+
+            BEGIN ConstraintList
+
+                BEGIN Constraint
+
+                    Name		 LineOfSight
+                    Instance		 Object1
+                    Action		 IncludeIntervals
+                    MaxTimeStep		 0
+                    MaxRelMotion		 0
+                    Type		 ZeroBound
+
+                    BEGIN ConstraintSatisfaction
+
+                        2012-08-20T06:00:00.000000000 2012-08-20T06:28:58.593524859
+                        2012-08-20T09:50:45.459738380 2012-08-20T10:45:08.139954903
+                        2012-08-20T13:53:17.354994763 2012-08-20T15:11:42.915173112
+                        2012-08-20T17:56:49.139448224 2012-08-20T18:00:00.000000000
+
+                    END ConstraintSatisfaction
+
+                END Constraint
+
+            END ConstraintList
+
+        END Stage
+
+
+    END StageList
+
+    Show		 Yes
+    Inherit		 Yes
+    ShowIV		 Yes
+    ShowLineGfx		 Yes
+    ShowHiliteGfx		 Yes
+    LineWidth		 1
+
+    BEGIN Crdn
+    END Crdn
+
+END Access
+
+BEGIN Access
+    Scenario/Scenario1/Facility/Facility1
+    Scenario/Scenario1/Satellite/Satellite2
+
+    IsComputed		 Yes
+    SaveComputedData		 Yes
+    UpdateOnReference		 Yes
+    DupIsDifferent		 No
+    UIOrderReversed		 No
+    UITimePeriod		 Object
+    UseLightTimeDelay		 Yes
+    ClockHost		 Base
+    TimeSense		 Transmit
+    AberrationType		 Annual
+    TimeDelayConvergence		 5e-05
+    SetMaxStepFromInsts		 Yes
+    MaxTimeStep		 360
+    MinTimeStep		 0.01
+    TimeConvergence		 0.005
+    AbsValueConvergence		 1e-14
+    RelValueConvergence		 1e-08
+    DetectEventsUsingSamplesOnly		 No
+
+    BEGIN ConsideredIntervals
+
+        2012-08-20T06:00:00.000000000 2012-08-20T18:00:00.000000000
+
+    END ConsideredIntervals
+
+    BEGIN AccessIntervals
+
+        2012-08-20T07:12:22.027579846 2012-08-20T18:00:00.000000000
+
+    END AccessIntervals
+
+    BEGIN StageList
+
+        BEGIN Stage
+
+            StartConstrainedByAvailability		 No
+            StopConstrainedByAvailability		 No
+            MaxTimeStep		 0
+            MaxRelMotion		 0.34
+
+            BEGIN StageSatisfaction
+
+                2012-08-20T07:12:22.027579846 2012-08-20T18:00:00.000000000
+
+            END StageSatisfaction
+
+            BEGIN ConstraintList
+
+                BEGIN Constraint
+
+                    Name		 LineOfSight
+                    Instance		 Object1
+                    Action		 IncludeIntervals
+                    MaxTimeStep		 0
+                    MaxRelMotion		 0
+                    Type		 ZeroBound
+
+                    BEGIN ConstraintSatisfaction
+
+                        2012-08-20T07:12:22.027579846 2012-08-20T18:00:00.000000000
+
+                    END ConstraintSatisfaction
+
+                END Constraint
+
+            END ConstraintList
+
+        END Stage
+
+
+    END StageList
+
+    Show		 Yes
+    Inherit		 Yes
+    ShowIV		 Yes
+    ShowLineGfx		 Yes
+    ShowHiliteGfx		 Yes
+    LineWidth		 1
+
+    BEGIN Crdn
+    END Crdn
+
+END Access
+

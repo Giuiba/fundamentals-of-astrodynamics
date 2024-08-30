@@ -1,0 +1,547 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html>
+<head>
+<title>C4ISR Overview</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<script type="text/javascript" src="local/webfxlayout.js"></script>
+
+<link id="webfx-tab-style-sheet" type="text/css" rel="stylesheet" href="css/tab.webfx.css" disabled="disabled"/>
+
+<style type="text/css">
+
+.dynamic-tab-pane-control .tab-page {
+	height:		50px;
+}
+
+.dynamic-tab-pane-control .tab-page .dynamic-tab-pane-control .tab-page {
+	height:		100px;
+}
+
+html, body {
+	background:	ThreeDFace;
+}
+
+form {
+	margin:		0;
+	padding:	0;
+}
+
+/* over ride styles from webfxlayout */
+
+body {
+	margin:		10px;
+	width:		auto;
+	height:		auto;
+}
+
+.dynamic-tab-pane-control h2 {
+	text-align:	left;
+	width:		auto;
+}
+
+.dynamic-tab-pane-control h2 a {
+	display:	inline;
+	width:		auto;
+}
+
+.dynamic-tab-pane-control a:hover {
+	background: transparent;
+}
+
+
+/* list stuff */
+
+ul#navlist
+{
+margin-left: 0;
+padding-left: 0;
+white-space: nowrap;
+}
+
+#navlist li
+{
+display: inline;
+list-style-type: none;
+}
+
+#navlist a { padding: 3px 10px; }
+
+#navlist a:link, #navlist a:visited
+{
+color: rgb(0,66,174);
+background-color: #fff;
+text-decoration: none;
+border: outset;
+border-color: rgb(234,242,255);
+}
+
+#navlist a:hover
+{
+color: rgb(0,66,174);
+font-weight: bold;
+background-color: #fff;
+text-decoration: none;
+border: outset;
+border-color: rgb(234,242,255);
+}
+
+</style>
+<script type="text/javascript" src="js/tabpane.js"></script>
+</head>
+<body onload=initPage()>
+
+<script type="text/javascript">
+//<![CDATA[
+
+function setLinkSrc( sStyle ) {
+	document.getElementById( "webfx-tab-style-sheet" ).disabled = sStyle != "webfx"
+
+	document.documentElement.style.background =
+	document.body.style.background = sStyle == "webfx" ? "#edebe3" : "ThreeDFace";
+}
+
+setLinkSrc( "webfx" );
+
+//]]>
+</script>
+
+<div class="tab-pane" id="tabPane1">
+
+<script type="text/javascript">
+tp1 = new WebFXTabPane( document.getElementById( "tabPane1" ) );
+</script>
+
+	<div class="tab-page" id="tabPage1">
+		<h2 class="tab">LEO Orbit Design</h2>
+
+		<script type="text/javascript">tp1.addTabPage( document.getElementById( "tabPage1" ) );</script>
+
+		<br>
+		<div id="navcontainer">
+			<ul id="navlist">
+				<li><a href="#" onClick="Start(); return false;" >Start Mission</a></li>
+				<li><a href="#" onClick="GTError(); return false;" >GT Max Error</a></li>
+				<li><a href="#" onClick="SensorPersist(); return false;" >Sensor Persistence</a></li>
+				<li><a href="#" onClick="GlobalCover(); return false;" >Global Coverage</a></li>
+				<li>
+					<select name="ChooseReportOrbit" width=300 style="width:160px">
+						<option>Graph: GT Error</option>
+						<option>Coverage Report</option>
+						<option>Coverage Graph</option>
+					</select>
+				</li>
+				<li><a href="#" onClick="OrbitOutput(); return false;" >Load Report</a></li>
+				<li><a href="#" onClick="GlobalClear(); return false;" >Clear</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="tab-page" id="tabPage2">
+		<h2 class="tab">Comm Link Design</h2>
+
+		<script type="text/javascript">tp1.addTabPage( document.getElementById( "tabPage2" ) );</script>
+
+		<br>
+		<div id="navcontainer">
+			<ul id="navlist">
+				<li><a href="#" onClick="DownlinkPass(); return false;" >Downlink Pass</a></li>
+				<li><a href="#" onClick="AntGain(); return false;" >Antenna Gain</a></li>
+				<li><a href="#" onClick="CommAll(); return false;" >Downlink Schedule</a></li>
+				<li>
+					<select name="ChooseReportComm" width=300 style="width:160px">
+						<option>Ground Network Access</option>
+						<option>Link Budget: Sat-Nome</option>
+					</select>
+				</li>
+				<li><a href="#" onClick="CommOutput(); return false;" >Load Report</a></li>
+				<li><a href="#" onClick="GlobalClear(); return false;" >Clear</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="tab-page" id="tabPage3">
+		<h2 class="tab">Attitude Modeling</h2>
+
+		<script type="text/javascript">tp1.addTabPage( document.getElementById( "tabPage3" ) );</script>
+
+		<br>
+		<div id="navcontainer">
+			<ul id="navlist">
+				<li><a href="#" onClick="Targets(); return false;" >Show Targets</a></li>
+				<li><a href="#" onClick="StrafeRun(); return false;" >Imaging Strafe</a></li>
+				<li><a href="#" onClick="AttSphere(); return false;" >Attitude Sphere</a></li>
+				<li>
+					<select name="ChooseReportAtt" width=300 style="width:160px">
+						<option>Attitude Schedule</option>
+					</select>
+				</li>
+				<li><a href="#" onClick="AttOutput(); return false;" >Load Report</a></li>
+				<li><a href="#" onClick="GlobalClear(); return false;" >Clear</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="tab-page" id="tabPage4">
+		<h2 class="tab">Conjunction Analysis</h2>
+
+		<script type="text/javascript">tp1.addTabPage( document.getElementById( "tabPage4" ) );</script>
+
+		<br>
+		<div id="navcontainer">
+			<ul id="navlist">
+				<li><a href="#" onClick="AdvCAT(); return false;" >Compute AdvCAT</a></li>
+				<li><a href="#" onClick="SeeConj(); return false;" >View Conjunction</a></li>
+				<li>
+					<select name="ChooseReportCAT" width=300 style="width:160px">
+						<option>Conj. by Min Range</option>
+						<option>Conj. by Min Separation</option>
+					</select>
+				</li>
+				<li><a href="#" onClick="CATOutput(); return false;" >Load Report</a></li>
+				<li><a href="#" onClick="GlobalClear(); return false;" >Clear</a></li>
+			</ul>
+		</div>
+	</div>
+
+</div>
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+setupAllTabs();
+
+
+
+
+//]]>
+</script>
+
+<SCRIPT language="JavaScript">
+<!--
+//***********************************************************
+//	Return current path location.
+//***********************************************************
+function getFileName() {
+	return location.href
+}
+-->
+</script>
+
+<script language="VBSCRIPT">
+<!--
+    Dim stk
+    Dim uiApp
+    Dim animtime
+    Dim rangecontourexist
+    Dim Test
+    Dim rawpathname
+    Dim MsgRtn
+    Dim PathString,CommandStringPre,CommandString,QuoteMark
+   	Dim filename
+	Dim Walkthrough
+
+	Sub initPage ()
+		Dim list
+		Dim vers
+		Dim vers1
+
+		Set uiApp = window.external
+		Set stk = uiApp.personality
+		rangecontourexist = 0
+		AdvCATExist = 0
+		Set uiApp = window.external
+    	Set stk = uiApp.personality
+		Set vers = stk.ExecuteCommand("GetSTKVersion /")
+		Set vers1 = vers(0)
+		Dim thisWindow
+'		if InStr(vers1, "v5") > 0 then
+'			Set t = CreateObject("AgHtmlServer.AgHtmlServerInit")
+'		else if InStr(vers1, "v6") > 0 then
+'			Set t = CreateObject("AgHtmlServer.AgHtmlServerInit60")
+'		else if InStr(vers1, "v7") > 0 then
+'			Set t = CreateObject("AgHtmlServer.AgHtmlServerInit70")
+'		end if
+'		Set t = CreateObject("AgHtmlServer.AgHtmlServerInit")
+		filename = getFileName()
+		dock = 4 'Form1.dock.value
+		ttitle = "Tab Pane Demo (WebFX)"  'Form1.TTitle.value
+		Dim str
+		str = ""
+		for each win in uiApp.Windows
+			if win.caption = "HTML Viewer - " + ttitle then
+				Set thisWindow = win
+				str = "1"
+			end if
+		Next
+
+		if str = "1" then
+			thisWindow.DockStyle = cint(dock)
+			if dock = "4" or dock = "5" then
+				thisWindow.Height = 200
+			else
+				thisWindow.Width = 175
+			end if
+		end if
+	End Sub
+
+'*************** LEO Orbit Design ***************
+
+	Sub Start()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""Start""")
+		stk.ExecuteCommand("VO */Satellite/RepeatSat DynDataText DataDisplay ""GT_Error"" Show On Color yellow Position Left 0 Top 15")
+		stk.ExecuteCommand("VO * SetVectorGeometry Modify ""Satellite/RepeatSat Desc_Node Vector"" Show On")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 00:03:37.767"" EndTime ""4 Jun 2009 00:00:00.000"" EndMode End RefreshMode RefreshDelta RefreshDelta 0.001")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub GTError()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""Loop1_MaxError""")
+		stk.ExecuteCommand("VO */Satellite/RepeatSat DynDataText DataDisplay ""GT_Error"" Show On Color yellow Position Left 0 Top 15")
+		stk.ExecuteCommand("VO * SetVectorGeometry Modify ""Satellite/RepeatSat Desc_Node Vector"" Show On")
+		stk.ExecuteCommand("SetAnimation * StartTime ""5 Jun 2009 01:03:10.000"" EndTime ""6 Jun 2009 00:00:00.000"" EndMode End")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub SensorPersist()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""SensorPersist""")
+		stk.ExecuteCommand("Graphics */Satellite/RepeatSat/Sensor/camera_FOR Persist Forward On Time 86400.0")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 00:03:37.767"" EndTime ""4 Jun 2009 00:00:00.000"" EndMode End")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub GlobalCover()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""SensorPersist""")
+		stk.ExecuteCommand("VO * Overlay Modify ""cover_legend.jpg"" Show On")
+		stk.ExecuteCommand("VO * TerrainAndImagery Modify File ""C:\agi\scenarios\LEO_SMDO\LEO_SMDO\TIM\GlobalCoverage.pdttx"" Transparency 0.4")
+		stk.ExecuteCommand("Graphics */Satellite/RepeatSat/Sensor/camera_FOR Persist Forward On Time 86400.0")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 00:03:37.767"" EndTime ""4 Jun 2009 00:00:00.000"" EndMode End")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub OrbitOutput()
+	    On error resume next
+
+		QuickReportOrbit = ChooseReportOrbit(ChooseReportOrbit.selectedIndex).text
+
+		if QuickReportOrbit = "Graph: GT Error" then
+			stk.ExecuteCommand("GraphCreate */Satellite/RepeatSat Type Display Style ""GT_Error"" TimePeriod ""1 Jun 2009 00:03:37.767"" ""25 Dec 2009 00:00:00.000""")
+
+		elseif QuickReportOrbit = "Coverage Report" then
+			stk.ExecuteCommand("ReportCreate */CoverageDefinition/GlobalCoverage/FigureOfMerit/N_Access Type Display Style ""Percent Satisfied"" TimePeriod ""1 Jun 2009 00:03:37.767"" ""18 Jun 2009 01:16:27.151""")
+
+		elseif QuickReportOrbit = "Coverage Graph" then
+			stk.ExecuteCommand("GraphCreate */CoverageDefinition/GlobalCoverage Type Display Style ""Percent Coverage"" TimePeriod ""1 Jun 2009 00:03:37.767"" ""18 Jun 2009 01:16:27.151""")
+
+		end if
+	End Sub
+
+
+'*************** Comm Link Design ***************
+
+	Sub DownlinkPass()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""1stDownLink""")
+		stk.ExecuteCommand("DisplayTimes */Facility/* State AlwaysOn")
+		'stk.ExecuteCommand("VO * ObjectLine Modify FromObj Facility/Nome ToObj Satellite/RepeatSat Show On")
+		'stk.ExecuteCommand("VO * ObjectLine Modify FromObj Facility/Scranton ToObj Satellite/RepeatSat Show On")
+		stk.ExecuteCommand("Graphics */Satellite/RepeatSat/Sensor/ToStations/Transmitter/Tx_dnlink ContourSet ShowGfx On")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 08:00:15.000"" EndTime ""1 Jun 2009 08:17:00.000"" EndMode End")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub AntGain()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""CommSat""")
+		stk.ExecuteCommand("DisplayTimes */Facility/* State AlwaysOn")
+		'stk.ExecuteCommand("VO * ObjectLine Modify FromObj Facility/Nome ToObj Satellite/RepeatSat Show On")
+		'stk.ExecuteCommand("VO * ObjectLine Modify FromObj Facility/Scranton ToObj Satellite/RepeatSat Show On")
+		stk.ExecuteCommand("VO */Satellite/RepeatSat/Sensor/ToStations/Transmitter/Tx_dnlink Volumes On")
+		stk.ExecuteCommand("Graphics */Satellite/RepeatSat/Sensor/ToStations/Transmitter/Tx_dnlink ContourSet ShowGfx On")
+		stk.ExecuteCommand("VO */Chain/CommLink DynDataText DataDisplay ""Link Budget"" Show On Color magenta Position Left 0 Top 15")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 08:07:00.000"" EndTime ""1 Jun 2009 08:10:47.000"" EndMode End")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub CommAll()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""CommAll""")
+		stk.ExecuteCommand("DisplayTimes */Facility/* State AlwaysOn")
+		'stk.ExecuteCommand("VO * ObjectLine Modify FromObj Facility/Nome ToObj Satellite/RepeatSat Show On")
+		'stk.ExecuteCommand("VO * ObjectLine Modify FromObj Facility/Scranton ToObj Satellite/RepeatSat Show On")
+		stk.ExecuteCommand("Graphics */Satellite/RepeatSat/Sensor/ToStations/Transmitter/Tx_dnlink ContourSet ShowGfx On")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 07:45:00.000"" EndTime ""3 Jun 2009 17:00:00.000"" EndMode End")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub CommOutput()
+	    On error resume next
+
+		QuickReportComm = ChooseReportComm(ChooseReportComm.selectedIndex).text
+
+		if QuickReportComm = "Ground Network Access" then
+			stk.ExecuteCommand("GraphCreate */Chain/GroundStnAccess Type Display Style ""Individual Strand Access"" TimePeriod ""1 Jun 2009 00:03:37.767"" ""3 Jun 2009 17:00:00.000""")
+
+		elseif QuickReportComm = "Link Budget: Sat-Nome" then
+			stk.ExecuteCommand("ReportCreate */Chain/CommLink Type Display Style ""Total Link Budget"" TimePeriod ""1 Jun 2009 00:03:37.767"" ""25 Dec 2009 00:00:00.000""")
+
+		end if
+	End Sub
+
+
+'*************** Imaging Strafe Run ***************
+
+	Sub Targets()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""Start""")
+	    stk.ExecuteCommand("DisplayTimes */Target/* State AlwaysOn")
+	    stk.ExecuteCommand("Animate * Pause")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub StrafeRun()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""ImagingStrafe""")
+	    stk.ExecuteCommand("DisplayTimes */Target/* State AlwaysOn")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 14:25:00.000"" EndTime ""1 Jun 2009 14:40:00.000"" EndMode End")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub AttSphere()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO * UseStoredView ""ImagingStrafe""")
+		stk.ExecuteCommand("VO */Satellite/RepeatSat AttitudeView Sphere Show On")
+		stk.ExecuteCommand("VO */Satellite/RepeatSat SetVectorGeometry Modify ""Satellite/RepeatSat Body Axes"" Show On Persistent On Fade On Duration 120")
+	    stk.ExecuteCommand("DisplayTimes */Target/* State AlwaysOn")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 14:25:00.000"" EndTime ""1 Jun 2009 14:40:00.000"" EndMode End")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub AttOutput()
+	    On error resume next
+
+		QuickReportAtt = ChooseReportAtt(ChooseReportAtt.selectedIndex).text
+
+		if QuickReportAtt = "Attitude Schedule" then
+			stk.ExecuteCommand("ReportCreate */Satellite/RepeatSat Type Display Style ""Attitude Schedule"" TimePeriod ""1 Jun 2009 14:25:00.000"" ""1 Jun 2009 14:40:00.000""")
+
+		end if
+	End Sub
+
+'*************** Conjunction Analysis ***************
+
+	Sub AdvCAT()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO */AdvCAT/AdvCAT AdvCATAttributes ShowPrimary On ShowSecondary On ShowAllSecondary Off")
+		stk.ExecuteCommand("ACAT */AdvCAT/AdvCAT Compute ShowProgress On")
+		stk.ExecuteCommand("VO * UseStoredView ""Start""")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub SeeConj()
+	    On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+		call GlobalClear()
+
+		stk.ExecuteCommand("VO */AdvCAT/AdvCAT AdvCATAttributes ShowPrimary On ShowSecondary On ShowAllSecondary Off")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 00:03:37.767"" EndTime ""3 Jun 2009 17:00:00.000"" EndMode End")
+		stk.ExecuteCommand("VO * UseStoredView ""Conjunction""")
+		stk.ExecuteCommand("Animate * Start")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+	Sub CATOutput()
+	    On error resume next
+
+		QuickReportCAT = ChooseReportCAT(ChooseReportCAT.selectedIndex).text
+
+		if QuickReportCAT = "Conj. by Min Range" then
+			stk.ExecuteCommand("ReportCreate */AdvCAT/AdvCAT Type Display Style ""Close Approach By Min Range""")
+
+		elseif QuickReportCAT = "Conj. by Min Separation" then
+			stk.ExecuteCommand("ReportCreate */AdvCAT/AdvCAT Type Display Style ""Close Approach By Min Sep""")
+
+		end if
+	End Sub
+
+'*************** Universal ***************
+
+	Sub GlobalClear()
+		On error resume next
+		stk.ExecuteCommand("BatchGraphics * On")
+
+		stk.ExecuteCommand("DisplayTimes */Facility/* State AlwaysOff")
+		stk.ExecuteCommand("DisplayTimes */Target/* State AlwaysOff")
+		stk.ExecuteCommand("VO * SetVectorGeometry Modify ""Satellite/RepeatSat Desc_Node Vector"" Show Off")
+		stk.ExecuteCommand("Graphics */Satellite/RepeatSat/Sensor/camera_FOR Persist Forward On Time 0.0")
+		stk.ExecuteCommand("VO * Overlay Modify ""cover_legend.jpg"" Show Off")
+		stk.ExecuteCommand("VO * TerrainAndImagery Modify File ""C:\agi\scenarios\LEO_SMDO\LEO_SMDO\TIM\GlobalCoverage.pdttx"" Transparency 1.0")
+		stk.ExecuteCommand("Graphics */Satellite/RepeatSat/Sensor/ToStations/Transmitter/Tx_dnlink ContourSet ShowGfx Off")
+		stk.ExecuteCommand("VO */Satellite/RepeatSat/Sensor/ToStations/Transmitter/Tx_dnlink Volumes Off")
+		stk.ExecuteCommand("VO */Satellite/RepeatSat DynDataText DataDisplay ""GT_Error"" Show Off Color yellow Position Left 0 Top 15")
+		stk.ExecuteCommand("VO */Chain/CommLink DynDataText DataDisplay ""Link Budget"" Show Off")
+		'stk.ExecuteCommand("VO * ObjectLine Modify FromObj Facility/Nome ToObj Satellite/RepeatSat Show Off")
+		'stk.ExecuteCommand("VO * ObjectLine Modify FromObj Facility/Scranton ToObj Satellite/RepeatSat Show Off")
+		stk.ExecuteCommand("VO */Satellite/RepeatSat AttitudeView Sphere Show Off")
+		stk.ExecuteCommand("VO */Satellite/RepeatSat SetVectorGeometry Modify ""Satellite/RepeatSat Body Axes"" Show Off")
+		stk.ExecuteCommand("SetAnimation * StartTime ""1 Jun 2009 00:03:37.767"" EndTime ""4 Jun 2009 00:00:00.000"" EndMode End")
+		stk.ExecuteCommand("VO */AdvCAT/AdvCAT AdvCATAttributes ShowPrimary Off ShowSecondary Off ShowAllSecondary Off")
+		stk.ExecuteCommand("Animate * Pause")
+		stk.ExecuteCommand("BatchGraphics * Off")
+	End Sub
+
+</script>
+
+</body>
+</html>

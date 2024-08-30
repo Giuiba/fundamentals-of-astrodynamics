@@ -13,6 +13,51 @@ namespace SGP4Program
     class SGP4Programs
     {
 
+        /* ---------------------------------------------------------------------
+        *
+        *                              testSGP4.cs
+        *
+        *  this program tests the sgp4 propagator. an stk ephemeris file is generated
+        *  along with the test output. the code for this is left justified for easy
+        *  location.
+        *
+        *                          companion code for
+        *             fundamentals of astrodynamics and applications
+        *                                  2022
+        *                            by david vallado
+        *
+        *     email dvallado@comspoc.com, davallado@gmail.com
+        *     *****************************************************************
+        *    current :
+        *              29 aug 24  david vallado
+        *                           add check for sgp4-xp tle
+        *    changes :
+        *               7 dec 15  david vallado
+        *                           fix jd, jdfrac
+        *               3 nov 14  david vallado
+        *                           update to msvs2013 c++
+        *              11 nov 13  david vallado
+        *                           conversion to msvs c++
+        *                           misc fixes to constants and options
+        *                           add singly averaged state elements to be exported
+        *               3 sep 08  david vallado
+        *                           add switch for afspc compatibility and improved operation
+        *              14 may 08  david vallado
+        *                           fixes for linux suggested by brian micek
+        *                           misc fixes noted by the community - manual operation,
+        *                           formats, char lengths
+        *              14 aug 06  david vallado
+        *                           update mfe for verification time steps, constants
+        *              20 jul 05  david vallado
+        *                           fixes for paper, corrections from paul crawford
+        *               7 jul 04  david vallado
+        *                           fix record file and get working
+        *              14 may 01  david vallado
+        *                           2nd edition baseline
+        *                     80  norad
+        *                           original baseline
+        *       ----------------------------------------------------------------      */
+
         public static void Main(string[] args)
         {
             // setup the class so methods can be called
@@ -24,6 +69,7 @@ namespace SGP4Program
             char typerun, typeinput, opsmode;
             SGP4Lib.gravconsttype whichconst;
             int whichcon;
+            outfilenameE = "";
 
             // ----------------------------  locals  -------------------------------
             double p, a, ecc, incl, node, argp, nu, m, arglat, truelon, lonper;
@@ -72,18 +118,20 @@ namespace SGP4Program
             else
                 typeinput = 'e';
 
-            Console.Write("input which constants 721 (72) 84 \n");
-            linex = Console.ReadLine(); // Read string from console
-            if (int.TryParse(linex, out whichcon)) // Try to parse the string as an integer
-            {
-            }
-            else
-            {
-                Console.WriteLine("Not an integer!");
-            }
-            if (whichcon == 721) whichconst = SGP4Lib.gravconsttype.wgs72old;
+            //Console.Write("input which constants 721 (72) 84 \n");
+            //linex = Console.ReadLine(); // Read string from console
+            //if (int.TryParse(linex, out whichcon)) // Try to parse the string as an integer
+            //{
+            //}
+            //else
+            //{
+            //    Console.WriteLine("Not an integer!");
+            //}
+            // standard operation 
+            whichcon = 72;
+            //if (whichcon == 721) whichconst = SGP4Lib.gravconsttype.wgs72old;
             if (whichcon == 72) whichconst = SGP4Lib.gravconsttype.wgs72;
-            if (whichcon == 84) whichconst = SGP4Lib.gravconsttype.wgs84;
+            //if (whichcon == 84) whichconst = SGP4Lib.gravconsttype.wgs84;
 
             // ---------------- setup files for operation ------------------
             // input 2-line element set file
@@ -140,114 +188,119 @@ namespace SGP4Program
                     // includes initialization of sgp4
                     SGP4Libr.twoline2rv(longstr1, longstr2, typerun, typeinput, opsmode, whichconst,
                                 out startmfe, out stopmfe, out deltamin, out satrec);
-                    
-                    // call the propagator to get the initial state vector value
-                    // no longer need gravconst since it is assigned in sgp4init
-                    SGP4Libr.sgp4(ref satrec, 0.0, ro, vo);
 
-                    // generate .e files for stk
-                    jd = satrec.jdsatepoch;
-                    outfilenameE = longstr2.Substring(2, 5).ToString() + ".e";
-                    SGP4Libr.invjday(satrec.jdsatepoch, satrec.jdsatepochF, out year, out mon, out day, out hr, out min, out sec);
-                    //string datestr = String.Format(" {0,2}{1,4}{2,5} {3,2}:{4,2}:{5} ", day, monstr[mon], year, hr, min, sec);
-                    // add datetime support 29 Jul 2022 dav
-                    DateTime dt = new DateTime(year, mon, day, hr, min, 0); // TS
-                    dt = dt.AddSeconds(sec); // TS: Supports double seconds
-                    string datestr = $"{dt:dd MMM yyyy HH:mm:ss.fff}"; // TS
-
-                    strbuildE.AppendLine("stk.v.10.0\n");
-                    strbuildE.AppendLine("BEGIN Ephemeris\n");
-                    strbuildE.AppendLine("NumberOfEphemerisPoints xxxxx");
-                    strbuildE.AppendLine("ScenarioEpoch  " + datestr);
-                    strbuildE.AppendLine("InterpolationMethod		Lagrange");
-                    strbuildE.AppendLine("InterpolationOrder		5"); 
-                    strbuildE.AppendLine("CentralBody Earth");
-                    strbuildE.AppendLine("CoordinateSystem TEME");
-                    strbuildE.AppendLine("DistanceUnit Kilometers");   // Kilometers
-                    strbuildE.AppendLine("EphemerisTimePosVel\n");
-
-                    // .e file
-                    tsince = 0.0;
-                    strbuildE.AppendLine((tsince.ToString("0.00000000")).PadLeft(17) +
-                                        (ro[0].ToString("0.00000000")).PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
-                                        (vo[0].ToString("0.00000000")).PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17));
-
-                    // output file
-                    strbuild.AppendLine(satrec.satnum.ToString() + " xx");
-                    strbuild.AppendLine((tsince.ToString("0.00000000")).PadLeft(17) +
-                                        ro[0].ToString("0.00000000").PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
-                                        vo[0].ToString("0.000000000").PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17));
-                    tsince = startmfe;
-
-                    // check so the first value isn't written twice
-                    if (Math.Abs(tsince) > 1.0e-8)
-                        tsince = tsince - deltamin;
-
-                    // ----------------- loop to perform the propagation ----------------
-                    while ((tsince < stopmfe) && (satrec.error == 0))
+                    // sgp4fix note that the ephtype must be 0 for SGP4. SGP4-XP uses 4.
+                    if (satrec.ephtype == 0)
                     {
-                        tsince = tsince + deltamin;
+                        // call the propagator to get the initial state vector value
+                        // no longer need gravconst since it is assigned in sgp4init
+                        SGP4Libr.sgp4(ref satrec, 0.0, ro, vo);
 
-                        if (tsince > stopmfe)
-                            tsince = stopmfe;
+                        // generate .e files for stk
+                        jd = satrec.jdsatepoch;
+                        outfilenameE = longstr2.Substring(2, 5).ToString() + ".e";
+                        SGP4Libr.invjday(satrec.jdsatepoch, satrec.jdsatepochF, out year, out mon, out day, out hr, out min, out sec);
+                        //string datestr = String.Format(" {0,2}{1,4}{2,5} {3,2}:{4,2}:{5} ", day, monstr[mon], year, hr, min, sec);
+                        // add datetime support 29 Jul 2022 dav
+                        DateTime dt = new DateTime(year, mon, day, hr, min, 0); // TS
+                        dt = dt.AddSeconds(sec); // TS: Supports double seconds
+                        string datestr = $"{dt:dd MMM yyyy HH:mm:ss.fff}"; // TS
 
-                        SGP4Libr.sgp4(ref satrec, tsince, ro, vo);
+                        strbuildE.AppendLine("stk.v.12.0\n");
+                        strbuildE.AppendLine("BEGIN Ephemeris\n");
+                        strbuildE.AppendLine("NumberOfEphemerisPoints xxxxx");
+                        strbuildE.AppendLine("ScenarioEpoch  " + datestr);
+                        strbuildE.AppendLine("InterpolationMethod		Lagrange");
+                        strbuildE.AppendLine("InterpolationOrder		5");
+                        strbuildE.AppendLine("CentralBody Earth");
+                        strbuildE.AppendLine("CoordinateSystem TEME");
+                        strbuildE.AppendLine("DistanceUnit Kilometers");   // Kilometers
+                        strbuildE.AppendLine("EphemerisTimePosVel\n");
 
-                        if (satrec.error > 0)
-                            Console.Write(@"# *** error: t:= %f *** code = %3d\n",
-                                    satrec.t, satrec.error);
+                        // .e file
+                        tsince = 0.0;
+                        strbuildE.AppendLine((tsince.ToString("0.00000000")).PadLeft(17) +
+                                            (ro[0].ToString("0.00000000")).PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
+                                            (vo[0].ToString("0.00000000")).PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17));
 
-                        if (satrec.error == 0)
+                        // output file
+                        strbuild.AppendLine(satrec.satnum.ToString() + " xx");
+                        strbuild.AppendLine((tsince.ToString("0.00000000")).PadLeft(17) +
+                                            ro[0].ToString("0.00000000").PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
+                                            vo[0].ToString("0.000000000").PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17));
+                        tsince = startmfe;
+
+                        // check so the first value isn't written twice
+                        if (Math.Abs(tsince) > 1.0e-8)
+                            tsince = tsince - deltamin;
+
+                        // ----------------- loop to perform the propagation ----------------
+                        while ((tsince < stopmfe) && (satrec.error == 0))
                         {
-                            if ((typerun != 'v') && (typerun != 'c'))
+                            tsince = tsince + deltamin;
+
+                            if (tsince > stopmfe)
+                                tsince = stopmfe;
+
+                            SGP4Libr.sgp4(ref satrec, tsince, ro, vo);
+
+                            if (satrec.error > 0)
+                                Console.Write(@"# *** error: t:= %f *** code = %3d\n",
+                                        satrec.t, satrec.error);
+
+                            if (satrec.error == 0)
                             {
-                                jd = satrec.jdsatepoch;
-                                jdfrac = satrec.jdsatepochF + tsince / 1440.0;
-                                if (jdfrac < 0.0)
+                                if ((typerun != 'v') && (typerun != 'c'))
                                 {
-                                    jd = jd - 1.0;
-                                    jdfrac = jdfrac + 1.0;
+                                    jd = satrec.jdsatepoch;
+                                    jdfrac = satrec.jdsatepochF + tsince / 1440.0;
+                                    if (jdfrac < 0.0)
+                                    {
+                                        jd = jd - 1.0;
+                                        jdfrac = jdfrac + 1.0;
+                                    }
+                                    SGP4Libr.invjday(jd, jdfrac, out year, out mon, out day, out hr, out min, out sec);
+                                    strbuild.AppendLine(tsince.ToString("0.00000000").PadLeft(17) +
+                                                        ro[0].ToString("0.00000000").PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
+                                                        vo[0].ToString("0.000000000").PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17) + " " +
+                                                        year.ToString() + " " + mon.ToString() + " " + day.ToString() + " " + hr.ToString() + " " + min.ToString() + " " + sec.ToString("0.000000")
+                                                       );
                                 }
-                                SGP4Libr.invjday(jd, jdfrac, out year, out mon, out day, out hr, out min, out sec);
-                                strbuild.AppendLine(tsince.ToString("0.00000000").PadLeft(17) +
-                                                    ro[0].ToString("0.00000000").PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
-                                                    vo[0].ToString("0.000000000").PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17) + " " +
-                                                    year.ToString() + " " + mon.ToString() + " " + day.ToString() + " " + hr.ToString() + " " + min.ToString() + " " + sec.ToString("0.000000")
-                                                   );
-                            }
-                            else
-                            {
-                                jd = satrec.jdsatepoch;
-                                jdfrac = satrec.jdsatepochF + tsince / 1440.0;
-                                if (jdfrac < 0.0)
+                                else
                                 {
-                                    jd = jd - 1.0;
-                                    jdfrac = jdfrac + 1.0;
+                                    jd = satrec.jdsatepoch;
+                                    jdfrac = satrec.jdsatepochF + tsince / 1440.0;
+                                    if (jdfrac < 0.0)
+                                    {
+                                        jd = jd - 1.0;
+                                        jdfrac = jdfrac + 1.0;
+                                    }
+                                    SGP4Libr.invjday(jd, jdfrac, out year, out mon, out day, out hr, out min, out sec);
+
+                                    strbuildE.AppendLine((tsince * 60).ToString("0.00000000").PadLeft(17) +
+                                                       ro[0].ToString("0.00000000").PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
+                                                       vo[0].ToString("0.000000000").PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17));
+
+                                    SGP4Libr.rv2coe(ro, vo, satrec.mu, out p, out a, out ecc, out incl, out node, out argp, out nu, out m, out arglat, out truelon, out lonper);
+                                    strbuild.AppendLine(tsince.ToString("0.00000000").PadLeft(17) +
+                                                        ro[0].ToString("0.00000000").PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
+                                                        vo[0].ToString("0.000000000").PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17) + " " +
+                                                        a.ToString("0.000000").PadLeft(17) + " " + ecc.ToString("0.000000") + " " + (incl * rad).ToString("0.00000") + " " +
+                                                        (node * rad).ToString("0.00000") + " " + (argp * rad).ToString("0.00000") + " " + (nu * rad).ToString("0.00000") + " " + (m * rad).ToString("0.00000") + " " +
+                                                        year.ToString() + " " + mon.ToString() + " " + day.ToString() + " " + hr.ToString() + ":" + min.ToString() + ":" + sec.ToString("0.000000")
+                                                       );
                                 }
-                                SGP4Libr.invjday(jd, jdfrac, out year, out mon, out day, out hr, out min, out sec);
+                            } // if satrec.error == 0
 
-                                strbuildE.AppendLine((tsince * 60).ToString("0.00000000").PadLeft(17) +
-                                                   ro[0].ToString("0.00000000").PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
-                                                   vo[0].ToString("0.000000000").PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17));
+                        } // while propagating the orbit
 
-                                SGP4Libr.rv2coe(ro, vo, satrec.mu, out p, out a, out ecc, out incl, out node, out argp, out nu, out m, out arglat, out truelon, out lonper);
-                                strbuild.AppendLine(tsince.ToString("0.00000000").PadLeft(17) +
-                                                    ro[0].ToString("0.00000000").PadLeft(17) + " " + ro[1].ToString("0.00000000").PadLeft(17) + " " + ro[2].ToString("0.00000000").PadLeft(17) + " " +
-                                                    vo[0].ToString("0.000000000").PadLeft(17) + " " + vo[1].ToString("0.000000000").PadLeft(17) + " " + vo[2].ToString("0.000000000").PadLeft(17) + " " +
-                                                    a.ToString("0.000000").PadLeft(17) + " " + ecc.ToString("0.000000") + " " + (incl * rad).ToString("0.00000") + " " +
-                                                    (node * rad).ToString("0.00000") + " " + (argp * rad).ToString("0.00000") + " " + (nu * rad).ToString("0.00000") + " " + (m * rad).ToString("0.00000") + " " +
-                                                    year.ToString() + " " + mon.ToString() + " " + day.ToString() + " " + hr.ToString() + ":" + min.ToString() + ":" + sec.ToString("0.000000")
-                                                   );
-                            }
-                        } // if satrec.error == 0
+                        strbuildE.Replace("xxxxx", ktr1.ToString());
+                        strbuildE.AppendLine("END Ephemeris\n");
 
-                    } // while propagating the orbit
+                        File.WriteAllText(outfilenameE, strbuildE.ToString());
+                        strbuildE.Clear();
+                    }  // if ephtype == 0
 
-                    strbuildE.Replace("xxxxx", ktr1.ToString());
-                    strbuildE.AppendLine("END Ephemeris\n");
-
-                    File.WriteAllText(outfilenameE, strbuildE.ToString());
-                    strbuildE.Clear();
                 } // if not eof
 
                 ktr = ktr + 1;

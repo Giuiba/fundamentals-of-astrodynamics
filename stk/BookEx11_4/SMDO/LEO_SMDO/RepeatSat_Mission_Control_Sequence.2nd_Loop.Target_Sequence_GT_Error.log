@@ -1,0 +1,873 @@
+<!-- STKv4.0 Format="XML" -->
+<STKOBJECT>
+<OBJECT>
+    <OBJECT Class = "container" Name = "RunLog">
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> -0.8296276133806804 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 0.1 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 0.01 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> -0.8296276133806804 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>14 &quot;&quot;</REAL>
+                        <REAL>13.9 &quot;&quot;</REAL>
+                        <REAL>13.8 &quot;&quot;</REAL>
+                        <REAL>13.7 &quot;&quot;</REAL>
+                        <REAL>13.74284820872573 &quot;&quot;</REAL>
+                        <REAL>13.64284820872573 &quot;&quot;</REAL>
+                        <REAL>13.54284820872573 &quot;&quot;</REAL>
+                        <REAL>13.44284820872573 &quot;&quot;</REAL>
+                        <REAL>13.34284820872573 &quot;&quot;</REAL>
+                        <REAL>13.24284820872573 &quot;&quot;</REAL>
+                        <REAL>13.17037238661932 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs">
+                <REAL>1.926079757341318 &quot;&quot;</REAL>
+                <REAL>1.64189862043139 &quot;&quot;</REAL>
+                <REAL>1.357316915231816 &quot;&quot;</REAL>
+                <REAL>1.437033092246982 &quot;&quot;</REAL>
+                <REAL>1.194539067156773 &quot;&quot;</REAL>
+                <REAL>1.289537802445466 &quot;&quot;</REAL>
+                <REAL>1.030216874503856 &quot;&quot;</REAL>
+                <REAL>0.6922007177354329 &quot;&quot;</REAL>
+                <REAL>0.4345667265958093 &quot;&quot;</REAL>
+                <REAL>0.1765347127424644 &quot;&quot;</REAL>
+                <REAL>0.01056470296027612 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "ElapsedTimes">
+                <REAL>0 &quot;&quot;</REAL>
+                <REAL>83.30999994277954 &quot;&quot;</REAL>
+                <REAL>82.86900007724762 &quot;&quot;</REAL>
+                <REAL>79.50399994850159 &quot;&quot;</REAL>
+                <REAL>83.37000000476837 &quot;&quot;</REAL>
+                <REAL>81.10699999332428 &quot;&quot;</REAL>
+                <REAL>76.76999998092651 &quot;&quot;</REAL>
+                <REAL>76.69000005722046 &quot;&quot;</REAL>
+                <REAL>76.46999990940094 &quot;&quot;</REAL>
+                <REAL>74.37700009346008 &quot;&quot;</REAL>
+                <REAL>76.28999996185303 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "double" Name = "ElapsedTime"> 831.6959999799728 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 10 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>-877.8239272023955 &quot;&quot;</REAL>
+                        <REAL>-792.5695861294172 &quot;&quot;</REAL>
+                        <REAL>-707.195074569545 &quot;&quot;</REAL>
+                        <REAL>-731.1099276740947 &quot;&quot;</REAL>
+                        <REAL>-658.3617201470319 &quot;&quot;</REAL>
+                        <REAL>-686.8613407336399 &quot;&quot;</REAL>
+                        <REAL>-609.0650623511567 &quot;&quot;</REAL>
+                        <REAL>-507.6602153206299 &quot;&quot;</REAL>
+                        <REAL>-430.3700179787428 &quot;&quot;</REAL>
+                        <REAL>-352.9604138227393 &quot;&quot;</REAL>
+                        <REAL>-296.8305891119172 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;11 Dec 2003 16:42:31.48&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Converged&quot; </OBJECT>
+        </OBJECT>
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> -0.8296276133806804 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 0.1 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 0.01 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> -0.8296276133806804 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>13.17037238661932 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs">
+                <REAL>0.01056470296027631 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "ElapsedTimes">
+                <REAL>0 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "double" Name = "ElapsedTime"> 37.14299988746643 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 0 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>-296.8305891119172 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;11 Dec 2003 17:02:18.42&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Converged&quot; </OBJECT>
+        </OBJECT>
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> 0 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 0.1 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 0.01 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> 0 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>13.17037238661932 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs">
+                <REAL>0.01056470296027631 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "ElapsedTimes">
+                <REAL>0 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "double" Name = "ElapsedTime"> 39.12699997425079 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 0 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>-296.8305891119172 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;11 Dec 2003 17:17:50.68&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Converged&quot; </OBJECT>
+        </OBJECT>
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> 0 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 0.1 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 0.01 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> 0 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>13.17037238661932 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs">
+                <REAL>0.01170619752738692 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "ElapsedTimes">
+                <REAL>0 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "double" Name = "ElapsedTime"> 37.48399996757507 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 0 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>-296.488140741784 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;11 Dec 2003 17:30:30.05&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Converged&quot; </OBJECT>
+        </OBJECT>
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> 0 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 0.1 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 0.01 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> 0 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>13.17037238661932 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs">
+                <REAL>0.01067371066415091 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "ElapsedTimes">
+                <REAL>0 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "double" Name = "ElapsedTime"> 20.33899998664856 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 0 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>-296.7978868007548 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;11 Dec 2003 18:32:25.00&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Converged&quot; </OBJECT>
+        </OBJECT>
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> 0.5 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 0.1 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 0.01 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> 0.5 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>13.17037238661932 &quot;&quot;</REAL>
+                        <REAL>13.27037238661932 &quot;&quot;</REAL>
+                        <REAL>13.37037238661932 &quot;&quot;</REAL>
+                        <REAL>13.47037238661932 &quot;&quot;</REAL>
+                        <REAL>13.57037238661932 &quot;&quot;</REAL>
+                        <REAL>13.67037238661932 &quot;&quot;</REAL>
+                        <REAL>13.67037238661932 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs">
+                <REAL>5.692823654492568 &quot;&quot;</REAL>
+                <REAL>5.692212555235639 &quot;&quot;</REAL>
+                <REAL>5.691582663510358 &quot;&quot;</REAL>
+                <REAL>5.690983671073313 &quot;&quot;</REAL>
+                <REAL>5.690372755898077 &quot;&quot;</REAL>
+                <REAL>5.689725376553516 &quot;&quot;</REAL>
+                <REAL>5.689725376553516 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "ElapsedTimes">
+                <REAL>0 &quot;&quot;</REAL>
+                <REAL>3.815000057220459 &quot;&quot;</REAL>
+                <REAL>3.56499981880188 &quot;&quot;</REAL>
+                <REAL>3.575000047683716 &quot;&quot;</REAL>
+                <REAL>3.575000047683716 &quot;&quot;</REAL>
+                <REAL>3.575999975204468 &quot;&quot;</REAL>
+                <REAL>1.13100004196167 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "double" Name = "ElapsedTime"> 21.69099998474121 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 6 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>1407.847096347771 &quot;&quot;</REAL>
+                        <REAL>1407.663766570692 &quot;&quot;</REAL>
+                        <REAL>1407.474799053108 &quot;&quot;</REAL>
+                        <REAL>1407.295101321994 &quot;&quot;</REAL>
+                        <REAL>1407.111826769423 &quot;&quot;</REAL>
+                        <REAL>1406.917612966055 &quot;&quot;</REAL>
+                        <REAL>1406.917612966055 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;13 Aug 2004 09:42:02.18&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Not Converged&quot; </OBJECT>
+        </OBJECT>
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> 0.7 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 0.1 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 0.01 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> 0.7 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>100.5 &quot;&quot;</REAL>
+                        <REAL>100.6 &quot;&quot;</REAL>
+                        <REAL>100.7 &quot;&quot;</REAL>
+                        <REAL>100.7 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs">
+                <REAL>6.095539529632393 &quot;&quot;</REAL>
+                <REAL>6.094774948592923 &quot;&quot;</REAL>
+                <REAL>6.094006909372491 &quot;&quot;</REAL>
+                <REAL>6.094006909372491 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "ElapsedTimes">
+                <REAL>0 &quot;&quot;</REAL>
+                <REAL>4.476000070571899 &quot;&quot;</REAL>
+                <REAL>4.415999889373779 &quot;&quot;</REAL>
+                <REAL>1.61299991607666 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "double" Name = "ElapsedTime"> 13.13899993896484 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 3 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>1528.661858889719 &quot;&quot;</REAL>
+                        <REAL>1528.432484577877 &quot;&quot;</REAL>
+                        <REAL>1528.202072811748 &quot;&quot;</REAL>
+                        <REAL>1528.202072811748 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;13 Aug 2004 09:42:43.06&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Not Converged&quot; </OBJECT>
+        </OBJECT>
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> 0.7 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 0.1 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 0.01 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> 0.7 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs" />
+            <OBJECT Class = "container" Name = "ElapsedTimes" />
+            <OBJECT Class = "double" Name = "ElapsedTime"> 24.14499998092651 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 0 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;13 Aug 2004 09:46:51.42&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Encountered an Error&quot; </OBJECT>
+        </OBJECT>
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> -37.18805705464555 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 100 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 10 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> -37.18805705464555 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>500.7 &quot;&quot;</REAL>
+                        <REAL>462.1284145331711 &quot;&quot;</REAL>
+                        <REAL>468.5939659840885 &quot;&quot;</REAL>
+                        <REAL>462.8119429453545 &quot;&quot;</REAL>
+                        <REAL>462.8119429453545 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs">
+                <REAL>2.204890007961343 &quot;&quot;</REAL>
+                <REAL>0.2932708710661217 &quot;&quot;</REAL>
+                <REAL>0.2413834550322716 &quot;&quot;</REAL>
+                <REAL>0.2454276051796488 &quot;&quot;</REAL>
+                <REAL>0.2454276051796488 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "ElapsedTimes">
+                <REAL>0 &quot;&quot;</REAL>
+                <REAL>58.13399982452393 &quot;&quot;</REAL>
+                <REAL>58.78400015830994 &quot;&quot;</REAL>
+                <REAL>61.68899989128113 &quot;&quot;</REAL>
+                <REAL>2.213000059127808 &quot;&quot;</REAL>
+            </OBJECT>
+            <OBJECT Class = "double" Name = "ElapsedTime"> 204.9950001239777 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 4 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values">
+                        <REAL>-961.4670023884032 &quot;&quot;</REAL>
+                        <REAL>-212.0187386801636 &quot;&quot;</REAL>
+                        <REAL>-372.4150365096816 &quot;&quot;</REAL>
+                        <REAL>-226.3717184461055 &quot;&quot;</REAL>
+                        <REAL>-226.3717184461055 &quot;&quot;</REAL>
+                    </OBJECT>
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;13 Aug 2004 09:49:14.21&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Not Converged&quot; </OBJECT>
+        </OBJECT>
+        <OBJECT>
+            <OBJECT Class = "ListLink" Name = "Controls">
+                <OBJECT Class = "ShooterControl" Name = "FiniteMnvr.StoppingConditions.Duration.TripValue">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "double" Name = "Correction"> -37.18805705464555 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;TimeUnit&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "MaxStep"> 100 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;TurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Maneuver&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Perturbation"> 10 sec </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 sec </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "string" Name = "SlaveSegments"> &quot;&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Tolerance"> 1e-006 sec </OBJECT>
+                    <OBJECT Class = "double" Name = "TotalCorrection"> -37.18805705464555 sec </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterControl&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Duration of Propagation&quot; </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "container" Name = "Costs" />
+            <OBJECT Class = "container" Name = "ElapsedTimes" />
+            <OBJECT Class = "double" Name = "ElapsedTime"> 28.24000000953674 &quot;&quot; </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsMaximum"> 25 </OBJECT>
+            <OBJECT Class = "int" Name = "IterationsTaken"> 0 </OBJECT>
+            <OBJECT Class = "ListLink" Name = "Results">
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> True </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> -300.0000000000001 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToLastNode&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 10 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+                <OBJECT Class = "ShooterResult" Name = "LS7">
+                    <OBJECT Class = "bool" Name = "Active"> False </OBJECT>
+                    <OBJECT Class = "string" Name = "CalcType"> &quot;CAgAsStateCalcRepGrTrackErr&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "Description"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Desired"> 0 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Dimension"> &quot;DistanceUnit&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentSegmentName"> &quot;PropToTurnAround&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "ParentType"> &quot;Propagate&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+                    <OBJECT Class = "double" Name = "Scale"> 1 m </OBJECT>
+                    <OBJECT Class = "container" Name = "ShooterControls" />
+                    <OBJECT Class = "double" Name = "Tolerance"> 100 m </OBJECT>
+                    <OBJECT Class = "string" Name = "Type"> &quot;ShooterResult&quot; </OBJECT>
+                    <OBJECT Class = "string" Name = "UserComment"> &quot;Repeating Ground Track Error to be measured at the equator (as a distance)&quot; </OBJECT>
+                    <OBJECT Class = "bool" Name = "Valid"> False </OBJECT>
+                    <OBJECT Class = "container" Name = "Values" />
+                    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+                    <OBJECT Class = "double" Name = "Weight"> 1 &quot;&quot; </OBJECT>
+                </OBJECT>
+            </OBJECT>
+            <OBJECT Class = "string" Name = "StartTime"> &quot;13 Aug 2004 09:52:50.72&quot; </OBJECT>
+            <OBJECT Class = "string" Name = "Status"> &quot;Not Converged&quot; </OBJECT>
+        </OBJECT>
+    </OBJECT>
+</OBJECT>
+</STKOBJECT>

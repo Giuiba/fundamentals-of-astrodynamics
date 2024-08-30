@@ -1,0 +1,48 @@
+/* Connect example for testprob5 */
+/* dvallado, 17 june 2004 */
+
+/* 
+Note when compiling, all AgConnect applications must be compiled with the AGCONNECT system/ preprocessor definition.
+The _AFXDLL preprocessor definition is also required. If the AGCONNECT flag isn't defined, the compiler doesn't recognize several 
+internal variable types defined in AgUtMsgCommon.h. In addition to source and header files, AgConnect is shipped with a library 
+file, AgConnect.lib that must be linked when generating any AgConnect executables. Finally, all AgConnect applications must 
+have the following variable defined (where <FileName> is any name you choose used in DefaultAgUtMsg messages):
+*/
+char AgEAppName[ ]= "<FileName>"; 
+/*    If your source file is written in C++, be sure to define AgEAppName as follows: */
+extern "C" 
+{
+char AgEAppName[ ]="<FileName>";
+} 
+/*   Any C or C++ program that uses AgConnect functions must include AgConnect.h:  */
+#include "AgConnect.h" 
+/*
+Four variables must be defined. 
+First, the context variable, which identifies the connection being used, should be initialized to NULL: 
+Second, AgConnect requires a file name string to be defined. The file name can be set to NULL, in which case the default file is used, or it can be set to the AgConnect initialization file you wish to use: 
+Third, AgConnect needs to know the name of the STK connection. This variable takes the form of server:port: 
+Finally, AgConnect must have a place to store the data returned by Connect commands. Therefore, a variable of type AgTConReturnInfo should be defined: 
+char *connection1 = NULL; 
+char *initFileName = NULL; 
+static char connectName[256] = "localhost:5001"; 
+AgTConReturnInfo returnInfo; 
+
+/*   At this point, you can initialize AgConnect by calling:  */
+AgConInit(initFileName); 
+/* Next, a connection to STK can be opened up with the AgConOpenSTK( ) function:  */
+AgConOpenSTK(&connection1, AgCTcpType, connectName); 
+The context variable passed to this function should be passed to any future functions that need to talk to this connection: 
+Now that AgConnect is initialized and a connection to STK has been established, commands can be sent to STK using a call similar to the one shown here, which loads a scenario into STK: 
+AgConProcessSTKCmd (connection1, "Load / Scenario /master/STKv4/Data/BasicScenarios /Basic.sc", &returnInfo); 
+NOTE: This path may be different depending on your install.
+If at any time you wish to receive an asynchronous packet of data to be returned from STK, use the following command: 
+AgConGetAsync(connection1, &returnInfo); 
+
+
+
+/* Close the connection to STK, use the following command: */
+AgConCloseSTK(&connection1); 
+ 
+AgConShutdownConnect(); 
+frees the memory internally allocated by the AgConnect library. Subsequent to this call, the application can be shut down. 
+The example code shows a complete program that opens a connection to STK, loads a scenario, sends the AllAccess Connect command, closes the connection and prints out the data. 

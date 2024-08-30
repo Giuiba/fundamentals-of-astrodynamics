@@ -1,0 +1,31 @@
+stk.v.9.0
+WrittenBy    STK_v9.2.2
+
+BEGIN Constellation
+
+Name  GroundNetwork
+BEGIN Definition
+
+   Type        Constellation
+   Operator    Or
+   Order       1
+   IsRelay     No
+    Object  Facility/Holt
+    Object  Facility/Nome
+    Object  Facility/Scranton
+   SaveMode    0
+   UseLoadIntervalFile    No
+
+END Definition
+
+BEGIN Extensions
+    
+    BEGIN ADFFileData
+    END ADFFileData
+    
+    BEGIN Desc
+    END Desc
+
+END Extensions
+
+END Constellation

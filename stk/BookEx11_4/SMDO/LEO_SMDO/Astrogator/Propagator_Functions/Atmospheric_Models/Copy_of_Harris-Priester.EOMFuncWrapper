@@ -1,0 +1,17 @@
+<!-- STKv4.0 Format="XML" -->
+<STKOBJECT>
+<OBJECT Class = "EOMFuncWrapper" Name = "Copy_of_Harris-Priester">
+    <OBJECT Class = "string" Name = "AtmosDataFile"> &quot;C:\ProgramData\AGI\STK 9\DynamicEarthData\SpaceWeather-v1.2.txt&quot; </OBJECT>
+    <OBJECT Class = "string" Name = "AtmosDataSource"> &quot;Constant Values&quot; </OBJECT>
+    <OBJECT Class = "bool" Name = "Clonable"> True </OBJECT>
+    <OBJECT Class = "string" Name = "Description"> &quot;Harris-Priester Atmospheric Density Model&quot; </OBJECT>
+    <OBJECT Class = "double" Name = "F10p7Avg"> 175 &quot;&quot; </OBJECT>
+    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+    <OBJECT Class = "container" Name = "ShooterControls" />
+    <OBJECT Class = "string" Name = "SunPosition"> &quot;True&quot; </OBJECT>
+    <OBJECT Class = "string" Name = "Type"> &quot;Harris-Priester&quot; </OBJECT>
+    <OBJECT Class = "bool" Name = "UseApproximateAltitude"> True </OBJECT>
+    <OBJECT Class = "string" Name = "UserComment"> &quot;Harris-Priester Atmospheric Density Model&quot; </OBJECT>
+    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+</OBJECT>
+</STKOBJECT>

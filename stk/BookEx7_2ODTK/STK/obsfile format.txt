@@ -1,0 +1,2 @@
+       Time (UTCG)         lat          lon       alt       Right Ascen (deg)    Declination (deg)    Right Ascen (HMS)    Declination (DMS)    Azimuth (deg)    Elevation (deg)     Range (km) 
+       

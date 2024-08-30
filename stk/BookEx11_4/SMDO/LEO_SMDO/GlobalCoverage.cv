@@ -1,0 +1,115 @@
+stk.v.9.0
+WrittenBy    STK_v9.2.2
+
+BEGIN CoverageDefinition
+
+Name        GlobalCoverage
+
+BEGIN GridDefinition
+
+    VersionIndicator     20080103
+    Begin                Global
+    End                  Global
+    LatResolution        4.000000
+    LonResolution        4.000000
+    UsePolarRegions        Yes
+    GridClass            Target
+    PointLocationMethod  EqualArea
+    CentralBody          Earth
+    GroundAltMethod      UseAltType
+    GroundAlt            0.000000
+    AltitudeMethod       Altitude
+    Begin AltitudeList
+        0.000000
+    End AltitudeList
+
+END GridDefinition
+
+BEGIN AccessDefinition
+
+    DataRetention        AllData
+    Convergence          0.005000
+    AbsValueConvergence  1.000000e-014
+    RelValueConvergence  1.000000e-008
+    MaxTimeStep          360.000000
+    MinTimeStep          1.000000e-002
+    UseLightTimeDelay    No
+    TimeSense            PerAsset
+    DetectEventsUsingSamplesOnly No
+    AutoRecompute        No
+    UseAllAssetAccess        No
+    AssetSatisType           AtLeast
+    AssetSatisThreshold      1
+    AccessSaveMode       SaveWith
+    RegionAccessAccel    Auto
+
+END AccessDefinition
+
+BEGIN AssetList
+
+    Satellite/RepeatSat/Sensor/camera_FOR   Active 
+    Required No
+
+END AssetList
+
+BEGIN Interval
+
+    AccStart             1 Jun 2009 00:03:37.768000000
+    AccStop              18 Jun 2009 01:16:27.151000000
+    UseScenarioInterval       No
+
+END Interval
+
+Begin SavedAccesses
+    FileName: GlobalCoverage.cva
+End SavedAccesses
+
+BEGIN Extensions
+    
+    BEGIN Graphics
+
+BEGIN Attributes
+
+    GridMarkerStyle      1
+    GridColor            #00ffff
+    ProgressColor        #ffff00
+    SatisfactionColor    #ff00ff
+
+END Attributes
+
+BEGIN Graphics
+
+    ShowGrid             No
+    ShowRegions          No
+    ShowRegionsText      No
+    ShowPoints           No
+    FillPoints           No
+    ShowProgress         Yes
+    ShowSatisfaction     No
+
+END Graphics
+    END Graphics
+    
+    BEGIN ADFFileData
+    END ADFFileData
+    
+    BEGIN Desc
+    END Desc
+    
+    BEGIN VO
+    END VO
+
+END Extensions
+
+BEGIN SubObjects
+
+Class FigureOfMerit
+
+	N_Access
+
+END Class
+
+END SubObjects
+
+END CoverageDefinition
+

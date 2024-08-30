@@ -1,0 +1,20 @@
+<HTML>
+<HEAD>
+<script language="VBSCRIPT">
+function STK(whatRoutine)
+	if whatRoutine = "firstRoutine" then
+		Set uiApp = window.external
+		Set stk = uiApp.personality
+		Set notUsed = stk.ExecuteCommand("New / Scenario Test")
+		Set uiApp = Nothing
+		Set stk = Nothing
+	end if
+end function
+</script>
+</HEAD>
+<BODY>
+<Form>
+<input type="button" onClick="STK('firstRoutine')" value="New Scenario"><BR>
+</Form>
+</BODY>
+</HTML>

@@ -1,0 +1,83 @@
+[Analytical Graphics, Inc]
+WorkbookVersion=9.0
+Title=RepeatGroundTrack
+Description=
+ApplicationVersion=STK 9.2.2
+Scenario=YES
+ActiveMDIState=FALSE
+[WorkState_v1_2]
+ptn_Child1=Frames
+[WorkState_v1_2.Frames]
+ptn_Child1=MainFrame
+ptn_Child2=ChildFrames
+[WorkState_v1_2.Frames.MainFrame]
+WindowPlacement=MCAAAAAACAAAAAAADAAAAAAAAADIPPPPAADIPPPPPPPPPPPPPPPPPPPPBAAAAAAACAAAAAAABAEAAAAADOCAAAAA
+Title=RepeatGroundTrack - STK 9 - HTML Viewer - C4ISR Overview
+[WorkState_v1_2.Frames.ChildFrames]
+ptn_Child1=Document-0
+ptn_Child2=Document-1
+ptn_Child3=Document-2
+ptn_Child4=Document-3
+ptn_Child5=Document-4
+[WorkState_v1_2.Frames.ChildFrames.Document-0]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_2.Frames.ChildFrames.Document-0.ViewFrame-0]
+DocPathName=C:\Windows\system32\AgUiDllHtmlViewer9.AgUiPiHtmlViewer.1
+DocumentString=AgUiDllHtmlViewer.AgUiPiHtmlViewer.1
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAACAAAAAAAAAAAAAAAGIBAAAAAPPPPPPPPPPPPPPPPJAAAAAAAEFAAAAAAKHDAAAAAPHCAAAAA
+IsActiveChildFrame=False
+IsFrameVisible=True
+ptn_Child1=AGI Custom Node Data
+[WorkState_v1_2.Frames.ChildFrames.Document-0.ViewFrame-0.AGI Custom Node Data]
+CurrentURL=<LOCAL>\SetupSensorSchedulingFromSchedulerReport.html
+[WorkState_v1_2.Frames.ChildFrames.Document-1]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_2.Frames.ChildFrames.Document-1.ViewFrame-0]
+DocPathName=C:\Windows\system32\AgUiDllHtmlViewer9.AgUiPiHtmlViewer.1
+DocumentString=AgUiDllHtmlViewer.AgUiPiHtmlViewer.1
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAAAFAAAAAAHAAAAAA
+IsActiveChildFrame=False
+IsFrameVisible=True
+ProfUISBarID=63002
+ptn_Child1=AGI Custom Node Data
+[WorkState_v1_2.Frames.ChildFrames.Document-1.ViewFrame-0.AGI Custom Node Data]
+CurrentURL=<LOCAL>\HTML\LEO_overview.htm
+[WorkState_v1_2.Frames.ChildFrames.Document-2]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_2.Frames.ChildFrames.Document-2.ViewFrame-0]
+DocPathName=C:\Windows\system32\AgUi3DGfxView9.AgUiPi3DGfxView.1
+DocumentString=AgUi3DGfxView.AgUiPi3DGfxView.1
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPKPPPPPPPAOPPPPPPBAAAAAAACAAAAAAAHKDAAAAAOHCAAAAA
+IsActiveChildFrame=False
+IsFrameVisible=True
+ptn_Child1=AGI Custom Node Data
+[WorkState_v1_2.Frames.ChildFrames.Document-2.ViewFrame-0.AGI Custom Node Data]
+MapID=1
+SceneType=1
+[WorkState_v1_2.Frames.ChildFrames.Document-3]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_2.Frames.ChildFrames.Document-3.ViewFrame-0]
+DocPathName=C:\Windows\system32\AgUiAttrBrowser9.AgUiPiAttrBrowser.1
+DocumentString=AgUiAttrBrowser.AgUiPiAttrBrowser.1
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAALBBAAAAABOBAAAAA
+IsActiveChildFrame=False
+IsFrameVisible=True
+ProfUISBarID=63000
+ptn_Child1=AGI Custom Node Data
+[WorkState_v1_2.Frames.ChildFrames.Document-4]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_2.Frames.ChildFrames.Document-4.ViewFrame-0]
+DocPathName=C:\Windows\system32\AgUi3DGxToolPlugins9.AgUi3dGlobeManager.1
+DocumentString=AgUi3DGxToolPlugins.AgUi3dGlobeManager.1
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAALBBAAAAANMAAAAAA
+IsActiveChildFrame=False
+IsFrameVisible=True
+ProfUISBarID=63001
+ptn_Child1=AGI Custom Node Data
+[WorkState_v1_2.Frames.ChildFrames.Document-4.ViewFrame-0.AGI Custom Node Data]
+ActiveSceneID=1
