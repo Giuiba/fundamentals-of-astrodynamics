@@ -1,0 +1,35 @@
+stk.v.9.0
+WrittenBy    STK_v9.2.2
+
+BEGIN Constellation
+
+Name  ImagingTargets
+BEGIN Definition
+
+   Type        Constellation
+   Operator    Or
+   Order       1
+   IsRelay     No
+    Object  Target/Anchorage
+    Object  Target/Eugene
+    Object  Target/Friday_Harbor
+    Object  Target/Los_Angeles
+    Object  Target/San_Diego
+    Object  Target/San_Francisco
+    Object  Target/Seattle
+   SaveMode    0
+   UseLoadIntervalFile    No
+
+END Definition
+
+BEGIN Extensions
+    
+    BEGIN ADFFileData
+    END ADFFileData
+    
+    BEGIN Desc
+    END Desc
+
+END Extensions
+
+END Constellation

@@ -1,0 +1,148 @@
+stk.v.9.0
+WrittenBy    STK_v9.2.2
+
+BEGIN AdvCAT
+
+Name        AdvCAT
+
+    BEGIN Interval
+
+        UseScenarioTimeInterval   No
+        StartTime                 1 Jun 2009 00:03:37.768000000
+        StopTime                  3 Jun 2009 17:00:00.000000000
+        DisplayComputeAck         No
+        MsgAlertOnHit             No
+        ForceRePropOnSatFileLoad  No
+        MinSampleStepSize         1.000000000000e+000
+        MaxSampleStepSize         3.000000000000e+002
+        ComputeOnLoad  No
+
+    END Interval
+
+
+    BEGIN FilterSettings
+
+        Threshold                 1.000000000000e+004
+        ApogeePerigeePad          3.000000000000e+004
+        OrbitPathPad              3.000000000000e+004
+        TimeDistancePad           3.000000000000e+004
+        OutOfDateDuration         2.592000000000e+006
+        UseOutOfDateFilter        No
+        UseApogeePerigeeFilter    Yes
+        UsePathFilter             Yes
+        UseTimeFilter             Yes
+
+    END FilterSettings
+
+    BEGIN ProbabilityData
+
+         Resolution             	 1.000000000000e-001
+         AngleLimit             	 1.000000000000e+000
+         SigmaLimit             	 2.500000000000e-001
+         SigmaFinal             	 7.500000000000e+000
+         FractionalProbLimit    	 1.000000000000e-002
+         MaxTimeStep            	 1.000000000000e+001
+         HalfTimeSpan           	 0.000000000000e+000
+
+    END ProbabilityData
+
+
+    BEGIN GlobalEllipsoidProperties
+
+         ScaleFactor            	 1.000000000000e+000
+         QuadraticDB            	 stkQuadDB.qdb
+         FixedByOrbitClassDB    	 stkFxdOrbCls.foc
+         QuadraticByOrbitClassDB	 stkQuadOrbCls.qoc
+         CrossReferenceDB       	 stkAllTLE.sd
+        UseCrossRefDb             No
+
+    END GlobalEllipsoidProperties
+
+    BEGIN LogFileSettings
+
+        OutputToLogFile             No
+        BufferOutput                Yes
+        FileMode                    Overwrite
+
+    END LogFileSettings
+
+
+    BEGIN RelationFile
+
+        UseRelFile         No
+
+    END RelationFile
+
+    BEGIN SSCHardBodyRadFile
+
+        UseSSCFile         No
+
+    END SSCHardBodyRadFile
+
+    BEGIN Primaries
+
+
+        BEGIN DefaultEllipsoid
+
+             Tangential            2.000000000000e+004
+             CrossTrack            1.000000000000e+004
+             Normal                5.000000000000e+003
+             EllipsoidType         Fixed
+
+        END DefaultEllipsoid
+
+
+        BEGIN Satellite
+             Name                  RepeatSat.sa
+             Tangential            2.000000000000e+004
+             CrossTrack            1.000000000000e+004
+             Normal                5.000000000000e+003
+             EllipsoidType         Fixed
+             HardBodyRadius        1.00000
+             NumberID              0
+
+        END Satellite
+
+    END Primaries
+
+    BEGIN Secondaries
+
+
+        BEGIN DefaultEllipsoid
+
+             Tangential            2.000000000000e+004
+             CrossTrack            1.000000000000e+004
+             Normal                5.000000000000e+003
+             EllipsoidType         Fixed
+
+        END DefaultEllipsoid
+
+
+        BEGIN TleFile
+             Name                  stkSatDbAll-9-1-2009.tce
+             Tangential            2.000000000000e+004
+             CrossTrack            1.000000000000e+004
+             Normal                5.000000000000e+003
+             EllipsoidType         Fixed
+             HardBodyRadius        1.00000
+             NumberID              0
+
+        END TleFile
+
+    END Secondaries
+
+BEGIN Extensions
+    
+    BEGIN ADFFileData
+    END ADFFileData
+    
+    BEGIN Desc
+    END Desc
+    
+    BEGIN VO
+    END VO
+
+END Extensions
+
+END AdvCAT
+

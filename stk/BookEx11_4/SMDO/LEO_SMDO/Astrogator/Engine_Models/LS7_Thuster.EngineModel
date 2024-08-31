@@ -1,0 +1,49 @@
+<!-- STKv4.0 Format="XML" -->
+<STKOBJECT>
+<OBJECT Class = "EngineModel" Name = "LS7_Thuster">
+    <OBJECT Class = "bool" Name = "Clonable"> True </OBJECT>
+    <OBJECT Class = "string" Name = "Description"> &quot;Engine with polynomial functions for Thrust and Isp&quot; </OBJECT>
+    <OBJECT Class = "double" Name = "g"> 9.806649999999999 m*sec^-2 </OBJECT>
+    <OBJECT Class = "AttrCon" Name = "Isp">
+        <OBJECT Class = "double" Name = "B7"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C0"> 207.587 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C1"> 0.0199252 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C2"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C3"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C4"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C5"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C6"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C7"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "E4"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "E5"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "E6"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "E7"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "K0"> -1 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "K1"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "ReferenceTemp"> 293 K </OBJECT>
+    </OBJECT>
+    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+    <OBJECT Class = "container" Name = "ShooterControls" />
+    <OBJECT Class = "AttrCon" Name = "Thrust">
+        <OBJECT Class = "double" Name = "B7"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C0"> 0.0878656 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C1"> 0.00256245 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C2"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C3"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C4"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C5"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C6"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "C7"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "E4"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "E5"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "E6"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "E7"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "K0"> -1 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "K1"> 0 &quot;&quot; </OBJECT>
+        <OBJECT Class = "double" Name = "ReferenceTemp"> 293 K </OBJECT>
+    </OBJECT>
+    <OBJECT Class = "string" Name = "Type"> &quot;EngineModelPoly&quot; </OBJECT>
+    <OBJECT Class = "string" Name = "UserComment"> &quot;Engine with polynomial functions for Thrust and Isp&quot; </OBJECT>
+    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+</OBJECT>
+</STKOBJECT>

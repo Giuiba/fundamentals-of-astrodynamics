@@ -1,0 +1,76 @@
+Astrogator Log File; DriverMCS: Mission_Control_Sequence
+-------------------------------------------------------------
+
+
+----------------------------------------------
+Initial control parameters:
+
+Unscaled Controls:
+Control         Last Update          Total Correction
+     0.024910012124      0.000000000000     -0.005078381282
+
+
+Homotopy step   1 of   1
+
+Intermediate Goals Desired:
+  -6.000000e+002 
+
+
+---Running one step of the differential corrector...
+
+--------------------------------------------------------
+
+<<< Targeting Finished >>>
+    [Goals met]
+
+
+--------------------------------------------------------
+
+---Done. (running one step of the differential corrector.)
+
+Params from single diff corr
+
+Unscaled Controls:
+Control         Last Update          Total Correction
+     0.024910012124      0.000000000000     -0.005078381282
+
+
+Intermediate constraints desired :
+  -600.000000000000 
+
+
+Constraints (unscaled) :
+  -569.246278489207 
+
+Differences (unscaled) :
+      30.753721510793
+
+Tolerances (unscaled) :
+     100.000000000000
+
+
+----------------------------------------------
+Final Params from Homotopy Diff Corr
+
+Unscaled Controls:
+Control         Last Update          Total Correction
+     0.024910012124      0.000000000000     -0.005078381282
+
+
+Intermediate constraints desired :
+  -600.000000000000 
+
+
+Constraints (unscaled) :
+  -569.246278489207 
+
+Differences (unscaled) :
+      30.753721510793
+
+Tolerances (unscaled) :
+     100.000000000000
+
+
+----------------------------------------------
+
+*********** Done Targeting************************

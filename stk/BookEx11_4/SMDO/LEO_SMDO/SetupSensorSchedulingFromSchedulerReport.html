@@ -1,0 +1,406 @@
+<html>
+<head>
+<style>
+html,body {
+	background-color: Silver;
+}
+h1 {
+	font: 16pt Verdana Bold;
+	margin-bottom: 3px;
+	margin-top: 3px;
+	color: Black;
+}
+h2 {
+	font: 14pt Verdana Bold;
+	margin-bottom: 3px;
+	margin-top: 3px;
+	color: Silver;
+}
+.normal {
+	font: 10pt Verdana;
+	color: black;
+}
+.link {
+	font: 8pt Verdana;
+	color: blue;
+	text-decoration: underline;
+	cursor: hand;
+}
+.resultsLink {
+	font: 10pt Verdana;
+	color: blue;
+	text-decoration: underline;
+	cursor: hand;
+}
+.boldNormal {
+	font: 10pt Verdana;
+	color: black;
+	font-weight: bold;
+}
+.resultsBold {
+	font: 10pt Verdana;
+	color: blue;
+	font-weight: bold;
+}
+.sectionHeading {
+	font: 10pt Verdana;
+	font-weight: bold;
+	color:lightyellow;
+	width:100%;
+	background-color:gray;
+}
+.tdHeading {
+	font: 10pt Verdana;
+	color: black;
+	font-weight: bold;
+	background-color: lightyellow;
+}
+.tdCell {
+	font: 10pt Courier;
+	color: black;
+	background-color: white;
+}
+.control {
+	font: 8pt Verdana;
+	margin-bottom: 3px;
+	margin-left: 3px;
+	margin-right: 3px;
+	margin-top: 3px;
+}
+</style>
+<script language="VBScript">
+
+sub onLoadSub()
+populateObjectsOfClass "sensorObjectSelect", "Sensor", "NA"
+populateObjectsOfClass "constellationObjectSelect", "Constellation", "NA"
+setSchedulerSensorName
+end sub
+
+sub refreshWindow()
+locationStr = window.location
+window.location = locationStr
+end sub
+
+function sendCmd(cmdStr, returnErrorMsg, logCommandsObj)
+'cmdStr is a string connect command for STK
+'returnErrorMsg is a boolean where True sends the command failure back to the user
+'logCommandsobj is a string name for <span> tag where commands will be logged, enter string "NA" for no obj
+'create objects
+set uiApp = window.external
+set stk = uiApp.personality
+on error resume next
+set list = stk.ExecuteCommand(cmdStr)
+failedExecution = False
+'error handling
+if err <> 0 then
+	if returnErrorMsg = True then
+		msgbox "This command failed:" & vbcrlf & vbcrlf & cmdStr
+	end if
+	failedExecution = True
+end if
+'log the commands
+if logCommandsObj <> "NA" then
+	set commandsLog = document.all(logCommandsObj)
+	if failedExecution = True then
+	commandsLog.innerHTML = commandsLog.innerHTML & "Failure: "
+	commandsLog.innerHTML = commandsLog.innerHTML & cmdStr & "<br>" & vbcrlf
+	elseif failedExecution = False then
+	commandsLog.innerHTML = commandsLog.innerHTML & "Success: "
+	commandsLog.innerHTML = commandsLog.innerHTML & cmdStr & "<br>" & vbcrlf
+	end if
+end if
+
+'data return
+if list.Count >= 0 then 'return data
+	for i = 0 to (list.Count - 1)
+		redim preserve returnArray(i)
+		returnArray(i) = replace(trim(list(i)),chr(10),"")
+	next
+else
+	redim returnArray(0)
+	returnArray(0) = "NO DATA"
+end if
+sendCmd = returnArray
+'close objects
+set stk = nothing
+set uiApp = nothing
+end function
+
+function getDescriptionData(stkObjectPath, lineNumber)
+longDescriptionArray = sendCmd("GetDescription " & stkObjectPath & " Long", False, "connectCommands")
+descriptionArray = split(longDescriptionArray(0), chr(13))
+lineArray = split(descriptionArray(lineNumber),":")
+valueArray = split(lineArray(1),"(")
+getDescriptionData = valueArray(0)
+end function
+
+sub showHideCommands()
+if connectCommandsLink.innerHTML = "show connect commands" then
+	connectCommandsLink.innerHTML = "hide connect commands"
+	connectCommands.style.display = "block"
+elseif connectCommandsLink.innerHTML = "hide connect commands" then
+	connectCommandsLink.innerHTML = "show connect commands"
+	connectCommands.style.display = "none"
+end if
+end sub
+
+function getObjName(inStr)
+nameArray = split(inStr, "/")
+getObjName = nameArray(ubound(nameArray))
+end function
+
+function getObjType(inStr)
+nameArray = split(inStr, "/")
+getObjType = nameArray(ubound(nameArray)-1)
+end function
+
+function getObjPath(inStr)
+  nameArray = split(inStr, "/")
+  for i = 3 to ubound(nameArray)
+	objPath = objPath & nameArray(i) & "/"
+  next
+  getObjPath = left(objPath,len(objPath)-1)
+end function
+
+function getParentObjName(inStr)
+nameArray = split(inStr, "/")
+getParentObjName = nameArray(ubound(nameArray) - 2)
+end function
+
+sub populateObjectsOfClass(objectName, classType, filterStr)
+  set oSelect = document.all(objectName)
+  oSelect.innerHTML = ""
+  if inStr(1,classType,",") > 0 then
+	classTypeArray = split(classType,",")
+  else
+	redim preserve classTypeArray(0)
+	classTypeArray(0) = classType
+  end if
+  for i = 0 to ubound(classTypeArray)
+	returnArray = sendCmd("ShowNames */ Class " & classTypeArray(i), True, "connectCommands")	
+	if returnArray(0) <> "None" then
+		objectsArray = split(replace(returnArray(0),chr(10),"")," ")
+		for j = 0 to ubound(objectsArray)
+			objPathStr = getObjPath(objectsArray(j))
+			objNameStr = getObjName(objectsArray(j))
+			if filterStr <> "NA" then
+			returnArray = sendCmd("GetDescription */" & objPathStr & " Short", True, "connectCommands")
+				if returnArray(0) = filterStr then
+					set oOption = document.createElement("OPTION")
+					oOption.text = classTypeArray(i) & "-" & objNameStr
+					oOption.value = objPathStr
+					oSelect.add(oOption)
+				end if
+			else
+				set oOption = document.createElement("OPTION")
+				oOption.text = classTypeArray(i) & "-" & objNameStr
+				oOption.value = objPathStr
+				oSelect.add(oOption)
+			end if
+		next
+	end if
+  next
+end sub
+
+sub populateWithChildren(objectName, parentObject, filterStr)
+'this will populate a dropdown with the child objects of a given parent object
+set oSelect = document.all(objectName)
+oSelect.innerHTML = ""
+returnArray = sendCmd("ShowNames * SubObjects */" & parentObject, True, "connectCommands")
+set oOption = document.createElement("OPTION")
+oOption.text = " -- select object -- "
+oOption.value = "noneSelected"
+oSelect.add(oOption)
+	if returnArray(0) <> "None" then
+	objectsArray = split(replace(returnArray(0),chr(10),"")," ")
+		for j = 0 to ubound(objectsArray)
+		objPathStr = getObjPath(objectsArray(j))
+		objNameStr = getObjName(objectsArray(j))
+			if filterStr <> "NA" then
+			returnArray = sendCmd("GetDescription */" & objPathStr & " Short", True, "connectCommands")
+				if returnArray(0) = filterStr then
+				set oOption = document.createElement("OPTION")
+				oOption.text = getObjType(objPathStr) & "-" & objNameStr
+				oOption.value = objPathStr
+				oSelect.add(oOption)
+				end if
+			else
+			set oOption = document.createElement("OPTION")
+			oOption.text = getObjType(objPathStr) & "-" & objNameStr
+			oOption.value = objPathStr
+			oSelect.add(oOption)
+			end if
+		next
+	end if
+end sub
+
+function getFileArray(filePath) 'returns an array from an ascii file
+'msgbox(filePath)
+dim fso, f, myArray(), line, y
+set fso = window.parent.external.createObject("Scripting.FileSystemObject")
+set f = fso.OpenTextFile(filePath, 1)
+y = 0
+While Not f.AtEndOfStream
+	redim preserve myArray(y)
+	myArray(y) = f.ReadLine
+	y = y + 1
+wend
+set f = nothing
+set fso = nothing
+getFileArray = myArray
+end function
+
+sub writeStrToFile(path,string) 'saves a string to the given path
+dim fso, f
+set fso = window.parent.external.createObject("Scripting.FileSystemObject")
+set f = fso.CreateTextFile(path)
+f.write string
+set f = nothing
+set fso = nothing
+end sub
+
+function getLine(inputStr)
+	set regExpObj = New RegExp
+	regExpObj.Global = True
+	regExpObj.IgnoreCase = True
+	regExpObj.Pattern = "[ " & chr(9) & "]{1,}"
+	getLine = regExpObj.Replace(trim(inputStr), "|")
+end function
+
+function pi()
+	pi = 4 * atn(1)
+end function
+
+function angleRad(angleDeg)
+	angleRad = pi() * (angleDeg / 180.0)
+end function
+
+function angleDeg(angleRad)
+	angleDeg = 180 * (angleRad / pi())
+end function
+
+function asin(x)
+	asin = atn(x / sqr(-x * x + 1))
+end function
+
+function acos(x)
+	acos = atn(-x / sqr(-x * x + 1)) + 2 * atn(1)
+end function
+
+function dQ(inputStr)
+dQ = chr(34) & inputStr & chr(34)
+end function
+
+function sQ(inputStr)
+sQ = chr(39) & inputStr & chr(39)
+end function
+
+sub helpMe(inputStr)
+	select case inputStr 
+		case "algorithms"
+		set oWindow = window.open
+		oWindow.location = "www.agi.com"
+		case "howToUse"
+		msgbox "No help here."
+	end select
+end sub
+
+sub setSchedulerSensorName()
+	sensorResourceName.value = getParentObjName(sensorObjectSelect.value)
+end sub
+
+sub showDutyCycle
+
+end sub
+
+sub parseResourceReport()
+sensorResourceNameStr = sensorResourceName.value
+sensorObjectPathStr = sensorObjectSelect.value
+constellationObjectPathStr = constellationObjectSelect.value
+constellationArray = sendCmd("Chains_R */" & constellationObjectPathStr & " SubObjects", True, "connectCommands")
+cArray = split(trim(constellationArray(0))," ")
+tgtCnt = 0
+for i = 0 to ubound(cArray)
+	returnArray = sendCmd("Point */" & sensorObjectPathStr & " Targeted Add " & cArray(i), False, "connectCommands")
+next
+returnArray = sendCmd("Point */" & sensorObjectPathStr & " Targeted Times UseAccess Off", False, "connectCommands")
+scenPathArray = sendCmd("GetScenPath */", True, "connectCommands")
+taskInfoFilePath = trim(replace(scenPathArray(0),"\\","\")) & "resourceInfo.txt"
+returnArray = sendCmd("SCHED / GetResourceSolution '" & taskInfoFilePath & "'", True, "connectCommands")
+reportArray = getFileArray(taskInfoFilePath)
+for i = 0 to ubound(reportArray)
+	if instr(1, reportArray(i), " ") > 0 and len(reportArray(i)) > 0 then
+		lineArray = split(getLine(trim(reportArray(i))),"|")
+		if lineArray(0) = "RR_RESOURCE_NAME" then
+			resourceNameStr = replace(trim(lineArray(1)), "'", "")
+			if resourceNameStr = sensorResourceNameStr then
+				marker = "on"
+			else
+				marker = off
+			end if
+		end if
+		if lineArray(0) = "RR_SUPPORTED_TASK" and marker = "on" then
+			startTime = convert2GregUTC(lineArray(4))
+			stopTime = convert2GregUTC(lineArray(5))
+			targetObjectPath = getResourceTargetPath(lineArray(1))
+			returnArray = sendCmd("Point */" & sensorObjectPathStr & " Targeted Times Add " & targetObjectPath & " " & dQ(startTime) & " " & dQ(stopTime), False, "connectCommands")
+			tgtCnt = tgtCnt + 1
+		end if
+		if lineArray(0) = "RR_DUTY_CYCLE_WITHOUT_SETUP" and marker = "on" then
+			dutyCycleNoSetup = lineArray(1)
+		end if
+		if lineArray(0) = "RR_DUTY_CYCLE_WITH_SETUP" and marker = "on" then
+			dutyCycleSetup = lineArray(1)
+		end if		
+	end if
+next
+msgbox "Added " & tgtCnt & " target times to " & sensorObjectPathStr & vbcrlf & vbcrlf & "Duty Cycle: " & vbcrlf & "No Setup = " & dutyCycleNoSetup & vbcrlf & "Setup = " & dutyCycleSetup
+end sub
+
+function convert2GregUTC(schedTimeStr)
+schedTimeStr = replace(schedTimeStr, "/", ":")
+schedTimeStr = replace(schedTimeStr, "_", ":")
+returnDate = sendCmd("ConvertDate */ YYYY:MM:DD:HH:MM:SS.sss GregUTC " & dQ(schedTimeStr), False, "connectCommands")
+convert2GregUTC = returnDate(0)
+end function
+
+function getResourceTargetPath(inputStr)
+if inStr(1,inputStr,"]_") > 0 then
+	tgtPathArray = split(inputStr, "]_")
+	inputStr = tgtPathArray(1)
+end if
+if inStr(1, inputStr, "(") > 0 then
+	tgtPathArray = split(inputStr, "(")
+	inputStr = tgtPathArray(0)	
+end if
+getResourceTargetPath = tgtTypeSelect.value & "/" & inputStr
+end function
+
+</script>
+</head>
+
+<body onload="onLoadSub()">
+<h1>Target Sensors Based On Schedule</h1>
+<span class="link" id="connectCommandsLink" onClick="showHideCommands()">show connect commands</span>
+<hr>
+<span class="sectionHeading">Setup Sensor Targeting</span><br>
+<span class="boldNormal">Select Sensor: </span>
+<select id="sensorObjectSelect" class="control" onchange="setSchedulerSensorName()">
+</select><br>
+<span class="boldNormal">Name of Sensor Resource Scheduler: </span><input type="text" id="sensorResourceName" size="15" class="control"><br>
+<span class="boldNormal">Constellation of Target Objects: </span><select id="constellationObjectSelect" class="control">
+</select><br>
+<span class="boldNormal">Type Of Target Objects: </span>
+<select id="tgtTypeSelect" class="control">
+	<option value="Satellite">Satellite
+	<option value="Aircraft">Aircraft
+	<option value="GroundVehicle">GroundVehicle
+	<option value="Ship">Ship
+	<option value="Facility">Facility
+	<option value="Target">Target
+</select><br>
+<input type="button" value="Parse Task Report" onClick="parseResourceReport()" class="control"><br>
+<span id="outSpan"></span><br>
+<span style="display:none;" id="connectCommands"></span>
+</body>
+</html>

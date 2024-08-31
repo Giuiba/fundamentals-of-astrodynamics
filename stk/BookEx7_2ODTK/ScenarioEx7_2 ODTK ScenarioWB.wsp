@@ -1,0 +1,61 @@
+[Analytical Graphics, Inc]
+WorkbookVersion=9.0
+Title=ScenarioEx7_2
+Description=
+ApplicationVersion=ODTK 7.1.0
+Scenario=YES
+ActiveMDIState=TRUE
+[WorkState_v1_2]
+ptn_Child1=Frames
+[WorkState_v1_2.Frames]
+ptn_Child1=MainFrame
+ptn_Child2=ChildFrames
+[WorkState_v1_2.Frames.MainFrame]
+WindowPlacement=MCAAAAAACAAAAAAADAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPHPCPPPPPIONPPPPPODHPPPPPCNBAAAAA
+Title=ScenarioEx7_2 - ODTK 7 - [LaunchPad]
+[WorkState_v1_2.Frames.ChildFrames]
+ptn_Child1=Document-0
+ptn_Child2=Document-1
+ptn_Child3=Document-2
+ptn_Child4=Document-3
+ptn_Child5=Document-4
+[WorkState_v1_2.Frames.ChildFrames.Document-1]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_2.Frames.ChildFrames.Document-1.ViewFrame-0]
+DocPathName=C:\Users\dvallado\Documents\ODTK 7\AgUiWhitePanel7.AgUiPiWhitePanel.1
+DocumentString=AgUiWhitePanel7.AgUiPiWhitePanel.1
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAMHBAAAAADJFAAAAA
+IsActiveChildFrame=False
+IsFrameVisible=True
+ProfUISBarID=63001
+[WorkState_v1_2.Frames.ChildFrames.Document-2]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_2.Frames.ChildFrames.Document-2.ViewFrame-0]
+DocPathName=C:\Users\dvallado\Documents\ODTK 7\AgUiAttrBrowser7.AgUiPiAttrBrowser.1
+DocumentString=AgUiAttrBrowser7.AgUiPiAttrBrowser.1
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAMGBAAAAADJFAAAAA
+IsActiveChildFrame=False
+IsFrameVisible=True
+ProfUISBarID=63000
+ptn_Child1=AGI Custom Node Data
+[WorkState_v1_2.Frames.ChildFrames.Document-3]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_2.Frames.ChildFrames.Document-3.ViewFrame-0]
+DocPathName=C:\Users\dvallado\Documents\ODTK 7\AgUiMessageViewer7.AgUiPiMessageViewer.1
+DocumentString=AgUiMessageViewer7.AgUiPiMessageViewer.1
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAACNAAAAADHAAAAAA
+IsActiveChildFrame=False
+IsFrameVisible=True
+ProfUISBarID=63002
+[WorkState_v1_2.Frames.ChildFrames.Document-4]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_2.Frames.ChildFrames.Document-4.ViewFrame-0]
+DocPathName=C:\Users\dvallado\Documents\ODTK 7\AgODReportTool7.AgODReportToolPlugin.1
+DocumentString=AgODReportTool7.AgODReportToolPlugin.1
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPEPPPPPPPMMPPPPPPOOAAAAAAFPAAAAAAKJEAAAAAFDDAAAAA
+IsActiveChildFrame=False
+IsFrameVisible=True

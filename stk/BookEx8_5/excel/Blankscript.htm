@@ -1,0 +1,199 @@
+<HTML>
+	<HEAD>
+		<TITLE>Embedded Script in HTML Example</TITLE>
+        <meta name="AUTHOR" CONTENT="David Vallado, May 11, 2007">
+        <meta name="ORGANIZATION" CONTENT="Center for Space Standards & Innovation (CSSI)">
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<SCRIPT LANGUAGE="VBSCRIPT">
+
+  ' vbscript for the html page
+  ' global vars
+  Dim thisWindow
+   
+  Sub InitPage
+    ' This subroutine is called when the page is loaded - look in the <BODY> tag below
+    ' used for running wihtin stk. use setSTK if in another application like excel
+    Set inituiApp = window.external
+    on error resume next
+    Set stk = inituiApp.personality
+	Set thisWindow = inituiApp.Windows("HTML Viewer - Embedded Script in HTML Example")
+    ' place the window on the right side and keep it up and running
+    thisWindow.DockStyle = 3
+	thisWindow.NoWBClose = true
+	set inituiApp = nothing
+  End Sub
+
+
+  Sub NewScenario()
+    returnarray = sendCmd("ConControl / VerboseOn",false,"NA")
+    returnarray = sendCmd("New / Scenario sample",false,"NA")
+  End Sub
+
+  Sub UnloadScenario()
+    on error resume next
+    returnarray = sendCmd("unload / */",false,"NA")
+  End Sub
+
+  Sub UnLoadPage()
+    ' This subroutine is called when the page
+    ' is un-loaded - look in the <BODY> tag below
+    Set stk = Nothing
+  End Sub
+  
+  Function sendCmd(cmdStr, returnErrorMsg, logCommandsObj)
+	' cmdStr is a string connect command for STK
+	' returnErrorMsg is a boolean where True sends the command failure back to the user
+	' logCommandsobj is a string name for <span> tag where commands will be logged, enter string "NA" for no obj
+	' create objects
+	set uiApp = window.external
+	set stk = uiApp.personality
+	on error resume next
+	set list = stk.ExecuteCommand(cmdStr)
+	failedExecution = False
+	' error handling
+	if err <> 0 then
+		if returnErrorMsg = True then
+			msgbox "This command failed:" & vbcrlf & vbcrlf & cmdStr
+		end if
+		failedExecution = True
+	end if
+	' log the commands
+	if logCommandsObj <> "NA" then
+		set commandsLog = document.all(logCommandsObj)
+		if failedExecution = True then
+		commandsLog.innerHTML = commandsLog.innerHTML & "Failure: "
+		commandsLog.innerHTML = commandsLog.innerHTML & cmdStr & "<br>" & vbcrlf
+		elseif failedExecution = False then
+		commandsLog.innerHTML = commandsLog.innerHTML & "Success: "
+		commandsLog.innerHTML = commandsLog.innerHTML & cmdStr & "<br>" & vbcrlf
+		end if
+	end if	
+	' data return
+	if list.Count >= 0 then ' return data
+		for i = 0 to (list.Count - 1)
+			redim preserve returnArray(i)
+			returnArray(i) = replace(trim(list(i)),chr(10),"")
+		next
+	else
+		redim returnArray(0)
+		returnArray(0) = "NO DATA"
+	end if
+	sendCmd = returnArray
+	'close objects
+	set stk = nothing
+	set uiApp = nothing
+  End function
+
+
+' now for the script specific subroutines -----------------------------------------------------------
+
+  Sub Button1()
+    ' Create a new Scenario
+    Call NewScenario
+
+    ' setup the data for the scenario
+    Call SetTimePeriod
+    Call SetObjects
+
+    ' do something
+'     Call DoAnalysis
+
+    ' STK on top in excel
+    ' STKApplication.Activate
+    ' Call UnloadScenario
+  End Sub
+
+  Sub SetTimePeriod()
+    ' star refers to the current scenario, star slash is for satellite objects, facility, etc.
+    returnarray = sendCmd("SetTimePeriod * " & Chr(34) & "17 Oct 2003 00:00:00.0" & Chr(34) & " " & Chr(34) & "18 Oct 2003 00:00:00.00" & Chr(34),true,"NA")
+	'close
+    returnarray = sendCmd("GetTimePeriod *",false,"NA")	
+	linestr = returnarray(0)
+	linearray = split(linestr,",")
+	starttime = linearray(0)
+	stoptime = linearray(1)
+	' rmspcs = trim
+	starttime = trim(starttime)	
+	starttime = replace(starttime,chr(34),"")
+	msgbox(starttime&","&stoptime)
+  end sub  
+
+  Sub SetObjects()
+    ' set up the facility
+    returnarray = sendCmd("New / */Facility davesfac",true,"NA")	
+    returnarray = sendCmd("SetPosition */Facility/davesfac  Geodetic 35.0 -120.0 0.0",true,"NA")	
+
+    ' set up the area target
+    ' note the misspelling on the state file
+    returnarray = sendCmd("Load / */AreaTarget " & Chr(34) & "C:\Program Files\AGI\STK 8\AreaTargets\united_states\_pennsylvania_1.at" & Chr(34),true,"NA")	    
+    
+    ' set up the satellite
+    returnarray = sendCmd("New / */Satellite davessat",true,"NA")
+    cmdstr = "SetState */Satellite/davessat Classical TwoBody " & Chr(34) & "17 Oct 2003 00:00:00.00" & Chr(34) & "  " & Chr(34) & "18 Oct 2003 00:00:00.00" & Chr(34) & " 60 J2000 " & Chr(34) & "1 Oct 2003 00:00:00.00" & Chr(34) & " 7378137.0000 0.0 55.00 0.0 0.0 0.0"
+    returnarray = sendCmd(cmdstr,true,"NA")
+  End Sub
+
+  Sub DoAnalysis()
+    ' setup the chain
+    cmdstr = "New / Scenario/sample/Chain daveschain"
+    returnarray = sendCmd(cmdstr,true,"NA")
+
+    cmdstr = "Chains Scenario/sample/Chain/daveschain Add Facility/davesfac"
+    returnarray = sendCmd(cmdstr,true,"NA")
+
+    cmdstr = "Chains Scenario/sample/Chain/daveschain Add Satellite/davessat"    
+    returnarray = sendCmd(cmdstr,true,"NA")
+
+    cmdstr = "Chains Scenario/sample/Chain/daveschain Add AreaTarget/_pennsylvania_1"    
+    returnarray = sendCmd(cmdstr,true,"NA")
+        
+    cmdstr = "Chains */Chain/daveschain SetComputeTime UserSpecified " & Chr(34) & "17 Oct 2003 00:00:00.00" & Chr(34) & " " & Chr(34) & "18 Oct 2003 00:00:00.00" & Chr(34)
+    returnarray = sendCmd(cmdstr,true,"NA")
+        
+    cmdstr = "Chains */Chain/daveschain Compute "
+    returnarray = sendCmd(cmdstr,true,"NA")
+        
+    Call GetResult
+    
+    ' now set constriaints and recalculate
+    cmdstr = "SetConstraint */Facility/davesfac ElevationAngle Min 8.0"
+    returnarray = sendCmd(cmdstr,true,"NA")
+     
+    cmdstr = "SetConstraint */AreaTarget/_pennsylvania_1 ElevationAngle Min 8.0"
+    returnarray = sendCmd(cmdstr,true,"NA")
+        
+    cmdstr = "Chains */Chain/daveschain Compute "
+    returnarray = sendCmd(cmdstr,true,"NA")
+    
+    Call GetResult
+  End Sub
+
+  
+  ' Sample routine that gets results from an STK report and puts into excel
+  Sub GetResult()
+    On Error Resume Next
+    Dim rtnString
+    Dim rtnArray
+
+    cmdstr = "GetRptSummary */Chain/davesChain " & Chr(34) & "Complete Chain Access" & Chr(34)
+    returnarray = sendCmd(cmdstr,true,"NA")
+    
+    For Each strVal In rtnString
+       rtnArray = Split(strVal, ",")
+    Next
+   
+    MsgBox "Total Acces Time: " & rtnArray(4) & " (sec)", vbOKOnly, "Complete"
+  End Sub
+    
+   
+		</SCRIPT>
+		<BODY onLoad="InitPage()" onUnload="UnLoadPage()" BGCOLOR="#bbbbbb">
+			<BR>
+			STK HTML Interface<BR>
+			<BR>
+			<INPUT type="button" id="newbutton" align="Center" value="New Scenario" onClick="Button1()">
+			<INPUT type="button1" align="Center" value="Unload Scenario" onClick="UnloadScenario()">
+			<BR>
+		</BODY>
+	</script>
+</HTML>

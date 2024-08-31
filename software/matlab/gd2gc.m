@@ -14,7 +14,7 @@
 %    latgd       - geodetic latitude              -pi/2 to pi/2 rad
 %
 %  outputs       :
-%    latgc       - geocentric latitude            -pi/2 to pi/2 rad
+%    latgc       - geocentric latitude            -pi to pi rad
 %
 %  locals        :
 %    none.
@@ -23,7 +23,7 @@
 %    none.
 %
 %  references    :
-%    vallado       2001, 146, eq 3-11
+%    vallado       2022, 142, eq 3-11
 %
 % [latgc] = gd2gc ( latgd );
 % ------------------------------------------------------------------------------

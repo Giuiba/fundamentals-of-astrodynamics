@@ -8,15 +8,17 @@
 *
 *                          companion code for
 *             fundamentals of astrodynamics and applications
-*                                  2013
+*                                  2022
 *                            by david vallado
 *
-*     (w) 719-573-2600, email dvallado@agi.com, davallado@gmail.com
+*     email dvallado@comspoc.com, davallado@gmail.com
 *     *****************************************************************
 *    current :
+*              29 aug 24  david vallado
+*                           add check for sgp4-xp tle
+*    changes :
 *               7 dec 15  david vallado
 *                           fix jd, jdfrac
-*    changes :
 *               3 nov 14  david vallado
 *                           update to msvs2013 c++
 *              11 nov 13  david vallado
@@ -129,14 +131,14 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	printf("typerun = c compare 1 year of full satcat data \n");
 	printf("typerun = v verification run, requires modified elm file with \n");
-	printf("              start, stop, and delta times \n");
-	printf("typerun = m manual operation- either mfe, epoch, or day of yr \n");
 	printf("input type of run c, v, m \n\n");
 	typerun = getchar();
 	fflush(stdin);
 	// c+= seems not to be setting this above??
 	typerun = 'v';
 
+	//printf("              start, stop, and delta times \n");
+	//printf("typerun = m manual operation- either mfe, epoch, or day of yr \n");
 	//typeinput = 'm' input start stop mfe
 	//typeinput = 'e' input start stop ymd hms
 	//typeinput = 'd' input start stop yr dayofyr
@@ -148,11 +150,13 @@ int _tmain(int argc, _TCHAR* argv[])
 	else
 		typeinput = 'e';
 
-	printf("input which constants 721 (72) 84 \n");
-	scanf_s("%i", &whichcon);
-	if (whichcon == 721) whichconst = wgs72old;
+	//printf("input which constants 721 (72) 84 \n");
+	//scanf_s("%i", &whichcon);
+	// standard option
+	whichcon = 72;
+	//if (whichcon == 721) whichconst = wgs72old;
 	if (whichcon == 72) whichconst = wgs72;
-	if (whichcon == 84) whichconst = wgs84;
+	//if (whichcon == 84) whichconst = wgs84;
 
 	// sgp4fix no longer needed. done once in sgp4init
 	// getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
@@ -207,114 +211,120 @@ int _tmain(int argc, _TCHAR* argv[])
 			// includes initialization of sgp4 and jd, jdfrac and sgp4init
 			SGP4Funcs::twoline2rv(longstr1, longstr2, typerun, typeinput, opsmode, whichconst,
 				startmfe, stopmfe, deltamin, satrec);
-			fprintf(outfile, "%s xx\n", satrec.satnum);
-			printf(" %s\n", satrec.satnum);
-			// call the propagator to get the initial state vector value
-			// no longer need gravconst since it is assigned in sgp4init
-			SGP4Funcs::sgp4(satrec, 0.0, ro, vo);
-
-			// generate .e files for stk
-			jd = satrec.jdsatepoch;
-			jdFrac = satrec.jdsatepochF;
-			strncpy_s(outname, &longstr1[2], 5);
-			outname[5] = '.';
-			outname[6] = 'e';
-			outname[7] = '\0';
-			SGP4Funcs::invjday_SGP4(jd, jdFrac, year, mon, day, hr, min, sec);
-			err = fopen_s(&outfilee, outname, "w");
-			fprintf(outfilee, "stk.v.4.3 \n"); // must use 4.3...
-			fprintf(outfilee, "\n");
-			fprintf(outfilee, "BEGIN Ephemeris \n");
-			fprintf(outfilee, " \n");
-			fprintf(outfilee, "NumberOfEphemerisPoints		146 \n");
-			fprintf(outfilee, "ScenarioEpoch	  %3i %3s%5i%3i:%2i:%12.9f \n", day, monstr[mon],
-				year, hr, min, sec);
-			fprintf(outfilee, "InterpolationMethod		Lagrange \n");
-			fprintf(outfilee, "InterpolationOrder		5 \n");
-			fprintf(outfilee, "CentralBody				Earth \n");
-			fprintf(outfilee, "CoordinateSystem			TEME \n");
-			fprintf(outfilee, "CoordinateSystemEpoch	%3i %3s%5i%3i:%2i:%12.9f \n", day,
-				monstr[mon], year, hr, min, sec);
-			fprintf(outfilee, "DistanceUnit			Kilometers \n");
-			fprintf(outfilee, " \n");
-			fprintf(outfilee, "EphemerisTimePosVel \n");
-			fprintf(outfilee, " \n");
-			fprintf(outfilee, " %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f\n",
-				satrec.t, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2]);
-
-			fprintf(outfile, " %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f\n",
-				satrec.t, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2]);
-
-			tsince = startmfe;
-			// check so the first value isn't written twice
-			if (fabs(tsince) > 1.0e-8)
-				tsince = tsince - deltamin;
-
-			// ----------------- loop to perform the propagation ----------------
-			while ((tsince < stopmfe) && (satrec.error == 0))
+			
+			// sgp4fix note that the ephtype must be 0 for SGP4. SGP4-XP uses 4.
+			if (satrec.ephtype == 0)
 			{
-				tsince = tsince + deltamin;
+				fprintf(outfile, "%s xx\n", satrec.satnum);
+				printf(" %s\n", satrec.satnum);
+				// call the propagator to get the initial state vector value
+				// no longer need gravconst since it is assigned in sgp4init
+				SGP4Funcs::sgp4(satrec, 0.0, ro, vo);
 
-				if (tsince > stopmfe)
-					tsince = stopmfe;
+				// generate .e files for stk
+				jd = satrec.jdsatepoch;
+				jdFrac = satrec.jdsatepochF;
+				strncpy_s(outname, &longstr1[2], 5);
+				outname[5] = '.';
+				outname[6] = 'e';
+				outname[7] = '\0';
+				SGP4Funcs::invjday_SGP4(jd, jdFrac, year, mon, day, hr, min, sec);
+				err = fopen_s(&outfilee, outname, "w");
+				fprintf(outfilee, "stk.v.12.0 \n"); // must use 4.3...
+				fprintf(outfilee, "\n");
+				fprintf(outfilee, "BEGIN Ephemeris \n");
+				fprintf(outfilee, " \n");
+				fprintf(outfilee, "NumberOfEphemerisPoints		146 \n");
+				fprintf(outfilee, "ScenarioEpoch	  %3i %3s%5i%3i:%2i:%12.9f \n", day, monstr[mon],
+					year, hr, min, sec);
+				fprintf(outfilee, "InterpolationMethod		Lagrange \n");
+				fprintf(outfilee, "InterpolationOrder		5 \n");
+				fprintf(outfilee, "CentralBody				Earth \n");
+				fprintf(outfilee, "CoordinateSystem			TEME \n");
+				fprintf(outfilee, "CoordinateSystemEpoch	%3i %3s%5i%3i:%2i:%12.9f \n", day,
+					monstr[mon], year, hr, min, sec);
+				fprintf(outfilee, "DistanceUnit			Kilometers \n");
+				fprintf(outfilee, " \n");
+				fprintf(outfilee, "EphemerisTimePosVel \n");
+				fprintf(outfilee, " \n");
+				fprintf(outfilee, " %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f\n",
+					satrec.t, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2]);
 
-				SGP4Funcs::sgp4(satrec, tsince, ro, vo);
+				fprintf(outfile, " %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f\n",
+					satrec.t, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2]);
 
-				if (satrec.error > 0)
-					printf("# *** error: t:= %f *** code = %3d\n",
-					satrec.t, satrec.error);
+				tsince = startmfe;
+				// check so the first value isn't written twice
+				if (fabs(tsince) > 1.0e-8)
+					tsince = tsince - deltamin;
 
-				if (satrec.error == 0)
+				// ----------------- loop to perform the propagation ----------------
+				while ((tsince < stopmfe) && (satrec.error == 0))
 				{
-					if ((typerun != 'v') && (typerun != 'c'))
+					tsince = tsince + deltamin;
+
+					if (tsince > stopmfe)
+						tsince = stopmfe;
+
+					SGP4Funcs::sgp4(satrec, tsince, ro, vo);
+
+					if (satrec.error > 0)
+						printf("# *** error: t:= %f *** code = %3d\n",
+							satrec.t, satrec.error);
+
+					if (satrec.error == 0)
 					{
-						jd = satrec.jdsatepoch;
-						jdFrac = satrec.jdsatepochF + tsince / 1440.0;
-						if (jdFrac < 0.0)
+						if ((typerun != 'v') && (typerun != 'c'))
 						{
-							jd = jd - 1.0;
-							jdFrac = jdFrac + 1.0;
-						}
-						SGP4Funcs::invjday_SGP4(jd, jdFrac, year, mon, day, hr, min, sec);
+							jd = satrec.jdsatepoch;
+							jdFrac = satrec.jdsatepochF + tsince / 1440.0;
+							if (jdFrac < 0.0)
+							{
+								jd = jd - 1.0;
+								jdFrac = jdFrac + 1.0;
+							}
+							SGP4Funcs::invjday_SGP4(jd, jdFrac, year, mon, day, hr, min, sec);
 
-						fprintf(outfile,
-							" %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f %5i%3i%3i %2i:%2i:%9.6f\n",
-							tsince, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2], year, mon, day, hr, min, sec);
-						//                            fprintf(outfile, " %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f\n",
-						//                                           tsince,ro[0],ro[1],ro[2],vo[0],vo[1],vo[2]);
-					}
-					else
-					{
-						jd = satrec.jdsatepoch;
-						jdFrac = satrec.jdsatepochF + tsince / 1440.0;
-						if (jdFrac < 0.0)
+							fprintf(outfile,
+								" %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f %5i%3i%3i %2i:%2i:%9.6f\n",
+								tsince, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2], year, mon, day, hr, min, sec);
+							//                            fprintf(outfile, " %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f\n",
+							//                                           tsince,ro[0],ro[1],ro[2],vo[0],vo[1],vo[2]);
+						}
+						else
 						{
-							jd = jd - 1.0;
-							jdFrac = jdFrac + 1.0;
+							jd = satrec.jdsatepoch;
+							jdFrac = satrec.jdsatepochF + tsince / 1440.0;
+							if (jdFrac < 0.0)
+							{
+								jd = jd - 1.0;
+								jdFrac = jdFrac + 1.0;
+							}
+							SGP4Funcs::invjday_SGP4(jd, jdFrac, year, mon, day, hr, min, sec);
+
+							fprintf(outfilee, " %16.6f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f \n",
+								tsince * 60.0, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2]);
+
+							fprintf(outfile, " %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f",   // \n
+								tsince, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2]);
+
+							SGP4Funcs::rv2coe_SGP4(ro, vo, satrec.mus, p, a, ecc, incl, node, argp, nu, m, arglat, truelon, lonper);
+							fprintf(outfile, " %14.6f %8.6f %10.5f %10.5f %10.5f %10.5f %10.5f %5i%3i%3i %2i:%2i:%9.6f\n",
+								a, ecc, incl * rad, node * rad, argp * rad, nu * rad,
+								m * rad, year, mon, day, hr, min, sec);
 						}
-						SGP4Funcs::invjday_SGP4(jd, jdFrac, year, mon, day, hr, min, sec);
+					} // if satrec.error == 0
 
-						fprintf(outfilee, " %16.6f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f \n",
-							tsince*60.0, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2]);
+				} // while propagating the orbit
 
-						fprintf(outfile, " %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f",   // \n
-							tsince, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2]);
-
-						SGP4Funcs::rv2coe_SGP4(ro, vo, satrec.mus, p, a, ecc, incl, node, argp, nu, m, arglat, truelon, lonper);
-						fprintf(outfile, " %14.6f %8.6f %10.5f %10.5f %10.5f %10.5f %10.5f %5i%3i%3i %2i:%2i:%9.6f\n",
-							a, ecc, incl*rad, node*rad, argp*rad, nu*rad,
-							m*rad, year, mon, day, hr, min, sec);
-					}
-				} // if satrec.error == 0
-
-			} // while propagating the orbit
-
-			fprintf(outfilee, " END Ephemeris \n");
-			fclose(outfilee);
+				fprintf(outfilee, " END Ephemeris \n");
+				fclose(outfilee);
+			} // if ephtype == 0
 
 		} // if not eof
 
 	} // while through the input file
+
 
 	// sgp4fix demonstrate method of running SGP4 directly from orbital element values
 	//1 08195U 75081A   06176.33215444  .00000099  00000-0  11873-3 0   813
@@ -388,6 +398,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		fprintf(outfile, " %16.8f %16.8f %16.8f %16.8f %12.9f %12.9f %12.9f",
 			tsince, ro[0], ro[1], ro[2], vo[0], vo[1], vo[2]);
 	} // while propagating the orbit
+
+	fclose(outfile);
 
 
 	return 0;

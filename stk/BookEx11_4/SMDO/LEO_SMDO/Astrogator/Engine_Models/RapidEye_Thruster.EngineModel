@@ -1,0 +1,15 @@
+<!-- STKv4.0 Format="XML" -->
+<STKOBJECT>
+<OBJECT Class = "EngineModel" Name = "RapidEye_Thruster">
+    <OBJECT Class = "bool" Name = "Clonable"> True </OBJECT>
+    <OBJECT Class = "string" Name = "Description"> &quot;Engine that has a constant Thrust and Isp&quot; </OBJECT>
+    <OBJECT Class = "double" Name = "g"> 9.806649999999999 m*sec^-2 </OBJECT>
+    <OBJECT Class = "double" Name = "Isp"> 50 s </OBJECT>
+    <OBJECT Class = "bool" Name = "ReadOnly"> False </OBJECT>
+    <OBJECT Class = "container" Name = "ShooterControls" />
+    <OBJECT Class = "double" Name = "Thrust"> 0.02 N </OBJECT>
+    <OBJECT Class = "string" Name = "Type"> &quot;EngineConstant&quot; </OBJECT>
+    <OBJECT Class = "string" Name = "UserComment"> &quot;Engine that has a constant Thrust and Isp&quot; </OBJECT>
+    <OBJECT Class = "string" Name = "Version"> &quot;1.0.0 a&quot; </OBJECT>
+</OBJECT>
+</STKOBJECT>
