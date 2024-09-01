@@ -470,7 +470,7 @@ def rv2eq(r, v):
 # Topocentric Elements
 ###############################################################################
 
-def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
+def tradec2rv(trr, trtasc, tdecl, dtrr, tdrtasc, tddecl, rseci, vseci):
     """Converts topocentric coordinates (range, right ascension, declination,
     and their rates) into geocentric equatorial (ECI) position and velocity
     vectors.
@@ -479,10 +479,10 @@ def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
         Vallado: 2022, p. 254, Eqs. 4-1 to 4-2
 
     Args:
-        rho (float): Satellite range from site in km
+        trr (float): Satellite range from site in km
         trtasc (float): Topocentric right ascension in radians
         tdecl (float): Topocentric declination in radians
-        drho (float): Range rate in km/s
+        dtrr (float): Range rate in km/s
         tdrtasc (float): Topocentric right ascension rate in rad/s
         tddecl (float): Topocentric declination rate in rad/s
         rseci (array_like): ECI site position vector in km
@@ -496,18 +496,18 @@ def tradec2rv(rho, trtasc, tdecl, drho, tdrtasc, tddecl, rseci, vseci):
 
     # Calculate topocentric slant range vectors
     rhov = np.array([
-        rho * np.cos(tdecl) * np.cos(trtasc),
-        rho * np.cos(tdecl) * np.sin(trtasc),
-        rho * np.sin(tdecl)
+        trr * np.cos(tdecl) * np.cos(trtasc),
+        trr * np.cos(tdecl) * np.sin(trtasc),
+        trr * np.sin(tdecl)
     ])
 
     # Slant range rate vectors
     drhov = np.array([
-        drho * np.cos(tdecl) * np.cos(trtasc) - rho * np.sin(tdecl) * np.cos(
-            trtasc) * tddecl - rho * np.cos(tdecl) * np.sin(trtasc) * tdrtasc,
-        drho * np.cos(tdecl) * np.sin(trtasc) - rho * np.sin(tdecl) * np.sin(
-            trtasc) * tddecl + rho * np.cos(tdecl) * np.cos(trtasc) * tdrtasc,
-        drho * np.sin(tdecl) + rho * np.cos(tdecl) * tddecl
+        dtrr * np.cos(tdecl) * np.cos(trtasc) - trr * np.sin(tdecl) * np.cos(
+            trtasc) * tddecl - trr * np.cos(tdecl) * np.sin(trtasc) * tdrtasc,
+        dtrr * np.cos(tdecl) * np.sin(trtasc) - trr * np.sin(tdecl) * np.sin(
+            trtasc) * tddecl + trr * np.cos(tdecl) * np.cos(trtasc) * tdrtasc,
+        dtrr * np.sin(tdecl) + trr * np.cos(tdecl) * tddecl
     ])
 
     # ECI position and velocity vectors
@@ -979,7 +979,7 @@ def rvs2raz(rhosez, drhosez):
     elevation values and their rates.
 
     References:
-        Vallado: 2001, p. 250-251, Eqs. 4-4 and 4-5
+        Vallado: 2022, p. 249, Eqs. 4-4 and 4-5
 
     Args:
         rhosez (array_like): SEZ range vector in km
