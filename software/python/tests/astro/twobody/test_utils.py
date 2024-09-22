@@ -71,3 +71,27 @@ def test_gc2gd():
 def test_gd2gc():
     latgc = utils.gd2gc(np.radians(125.79))
     assert np.isclose(latgc, -0.9429532487023382, rtol=DEFAULT_TOL)
+
+
+@pytest.mark.parametrize(
+    'altpad, r1, v1, r2, v2, nrev, expected_hitearth, expected_hitearthstr',
+    # TODO: Add test cases for parabolic, elliptical, and hyperbolic impacts
+    [
+        # Case 1: Impact at initial/final position
+        (100, [6378.0, 0, 0], [0, 7.8, 0], [7000, 0, 0], [0, 7.0, 0], 0,
+         True, 'Impact at initial/final radii'),
+
+        # Case 2: Impact during multi-revolution transfer
+        (100, [7000, 0, 0], [0, 7.0, 0], [8000, 0, 0], [0, 6.5, 0], 1,
+         True, 'Impact during nrev'),
+
+        # Case 3: No impact
+        (100, [8000, 0, 0], [0, 7.0, 0], [9000, 0, 0], [0, 6.5, 0], 0,
+         False, 'No impact'),
+    ]
+)
+def test_checkhitearth(altpad, r1, v1, r2, v2, nrev, expected_hitearth,
+                       expected_hitearthstr):
+    hitearth, hitearthstr = utils.checkhitearth(altpad, r1, v1, r2, v2, nrev)
+    assert hitearth == expected_hitearth
+    assert hitearthstr == expected_hitearthstr
