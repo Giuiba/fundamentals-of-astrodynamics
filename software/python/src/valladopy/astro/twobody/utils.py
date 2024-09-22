@@ -8,7 +8,19 @@
 
 import numpy as np
 
-from ...constants import RE, ECCEARTHSQRD, SMALL, TWOPI
+from ...constants import RE, MU, ECCEARTHSQRD, SMALL, TWOPI
+
+
+def is_equatorial(inc):
+    """Equatorial check for inclinations.
+
+    Args:
+        inc (float): Inclination in radians
+
+    Returns:
+        (bool): True if the inclination is equatorial
+    """
+    return inc < SMALL or abs(inc - np.pi) < SMALL
 
 
 def site(latgd, lon, alt):
@@ -149,3 +161,100 @@ def gd2gc(latgd):
         (float): Geocentric latitude in radians (-pi/2 to pi/2)
     """
     return np.arctan((1.0 - ECCEARTHSQRD) * np.tan(latgd))
+
+
+def checkhitearth(altpad, r1, v1, r2, v2, nrev):
+    """Checks if the trajectory impacts Earth during the transfer.
+
+    References:
+        Vallado: 2013, p. 503, Algorithm 60
+
+    Args:
+        altpad (float): Altitude pad above the Earth's surface in km
+        r1 (array_like): Initial position vector in km
+        v1 (array_like): Initial velocity vector in km/s
+        r2 (array_like): Final position vector in km
+        v2 (array_like): Final velocity vector in km/s
+        nrev (int): Number of revolutions (0, 1, 2, ...)
+
+    Returns:
+        tuple: (hitearth, hitearthstr)
+            hitearth (bool): True if Earth is impacted (False otherwise)
+            hitearthstr (str): Explanation of the impact status
+    """
+    # Initialize variables
+    hitearth, hitearthstr = False, 'No impact'
+
+    # Compute magnitudes of position vectors
+    magr1 = np.linalg.norm(r1)
+    magr2 = np.linalg.norm(r2)
+
+    # Define the padded radius (Earth's radius + altitude pad)
+    rpad = RE + altpad
+
+    # Check if the initial or final position vector is below the padded radius
+    if magr1 < rpad or magr2 < rpad:
+        hitearth, hitearthstr = True, 'Impact at initial/final radii'
+    else:
+        rdotv1 = np.dot(r1, v1)
+        rdotv2 = np.dot(r2, v2)
+
+        # Solve for the reciprocal of the semi-major axis (1/a)
+        ainv = 2.0 / magr1 - np.linalg.norm(v1) ** 2 / MU
+
+        # Find ecos(E)
+        ecosea1 = 1.0 - magr1 * ainv
+        ecosea2 = 1.0 - magr2 * ainv
+
+        # Determine the radius of perigee for nrev > 0
+        if nrev > 0:
+            a = 1.0 / ainv
+            if a > 0.0:
+                # Elliptical orbit
+                esinea1 = rdotv1 / np.sqrt(MU * a)
+                ecc = np.sqrt(ecosea1**2 + esinea1**2)
+            else:
+                # Hyperbolic orbit
+                esinea1 = rdotv1 / np.sqrt(MU * abs(-a))
+                ecc = np.sqrt(ecosea1**2 - esinea1**2)
+
+            # Check if the radius of perigee is below the padded radius
+            rp = a * (1.0 - ecc)
+            if rp < rpad:
+                hitearth, hitearthstr = True, 'Impact during nrev'
+
+        # Check for special cases when nrev = 0
+        else:
+            if ((rdotv1 < 0.0 < rdotv2) or
+                (rdotv1 > 0.0 < rdotv2 and ecosea1 < ecosea2) or
+                    (rdotv1 < 0.0 > rdotv2 and ecosea1 > ecosea2)):
+
+                # Check for parabolic impact
+                if abs(ainv) <= SMALL:
+                    hbar = np.cross(r1, v1)
+                    magh = np.linalg.norm(hbar)
+                    rp = magh**2 * 0.5 / MU
+                    if rp < rpad:
+                        hitearth, hitearthstr = True, 'Parabolic impact'
+
+                else:
+                    a = 1.0 / ainv
+                    esinea1 = rdotv1 / np.sqrt(MU * abs(a))
+                    if ainv > 0.0:
+                        ecc = np.sqrt(ecosea1**2 + esinea1**2)
+                    else:
+                        ecc = np.sqrt(ecosea1**2 - esinea1**2)
+
+                    # Check for elliptical impact
+                    if ecc < 1.0:
+                        rp = a * (1.0 - ecc)
+                        if rp < rpad:
+                            hitearth, hitearthstr = True, 'Elliptical impact'
+
+                    # Check for hyperbolic impact
+                    elif rdotv1 < 0.0 < rdotv2:
+                        rp = a * (1.0 - ecc)
+                        if rp < rpad:
+                            hitearth, hitearthstr = True, 'Hyperbolic impact'
+
+    return hitearth, hitearthstr
