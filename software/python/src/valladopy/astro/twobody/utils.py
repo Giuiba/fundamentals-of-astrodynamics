@@ -11,6 +11,18 @@ import numpy as np
 from ...constants import RE, ECCEARTHSQRD, SMALL, TWOPI
 
 
+def is_equatorial(inc):
+    """Equatorial check for inclinations.
+
+    Args:
+        inc (float): Inclination in radians
+
+    Returns:
+        (bool): True if the inclination is equatorial
+    """
+    return inc < SMALL or abs(inc - np.pi) < SMALL
+
+
 def site(latgd, lon, alt):
     """Finds the position and velocity vectors for a site.
 

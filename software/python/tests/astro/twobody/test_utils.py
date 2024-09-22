@@ -8,6 +8,19 @@ DEFAULT_TOL = 1e-12
 
 
 @pytest.mark.parametrize(
+    'inc, expected',
+    [
+        (0, True),
+        (np.pi, True),
+        (np.pi/2, False),
+        (np.pi/4, False)
+    ]
+)
+def test_is_equatorial(inc, expected):
+    assert utils.is_equatorial(inc) == expected
+
+
+@pytest.mark.parametrize(
     'latgd, lon, alt, rsecef_exp',
     [
         (0, 0, 0, np.array([6378.1363, 0, 0])),
