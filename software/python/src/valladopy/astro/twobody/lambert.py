@@ -15,7 +15,7 @@ def lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec):
     """Accomplishes a 180-degree (and 360-degree) transfer for the Lambert
     problem.
 
-    Reference:
+    References:
         Thompson JGCD 2013 v34 n6 1925
         Thompson AAS GNC 2018
 
