@@ -3,6 +3,9 @@ import pytest
 
 import src.valladopy.mathtime.vector as vec
 
+###############################################################################
+# Axes Rotations
+###############################################################################
 
 @pytest.mark.parametrize(
     'func, angle, vector, expected',
@@ -18,6 +21,70 @@ import src.valladopy.mathtime.vector as vec
 def test_rotations(func, angle, vector, expected):
     assert np.allclose(func(vector, angle), expected, rtol=1e-12)
 
+
+###############################################################################
+# Rotation Matrices
+###############################################################################
+
+@pytest.mark.parametrize(
+    'func, angle, expected',
+    [
+        (
+            vec.rot1mat,
+            np.pi / 2,
+            np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]]),
+        ),
+        (
+            vec.rot2mat,
+            np.pi / 2,
+            np.array([[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]]),
+        ),
+        (
+            vec.rot3mat,
+            np.pi / 2,
+            np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]),
+        ),
+        (
+            vec.rot1mat,
+            np.pi / 4,
+            np.array(
+                [
+                    [1.0, 0.0, 0.0],
+                    [0.0, 1 / np.sqrt(2), -1 / np.sqrt(2)],
+                    [0.0, 1 / np.sqrt(2), 1 / np.sqrt(2)],
+                ]
+            ),
+        ),
+        (
+            vec.rot2mat,
+            np.pi / 4,
+            np.array(
+                [
+                    [1 / np.sqrt(2), 0.0, 1 / np.sqrt(2)],
+                    [0.0, 1.0, 0],
+                    [-1 / np.sqrt(2), 0.0, 1 / np.sqrt(2)],
+                ]
+            ),
+        ),
+        (
+            vec.rot3mat,
+            np.pi / 4,
+            np.array(
+                [
+                    [1 / np.sqrt(2), -1 / np.sqrt(2), 0.0],
+                    [1 / np.sqrt(2), 1 / np.sqrt(2), 0],
+                    [0.0, 0.0, 1.0],
+                ]
+            ),
+        ),
+    ],
+)
+def test_rotation_matrices(func, angle, expected):
+    assert np.allclose(func(angle), expected, rtol=1e-12)
+
+###############################################################################
+# Vector Math
+###############################################################################
 
 @pytest.mark.parametrize(
     'v1, v2, expected_angle',
