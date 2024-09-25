@@ -86,10 +86,10 @@ def rot3(vec, xval):
 def rot1mat(xval: float) -> ArrayLike:
     """Rotation matrix for an input angle about the first axis.
     Assume: Use of "column" vectors
-    
+
     Args:
         xval (float): Angle of rotation in radians
-    
+
     Returns:
         outmat (array_like): Rotation matrix
     """
@@ -105,13 +105,14 @@ def rot1mat(xval: float) -> ArrayLike:
 
     return outmat
 
+
 def rot2mat(xval: float) -> ArrayLike:
     """Rotation matrix for an input angle about the second axis.
     Assume: Use of "column" vectors
-    
+
     Args:
         xval (float): Angle of rotation in radians
-    
+
     Returns:
         outmat (array_like): Rotation matrix
     """
@@ -127,13 +128,14 @@ def rot2mat(xval: float) -> ArrayLike:
 
     return outmat
 
+
 def rot3mat(xval: float) -> ArrayLike:
     """Rotation matrix for an input angle about the third axis.
     Assume: Use of "column" vectors
-    
+
     Args:
         xval (float): Angle of rotation in radians
-    
+
     Returns:
         outmat (array_like): Rotation matrix
     """
