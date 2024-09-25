@@ -3,6 +3,7 @@ import pytest
 
 import src.valladopy.mathtime.vector as vec
 
+
 ###############################################################################
 # Axes Rotations
 ###############################################################################
@@ -81,6 +82,7 @@ def test_rotations(func, angle, vector, expected):
 )
 def test_rotation_matrices(func, angle, expected):
     assert np.allclose(func(angle), expected, rtol=1e-12)
+
 
 ###############################################################################
 # Vector Math
