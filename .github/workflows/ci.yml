@@ -1,6 +1,12 @@
 name: Python CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - '**'  # Triggers on push to any branch
+  pull_request:
+    branches:
+      - '**' # Triggers on PR creation, updates, or reopening against any branch
 
 jobs:
   build:
