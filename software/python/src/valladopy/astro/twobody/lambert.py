@@ -11,6 +11,59 @@ import numpy as np
 from ...constants import MU, SMALL, TWOPI
 
 
+def seebatt(v):
+    """Recursively calculates a value used in the Lambert Battin problem based
+    on the given input `v` using predefined coefficients.
+
+    Args:
+        v (float): Input value for the recursive calculations (v > -1)
+
+    Returns:
+        float: The computed value
+    """
+    # Check that v is greater than -1
+    if v <= -1:
+        raise ValueError('Input value v must be greater than -1.')
+
+    # Coefficients derived from Battin's recursive series
+    c = [
+        9.0 / 7.0,
+        16.0 / 63.0,
+        25.0 / 99.0,
+        36.0 / 143.0,
+        49.0 / 195.0,
+        64.0 / 255.0,
+        81.0 / 323.0,
+        100.0 / 399.0,
+        121.0 / 483.0,
+        144.0 / 575.0,
+        169.0 / 675.0,
+        196.0 / 783.0,
+        225.0 / 899.0,
+        256.0 / 1023.0,
+        289.0 / 1155.0,
+        324.0 / 1295.0,
+        361.0 / 1443.0,
+        400.0 / 1599.0,
+        441.0 / 1763.0,
+        484.0 / 1935.0
+    ]
+
+    # Recursive formulaiton for the Lambert problem
+    sqrtopv = np.sqrt(1.0 + v)
+    eta = v / (1.0 + sqrtopv)**2
+    ktr = 20
+    term2 = 1.0 + c[ktr - 1] * eta
+    for j in range(ktr - 2, -1, -1):
+        term2 = 1.0 + (c[j] * eta / term2)
+
+    return (
+        8.0
+        * (1.0 + sqrtopv)
+        / (3.0 + (1.0 / (5.0 + eta + ((9.0 / 7.0) * eta / term2))))
+    )
+
+
 def lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec):
     """Accomplishes a 180-degree (and 360-degree) transfer for the Lambert
     problem.

@@ -5,6 +5,17 @@ import src.valladopy.astro.twobody.lambert as lambert
 from ...conftest import custom_allclose
 
 
+def test_seebatt():
+    # Check nominal case
+    v = 0.123
+    assert np.isclose(lambert.seebatt(v), 5.153421950753984)
+
+    # Check when `v` is less than -1
+    v = -1.5
+    with pytest.raises(ValueError):
+        lambert.seebatt(v)
+
+
 def test_lambhodograph():
     r1 = [6888, 0, 0]
     v1 = [0, 7.6072, 0]
