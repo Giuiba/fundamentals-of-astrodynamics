@@ -304,7 +304,8 @@ def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion, nrev: int):
 
 
 def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
-                de: DirectionOfEnergy, nrev: int):
+                de: DirectionOfEnergy, nrev: int, fa_tol: float = 1e-5,
+                fa_iter: int = 20):
     """Solves Lambert's problem to find the minimum time of flight for
     the multi-revolution cases.
 
@@ -318,6 +319,10 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
         de (DirectionOfEnergy): Direction of energy (LONG or HYPERBOLICSHORT)
         nrev (int): Number of revolutions (0, 1, 2, ...)
+        fa_tol (float, optional): Tolerance for the Prussing method min TOF
+                                  (defaults to 1e-5)
+        fa_iter (int, optional): Maximum number of iterations for the Prussing
+                                 method min TOF (defaults to 20)
 
     Returns:
         tuple:
@@ -329,8 +334,6 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         ValueError: If `dm` or `de` are not of type `DirectionOfMotion` or
                     `DirectionOfEnergy`, respectively
     """
-    mu = 3.986004415e5  # Gravitational parameter km^3/s^2
-
     # Check that `dm` and `de` are the correct types
     if not isinstance(dm, DirectionOfMotion):
         raise ValueError(
@@ -362,7 +365,7 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     # Calculate minimum parabolic time of flight tasee if orbit is possible
     tminp = (
         (1.0 / 3.0)
-        * np.sqrt(2.0 / mu)
+        * np.sqrt(2.0 / MU)
         * ((s**1.5) + sign_dm * (s - chord)**1.5)
     )
 
@@ -372,7 +375,7 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     tminenergy = (
         (amin**1.5)
         * ((2.0 * nrev + 1.0) * np.pi
-           + sign_dm * (beta - np.sin(beta))) / np.sqrt(mu)
+           + sign_dm * (beta - np.sin(beta))) / np.sqrt(MU)
     )
 
     # Iteratively calculate the minimum time of flight (ellipse)
@@ -381,7 +384,7 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     i = 1
     fa = 10.0
     xi, eta = 0.0, 0.0
-    while abs(fa) > 0.00001 and i <= 20:
+    while abs(fa) > fa_tol and i <= fa_iter:
         a = an
         alp = 1.0 / a
         alpha = 2.0 * np.arcsin(np.sqrt(0.5 * s * alp))
@@ -412,6 +415,6 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         i += 1
 
     # Calculate the minimum time of flight
-    tmin = (an**1.5) * (2.0 * np.pi * nrev + xi + sign_dm * eta) / np.sqrt(mu)
+    tmin = (an**1.5) * (TWOPI * nrev + xi + sign_dm * eta) / np.sqrt(MU)
 
     return tmin, tminp, tminenergy
