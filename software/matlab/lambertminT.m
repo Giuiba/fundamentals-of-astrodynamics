@@ -10,8 +10,8 @@
     % inputs          description                    range / units
     %    r1          - ijk position vector 1          km
     %    r2          - ijk position vector 2          km
-    %    dm          - direction of motion            'l','s'
-    %    df          - direction of flight            'd', 'r'
+    %    dm          - direction of motion            'L','S'
+    %    de          - direction of energy            'L', 'H'
     %    nrev        - number of revs to complete     0, 1, 2, 3, ...
     %
     %  outputs       :

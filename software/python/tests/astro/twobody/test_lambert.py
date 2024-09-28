@@ -3,13 +3,21 @@ import pytest
 
 import src.valladopy.astro.twobody.lambert as lambert
 import src.valladopy.constants as const
-from ...conftest import custom_allclose
+from ...conftest import DEFAULT_TOL, custom_allclose
+
+
+@pytest.fixture
+def lambert_inputs():
+    r1 = np.array([2.5 * const.RE, 0, 0])
+    r2 = [1.9151111 * const.RE, 1.6069690 * const.RE, 0]
+    nrev = 1
+    return r1, r2, nrev
 
 
 def test_seebatt():
     # Check nominal case
     v = 0.123
-    assert np.isclose(lambert.seebatt(v), 5.153421950753984, rtol=1e-12)
+    assert np.isclose(lambert.seebatt(v), 5.153421950753984, rtol=DEFAULT_TOL)
 
     # Check when `v` is less than -1
     v = -1.5
@@ -19,7 +27,7 @@ def test_seebatt():
 
 def test_kbatt():
     v = 0.123
-    assert np.isclose(lambert.kbatt(v), 0.327568960337347, rtol=1e-12)
+    assert np.isclose(lambert.kbatt(v), 0.327568960337347, rtol=DEFAULT_TOL)
 
 
 def test_lambhodograph():
@@ -52,14 +60,14 @@ def test_lambhodograph():
     'dm, v_exp, aminenergy_exp, tminenergy_exp, tminabs_exp',
     [
         (
-            lambert.Direction.LONG,
+            lambert.DirectionOfMotion.LONG,
             [-2.0474089759890735, -2.924003076447717, 0.0],
             10699.484172968232,
             15554.50821587732,
             1534.8915813389815
         ),
         (
-            lambert.Direction.SHORT,
+            lambert.DirectionOfMotion.SHORT,
             [2.0474089759890735, 2.924003076447717, 0.0],
             10699.484172968232,
             17488.265508772805,
@@ -67,16 +75,63 @@ def test_lambhodograph():
         )
     ]
 )
-def test_lambertmin(dm, v_exp, aminenergy_exp, tminenergy_exp, tminabs_exp):
-    r1 = np.array([2.5 * const.RE, 0, 0])
-    r2 = [1.9151111 * const.RE, 1.6069690 * const.RE, 0]
-    nrev = 1
+def test_lambertmin(lambert_inputs, dm, v_exp, aminenergy_exp, tminenergy_exp,
+                    tminabs_exp):
+    # Unpack inputs
+    r1, r2, nrev = lambert_inputs
 
     # Compute Lambert minimum energy
     v, aminenergy, tminenergy, tminabs = lambert.lambertmin(r1, r2, dm, nrev)
 
     # Check results
-    assert np.allclose(v, v_exp, rtol=1e-12)
-    assert np.isclose(aminenergy, aminenergy_exp, rtol=1e-12)
-    assert np.isclose(tminenergy, tminenergy_exp, rtol=1e-12)
-    assert np.isclose(tminabs, tminabs_exp, rtol=1e-12)
+    assert np.allclose(v, v_exp, rtol=DEFAULT_TOL)
+    assert np.isclose(aminenergy, aminenergy_exp, rtol=DEFAULT_TOL)
+    assert np.isclose(tminenergy, tminenergy_exp, rtol=DEFAULT_TOL)
+    assert np.isclose(tminabs, tminabs_exp, rtol=DEFAULT_TOL)
+
+
+@pytest.mark.parametrize(
+    'dm, de, tmin_exp, tminp_exp, tminenergy_exp',
+    [
+        (
+            lambert.DirectionOfMotion.LONG,
+            lambert.DirectionOfEnergy.LONG,
+            12468.267989702517,
+            3139.7046602121873,
+            17488.26550877280
+        ),
+        (
+            lambert.DirectionOfMotion.SHORT,
+            lambert.DirectionOfEnergy.LONG,
+            15048.526832075213,
+            1534.8915813389815,
+            15554.50821587732
+        ),
+        (
+            lambert.DirectionOfMotion.LONG,
+            lambert.DirectionOfEnergy.HYPERBOLICSHORT,
+            21648.968497701877,
+            3139.7046602121873,
+            17488.265508772805
+        ),
+        (
+            lambert.DirectionOfMotion.SHORT,
+            lambert.DirectionOfEnergy.HYPERBOLICSHORT,
+            16972.34235386572,
+            1534.8915813389815,
+            15554.50821587732
+        )
+    ]
+)
+def test_lambertmint(lambert_inputs, dm, de, tmin_exp, tminp_exp,
+                     tminenergy_exp):
+    # Unpack inputs
+    r1, r2, nrev = lambert_inputs
+
+    # Compute Lambert minimum time
+    tmin, tminp, tminenergy = lambert.lambertmint(r1, r2, dm, de, nrev)
+
+    # Check results
+    assert np.allclose(tmin, tmin_exp, rtol=DEFAULT_TOL)
+    assert np.allclose(tminp, tminp_exp, rtol=DEFAULT_TOL)
+    assert np.allclose(tminenergy, tminenergy_exp, rtol=DEFAULT_TOL)

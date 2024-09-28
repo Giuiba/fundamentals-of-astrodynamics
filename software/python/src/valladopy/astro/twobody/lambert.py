@@ -8,17 +8,24 @@
 
 import numpy as np
 from enum import Enum
+from numpy.typing import ArrayLike
 
 from ...constants import MU, SMALL, TWOPI
 
 
-class Direction(Enum):
+class DirectionOfMotion(Enum):
     """Enum class for the direction of motion."""""
-    LONG = 'L'
-    SHORT = 'S'
+    LONG = 'L'   # Long way
+    SHORT = 'S'  # Short way
 
 
-def seebatt(v):
+class DirectionOfEnergy(Enum):
+    """Enum class for the direction of energy."""""
+    LONG = 'L'             # Long way
+    HYPERBOLICSHORT = 'H'  # Hyperbolic and Short way
+
+
+def seebatt(v: float):
     """Recursively calculates a value used in the Lambert Battin problem using
     predefined coefficients.
 
@@ -74,7 +81,7 @@ def seebatt(v):
     )
 
 
-def kbatt(v):
+def kbatt(v: float):
     """Recursively calculates a value used in the Lambert Battin problem using
     predefined coefficients.
 
@@ -134,7 +141,8 @@ def kbatt(v):
     return d[0] / term2
 
 
-def lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec):
+def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
+                  ecc: float, dnu: float, dtsec: float):
     """Accomplishes a 180-degree (and 360-degree) transfer for the Lambert
     problem.
 
@@ -225,13 +233,13 @@ def lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec):
     return v1t, v2t
 
 
-def lambertmin(r1, r2, dm, nrev):
+def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion, nrev: int):
     """Solves the Lambert minimum energy problem.
 
     Args:
         r1 (array_like): Initial ECI position vector in km
         r2 (array_like): Final ECI position vector in km
-        dm (Direction): Direction of motion, either LONG or SHORT
+        dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
         nrev (int): Number of revolutions (0, 1, 2, ...)
 
     Returns:
@@ -240,7 +248,17 @@ def lambertmin(r1, r2, dm, nrev):
             aminenergy (float): Minimum energy semi-major axis in km
             tminenergy (float): Minimum energy time of flight in seconds
             tminabs (float): Minimum time of flight (parabolic) in seconds
+
+    Raises:
+        ValueError: If `dm` is not of type `DirectionOfMotion`
     """
+    # Check that `dm` is of type `DirectionOfMotion`
+    if not isinstance(dm, DirectionOfMotion):
+        raise ValueError(
+            f'Invalid direction of motion: {dm}. Must be of type'
+            f' {DirectionOfMotion}.'
+        )
+
     # Create numpy arrays and compute magnitudes of r1 and r2
     r1 = np.array(r1)
     r2 = np.array(r2)
@@ -261,7 +279,7 @@ def lambertmin(r1, r2, dm, nrev):
 
     # Compute the minimum energy time of flight
     # Use multiplier based on direction of motion
-    sign = 1 if dm == Direction.SHORT else -1
+    sign = 1 if dm == DirectionOfMotion.SHORT else -1
     tminenergy = (
         np.sqrt(aminenergy**3 / MU)
         * (2.0 * nrev * np.pi + alphae + sign * (betae - np.sin(betae)))
@@ -283,3 +301,117 @@ def lambertmin(r1, r2, dm, nrev):
     )
 
     return v, aminenergy, tminenergy, tminabs
+
+
+def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
+                de: DirectionOfEnergy, nrev: int):
+    """Solves Lambert's problem to find the minimum time of flight for
+    the multi-revolution cases.
+
+    References:
+        Vallado: 2013, p. 494, Algorithm 59, Example 7-5
+        Prussing: JAS 2000
+
+    Args:
+        r1 (array_like): Initial ECI position vector in km
+        r2 (array_like): Final ECI position vector in km
+        dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
+        de (DirectionOfEnergy): Direction of energy (LONG or HYPERBOLICSHORT)
+        nrev (int): Number of revolutions (0, 1, 2, ...)
+
+    Returns:
+        tuple:
+            tmin (float): Minimum time of flight in seconds
+            tminp (float): Minimum time of flight (parabolic) in seconds
+            tminenergy (float): Minimum energy time of flight in seconds
+
+    Raises:
+        ValueError: If `dm` or `de` are not of type `DirectionOfMotion` or
+                    `DirectionOfEnergy`, respectively
+    """
+    mu = 3.986004415e5  # Gravitational parameter km^3/s^2
+
+    # Check that `dm` and `de` are the correct types
+    if not isinstance(dm, DirectionOfMotion):
+        raise ValueError(
+            f'Invalid direction of motion: {dm}. Must be of type'
+            f' {DirectionOfMotion}.'
+        )
+    if not isinstance(de, DirectionOfEnergy):
+        raise ValueError(
+            f'Invalid direction of energy: {de}. Must be of type'
+            f' {DirectionOfEnergy}.'
+        )
+
+    # Create numpy arrays and compute magnitudes of r1 and r2
+    r1 = np.array(r1)
+    r2 = np.array(r2)
+    magr1 = np.linalg.norm(r1)
+    magr2 = np.linalg.norm(r2)
+    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
+    cosdeltanu = np.clip(cosdeltanu, -1.0, 1.0)  # ensure it's within [-1, 1]
+
+    # Calculate chord and semiperimeter
+    chord = np.sqrt(magr1**2 + magr2**2 - 2.0 * magr1 * magr2 * cosdeltanu)
+    s = (magr1 + magr2 + chord) * 0.5
+
+    # Multipliers based on direction of motion and energy
+    sign_dm = 1 if dm == DirectionOfMotion.LONG else -1
+    sign_de = 1 if de == DirectionOfEnergy.LONG else -1
+
+    # Calculate minimum parabolic time of flight tasee if orbit is possible
+    tminp = (
+        (1.0 / 3.0)
+        * np.sqrt(2.0 / mu)
+        * ((s**1.5) + sign_dm * (s - chord)**1.5)
+    )
+
+    # Calculate minimum energy ellipse time of flight
+    amin = 0.5 * s
+    beta = 2.0 * np.arcsin(np.sqrt((s - chord) / s))
+    tminenergy = (
+        (amin**1.5)
+        * ((2.0 * nrev + 1.0) * np.pi
+           + sign_dm * (beta - np.sin(beta))) / np.sqrt(mu)
+    )
+
+    # Iteratively calculate the minimum time of flight (ellipse)
+    # using Prussing method (Prussing 1992 AAS, 2000 JAS, Stern 1964 p. 230)
+    an = 1.001 * amin
+    i = 1
+    fa = 10.0
+    xi, eta = 0.0, 0.0
+    while abs(fa) > 0.00001 and i <= 20:
+        a = an
+        alp = 1.0 / a
+        alpha = 2.0 * np.arcsin(np.sqrt(0.5 * s * alp))
+        beta = sign_de * 2.0 * np.arcsin(np.sqrt(0.5 * (s - chord) * alp))
+        xi = alpha - beta
+        eta = np.sin(alpha) - np.sin(beta)
+        fa = (
+            (6.0 * nrev * np.pi + 3.0 * xi - eta) * (np.sin(xi) + eta)
+            - 8.0 * (1.0 - np.cos(xi))
+        )
+        fadot = (
+            (
+                (6.0 * nrev * np.pi + 3.0 * xi - eta)
+                * (np.cos(xi) + np.cos(alpha))
+                + (3.0 - np.cos(alpha)) * (np.sin(xi) + eta)
+                - 8.0 * np.sin(xi)
+            )
+            * (-alp * np.tan(0.5 * alpha))
+            + (
+                (6.0 * nrev * np.pi + 3.0 * xi - eta)
+                * (-np.cos(xi) - np.cos(alpha))
+                + (-3.0 - np.cos(beta)) * (np.sin(xi) + eta)
+                + 8.0 * np.sin(xi)
+            )
+            * (-alp * np.tan(0.5 * beta))
+        )
+        an = a - fa / fadot
+        i += 1
+
+    # Calculate the minimum time of flight
+    tmin = (an**1.5) * (2.0 * np.pi * nrev + xi + sign_dm * eta) / np.sqrt(mu)
+
+    return tmin, tminp, tminenergy

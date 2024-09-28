@@ -1,7 +1,10 @@
 import numpy as np
 
 
-def custom_isclose(result, expected, rtol=1e-12, atol=1e-12):
+DEFAULT_TOL = 1e-12  # Default tolerance
+
+
+def custom_isclose(result, expected, rtol=DEFAULT_TOL, atol=DEFAULT_TOL):
     """Compare if result value is close to expected
 
     Custom function to compare result and expected values with a tolerance
@@ -23,7 +26,7 @@ def custom_isclose(result, expected, rtol=1e-12, atol=1e-12):
     return np.isclose(result, expected, rtol=rtol, atol=scaled_atol)
 
 
-def custom_allclose(a, b, rtol=1e-12, atol=1e-12):
+def custom_allclose(a, b, rtol=DEFAULT_TOL, atol=DEFAULT_TOL):
     """Compare if result array is close to expected
 
     Custom function to compare arrays `a` and `b` with a tolerance that
