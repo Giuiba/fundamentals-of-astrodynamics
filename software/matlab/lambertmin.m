@@ -9,7 +9,7 @@
 %  inputs          description                    range / units
 %    r1          - ijk position vector 1          km
 %    r2          - ijk position vector 2          km
-%    dm          - direction of motion            'l','s'
+%    dm          - direction of motion            'L','S'
 %    nrev        - multiple revoluions            0, 1, ...
 %
 %  outputs       :

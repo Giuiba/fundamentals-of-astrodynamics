@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import src.valladopy.astro.twobody.lambert as lambert
+import src.valladopy.constants as const
 from ...conftest import custom_allclose
 
 
@@ -45,3 +46,37 @@ def test_lambhodograph():
     new_r2 = [8000, 0, 0]
     with pytest.raises(ValueError):
         lambert.lambhodograph(r1, v1, new_r2, p, ecc, dnu, dtsec)
+
+
+@pytest.mark.parametrize(
+    'dm, v_exp, aminenergy_exp, tminenergy_exp, tminabs_exp',
+    [
+        (
+            lambert.Direction.LONG,
+            [-2.0474089759890735, -2.924003076447717, 0.0],
+            10699.484172968232,
+            15554.50821587732,
+            1534.8915813389815
+        ),
+        (
+            lambert.Direction.SHORT,
+            [2.0474089759890735, 2.924003076447717, 0.0],
+            10699.484172968232,
+            17488.265508772805,
+            1534.8915813389815
+        )
+    ]
+)
+def test_lambertmin(dm, v_exp, aminenergy_exp, tminenergy_exp, tminabs_exp):
+    r1 = np.array([2.5 * const.RE, 0, 0])
+    r2 = [1.9151111 * const.RE, 1.6069690 * const.RE, 0]
+    nrev = 1
+
+    # Compute Lambert minimum energy
+    v, aminenergy, tminenergy, tminabs = lambert.lambertmin(r1, r2, dm, nrev)
+
+    # Check results
+    assert np.allclose(v, v_exp, rtol=1e-12)
+    assert np.isclose(aminenergy, aminenergy_exp, rtol=1e-12)
+    assert np.isclose(tminenergy, tminenergy_exp, rtol=1e-12)
+    assert np.isclose(tminabs, tminabs_exp, rtol=1e-12)

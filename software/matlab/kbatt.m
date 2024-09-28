@@ -1,5 +1,5 @@
 % ------- two recursion algorithms needed by the lambertbattin routine
-function kbatt = kbat( v );
+function kbatt = kbatt( v );
     
     % -------------------------  implementation   -------------------------
     d(1) =     1.0 /    3.0;

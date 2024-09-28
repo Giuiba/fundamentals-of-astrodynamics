@@ -7,8 +7,15 @@
 # -----------------------------------------------------------------------------
 
 import numpy as np
+from enum import Enum
 
 from ...constants import MU, SMALL, TWOPI
+
+
+class Direction(Enum):
+    """Enum class for the direction of motion."""""
+    LONG = 'L'
+    SHORT = 'S'
 
 
 def seebatt(v):
@@ -216,3 +223,63 @@ def lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec):
     )
 
     return v1t, v2t
+
+
+def lambertmin(r1, r2, dm, nrev):
+    """Solves the Lambert minimum energy problem.
+
+    Args:
+        r1 (array_like): Initial ECI position vector in km
+        r2 (array_like): Final ECI position vector in km
+        dm (Direction): Direction of motion, either LONG or SHORT
+        nrev (int): Number of revolutions (0, 1, 2, ...)
+
+    Returns:
+        tuple: (v, aminenergy, tminenergy, tminabs)
+            v (np.ndarray): Minimum energy velocity vector in km/s
+            aminenergy (float): Minimum energy semi-major axis in km
+            tminenergy (float): Minimum energy time of flight in seconds
+            tminabs (float): Minimum time of flight (parabolic) in seconds
+    """
+    # Create numpy arrays and compute magnitudes of r1 and r2
+    r1 = np.array(r1)
+    r2 = np.array(r2)
+    magr1 = np.linalg.norm(r1)
+    magr2 = np.linalg.norm(r2)
+
+    # Compute the cosine of the angle between the two position vectors
+    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
+
+    # Compute the minimum energy semi-major axis
+    c = np.sqrt(magr1**2 + magr2**2 - 2.0 * magr1 * magr2 * cosdeltanu)
+    s = 0.5 * (magr1 + magr2 + c)
+    aminenergy = 0.5 * s
+
+    # Define alphae and betae
+    alphae = np.pi
+    betae = 2.0 * np.arcsin(np.sqrt((s - c) / s))
+
+    # Compute the minimum energy time of flight
+    # Use multiplier based on direction of motion
+    sign = 1 if dm == Direction.SHORT else -1
+    tminenergy = (
+        np.sqrt(aminenergy**3 / MU)
+        * (2.0 * nrev * np.pi + alphae + sign * (betae - np.sin(betae)))
+    )
+
+    # Calculate the parabolic time of flight, which serves as the minimum limit
+    tminabs = (1.0 / 3.0) * np.sqrt(2.0 / MU) * (s**1.5 - (s - c)**1.5)
+
+    # Compute intermediate values
+    rcrossr = np.cross(r1, r2)
+    magrcrossr = np.linalg.norm(rcrossr)
+    pmin = magr1 * magr2 / c * (1.0 - cosdeltanu)
+    sindeltanu = magrcrossr / (magr1 * magr2) * sign
+
+    # Compute the minimum energy velocity vector
+    v = (
+        (np.sqrt(MU * pmin) / (magr1 * magr2 * sindeltanu))
+        * (r2 - (1.0 - magr2 / pmin * (1.0 - cosdeltanu)) * r1)
+    )
+
+    return v, aminenergy, tminenergy, tminabs
