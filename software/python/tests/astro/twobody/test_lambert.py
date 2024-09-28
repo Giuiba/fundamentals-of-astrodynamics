@@ -8,12 +8,17 @@ from ...conftest import custom_allclose
 def test_seebatt():
     # Check nominal case
     v = 0.123
-    assert np.isclose(lambert.seebatt(v), 5.153421950753984)
+    assert np.isclose(lambert.seebatt(v), 5.153421950753984, rtol=1e-12)
 
     # Check when `v` is less than -1
     v = -1.5
     with pytest.raises(ValueError):
         lambert.seebatt(v)
+
+
+def test_kbatt():
+    v = 0.123
+    assert np.isclose(lambert.kbatt(v), 0.327568960337347, rtol=1e-12)
 
 
 def test_lambhodograph():
