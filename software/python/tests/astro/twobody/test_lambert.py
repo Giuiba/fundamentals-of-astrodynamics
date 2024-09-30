@@ -10,8 +10,9 @@ from ...conftest import DEFAULT_TOL, custom_allclose
 def lambert_inputs():
     r1 = np.array([2.5 * const.RE, 0, 0])
     r2 = [1.9151111 * const.RE, 1.6069690 * const.RE, 0]
+    v1 = [0, 4.999792554221911, 0]
     nrev = 1
-    return r1, r2, nrev
+    return r1, r2, v1, nrev
 
 
 def test_seebatt():
@@ -78,7 +79,7 @@ def test_lambhodograph():
 def test_lambertmin(lambert_inputs, dm, v_exp, aminenergy_exp, tminenergy_exp,
                     tminabs_exp):
     # Unpack inputs
-    r1, r2, nrev = lambert_inputs
+    r1, r2, _, nrev = lambert_inputs
 
     # Compute Lambert minimum energy
     v, aminenergy, tminenergy, tminabs = lambert.lambertmin(r1, r2, dm, nrev)
@@ -126,7 +127,7 @@ def test_lambertmin(lambert_inputs, dm, v_exp, aminenergy_exp, tminenergy_exp,
 def test_lambertmint(lambert_inputs, dm, de, tmin_exp, tminp_exp,
                      tminenergy_exp):
     # Unpack inputs
-    r1, r2, nrev = lambert_inputs
+    r1, r2, _, nrev = lambert_inputs
 
     # Compute Lambert minimum time
     tmin, tminp, tminenergy = lambert.lambertmint(r1, r2, dm, de, nrev)
@@ -135,3 +136,45 @@ def test_lambertmint(lambert_inputs, dm, de, tmin_exp, tminp_exp,
     assert np.allclose(tmin, tmin_exp, rtol=DEFAULT_TOL)
     assert np.allclose(tminp, tminp_exp, rtol=DEFAULT_TOL)
     assert np.allclose(tminenergy, tminenergy_exp, rtol=DEFAULT_TOL)
+
+
+@pytest.mark.parametrize(
+    'dm, df, v1dv_exp, v2dv_exp',
+    [
+        (
+            lambert.DirectionOfMotion.LONG,
+            lambert.DirectionOfFlight.DIRECT,
+            [-0.8696153795282852, 6.3351545812502374, 0.0],
+            [-3.405994961791248, 5.41198791828363, 0.0]
+        ),
+        (
+            lambert.DirectionOfMotion.SHORT,
+            lambert.DirectionOfFlight.DIRECT,
+            [5.832522716212579, 1.4319944881331306, 0.0],
+            [-5.388439978490882, -2.652101898141935, 0.0]
+        ),
+        (
+            lambert.DirectionOfMotion.LONG,
+            lambert.DirectionOfFlight.RETROGRADE,
+            [-6.241103309400493, -1.351339299630816, 0.0],
+            [5.6495867154901545, 2.976517897853268, 0.0]
+        ),
+        (
+            lambert.DirectionOfMotion.SHORT,
+            lambert.DirectionOfFlight.RETROGRADE,
+            [0.6411191586146303, -5.957501823796459, 0.0],
+            [3.33828270226307, -4.975814585231199, 0.0]
+        )
+    ]
+)
+def test_lambertb(lambert_inputs, dm, df, v1dv_exp, v2dv_exp):
+    # Unpack inputs and set dtsec
+    r1, r2, v1, nrev = lambert_inputs
+    dtsec = 92854.234
+
+    # Compute Lambert minimum time
+    v1dv, v2dv = lambert.lambertb(r1, v1, r2, dm, df, nrev, dtsec)
+
+    # Check results
+    assert np.allclose(v1dv, v1dv_exp, rtol=DEFAULT_TOL)
+    assert np.allclose(v2dv, v2dv_exp, rtol=DEFAULT_TOL)

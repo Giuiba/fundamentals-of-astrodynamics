@@ -9,6 +9,7 @@
 import numpy as np
 from enum import Enum
 from numpy.typing import ArrayLike
+from typing import Tuple
 
 from ...constants import MU, SMALL, TWOPI
 
@@ -25,7 +26,13 @@ class DirectionOfEnergy(Enum):
     HYPERBOLICSHORT = 'H'  # Hyperbolic and Short way
 
 
-def seebatt(v: float):
+class DirectionOfFlight(Enum):
+    """Enum class for the direction of flight."""
+    DIRECT = 'D'       # Direct motion
+    RETROGRADE = 'R'   # Retrograde motion
+
+
+def seebatt(v: float) -> float:
     """Recursively calculates a value used in the Lambert Battin problem using
     predefined coefficients.
 
@@ -81,7 +88,7 @@ def seebatt(v: float):
     )
 
 
-def kbatt(v: float):
+def kbatt(v: float) -> float:
     """Recursively calculates a value used in the Lambert Battin problem using
     predefined coefficients.
 
@@ -142,7 +149,8 @@ def kbatt(v: float):
 
 
 def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
-                  ecc: float, dnu: float, dtsec: float):
+                  ecc: float, dnu: float,
+                  dtsec: float) -> Tuple[np.ndarray, np.ndarray]:
     """Accomplishes a 180-degree (and 360-degree) transfer for the Lambert
     problem.
 
@@ -233,7 +241,8 @@ def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
     return v1t, v2t
 
 
-def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion, nrev: int):
+def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
+               nrev: int) -> Tuple[np.ndarray, float, float, float]:
     """Solves the Lambert minimum energy problem.
 
     Args:
@@ -305,12 +314,12 @@ def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion, nrev: int):
 
 def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
                 de: DirectionOfEnergy, nrev: int, fa_tol: float = 1e-5,
-                fa_iter: int = 20):
+                fa_iter: int = 20) -> Tuple[float, float, float]:
     """Solves Lambert's problem to find the minimum time of flight for
     the multi-revolution cases.
 
     References:
-        Vallado: 2013, p. 494, Algorithm 59, Example 7-5
+        Vallado: 2013, p. 494, Algorithm 59
         Prussing: JAS 2000
 
     Args:
@@ -418,3 +427,168 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     tmin = (an**1.5) * (TWOPI * nrev + xi + sign_dm * eta) / np.sqrt(MU)
 
     return tmin, tminp, tminenergy
+
+
+def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
+             dm: DirectionOfMotion, df: DirectionOfFlight, nrev: int,
+             dtsec: float) -> Tuple[np.ndarray, np.ndarray]:
+    """Solves Lambert's problem using Battin's method.
+
+    This method is developed in battin (1987) and explained by Thompson 2018.
+    It uses continued fractions to speed the solution and has several
+    parameters that are defined differently than the traditional gaussian
+    technique.
+
+    References:
+        Vallado: 2013, p. 493-497
+        Battin: 1987, p. 325-342
+        Thompson: 2018
+
+    Args:
+        r1 (array_like): Initial ECI position vector in km
+        v1 (array_like): Initial ECI velocity vector in km/s
+                         (needed for 180-degree transfer)
+        r2 (array_like): Final ECI position vector in km
+        dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
+        df (DirectionOfFlight): Direction of flight (DIRECT or RETROGRADE)
+        nrev (int): Number of revolutions (0, 1, 2, ...)
+        dtsec (float): Time between r1 and r2 in seconds
+
+    Returns:
+        tuple: (v1dv, v2dv)
+            v1dv (np.ndarray): Transfer velocity vector at r1 in km/s
+            v2dv (np.ndarray): Transfer velocity vector at r2 in km/s
+    """
+    # Initialize values
+    v1dv = np.array([np.NAN] * 3)
+    v2dv = np.array([np.NAN] * 3)
+    y = 0.0
+
+    # Create numpy arrays and compute magnitudes of r1 and r2
+    r1 = np.array(r1)
+    r2 = np.array(r2)
+    magr1 = np.linalg.norm(r1)
+    magr2 = np.linalg.norm(r2)
+
+    # Calculate cosine and sine of delta nu
+    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
+    cosdeltanu = np.clip(cosdeltanu, -1.0, 1.0)  # Ensure within bounds [-1, 1]
+
+    # Determine direction of flight
+    magrcrossr = np.linalg.norm(np.cross(r1, r2))
+    sign = 1.0 if df == DirectionOfFlight.DIRECT else -1.0
+    sindeltanu = sign * magrcrossr / (magr1 * magr2)
+
+    # Compute delta nu
+    dnu = np.arctan2(sindeltanu, cosdeltanu)
+    dnu = dnu if dnu >= 0 else TWOPI + dnu  # Ensure positive angle
+
+    # Calculate chord and semiperimeter
+    chord = np.sqrt(magr1**2 + magr2**2 - 2.0 * magr1 * magr2 * cosdeltanu)
+    s = (magr1 + magr2 + chord) * 0.5
+    ror = magr2 / magr1
+    eps = ror - 1.0
+
+    # Calculate lambda, L, and m
+    lam = 1.0 / s * np.sqrt(magr1 * magr2) * np.cos(dnu * 0.5)
+    l_ = ((1.0 - lam) / (1.0 + lam))**2
+    m = 8.0 * MU * dtsec**2 / (s**3 * (1.0 + lam)**6)
+
+    # Initial guess for x
+    xn = 1.0 + 4.0 * l_ if nrev > 0 else l_
+
+    # High energy case adjustments for long way, retrograde multi-rev
+    if dm == DirectionOfMotion.LONG and nrev > 0:
+        xn, x = 1e-20, 10.0
+        loops = 1
+        while abs(xn - x) >= SMALL and loops <= 20:
+            # Calculate h1 and h2
+            x = xn
+            temp = 1.0 / (2.0 * (l_ - x**2))
+            temp1 = np.sqrt(x)  # check
+            temp2 = (nrev * np.pi * 0.5 + np.arctan(temp1)) / temp1
+            h1 = temp * (l_ + x) * (1.0 + 2.0 * x + l_)
+            h2 = temp * m * temp1 * ((l_ - x**2) * temp2 - (l_ + x))
+
+            # Calculate b and f
+            b = 0.25 * 27.0 * h2 / ((temp1 * (1.0 + h1))**3)
+            if b < 0.0:
+                f = 2.0 * np.cos(1.0 / 3.0 * np.arccos(np.sqrt(b + 1.0)))
+            else:
+                a_ = (np.sqrt(b) + np.sqrt(b + 1.0))**(1.0 / 3.0)
+                f = a_ + 1.0 / a_
+
+            # Calculate y and xn
+            y = 2.0 / 3.0 * temp1 * (1.0 + h1) * (np.sqrt(b + 1.0) / f + 1.0)
+            xn = (
+                0.5
+                * ((m / (y**2) - (1.0 + l_))
+                   - np.sqrt((m / (y**2) - (1.0 + l_))**2 - 4.0 * l_))
+            )
+            loops += 1
+
+        # Determine transfer velocity vectors for high energy case
+        x = xn
+        a = s * (1.0 + lam)**2 * (1.0 + x) * (l_ + x) / (8.0 * x)
+        p = (
+            (2.0 * magr1 * magr2 * (1.0 + x) * np.sin(dnu * 0.5)**2)
+            / (s * (1 + lam)**2 * (l_ + x))
+        )
+        ecc = np.sqrt(1.0 - p / a)
+        v1dv, v2dv = lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec)
+    else:
+        # Standard processing for the other cases
+        loops = 1
+        x = 10.0
+        while abs(xn - x) >= SMALL and loops <= 30:
+            # Calculate h1 and h2
+            x = xn
+            if nrev > 0:
+                temp = 1.0 / ((1.0 + 2.0 * x + l_) * (4.0 * x**2))
+                temp1 = (
+                    (nrev * np.pi * 0.5 + np.arctan(np.sqrt(x))) / np.sqrt(x)
+                )
+                h1 = (
+                    temp * (l_ + x)**2
+                    * (3.0 * (1.0 + x)**2 * temp1 - (3.0 + 5.0 * x))
+                )
+                h2 = (
+                    temp * m
+                    * ((x**2 - x * (1.0 + l_) - 3.0 * l_) * temp1
+                       + (3.0 * l_ + x))
+                )
+            else:
+                tempx = seebatt(x)
+                denom = (
+                    1.0
+                    / ((1.0 + 2.0 * x + l_) * (4.0 * x + tempx * (3.0 + x)))
+                )
+                h1 = (l_ + x)**2 * (1.0 + 3.0 * x + tempx) * denom
+                h2 = m * (x - l_ + tempx) * denom
+
+            # Calculate y and xn
+            b = 0.25 * 27.0 * h2 / ((1.0 + h1)**3)
+            u = 0.5 * b / (1.0 + np.sqrt(1.0 + b))
+            k2 = kbatt(u)
+            y = (
+                ((1.0 + h1) / 3.0)
+                * (2.0 + np.sqrt(1.0 + b) / (1.0 + 2.0 * u * k2 * k2))
+            )
+            xn = np.sqrt(((1.0 - l_) * 0.5)**2 + m / (y**2)) - (1.0 + l_) * 0.5
+            loops += 1
+
+        # Determine transfer velocity vectors for standard case
+        if loops < 30:
+            p = (
+                (2.0 * magr1 * magr2 * y**2 * (1.0 + x)**2
+                 * np.sin(dnu * 0.5)**2)
+                / (m * s * (1 + lam)**2)
+            )
+            ecc = np.sqrt(
+                (eps**2 + 4.0 * magr2 / magr1 * np.sin(dnu * 0.5)**2
+                 * ((l_ - x) / (l_ + x))**2)
+                / (eps**2 + 4.0 * magr2 / magr1 * np.sin(dnu * 0.5)**2)
+            )
+            v1dv, v2dv = lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec)
+
+    return v1dv, v2dv
