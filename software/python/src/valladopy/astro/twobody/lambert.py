@@ -12,6 +12,7 @@ from numpy.typing import ArrayLike
 from typing import Tuple
 
 from ...constants import MU, SMALL, TWOPI
+from ...mathtime.utils import safe_sqrt
 
 
 class DirectionOfMotion(Enum):
@@ -497,6 +498,10 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
     # Initial guess for x
     xn = 1.0 + 4.0 * l_ if nrev > 0 else l_
 
+    # Context for the safe square root function errors
+    # TODO: better direction for adjusting inputs
+    con = 'Battin\'s method intermediate calculations: please adjust inputs'
+
     # High energy case adjustments for long way, retrograde multi-rev
     if dm == DirectionOfMotion.LONG and nrev > 0:
         xn, x = 1e-20, 10.0
@@ -505,7 +510,7 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
             # Calculate h1 and h2
             x = xn
             temp = 1.0 / (2.0 * (l_ - x**2))
-            temp1 = np.sqrt(x)  # check
+            temp1 = safe_sqrt(x, con)
             temp2 = (nrev * np.pi * 0.5 + np.arctan(temp1)) / temp1
             h1 = temp * (l_ + x) * (1.0 + 2.0 * x + l_)
             h2 = temp * m * temp1 * ((l_ - x**2) * temp2 - (l_ + x))
@@ -513,17 +518,23 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
             # Calculate b and f
             b = 0.25 * 27.0 * h2 / ((temp1 * (1.0 + h1))**3)
             if b < 0.0:
-                f = 2.0 * np.cos(1.0 / 3.0 * np.arccos(np.sqrt(b + 1.0)))
+                f = (
+                    2.0
+                    * np.cos(1.0 / 3.0 * np.arccos(safe_sqrt(b + 1.0), con))
+                )
             else:
-                a_ = (np.sqrt(b) + np.sqrt(b + 1.0))**(1.0 / 3.0)
+                a_ = (safe_sqrt(b, con) + safe_sqrt(b + 1.0, con))**(1.0 / 3.0)
                 f = a_ + 1.0 / a_
 
             # Calculate y and xn
-            y = 2.0 / 3.0 * temp1 * (1.0 + h1) * (np.sqrt(b + 1.0) / f + 1.0)
+            y = (
+                2.0 / 3.0 * temp1 * (1.0 + h1)
+                * (safe_sqrt(b + 1.0, con) / f + 1.0)
+            )
             xn = (
                 0.5
                 * ((m / (y**2) - (1.0 + l_))
-                   - np.sqrt((m / (y**2) - (1.0 + l_))**2 - 4.0 * l_))
+                   - safe_sqrt((m / (y**2) - (1.0 + l_))**2 - 4.0 * l_, con))
             )
             loops += 1
 
@@ -534,7 +545,7 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
             (2.0 * magr1 * magr2 * (1.0 + x) * np.sin(dnu * 0.5)**2)
             / (s * (1 + lam)**2 * (l_ + x))
         )
-        ecc = np.sqrt(1.0 - p / a)
+        ecc = safe_sqrt(1.0 - p / a, con)
         v1dv, v2dv = lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec)
     else:
         # Standard processing for the other cases
@@ -546,7 +557,8 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
             if nrev > 0:
                 temp = 1.0 / ((1.0 + 2.0 * x + l_) * (4.0 * x**2))
                 temp1 = (
-                    (nrev * np.pi * 0.5 + np.arctan(np.sqrt(x))) / np.sqrt(x)
+                    (nrev * np.pi * 0.5 + np.arctan(safe_sqrt(x, con)))
+                    / safe_sqrt(x, con)
                 )
                 h1 = (
                     temp * (l_ + x)**2
@@ -568,13 +580,16 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
 
             # Calculate y and xn
             b = 0.25 * 27.0 * h2 / ((1.0 + h1)**3)
-            u = 0.5 * b / (1.0 + np.sqrt(1.0 + b))
+            u = 0.5 * b / (1.0 + safe_sqrt(1.0 + b, con))
             k2 = kbatt(u)
             y = (
                 ((1.0 + h1) / 3.0)
-                * (2.0 + np.sqrt(1.0 + b) / (1.0 + 2.0 * u * k2 * k2))
+                * (2.0 + safe_sqrt(1.0 + b, con) / (1.0 + 2.0 * u * k2 * k2))
             )
-            xn = np.sqrt(((1.0 - l_) * 0.5)**2 + m / (y**2)) - (1.0 + l_) * 0.5
+            xn = (
+                safe_sqrt(((1.0 - l_) * 0.5)**2 + m / (y**2), con)
+                - (1.0 + l_) * 0.5
+            )
             loops += 1
 
         # Determine transfer velocity vectors for standard case
@@ -584,10 +599,11 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
                  * np.sin(dnu * 0.5)**2)
                 / (m * s * (1 + lam)**2)
             )
-            ecc = np.sqrt(
+            ecc = safe_sqrt(
                 (eps**2 + 4.0 * magr2 / magr1 * np.sin(dnu * 0.5)**2
                  * ((l_ - x) / (l_ + x))**2)
-                / (eps**2 + 4.0 * magr2 / magr1 * np.sin(dnu * 0.5)**2)
+                / (eps**2 + 4.0 * magr2 / magr1 * np.sin(dnu * 0.5)**2),
+                con
             )
             v1dv, v2dv = lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec)
 

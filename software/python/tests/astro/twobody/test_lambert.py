@@ -178,3 +178,19 @@ def test_lambertb(lambert_inputs, dm, df, v1dv_exp, v2dv_exp):
     # Check results
     assert np.allclose(v1dv, v1dv_exp, rtol=DEFAULT_TOL)
     assert np.allclose(v2dv, v2dv_exp, rtol=DEFAULT_TOL)
+
+
+def test_lambertb_bad_inputs(lambert_inputs):
+    # Unpack inputs and set dtsec
+    r1, r2, v1, nrev = lambert_inputs
+    dm = lambert.DirectionOfMotion.LONG
+    df = lambert.DirectionOfFlight.DIRECT
+
+    # Check when dtsec is 0
+    with pytest.raises(ValueError):
+        lambert.lambertb(r1, v1, r2, dm, df, nrev, dtsec=0)
+
+    # Check when dtsec is positive but within a certain range
+    # (hits the error in a different part of the algorithm)
+    with pytest.raises(ValueError):
+        lambert.lambertb(r1, v1, r2, dm, df, nrev, dtsec=-76*60)
