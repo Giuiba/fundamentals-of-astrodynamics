@@ -15,6 +15,27 @@ def lambert_inputs():
     return r1, r2, v1, nrev
 
 
+class TestEnumCheck:
+    def test_check_enum_valid(self):
+        lambert.check_enum(
+            lambert.DirectionOfMotion.LONG, lambert.DirectionOfMotion
+        )
+        lambert.check_enum(
+            lambert.DirectionOfEnergy.LONG, lambert.DirectionOfEnergy
+        )
+        lambert.check_enum(
+            lambert.DirectionOfFlight.DIRECT, lambert.DirectionOfFlight
+        )
+
+    def test_check_enum_invalid(self):
+        with pytest.raises(ValueError):
+            lambert.check_enum(
+                lambert.DirectionOfEnergy.LONG, lambert.DirectionOfMotion
+            )
+        with pytest.raises(ValueError):
+            lambert.check_enum('X', lambert.DirectionOfMotion)
+
+
 def test_seebatt():
     # Check nominal case
     v = 0.123

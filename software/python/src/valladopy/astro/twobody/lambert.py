@@ -9,7 +9,7 @@
 import numpy as np
 from enum import Enum
 from numpy.typing import ArrayLike
-from typing import Tuple
+from typing import Tuple, Type
 
 from ...constants import MU, SMALL, TWOPI
 from ...mathtime.utils import safe_sqrt
@@ -31,6 +31,28 @@ class DirectionOfFlight(Enum):
     """Enum class for the direction of flight."""
     DIRECT = 'D'       # Direct motion
     RETROGRADE = 'R'   # Retrograde motion
+
+
+def check_enum(value: Enum, expected_type: Type[Enum],
+               param_name: str = '') -> None:
+    """Checks if a value is of the expected enum type
+
+    Args:
+        value (Enum): The value to check
+        expected_type (Type[Enum]): The expected enum class
+                                    (e.g., DirectionOfMotion)
+        param_name (str, optional): Optional parameter name for more
+                                    descriptive error messages
+
+    Raises:
+        ValueError: If `value` is not of the expected enum type
+    """
+    if not isinstance(value, expected_type):
+        param_name = param_name or expected_type.__name__
+        raise ValueError(
+            f'Invalid value for {param_name}: {value}. '
+            f'Must be of type {expected_type.__name__}.'
+        )
 
 
 def seebatt(v: float) -> float:
@@ -263,11 +285,7 @@ def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         ValueError: If `dm` is not of type `DirectionOfMotion`
     """
     # Check that `dm` is of type `DirectionOfMotion`
-    if not isinstance(dm, DirectionOfMotion):
-        raise ValueError(
-            f'Invalid direction of motion: {dm}. Must be of type'
-            f' {DirectionOfMotion}.'
-        )
+    check_enum(dm, DirectionOfMotion, 'direction of motion')
 
     # Create numpy arrays and compute magnitudes of r1 and r2
     r1 = np.array(r1)
@@ -345,16 +363,8 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
                     `DirectionOfEnergy`, respectively
     """
     # Check that `dm` and `de` are the correct types
-    if not isinstance(dm, DirectionOfMotion):
-        raise ValueError(
-            f'Invalid direction of motion: {dm}. Must be of type'
-            f' {DirectionOfMotion}.'
-        )
-    if not isinstance(de, DirectionOfEnergy):
-        raise ValueError(
-            f'Invalid direction of energy: {de}. Must be of type'
-            f' {DirectionOfEnergy}.'
-        )
+    check_enum(dm, DirectionOfMotion, 'direction of motion')
+    check_enum(de, DirectionOfEnergy, 'direction of energy')
 
     # Create numpy arrays and compute magnitudes of r1 and r2
     r1 = np.array(r1)
@@ -432,7 +442,8 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
 
 def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
              dm: DirectionOfMotion, df: DirectionOfFlight, nrev: int,
-             dtsec: float) -> Tuple[np.ndarray, np.ndarray]:
+             dtsec: float, n_loops_he: int = 20,
+             n_loops_le: int = 30) -> Tuple[np.ndarray, np.ndarray]:
     """Solves Lambert's problem using Battin's method.
 
     This method is developed in battin (1987) and explained by Thompson 2018.
@@ -454,12 +465,24 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
         df (DirectionOfFlight): Direction of flight (DIRECT or RETROGRADE)
         nrev (int): Number of revolutions (0, 1, 2, ...)
         dtsec (float): Time between r1 and r2 in seconds
+        n_loops_he (int, optional): Number of loops for high energy case
+                                    (defaults to 20)
+        n_loops_le (int, optional): Number of loops for low energy case
+                                    (defaults to 30)
 
     Returns:
         tuple: (v1dv, v2dv)
             v1dv (np.ndarray): Transfer velocity vector at r1 in km/s
             v2dv (np.ndarray): Transfer velocity vector at r2 in km/s
+
+    Notes:
+        - The algorithm seems sensitive to the inputs, resulting in invalid
+          values for intermediate calculations (e.g. `dtsec` could be too low)
     """
+    # Check that `dm` and `df` are the correct types
+    check_enum(dm, DirectionOfMotion, 'direction of motion')
+    check_enum(df, DirectionOfFlight, 'direction of flight')
+
     # Initialize values
     v1dv = np.array([np.NAN] * 3)
     v2dv = np.array([np.NAN] * 3)
@@ -506,7 +529,7 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
     if dm == DirectionOfMotion.LONG and nrev > 0:
         xn, x = 1e-20, 10.0
         loops = 1
-        while abs(xn - x) >= SMALL and loops <= 20:
+        while abs(xn - x) >= SMALL and loops <= n_loops_he:
             # Calculate h1 and h2
             x = xn
             temp = 1.0 / (2.0 * (l_ - x**2))
@@ -548,10 +571,10 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
         ecc = safe_sqrt(1.0 - p / a, con)
         v1dv, v2dv = lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec)
     else:
-        # Standard processing for the other cases
+        # Standard processing, low energy case
         loops = 1
         x = 10.0
-        while abs(xn - x) >= SMALL and loops <= 30:
+        while abs(xn - x) >= SMALL and loops <= n_loops_le:
             # Calculate h1 and h2
             x = xn
             if nrev > 0:
@@ -593,7 +616,7 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
             loops += 1
 
         # Determine transfer velocity vectors for standard case
-        if loops < 30:
+        if loops < n_loops_le:
             p = (
                 (2.0 * magr1 * magr2 * y**2 * (1.0 + x)**2
                  * np.sin(dnu * 0.5)**2)
