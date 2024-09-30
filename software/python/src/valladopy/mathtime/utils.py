@@ -6,7 +6,8 @@ def safe_sqrt(value: float, context: str = '') -> float:
 
     Args:
         value (float): The value to take the square root of
-        context (str): A description of the current step or variable being used
+        context (str, optional): A description of the current step or variable
+                                 being used
 
     Returns:
         float: The square root of the value
