@@ -657,8 +657,12 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     TODO:
         - Identify and capture any exceptions that may occur due to bad inputs
     """
+    # Define constants
     sqrtmu = np.sqrt(MU)
     oomu = 1.0 / sqrtmu
+
+    # Check that `dm` is the correct type
+    check_enum(dm, DirectionOfMotion, 'direction of motion')
 
     # Create numpy arrays and compute magnitudes of r1 and r2
     r1 = np.array(r1)
