@@ -11,6 +11,7 @@ from enum import Enum
 from numpy.typing import ArrayLike
 from typing import Tuple, Type
 
+from .utils import findc2c3
 from ...constants import MU, SMALL, TWOPI
 from ...mathtime.utils import safe_sqrt
 
@@ -476,8 +477,9 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
             v2dv (np.ndarray): Transfer velocity vector at r2 in km/s
 
     Notes:
-        - The algorithm seems sensitive to the inputs, resulting in invalid
-          values for intermediate calculations (e.g. `dtsec` could be too low)
+        - The performance over time varies depending on the input TOF (dtsec)
+          for the transfer, and Some values of TOF simply have no solutions.
+          See plot of time vs. psi (Figure 7-16) in Vallado for more details.
     """
     # Check that `dm` and `df` are the correct types
     check_enum(dm, DirectionOfMotion, 'direction of motion')
@@ -522,8 +524,7 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
     xn = 1.0 + 4.0 * l_ if nrev > 0 else l_
 
     # Context for the safe square root function errors
-    # TODO: better direction for adjusting inputs
-    con = 'Battin\'s method intermediate calculations: please adjust inputs'
+    con = 'Battin\'s method intermediate calculations: please adjust `dtsec`'
 
     # High energy case adjustments for long way, retrograde multi-rev
     if dm == DirectionOfMotion.LONG and nrev > 0:
@@ -631,3 +632,142 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
             v1dv, v2dv = lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec)
 
     return v1dv, v2dv
+
+
+def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
+                 nrev: int, n_iter: int = 20) -> Tuple[float, float]:
+    """Find the minimum psi values for the universal variable Lambert problem
+    for multi-rev cases.
+
+    References:
+        Arora and Russell: AAS 10-198
+
+    Args:
+        r1 (array_like): Initial ECI position vector in km
+        r2 (array_like): Final ECI position vector in km
+        dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
+        nrev (int): Number of revolutions (0, 1, 2, ...)
+        n_iter (int): Number of iterations to perform (defaults to 20)
+
+    Returns:
+        tuple: (psib, tof)
+            psib (float): Minimum psi value (for min TOF for each revolution)
+            tof (float): Time of flight in seconds (for each revolution)
+
+    TODO:
+        - Identify and capture any exceptions that may occur due to bad inputs
+    """
+    sqrtmu = np.sqrt(MU)
+    oomu = 1.0 / sqrtmu
+
+    # Create numpy arrays and compute magnitudes of r1 and r2
+    r1 = np.array(r1)
+    r2 = np.array(r2)
+    magr1 = np.linalg.norm(r1)
+    magr2 = np.linalg.norm(r2)
+
+    # Cosine of the angle between r1 and r2
+    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
+
+    # Determine vara based on direction of motion
+    sign_dm = -1 if dm == DirectionOfMotion.LONG else 1
+    vara = sign_dm * np.sqrt(magr1 * magr2 * (1.0 + cosdeltanu))
+
+    # Outer bounds for the nrev case
+    lower = 4.0 * nrev**2 * np.pi**2
+    upper = 4.0 * (nrev + 1.0)**2 * np.pi**2
+
+    # Streamline by narrowing down the bounds (since it's near the center)
+    upper = lower + (upper - lower) * 0.6
+    lower = lower + (upper - lower) * 0.3
+
+    # Initial psi guess (put in center of bounds)
+    psiold = (upper + lower) * 0.5
+
+    # Get initial values of c2 and c3
+    c2, c3 = findc2c3(psiold)
+
+    # Iterative loop to find minimum psi
+    x, sqrty = 0.0, 0.0
+    loops = 0
+    dtdpsi = 200.0
+    psinew = psiold
+    while abs(dtdpsi) >= 0.1 and loops < n_iter:
+        # Calculate y and x
+        if abs(c2) > SMALL:
+            y = magr1 + magr2 - (vara * (1.0 - psiold * c3) / np.sqrt(c2))
+        else:
+            y = magr1 + magr2
+        x = np.sqrt(y / c2) if abs(c2) > SMALL else 0.0
+        sqrty = np.sqrt(y)
+
+        # Calculate derivatives of c2 and c3
+        if abs(psiold) > 1e-5:
+            c2dot = 0.5 / psiold * (1.0 - psiold * c3 - 2.0 * c2)
+            c3dot = 0.5 / psiold * (c2 - 3.0 * c3)
+            c2ddot = (
+                1.0 / (4.0 * psiold**2)
+                * ((8.0 - psiold) * c2 + 5.0 * psiold * c3 - 4.0)
+            )
+            c3ddot = (
+                1.0 / (4.0 * psiold**2)
+                * ((15.0 - psiold) * c3 - 7.0 * c2 + 1.0)
+            )
+        else:
+            c2dot = (
+                -2.0 / np.math.factorial(4)
+                + 2.0 * psiold / np.math.factorial(6)
+                - 3.0 * psiold ** 2 / np.math.factorial(8)
+                + 4.0 * psiold ** 3 / np.math.factorial(10)
+                - 5.0 * psiold ** 4 / np.math.factorial(12))
+            c3dot = (
+                -1.0 / np.math.factorial(5)
+                + 2.0 * psiold / np.math.factorial(7)
+                - 3.0 * psiold ** 2 / np.math.factorial(9)
+                + 4.0 * psiold ** 3 / np.math.factorial(11)
+                - 5.0 * psiold ** 4 / np.math.factorial(13)
+            )
+            c2ddot, c3ddot = 0.0, 0.0
+
+        # Solve for dt = 0.0
+        dtdpsi = (
+            x**3 * (c3dot - 3.0 * c3 * c2dot / (2.0 * c2)) * oomu
+            + 0.125 * vara * (3.0 * c3 * sqrty / c2 + vara / x) * oomu
+        )
+
+        # Solve for second derivative of dt with respect to psi
+        q = 0.25 * vara * np.sqrt(c2) - x**2 * c2dot
+        s1 = -24.0 * q * x**3 * c2 * sqrty * c3dot
+        s2 = (
+            36.0 * q * x**3 * sqrty * c3 * c2dot
+            - 16.0 * x**5 * sqrty * c3ddot * c2**2
+        )
+        s3 = (
+            24.0 * x**5 * sqrty
+            * (c3dot * c2dot * c2 + c3 * c2ddot * c2 - c3 * c2dot**2)
+            - 6.0 * vara * c3dot * y * c2 * x**2
+        )
+        s4 = (
+            -0.75 * vara ** 2 * c3 * c2 ** 1.5 * x ** 2
+            + 6.0 * vara * c3 * y * c2dot * x ** 2
+            + (vara ** 2 * c2 * (0.25 * vara * np.sqrt(c2) - x ** 2 * c2))
+            * sqrty / x
+        )
+        dtdpsi2 = (
+            -(s1 + s2 + s3 + s4) / (16.0 * sqrtmu * (c2**2 * sqrty * x**2))
+        )
+
+        # Newton-Raphson update for psi
+        psinew = psiold - dtdpsi / dtdpsi2
+
+        # Update psi and c2, c3 for the next iteration
+        psiold = psinew
+        c2, c3 = findc2c3(psiold)
+        loops += 1
+
+    # Calculate time of flight and final psi
+    dtnew = (x**3 * c3 + vara * sqrty) * oomu
+    tof = dtnew
+    psib = psinew
+
+    return psib, tof

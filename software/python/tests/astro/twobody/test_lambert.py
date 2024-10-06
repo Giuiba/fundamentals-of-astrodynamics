@@ -202,7 +202,7 @@ def test_lambertb(lambert_inputs, dm, df, v1dv_exp, v2dv_exp):
 
 
 def test_lambertb_bad_inputs(lambert_inputs):
-    # Unpack inputs and set dtsec
+    # Unpack inputs
     r1, r2, v1, nrev = lambert_inputs
     dm = lambert.DirectionOfMotion.LONG
     df = lambert.DirectionOfFlight.DIRECT
@@ -215,3 +215,22 @@ def test_lambertb_bad_inputs(lambert_inputs):
     # (hits the error in a different part of the algorithm)
     with pytest.raises(ValueError):
         lambert.lambertb(r1, v1, r2, dm, df, nrev, dtsec=-76*60)
+
+
+@pytest.mark.parametrize(
+    'dm, psib_exp, tof_exp',
+    [
+        (lambert.DirectionOfMotion.LONG, 113.602815095262, 16971.386078436695),
+        (lambert.DirectionOfMotion.SHORT, 57.8159275519482, 15048.626881962446)
+    ]
+)
+def test_lambertumins(lambert_inputs, dm, psib_exp, tof_exp):
+    # Unpack inputs
+    r1, r2, _, nrev = lambert_inputs
+
+    # Compute universal variable Lambert problem
+    psib, tof = lambert.lambertumins(r1, r2, dm, nrev)
+
+    # Check results
+    assert np.isclose(psib, psib_exp, rtol=DEFAULT_TOL)
+    assert np.isclose(tof, tof_exp, rtol=DEFAULT_TOL)
