@@ -14,7 +14,7 @@
     %    v1          - ijk velocity vector 1               needed for 180 deg transfer  km / s
     %    r2          - ijk position vector 2               km
     %    dm          - direction of motion                 'S','L'  short long period
-    %    df          - direction of flight                 'L','H'  low high energy
+    %    de          - direction of energy                 'L','H'  low high energy
     %    dtsec       - time between r1 and r2              s
     %    nrev        - multiple revoluions                 0, 1, ...
     %    tbi         - time of the bottom interval -       only needed for multi-rev cases

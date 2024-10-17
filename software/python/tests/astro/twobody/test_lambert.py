@@ -9,10 +9,11 @@ from ...conftest import DEFAULT_TOL, custom_allclose
 @pytest.fixture
 def lambert_inputs():
     r1 = np.array([2.5 * const.RE, 0, 0])
-    r2 = [1.9151111 * const.RE, 1.6069690 * const.RE, 0]
-    v1 = [0, 4.999792554221911, 0]
+    r2 = np.array([1.9151111 * const.RE, 1.6069690 * const.RE, 0])
+    v1 = np.array([0, 4.999792554221911, 0])
     nrev = 1
-    return r1, r2, v1, nrev
+    dtsec = 92854.234
+    return r1, r2, v1, nrev, dtsec
 
 
 class TestEnumCheck:
@@ -21,7 +22,7 @@ class TestEnumCheck:
             lambert.DirectionOfMotion.LONG, lambert.DirectionOfMotion
         )
         lambert.check_enum(
-            lambert.DirectionOfEnergy.LONG, lambert.DirectionOfEnergy
+            lambert.DirectionOfEnergy.LOW, lambert.DirectionOfEnergy
         )
         lambert.check_enum(
             lambert.DirectionOfFlight.DIRECT, lambert.DirectionOfFlight
@@ -30,7 +31,7 @@ class TestEnumCheck:
     def test_check_enum_invalid(self):
         with pytest.raises(ValueError):
             lambert.check_enum(
-                lambert.DirectionOfEnergy.LONG, lambert.DirectionOfMotion
+                lambert.DirectionOfEnergy.LOW, lambert.DirectionOfMotion
             )
         with pytest.raises(ValueError):
             lambert.check_enum('X', lambert.DirectionOfMotion)
@@ -100,7 +101,7 @@ def test_lambhodograph():
 def test_lambertmin(lambert_inputs, dm, v_exp, aminenergy_exp, tminenergy_exp,
                     tminabs_exp):
     # Unpack inputs
-    r1, r2, _, nrev = lambert_inputs
+    r1, r2, _, nrev, _ = lambert_inputs
 
     # Compute Lambert minimum energy
     v, aminenergy, tminenergy, tminabs = lambert.lambertmin(r1, r2, dm, nrev)
@@ -117,28 +118,28 @@ def test_lambertmin(lambert_inputs, dm, v_exp, aminenergy_exp, tminenergy_exp,
     [
         (
             lambert.DirectionOfMotion.LONG,
-            lambert.DirectionOfEnergy.LONG,
+            lambert.DirectionOfEnergy.LOW,
             12468.267989702517,
             3139.7046602121873,
             17488.26550877280
         ),
         (
             lambert.DirectionOfMotion.SHORT,
-            lambert.DirectionOfEnergy.LONG,
+            lambert.DirectionOfEnergy.LOW,
             15048.526832075213,
             1534.8915813389815,
             15554.50821587732
         ),
         (
             lambert.DirectionOfMotion.LONG,
-            lambert.DirectionOfEnergy.HYPERBOLICSHORT,
+            lambert.DirectionOfEnergy.HIGH,
             21648.968497701877,
             3139.7046602121873,
             17488.265508772805
         ),
         (
             lambert.DirectionOfMotion.SHORT,
-            lambert.DirectionOfEnergy.HYPERBOLICSHORT,
+            lambert.DirectionOfEnergy.HIGH,
             16972.34235386572,
             1534.8915813389815,
             15554.50821587732
@@ -148,7 +149,7 @@ def test_lambertmin(lambert_inputs, dm, v_exp, aminenergy_exp, tminenergy_exp,
 def test_lambertmint(lambert_inputs, dm, de, tmin_exp, tminp_exp,
                      tminenergy_exp):
     # Unpack inputs
-    r1, r2, _, nrev = lambert_inputs
+    r1, r2, _, nrev, _ = lambert_inputs
 
     # Compute Lambert minimum time
     tmin, tminp, tminenergy = lambert.lambertmint(r1, r2, dm, de, nrev)
@@ -190,8 +191,7 @@ def test_lambertmint(lambert_inputs, dm, de, tmin_exp, tminp_exp,
 )
 def test_lambertb(lambert_inputs, dm, df, v1dv_exp, v2dv_exp):
     # Unpack inputs and set dtsec
-    r1, r2, v1, nrev = lambert_inputs
-    dtsec = 92854.234
+    r1, r2, v1, nrev, dtsec = lambert_inputs
 
     # Compute Lambert minimum time
     v1dv, v2dv = lambert.lambertb(r1, v1, r2, dm, df, nrev, dtsec)
@@ -203,7 +203,7 @@ def test_lambertb(lambert_inputs, dm, df, v1dv_exp, v2dv_exp):
 
 def test_lambertb_bad_inputs(lambert_inputs):
     # Unpack inputs
-    r1, r2, v1, nrev = lambert_inputs
+    r1, r2, v1, nrev, _ = lambert_inputs
     dm = lambert.DirectionOfMotion.LONG
     df = lambert.DirectionOfFlight.DIRECT
 
@@ -211,10 +211,125 @@ def test_lambertb_bad_inputs(lambert_inputs):
     with pytest.raises(ValueError):
         lambert.lambertb(r1, v1, r2, dm, df, nrev, dtsec=0)
 
-    # Check when dtsec is positive but within a certain range
+    # Check when dtsec is positive but within a range without a solution
     # (hits the error in a different part of the algorithm)
     with pytest.raises(ValueError):
-        lambert.lambertb(r1, v1, r2, dm, df, nrev, dtsec=-76*60)
+        lambert.lambertb(r1, v1, r2, dm, df, nrev, dtsec=4560)
+
+
+@pytest.mark.parametrize(
+    'dm, de, nrev, psi_vec, v1dv_exp, v2dv_exp',
+    [
+        (
+            lambert.DirectionOfMotion.LONG,
+            lambert.DirectionOfEnergy.HIGH,
+            1,
+            [113],
+            [-6.241103311949874, -1.3513393001017955, 0.0],
+            [5.649586717745847, 2.976517899131199, 0.0]
+        ),
+        (
+            lambert.DirectionOfMotion.LONG,
+            lambert.DirectionOfEnergy.LOW,
+            1,
+            [113],
+            [0.6411191590247107, -5.957501826310465, 0.0],
+            [3.338282703564938, -4.975814587420603, 0.0]
+        ),
+        (
+            lambert.DirectionOfMotion.SHORT,
+            lambert.DirectionOfEnergy.HIGH,
+            1,
+            [113],
+            [-0.8696153799562063, 6.335154583804734, 0.0],
+            [-3.40599496310541,  5.411987920515576, 0.0]
+        ),
+        (
+            lambert.DirectionOfMotion.SHORT,
+            lambert.DirectionOfEnergy.LOW,
+            1,
+            [57],  # does not converge with 113
+            [5.8325227187105835, 1.4319944886088742, 0.0],
+            [-5.388439980710266, -2.6521018993831795, 0.0]
+        ),
+        (
+            lambert.DirectionOfMotion.LONG,
+            lambert.DirectionOfEnergy.HIGH,
+            0,  # test when nrev is 0
+            [113],
+            [0.8790611303752992, -6.351161592594172, 0.0],
+            [3.409048205683391, -5.43032161186189, 0.0]
+        )
+    ]
+)
+def test_lambertu(lambert_inputs, dm, de, nrev, psi_vec, v1dv_exp, v2dv_exp,
+                  caplog):
+    # Unpack inputs
+    r1, r2, v1, _, dtsec = lambert_inputs
+
+    # Compute universal variable Lambert problem
+    v1dv, v2dv = lambert.lambertu(r1, v1, r2, dm, de, nrev, dtsec, psi_vec)
+
+    # Check results
+    assert np.allclose(v1dv, v1dv_exp, rtol=DEFAULT_TOL)
+    assert np.allclose(v2dv, v2dv_exp, rtol=DEFAULT_TOL)
+
+    # Check that nothing was logged (results are OK)
+    assert not caplog.records
+
+
+@pytest.mark.parametrize(
+    'dtsec, psi_vec',
+    [
+        (4560, [113]),     # dtsec is too small
+        (92854.234, [20])  # psi is too small
+    ]
+)
+def test_lambertu_bad_inputs(lambert_inputs, dtsec, psi_vec, caplog):
+    # Unpack inputs
+    r1, r2, v1, nrev, _ = lambert_inputs
+
+    # Define other inputs
+    dm = lambert.DirectionOfMotion.LONG
+    de = lambert.DirectionOfEnergy.HIGH
+
+    # Compute universal variable Lambert problem
+    v1dv, v2dv = lambert.lambertu(r1, v1, r2, dm, de, nrev, dtsec, psi_vec)
+
+    # Check results
+    assert np.allclose(v1dv, np.zeros(3), rtol=DEFAULT_TOL)
+    assert np.allclose(v2dv, np.zeros(3), rtol=DEFAULT_TOL)
+
+    # Check logged error
+    assert caplog.records[0].levelname == 'ERROR'
+    assert caplog.records[0].message == 'Lambert did not converge'
+
+
+def test_lambertu_bad_orbit(lambert_inputs, caplog):
+    # Unpack inputs
+    _, _, v1, nrev, dtsec = lambert_inputs
+
+    # Define bad position vectors
+    r1 = np.array([0.1, 0, 0])
+    r2 = np.array([0.15, 0, 0])
+
+    # Define other inputs
+    dm = lambert.DirectionOfMotion.LONG
+    de = lambert.DirectionOfEnergy.HIGH
+    psi_vec = [113]
+
+    # Compute universal variable Lambert problem
+    v1dv, v2dv = lambert.lambertu(r1, v1, r2, dm, de, nrev, dtsec, psi_vec)
+
+    # Check results
+    v1dv_exp = np.array([0, 2823.473600062787, 0])
+    v2dv_exp = np.array([0, 2305.3561311833905, 0])
+    assert np.allclose(v1dv, v1dv_exp, rtol=DEFAULT_TOL)
+    assert np.allclose(v2dv, v2dv_exp, rtol=DEFAULT_TOL)
+
+    # Check logged error
+    assert caplog.records[0].levelname == 'ERROR'
+    assert caplog.records[0].message == 'Orbit is not possible'
 
 
 @pytest.mark.parametrize(
@@ -226,7 +341,7 @@ def test_lambertb_bad_inputs(lambert_inputs):
 )
 def test_lambertumins(lambert_inputs, dm, psib_exp, tof_exp):
     # Unpack inputs
-    r1, r2, _, nrev = lambert_inputs
+    r1, r2, _, nrev, _ = lambert_inputs
 
     # Compute universal variable Lambert problem
     psib, tof = lambert.lambertumins(r1, r2, dm, nrev)

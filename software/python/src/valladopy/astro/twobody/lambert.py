@@ -6,6 +6,7 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
+import logging
 import numpy as np
 from enum import Enum
 from numpy.typing import ArrayLike
@@ -14,6 +15,10 @@ from typing import Tuple, Type
 from .utils import findc2c3
 from ...constants import MU, SMALL, TWOPI
 from ...mathtime.utils import safe_sqrt
+from ...mathtime.vector import unit
+
+
+logger = logging.getLogger(__name__)
 
 
 class DirectionOfMotion(Enum):
@@ -24,8 +29,8 @@ class DirectionOfMotion(Enum):
 
 class DirectionOfEnergy(Enum):
     """Enum class for the direction of energy."""""
-    LONG = 'L'             # Long way
-    HYPERBOLICSHORT = 'H'  # Hyperbolic and Short way
+    LOW = 'L'   # Low
+    HIGH = 'H'  # High
 
 
 class DirectionOfFlight(Enum):
@@ -346,7 +351,7 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         r1 (array_like): Initial ECI position vector in km
         r2 (array_like): Final ECI position vector in km
         dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
-        de (DirectionOfEnergy): Direction of energy (LONG or HYPERBOLICSHORT)
+        de (DirectionOfEnergy): Direction of energy (LOW or HIGH)
         nrev (int): Number of revolutions (0, 1, 2, ...)
         fa_tol (float, optional): Tolerance for the Prussing method min TOF
                                   (defaults to 1e-5)
@@ -381,7 +386,7 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
 
     # Multipliers based on direction of motion and energy
     sign_dm = 1 if dm == DirectionOfMotion.LONG else -1
-    sign_de = 1 if de == DirectionOfEnergy.LONG else -1
+    sign_de = 1 if de == DirectionOfEnergy.LOW else -1
 
     # Calculate minimum parabolic time of flight tasee if orbit is possible
     tminp = (
@@ -634,6 +639,205 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
     return v1dv, v2dv
 
 
+def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
+             dm: DirectionOfMotion, de: DirectionOfEnergy, nrev: int,
+             dtsec: float,
+             psi_vec: np.ndarray = None) -> Tuple[np.ndarray, np.ndarray]:
+    """Solves Lambert's problem for orbit determination, returns the velocity
+    vectors at each of two given position vectors.
+
+    Args:
+        r1 (array_like): Initial position vector in km
+        v1 (array_like): Initial velocity vector in km/s
+        r2 (array_like): Final position vector in km
+        dm (DirectionOfMotion): Direction of motion (LONG or SHORT period)
+        de (DirectionOfEnergy): Direction of energy (HIGH or LOW)
+        nrev (int): Number of revolutions (0, 1, 2, ...)
+        dtsec (float): Time of flight in seconds
+        psi_vec (np.ndarray): Array of psi corresponding to the number of
+                          revolutions for multi-rev cases (size of `nrev`)
+
+    Returns:
+        tuple: (v1dv, v2dv, errorl)
+            v1dv (np.ndarray): Transfer velocity vector at r1 in km/s
+            v2dv (np.ndarray): Transfer velocity vector at r2 in km/s
+    """
+
+    # Constants and initialization
+    mu = 398600.4418  # km^3/s^2
+    small = 0.00001  # can affect cases where znew is multiples of 2pi^2
+    numiter = 20
+    v1dv = np.zeros(3)
+    v2dv = np.zeros(3)
+
+    # Compute magnitudes of r1 and r2
+    magr1 = np.linalg.norm(r1)
+    magr2 = np.linalg.norm(r2)
+
+    # Compute the cosine of the true anomaly between r1 and r2
+    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
+    cosdeltanu = np.clip(cosdeltanu, -1.0, 1.0)
+
+    # Determine vara based on direction of motion
+    sign = -1.0 if dm == DirectionOfMotion.LONG else 1.0
+    vara = sign * np.sqrt(magr1 * magr2 * (1.0 + cosdeltanu))
+
+    oomu = 1.0 / np.sqrt(mu)
+
+    # Set up initial bounds for bisection
+    if nrev == 0:
+        lower = -16.0 * np.pi ** 2  # Hyperbolic and parabolic solutions
+        upper = 4.0 * np.pi ** 2
+    else:
+        lower = 4.0 * nrev ** 2 * np.pi ** 2
+        upper = 4.0 * (nrev + 1.0) ** 2 * np.pi ** 2
+        if de == DirectionOfEnergy.HIGH:
+            upper = psi_vec[nrev - 1]
+        else:
+            lower = psi_vec[nrev - 1]
+
+    # Form initial guess for psi
+    if nrev == 0:
+        psiold = (np.log(dtsec) - 9.61202327) / 0.10918231
+        psiold = min(psiold, upper - np.pi)
+    else:
+        psiold = lower + (upper - lower) * 0.5
+
+    # Initial values for c2 and c3
+    c2new, c3new = findc2c3(psiold)
+
+    # Compute initial y and dtold
+    if abs(c2new) > small:
+        y = magr1 + magr2 - (vara * (1.0 - psiold * c3new) / np.sqrt(c2new))
+    else:
+        y = magr1 + magr2
+
+    xold = np.sqrt(y / c2new) if abs(c2new) > small else 0.0
+    dtold = (xold ** 3 * c3new + vara * np.sqrt(y)) * oomu
+
+    # Check if orbit is not possible
+    if abs(vara) < 0.2:  # not exactly zero
+        logger.error('Orbit is not possible')
+
+        # Call Battin method or use a Hohmann transfer in 3D
+        mum = 3.986004418e5  # km^3/s^2
+        atx = (mum * (dtsec / np.pi) ** 2) ** (1.0 / 3.0)  # half period
+        v1tmag = np.sqrt(2.0 * mum / magr1 - mum / atx)
+        v2tmag = np.sqrt(2.0 * mum / magr2 - mum / atx)
+
+        # Compute the direction of the velocity vectors
+        wxu = unit(np.cross(r1, v1))
+        v1diru = unit(np.cross(r1, wxu))  # Unit vector for v1, retrograde
+        v2diru = unit(np.cross(r2, wxu))  # Unit vector for v2, retrograde
+
+        # Compute the velocities using the direction and magnitude
+        v1dv = -v1tmag * v1diru
+        v2dv = -v2tmag * v2diru
+
+        return v1dv, v2dv
+
+    # Loop for iteration
+    loops = 0
+    ynegktr = 1
+    dtnew = -10.0
+
+    while abs(dtnew - dtsec) >= small and loops < numiter and ynegktr <= 10:
+        if abs(c2new) > small:
+            y = (
+                magr1 + magr2
+                - (vara * (1.0 - psiold * c3new) / np.sqrt(c2new))
+            )
+        else:
+            y = magr1 + magr2
+
+        if y < 0.0 < vara:  # Check for negative y values
+            while y < 0.0 and ynegktr < 10:
+                psinew = (
+                    0.8 * (1.0 / c3new)
+                    * (1.0 - (magr1 + magr2) * np.sqrt(c2new) / vara)
+                )
+                c2new, c3new = findc2c3(psinew)
+                psiold = psinew
+                lower = psiold
+                y = (
+                    magr1 + magr2
+                    - (vara * (1.0 - psiold * c3new) / np.sqrt(c2new))
+                )
+                ynegktr += 1
+
+        loops += 1
+
+        if ynegktr < 10:
+            xold = np.sqrt(y / c2new) if abs(c2new) > small else 0.0
+            dtnew = (xold ** 3 * c3new + vara * np.sqrt(y)) * oomu
+
+            # Newton-Raphson iteration for psi update
+            if abs(psiold) > 1e-5:
+                c2dot = 0.5 / psiold * (1.0 - psiold * c3new - 2.0 * c2new)
+                c3dot = 0.5 / psiold * (c2new - 3.0 * c3new)
+            else:
+                c2dot = (
+                    - 1.0 / np.math.factorial(4)
+                    + 2.0 * psiold / np.math.factorial(6)
+                    - 3.0 * psiold ** 2 / np.math.factorial(8)
+                    + 4.0 * psiold ** 3 / np.math.factorial(10)
+                    - 5.0 * psiold ** 4 / np.math.factorial(12)
+                )
+                c3dot = (
+                    - 1.0 / np.math.factorial(5)
+                    + 2.0 * psiold / np.math.factorial(7)
+                    - 3.0 * psiold ** 2 / np.math.factorial(9)
+                    + 4.0 * psiold ** 3 / np.math.factorial(11)
+                    - 5.0 * psiold ** 4 / np.math.factorial(13)
+                )
+
+            dtdpsi = (
+                (xold ** 3 * (c3dot - 3.0 * c3new * c2dot / (2.0 * c2new))
+                 + 0.125 * vara
+                 * (3.0 * c3new * np.sqrt(y) / c2new + vara / xold))
+                * oomu
+            )
+            psinew = psiold - (dtnew - dtsec) / dtdpsi
+
+            if psinew > upper or psinew < lower:
+                if de == DirectionOfEnergy.LOW or nrev == 0:
+                    if dtold < dtsec:
+                        lower = psiold
+                    else:
+                        upper = psiold
+                else:
+                    if dtold < dtsec:
+                        upper = psiold
+                    else:
+                        lower = psiold
+
+                psinew = (upper + lower) * 0.5
+
+            c2new, c3new = findc2c3(psinew)
+            psiold = psinew
+            dtold = dtnew
+
+            if abs(dtnew - dtsec) < small and loops == 1:
+                dtnew = dtsec - 1.0
+
+    # Check for non-convergence
+    if loops >= numiter or ynegktr >= 10:
+        logger.error('Lambert did not converge')
+        if ynegktr >= 10:
+            logger.error('y is negative')
+    else:
+        # Compute velocity vectors using f and g series
+        f = 1.0 - y / magr1
+        gdot = 1.0 - y / magr2
+        g = 1.0 / (vara * np.sqrt(y / mu))
+
+        for i in range(3):
+            v1dv[i] = (r2[i] - f * r1[i]) * g
+            v2dv[i] = (gdot * r2[i] - r1[i]) * g
+
+    return v1dv, v2dv
+
+
 def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
                  nrev: int, n_iter: int = 20) -> Tuple[float, float]:
     """Find the minimum psi values for the universal variable Lambert problem
@@ -719,13 +923,13 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
             )
         else:
             c2dot = (
-                -2.0 / np.math.factorial(4)
+                - 1.0 / np.math.factorial(4)
                 + 2.0 * psiold / np.math.factorial(6)
                 - 3.0 * psiold ** 2 / np.math.factorial(8)
                 + 4.0 * psiold ** 3 / np.math.factorial(10)
                 - 5.0 * psiold ** 4 / np.math.factorial(12))
             c3dot = (
-                -1.0 / np.math.factorial(5)
+                - 1.0 / np.math.factorial(5)
                 + 2.0 * psiold / np.math.factorial(7)
                 - 3.0 * psiold ** 2 / np.math.factorial(9)
                 + 4.0 * psiold ** 3 / np.math.factorial(11)
