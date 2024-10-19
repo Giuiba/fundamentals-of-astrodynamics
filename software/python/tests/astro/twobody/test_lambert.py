@@ -218,6 +218,25 @@ def test_lambertb_bad_inputs(lambert_inputs):
 
 
 @pytest.mark.parametrize(
+    'dm, psib_exp, tof_exp',
+    [
+        (lambert.DirectionOfMotion.LONG, 113.602815095262, 16971.386078436695),
+        (lambert.DirectionOfMotion.SHORT, 57.8159275519482, 15048.626881962446)
+    ]
+)
+def test_lambertumins(lambert_inputs, dm, psib_exp, tof_exp):
+    # Unpack inputs
+    r1, r2, _, nrev, _ = lambert_inputs
+
+    # Compute universal variable Lambert problem
+    psib, tof = lambert.lambertumins(r1, r2, dm, nrev)
+
+    # Check results
+    assert np.isclose(psib, psib_exp, rtol=DEFAULT_TOL)
+    assert np.isclose(tof, tof_exp, rtol=DEFAULT_TOL)
+
+
+@pytest.mark.parametrize(
     'dm, de, nrev, psi_vec, v1dv_exp, v2dv_exp',
     [
         (
@@ -268,7 +287,7 @@ def test_lambertu(lambert_inputs, dm, de, nrev, psi_vec, v1dv_exp, v2dv_exp,
     r1, r2, v1, _, dtsec = lambert_inputs
 
     # Compute universal variable Lambert problem
-    v1dv, v2dv = lambert.lambertu(r1, v1, r2, dm, de, nrev, dtsec, psi_vec)
+    v1dv, v2dv = lambert.lambertu(r1, v1, r2, dtsec, dm, de, nrev, psi_vec)
 
     # Check results
     assert np.allclose(v1dv, v1dv_exp, rtol=DEFAULT_TOL)
@@ -294,7 +313,7 @@ def test_lambertu_bad_inputs(lambert_inputs, dtsec, psi_vec, caplog):
     de = lambert.DirectionOfEnergy.HIGH
 
     # Compute universal variable Lambert problem
-    v1dv, v2dv = lambert.lambertu(r1, v1, r2, dm, de, nrev, dtsec, psi_vec)
+    v1dv, v2dv = lambert.lambertu(r1, v1, r2, dtsec, dm, de, nrev, psi_vec)
 
     # Check results
     assert np.allclose(v1dv, np.zeros(3), rtol=DEFAULT_TOL)
@@ -319,33 +338,14 @@ def test_lambertu_bad_orbit(lambert_inputs, caplog):
     psi_vec = [113]
 
     # Compute universal variable Lambert problem
-    v1dv, v2dv = lambert.lambertu(r1, v1, r2, dm, de, nrev, dtsec, psi_vec)
+    v1dv, v2dv = lambert.lambertu(r1, v1, r2, dtsec, dm, de, nrev, psi_vec)
 
     # Check results
-    v1dv_exp = np.array([0, 2823.473600062787, 0])
-    v2dv_exp = np.array([0, 2305.3561311833905, 0])
+    v1dv_exp = np.array([0, 2823.473599000267, 0])
+    v2dv_exp = np.array([0, 2305.3561303158463, 0])
     assert np.allclose(v1dv, v1dv_exp, rtol=DEFAULT_TOL)
     assert np.allclose(v2dv, v2dv_exp, rtol=DEFAULT_TOL)
 
     # Check logged error
     assert caplog.records[0].levelname == 'ERROR'
     assert caplog.records[0].message == 'Orbit is not possible'
-
-
-@pytest.mark.parametrize(
-    'dm, psib_exp, tof_exp',
-    [
-        (lambert.DirectionOfMotion.LONG, 113.602815095262, 16971.386078436695),
-        (lambert.DirectionOfMotion.SHORT, 57.8159275519482, 15048.626881962446)
-    ]
-)
-def test_lambertumins(lambert_inputs, dm, psib_exp, tof_exp):
-    # Unpack inputs
-    r1, r2, _, nrev, _ = lambert_inputs
-
-    # Compute universal variable Lambert problem
-    psib, tof = lambert.lambertumins(r1, r2, dm, nrev)
-
-    # Check results
-    assert np.isclose(psib, psib_exp, rtol=DEFAULT_TOL)
-    assert np.isclose(tof, tof_exp, rtol=DEFAULT_TOL)
