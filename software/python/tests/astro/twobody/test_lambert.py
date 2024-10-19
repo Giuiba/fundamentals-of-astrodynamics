@@ -16,6 +16,19 @@ def lambert_inputs():
     return r1, r2, v1, nrev, dtsec
 
 
+def test_calculate_mag_and_angle(lambert_inputs):
+    # Unpack inputs
+    r1, r2, _, _, _ = lambert_inputs
+
+    # Compute magnitude and angle
+    magr1, magr2, angle = lambert.calculate_mag_and_angle(r1, r2)
+
+    # Check results
+    assert np.isclose(magr1, 15945.34075, rtol=DEFAULT_TOL)
+    assert np.isclose(magr2, 15945.340612620314, rtol=DEFAULT_TOL)
+    assert np.isclose(angle, 0.7660444465999809, rtol=DEFAULT_TOL)
+
+
 class TestEnumCheck:
     def test_check_enum_valid(self):
         lambert.check_enum(
@@ -320,8 +333,9 @@ def test_lambertu_bad_inputs(lambert_inputs, dtsec, psi_vec, caplog):
     assert np.allclose(v2dv, np.zeros(3), rtol=DEFAULT_TOL)
 
     # Check logged error
+    err_msg = 'Lambert did not converge! Try different values of dtsec or psi'
     assert caplog.records[0].levelname == 'ERROR'
-    assert caplog.records[0].message == 'Lambert did not converge'
+    assert caplog.records[0].message == err_msg
 
 
 def test_lambertu_bad_orbit(lambert_inputs, caplog):

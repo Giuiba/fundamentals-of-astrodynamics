@@ -7,6 +7,7 @@
 # -----------------------------------------------------------------------------
 
 import logging
+import math
 import numpy as np
 from enum import Enum
 from numpy.typing import ArrayLike
@@ -39,6 +40,32 @@ class DirectionOfFlight(Enum):
     RETROGRADE = 'R'   # Retrograde motion
 
 
+###############################################################################
+# Supporting Functions
+###############################################################################
+
+def calculate_mag_and_angle(r1: ArrayLike,
+                            r2: ArrayLike) -> Tuple[float, float, float]:
+    """Calculate the magnitudes of two position vectors and the cosine of the
+    angle between them.
+
+    Args:
+        r1 (array_like): Initial position vector
+        r2 (array_like): Final position vector
+
+    Returns:
+        tuple: (magr1, magr2, cosdeltanu)
+            magr1 (float): Magnitude of the initial position vector
+            magr2 (float): Magnitude of the final position vector
+            cosdeltanu (float): Cosine of the angle between the two position
+    """
+    magr1 = float(np.linalg.norm(r1))
+    magr2 = float(np.linalg.norm(r2))
+    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
+    cosdeltanu = np.clip(cosdeltanu, -1.0, 1.0)  # Ensure within bounds [-1, 1]
+    return magr1, magr2, float(cosdeltanu)
+
+
 def check_enum(value: Enum, expected_type: Type[Enum],
                param_name: str = '') -> None:
     """Checks if a value is of the expected enum type
@@ -60,6 +87,179 @@ def check_enum(value: Enum, expected_type: Type[Enum],
             f'Must be of type {expected_type.__name__}.'
         )
 
+
+###############################################################################
+# Lambert's Problem
+###############################################################################
+
+def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
+               nrev: int) -> Tuple[np.ndarray, float, float, float]:
+    """Solves the Lambert minimum energy problem.
+
+    Args:
+        r1 (array_like): Initial ECI position vector in km
+        r2 (array_like): Final ECI position vector in km
+        dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
+        nrev (int): Number of revolutions (0, 1, 2, ...)
+
+    Returns:
+        tuple: (v, aminenergy, tminenergy, tminabs)
+            v (np.ndarray): Minimum energy velocity vector in km/s
+            aminenergy (float): Minimum energy semi-major axis in km
+            tminenergy (float): Minimum energy time of flight in seconds
+            tminabs (float): Minimum time of flight (parabolic) in seconds
+
+    Raises:
+        ValueError: If `dm` is not of type `DirectionOfMotion`
+    """
+    # Check that `dm` is of type `DirectionOfMotion`
+    check_enum(dm, DirectionOfMotion, 'direction of motion')
+
+    # Calculate r1 and r2 mag and the cosine of the angle between them
+    magr1, magr2, cosdeltanu = calculate_mag_and_angle(r1, r2)
+
+    # Compute the minimum energy semi-major axis
+    c = np.sqrt(magr1**2 + magr2**2 - 2.0 * magr1 * magr2 * cosdeltanu)
+    s = 0.5 * (magr1 + magr2 + c)
+    aminenergy = 0.5 * s
+
+    # Define alphae and betae
+    alphae = np.pi
+    betae = 2.0 * np.arcsin(np.sqrt((s - c) / s))
+
+    # Compute the minimum energy time of flight
+    # Use multiplier based on direction of motion
+    sign = 1 if dm == DirectionOfMotion.SHORT else -1
+    tminenergy = (
+        np.sqrt(aminenergy**3 / MU)
+        * (2.0 * nrev * np.pi + alphae + sign * (betae - np.sin(betae)))
+    )
+
+    # Calculate the parabolic time of flight, which serves as the minimum limit
+    tminabs = (1.0 / 3.0) * np.sqrt(2.0 / MU) * (s**1.5 - (s - c)**1.5)
+
+    # Compute intermediate values
+    rcrossr = np.cross(r1, r2)
+    magrcrossr = np.linalg.norm(rcrossr)
+    pmin = magr1 * magr2 / c * (1.0 - cosdeltanu)
+    sindeltanu = magrcrossr / (magr1 * magr2) * sign
+
+    # Compute the minimum energy velocity vector
+    v = (
+        (np.sqrt(MU * pmin) / (magr1 * magr2 * sindeltanu))
+        * (r2 - (1.0 - magr2 / pmin * (1.0 - cosdeltanu)) * r1)
+    )
+
+    return v, aminenergy, tminenergy, tminabs
+
+
+def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
+                de: DirectionOfEnergy, nrev: int, fa_tol: float = 1e-5,
+                fa_iter: int = 20) -> Tuple[float, float, float]:
+    """Solves Lambert's problem to find the minimum time of flight for
+    the multi-revolution cases.
+
+    References:
+        Vallado: 2013, p. 494, Algorithm 59
+        Prussing: JAS 2000
+
+    Args:
+        r1 (array_like): Initial ECI position vector in km
+        r2 (array_like): Final ECI position vector in km
+        dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
+        de (DirectionOfEnergy): Direction of energy (LOW or HIGH)
+        nrev (int): Number of revolutions (0, 1, 2, ...)
+        fa_tol (float, optional): Tolerance for the Prussing method min TOF
+                                  (defaults to 1e-5)
+        fa_iter (int, optional): Maximum number of iterations for the Prussing
+                                 method min TOF (defaults to 20)
+
+    Returns:
+        tuple:
+            tmin (float): Minimum time of flight in seconds
+            tminp (float): Minimum time of flight (parabolic) in seconds
+            tminenergy (float): Minimum energy time of flight in seconds
+
+    Raises:
+        ValueError: If `dm` or `de` are not of type `DirectionOfMotion` or
+                    `DirectionOfEnergy`, respectively
+    """
+    # Check that `dm` and `de` are the correct types
+    check_enum(dm, DirectionOfMotion, 'direction of motion')
+    check_enum(de, DirectionOfEnergy, 'direction of energy')
+
+    # Create numpy arrays and compute magnitudes of r1 and r2
+    magr1, magr2, cosdeltanu = calculate_mag_and_angle(r1, r2)
+
+    # Calculate chord and semiperimeter
+    chord = np.sqrt(magr1**2 + magr2**2 - 2.0 * magr1 * magr2 * cosdeltanu)
+    s = (magr1 + magr2 + chord) * 0.5
+
+    # Multipliers based on direction of motion and energy
+    sign_dm = 1 if dm == DirectionOfMotion.LONG else -1
+    sign_de = 1 if de == DirectionOfEnergy.LOW else -1
+
+    # Calculate minimum parabolic time of flight tasee if orbit is possible
+    tminp = (
+        (1.0 / 3.0)
+        * np.sqrt(2.0 / MU)
+        * ((s**1.5) + sign_dm * (s - chord)**1.5)
+    )
+
+    # Calculate minimum energy ellipse time of flight
+    amin = 0.5 * s
+    beta = 2.0 * np.arcsin(np.sqrt((s - chord) / s))
+    tminenergy = (
+        (amin**1.5)
+        * ((2.0 * nrev + 1.0) * np.pi
+           + sign_dm * (beta - np.sin(beta))) / np.sqrt(MU)
+    )
+
+    # Iteratively calculate the minimum time of flight (ellipse)
+    # using Prussing method (Prussing 1992 AAS, 2000 JAS, Stern 1964 p. 230)
+    an = 1.001 * amin
+    i = 1
+    fa = 10.0
+    xi, eta = 0.0, 0.0
+    while abs(fa) > fa_tol and i <= fa_iter:
+        a = an
+        alp = 1.0 / a
+        alpha = 2.0 * np.arcsin(np.sqrt(0.5 * s * alp))
+        beta = sign_de * 2.0 * np.arcsin(np.sqrt(0.5 * (s - chord) * alp))
+        xi = alpha - beta
+        eta = np.sin(alpha) - np.sin(beta)
+        fa = (
+            (6.0 * nrev * np.pi + 3.0 * xi - eta) * (np.sin(xi) + eta)
+            - 8.0 * (1.0 - np.cos(xi))
+        )
+        fadot = (
+            (
+                (6.0 * nrev * np.pi + 3.0 * xi - eta)
+                * (np.cos(xi) + np.cos(alpha))
+                + (3.0 - np.cos(alpha)) * (np.sin(xi) + eta)
+                - 8.0 * np.sin(xi)
+            )
+            * (-alp * np.tan(0.5 * alpha))
+            + (
+                (6.0 * nrev * np.pi + 3.0 * xi - eta)
+                * (-np.cos(xi) - np.cos(alpha))
+                + (-3.0 - np.cos(beta)) * (np.sin(xi) + eta)
+                + 8.0 * np.sin(xi)
+            )
+            * (-alp * np.tan(0.5 * beta))
+        )
+        an = a - fa / fadot
+        i += 1
+
+    # Calculate the minimum time of flight
+    tmin = (an**1.5) * (TWOPI * nrev + xi + sign_dm * eta) / np.sqrt(MU)
+
+    return tmin, tminp, tminenergy
+
+
+###############################################################################
+# Battin's Method
+###############################################################################
 
 def seebatt(v: float) -> float:
     """Recursively calculates a value used in the Lambert Battin problem using
@@ -270,182 +470,6 @@ def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
     return v1t, v2t
 
 
-def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
-               nrev: int) -> Tuple[np.ndarray, float, float, float]:
-    """Solves the Lambert minimum energy problem.
-
-    Args:
-        r1 (array_like): Initial ECI position vector in km
-        r2 (array_like): Final ECI position vector in km
-        dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
-        nrev (int): Number of revolutions (0, 1, 2, ...)
-
-    Returns:
-        tuple: (v, aminenergy, tminenergy, tminabs)
-            v (np.ndarray): Minimum energy velocity vector in km/s
-            aminenergy (float): Minimum energy semi-major axis in km
-            tminenergy (float): Minimum energy time of flight in seconds
-            tminabs (float): Minimum time of flight (parabolic) in seconds
-
-    Raises:
-        ValueError: If `dm` is not of type `DirectionOfMotion`
-    """
-    # Check that `dm` is of type `DirectionOfMotion`
-    check_enum(dm, DirectionOfMotion, 'direction of motion')
-
-    # Create numpy arrays and compute magnitudes of r1 and r2
-    r1 = np.array(r1)
-    r2 = np.array(r2)
-    magr1 = np.linalg.norm(r1)
-    magr2 = np.linalg.norm(r2)
-
-    # Compute the cosine of the angle between the two position vectors
-    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
-
-    # Compute the minimum energy semi-major axis
-    c = np.sqrt(magr1**2 + magr2**2 - 2.0 * magr1 * magr2 * cosdeltanu)
-    s = 0.5 * (magr1 + magr2 + c)
-    aminenergy = 0.5 * s
-
-    # Define alphae and betae
-    alphae = np.pi
-    betae = 2.0 * np.arcsin(np.sqrt((s - c) / s))
-
-    # Compute the minimum energy time of flight
-    # Use multiplier based on direction of motion
-    sign = 1 if dm == DirectionOfMotion.SHORT else -1
-    tminenergy = (
-        np.sqrt(aminenergy**3 / MU)
-        * (2.0 * nrev * np.pi + alphae + sign * (betae - np.sin(betae)))
-    )
-
-    # Calculate the parabolic time of flight, which serves as the minimum limit
-    tminabs = (1.0 / 3.0) * np.sqrt(2.0 / MU) * (s**1.5 - (s - c)**1.5)
-
-    # Compute intermediate values
-    rcrossr = np.cross(r1, r2)
-    magrcrossr = np.linalg.norm(rcrossr)
-    pmin = magr1 * magr2 / c * (1.0 - cosdeltanu)
-    sindeltanu = magrcrossr / (magr1 * magr2) * sign
-
-    # Compute the minimum energy velocity vector
-    v = (
-        (np.sqrt(MU * pmin) / (magr1 * magr2 * sindeltanu))
-        * (r2 - (1.0 - magr2 / pmin * (1.0 - cosdeltanu)) * r1)
-    )
-
-    return v, aminenergy, tminenergy, tminabs
-
-
-def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
-                de: DirectionOfEnergy, nrev: int, fa_tol: float = 1e-5,
-                fa_iter: int = 20) -> Tuple[float, float, float]:
-    """Solves Lambert's problem to find the minimum time of flight for
-    the multi-revolution cases.
-
-    References:
-        Vallado: 2013, p. 494, Algorithm 59
-        Prussing: JAS 2000
-
-    Args:
-        r1 (array_like): Initial ECI position vector in km
-        r2 (array_like): Final ECI position vector in km
-        dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
-        de (DirectionOfEnergy): Direction of energy (LOW or HIGH)
-        nrev (int): Number of revolutions (0, 1, 2, ...)
-        fa_tol (float, optional): Tolerance for the Prussing method min TOF
-                                  (defaults to 1e-5)
-        fa_iter (int, optional): Maximum number of iterations for the Prussing
-                                 method min TOF (defaults to 20)
-
-    Returns:
-        tuple:
-            tmin (float): Minimum time of flight in seconds
-            tminp (float): Minimum time of flight (parabolic) in seconds
-            tminenergy (float): Minimum energy time of flight in seconds
-
-    Raises:
-        ValueError: If `dm` or `de` are not of type `DirectionOfMotion` or
-                    `DirectionOfEnergy`, respectively
-    """
-    # Check that `dm` and `de` are the correct types
-    check_enum(dm, DirectionOfMotion, 'direction of motion')
-    check_enum(de, DirectionOfEnergy, 'direction of energy')
-
-    # Create numpy arrays and compute magnitudes of r1 and r2
-    r1 = np.array(r1)
-    r2 = np.array(r2)
-    magr1 = np.linalg.norm(r1)
-    magr2 = np.linalg.norm(r2)
-    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
-    cosdeltanu = np.clip(cosdeltanu, -1.0, 1.0)  # ensure it's within [-1, 1]
-
-    # Calculate chord and semiperimeter
-    chord = np.sqrt(magr1**2 + magr2**2 - 2.0 * magr1 * magr2 * cosdeltanu)
-    s = (magr1 + magr2 + chord) * 0.5
-
-    # Multipliers based on direction of motion and energy
-    sign_dm = 1 if dm == DirectionOfMotion.LONG else -1
-    sign_de = 1 if de == DirectionOfEnergy.LOW else -1
-
-    # Calculate minimum parabolic time of flight tasee if orbit is possible
-    tminp = (
-        (1.0 / 3.0)
-        * np.sqrt(2.0 / MU)
-        * ((s**1.5) + sign_dm * (s - chord)**1.5)
-    )
-
-    # Calculate minimum energy ellipse time of flight
-    amin = 0.5 * s
-    beta = 2.0 * np.arcsin(np.sqrt((s - chord) / s))
-    tminenergy = (
-        (amin**1.5)
-        * ((2.0 * nrev + 1.0) * np.pi
-           + sign_dm * (beta - np.sin(beta))) / np.sqrt(MU)
-    )
-
-    # Iteratively calculate the minimum time of flight (ellipse)
-    # using Prussing method (Prussing 1992 AAS, 2000 JAS, Stern 1964 p. 230)
-    an = 1.001 * amin
-    i = 1
-    fa = 10.0
-    xi, eta = 0.0, 0.0
-    while abs(fa) > fa_tol and i <= fa_iter:
-        a = an
-        alp = 1.0 / a
-        alpha = 2.0 * np.arcsin(np.sqrt(0.5 * s * alp))
-        beta = sign_de * 2.0 * np.arcsin(np.sqrt(0.5 * (s - chord) * alp))
-        xi = alpha - beta
-        eta = np.sin(alpha) - np.sin(beta)
-        fa = (
-            (6.0 * nrev * np.pi + 3.0 * xi - eta) * (np.sin(xi) + eta)
-            - 8.0 * (1.0 - np.cos(xi))
-        )
-        fadot = (
-            (
-                (6.0 * nrev * np.pi + 3.0 * xi - eta)
-                * (np.cos(xi) + np.cos(alpha))
-                + (3.0 - np.cos(alpha)) * (np.sin(xi) + eta)
-                - 8.0 * np.sin(xi)
-            )
-            * (-alp * np.tan(0.5 * alpha))
-            + (
-                (6.0 * nrev * np.pi + 3.0 * xi - eta)
-                * (-np.cos(xi) - np.cos(alpha))
-                + (-3.0 - np.cos(beta)) * (np.sin(xi) + eta)
-                + 8.0 * np.sin(xi)
-            )
-            * (-alp * np.tan(0.5 * beta))
-        )
-        an = a - fa / fadot
-        i += 1
-
-    # Calculate the minimum time of flight
-    tmin = (an**1.5) * (TWOPI * nrev + xi + sign_dm * eta) / np.sqrt(MU)
-
-    return tmin, tminp, tminenergy
-
-
 def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
              dm: DirectionOfMotion, df: DirectionOfFlight, nrev: int,
              dtsec: float, n_loops_he: int = 20,
@@ -496,14 +520,7 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
     y = 0.0
 
     # Create numpy arrays and compute magnitudes of r1 and r2
-    r1 = np.array(r1)
-    r2 = np.array(r2)
-    magr1 = np.linalg.norm(r1)
-    magr2 = np.linalg.norm(r2)
-
-    # Calculate cosine and sine of delta nu
-    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
-    cosdeltanu = np.clip(cosdeltanu, -1.0, 1.0)  # Ensure within bounds [-1, 1]
+    magr1, magr2, cosdeltanu = calculate_mag_and_angle(r1, r2)
 
     # Determine direction of flight
     magrcrossr = np.linalg.norm(np.cross(r1, r2))
@@ -639,6 +656,10 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
     return v1dv, v2dv
 
 
+###############################################################################
+# Universal Variable Lambert Problem
+###############################################################################
+
 def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
                  nrev: int, n_iter: int = 20) -> Tuple[float, float]:
     """Find the minimum psi values for the universal variable Lambert problem
@@ -670,13 +691,7 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     check_enum(dm, DirectionOfMotion, 'direction of motion')
 
     # Create numpy arrays and compute magnitudes of r1 and r2
-    r1 = np.array(r1)
-    r2 = np.array(r2)
-    magr1 = np.linalg.norm(r1)
-    magr2 = np.linalg.norm(r2)
-
-    # Cosine of the angle between r1 and r2
-    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
+    magr1, magr2, cosdeltanu = calculate_mag_and_angle(r1, r2)
 
     # Determine vara based on direction of motion
     sign_dm = -1 if dm == DirectionOfMotion.LONG else 1
@@ -723,26 +738,23 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
                 * ((15.0 - psiold) * c3 - 7.0 * c2 + 1.0)
             )
         else:
-            c2dot = (
-                - 1.0 / np.math.factorial(4)
-                + 2.0 * psiold / np.math.factorial(6)
-                - 3.0 * psiold ** 2 / np.math.factorial(8)
-                + 4.0 * psiold ** 3 / np.math.factorial(10)
-                - 5.0 * psiold ** 4 / np.math.factorial(12))
-            c3dot = (
-                - 1.0 / np.math.factorial(5)
-                + 2.0 * psiold / np.math.factorial(7)
-                - 3.0 * psiold ** 2 / np.math.factorial(9)
-                + 4.0 * psiold ** 3 / np.math.factorial(11)
-                - 5.0 * psiold ** 4 / np.math.factorial(13)
+            c2dot = sum(
+                (-1) ** (i + 1) * (i + 1) * psiold ** i
+                / math.factorial(2 * i + 4)
+                for i in range(5)
+            )
+            c3dot = sum(
+                (-1) ** (i + 1) * (i + 1) * psiold ** i
+                / math.factorial(2 * i + 5)
+                for i in range(5)
             )
             c2ddot, c3ddot = 0.0, 0.0
 
         # Solve for dt = 0.0
         dtdpsi = (
-            x**3 * (c3dot - 3.0 * c3 * c2dot / (2.0 * c2)) * oomu
-            + 0.125 * vara * (3.0 * c3 * sqrty / c2 + vara / x) * oomu
-        )
+            x ** 3 * (c3dot - 3.0 * c3 * c2dot / (2.0 * c2))
+            + 0.125 * vara * (3.0 * c3 * sqrty / c2 + vara / x)
+        ) * oomu
 
         # Solve for second derivative of dt with respect to psi
         q = 0.25 * vara * np.sqrt(c2) - x**2 * c2dot
@@ -802,7 +814,7 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
         de (DirectionOfEnergy): Direction of energy (HIGH or LOW)
         nrev (int): Number of revolutions (0, 1, 2, ...)
         psi_vec (np.ndarray): Array of psi corresponding to the number of
-                          revolutions for multi-rev cases (size of `nrev`)
+                              revolutions for multi-rev cases (size of `nrev`)
         tol (float): Tolerance for the Lambert problem (defaults to 1e-05)
                      (can affect cases where znew is multiples of 2pi^2)
         n_iter (int): Maximum number of iterations to perform (defaults to 20)
@@ -811,24 +823,30 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
         tuple: (v1dv, v2dv, errorl)
             v1dv (np.ndarray): Transfer velocity vector at r1 in km/s
             v2dv (np.ndarray): Transfer velocity vector at r2 in km/s
+
+    Notes:
+        - If the orbit is not possible, the method will log an error and
+          return the Battin method or a Hohmann transfer
+        - This method is sensitive to inputs, specifically `dtsec` and `psi`
+          values in `psi_vec` (for multi-rev cases) - a bad combination can
+          lead to no solutions (see Vallado 2013, Figure 7-16)
     """
+    # Check that `dm` and `de` are the correct types
+    check_enum(dm, DirectionOfMotion, 'direction of motion')
+    check_enum(de, DirectionOfEnergy, 'direction of energy')
+
     # Definitions and initialization
+    oomu = 1.0 / np.sqrt(MU)
     max_ynegktr_iters = 10  # maximum number of iterations for y < 0
     v1dv = np.zeros(3)
     v2dv = np.zeros(3)
 
     # Compute magnitudes of r1 and r2
-    magr1 = np.linalg.norm(r1)
-    magr2 = np.linalg.norm(r2)
-
-    # Compute the cosine of the true anomaly between r1 and r2
-    cosdeltanu = np.dot(r1, r2) / (magr1 * magr2)
-    cosdeltanu = np.clip(cosdeltanu, -1.0, 1.0)
+    magr1, magr2, cosdeltanu = calculate_mag_and_angle(r1, r2)
 
     # Determine vara based on direction of motion
     sign = -1.0 if dm == DirectionOfMotion.LONG else 1.0
     vara = sign * np.sqrt(magr1 * magr2 * (1.0 + cosdeltanu))
-    oomu = 1.0 / np.sqrt(MU)
 
     # Set up initial bounds for bisection
     if nrev == 0:
@@ -927,19 +945,15 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
                 c2dot = 0.5 / psiold * (1.0 - psiold * c3new - 2.0 * c2new)
                 c3dot = 0.5 / psiold * (c2new - 3.0 * c3new)
             else:
-                c2dot = (
-                    - 1.0 / np.math.factorial(4)
-                    + 2.0 * psiold / np.math.factorial(6)
-                    - 3.0 * psiold ** 2 / np.math.factorial(8)
-                    + 4.0 * psiold ** 3 / np.math.factorial(10)
-                    - 5.0 * psiold ** 4 / np.math.factorial(12)
+                c2dot = sum(
+                    (-1) ** (i + 1) * (i + 1) * psiold ** i
+                    / math.factorial(2 * i + 4)
+                    for i in range(5)
                 )
-                c3dot = (
-                    - 1.0 / np.math.factorial(5)
-                    + 2.0 * psiold / np.math.factorial(7)
-                    - 3.0 * psiold ** 2 / np.math.factorial(9)
-                    + 4.0 * psiold ** 3 / np.math.factorial(11)
-                    - 5.0 * psiold ** 4 / np.math.factorial(13)
+                c3dot = sum(
+                    (-1) ** (i + 1) * (i + 1) * psiold ** i
+                    / math.factorial(2 * i + 5)
+                    for i in range(5)
                 )
 
             # Calculate new psi
@@ -979,7 +993,9 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
 
     # Check for non-convergence
     if loops >= n_iter or ynegktr >= max_ynegktr_iters:
-        logger.error('Lambert did not converge')
+        logger.error(
+            'Lambert did not converge! Try different values of dtsec or psi'
+        )
         if ynegktr >= max_ynegktr_iters:
             logger.error('y is negative')
     else:
