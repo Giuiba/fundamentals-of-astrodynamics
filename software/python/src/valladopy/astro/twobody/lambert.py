@@ -22,6 +22,10 @@ from ...mathtime.vector import unit
 logger = logging.getLogger(__name__)
 
 
+# Constants
+OOMU = 1.0 / np.sqrt(MU)
+
+
 class DirectionOfMotion(Enum):
     """Enum class for the direction of motion."""""
     LONG = 'L'   # Long way
@@ -660,6 +664,68 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
 # Universal Variable Lambert Problem
 ###############################################################################
 
+def _calculate_c2dot_c3dot(
+        psi: float, c2: float, c3: float, tol: float = 1e-5
+) -> Tuple[float, float, float, float]:
+    """Calculate the derivatives of c2 and c3 with respect to psi.
+
+    Args:
+        psi (float): Psi value
+        c2 (float): Coefficient c2
+        c3 (float): Coefficient c3
+        tol (float, optional): Tolerance for small psi (defaults to 1e-5)
+
+    Returns:
+        tuple: (c2dot, c3dot, c2ddot, c3ddot)
+            c2dot (float): Derivative of c2 with respect to psi
+            c3dot (float): Derivative of c3 with respect to psi
+            c2ddot (float): Second derivative of c2 with respect to psi
+            c3ddot (float): Second derivative of c3 with respect to psi
+    """
+    if abs(psi) > tol:
+        c2dot = 0.5 / psi * (1.0 - psi * c3 - 2.0 * c2)
+        c3dot = 0.5 / psi * (c2 - 3.0 * c3)
+        c2ddot = (
+            1.0 / (4.0 * psi ** 2) * ((8.0 - psi) * c2 + 5.0 * psi * c3 - 4.0)
+        )
+        c3ddot = 1.0 / (4.0 * psi ** 2) * ((15.0 - psi) * c3 - 7.0 * c2 + 1.0)
+    else:
+        # Taylor series expansion for small psi
+        c2dot = sum(
+            (-1) ** (i + 1) * (i + 1) * psi ** i / math.factorial(2 * i + 4)
+            for i in range(5)
+        )
+        c3dot = sum(
+            (-1) ** (i + 1) * (i + 1) * psi ** i / math.factorial(2 * i + 5)
+            for i in range(5)
+        )
+        c2ddot, c3ddot = 0.0, 0.0
+
+    return c2dot, c3dot, c2ddot, c3ddot
+
+
+def _calculate_dtdpsi(x: float, c2: float, c3: float, c2dot: float,
+                      c3dot: float, vara: float, y: float) -> float:
+    """Calculate the derivative of time of flight with respect to psi.
+
+    Args:
+        x (float): Value of x
+        c2 (float): Coefficient c2
+        c3 (float): Coefficient c3
+        c2dot (float): Derivative of c2 with respect to psi
+        c3dot (float): Derivative of c3 with respect to psi
+        vara (float): Value of vara
+        y (float): Value of y
+
+    Returns:
+        float: Derivative of time of flight with respect to psi
+    """
+    return (
+        x ** 3 * (c3dot - 3.0 * c3 * c2dot / (2.0 * c2))
+        + 0.125 * vara * (3.0 * c3 * np.sqrt(y) / c2 + vara / x)
+    ) * OOMU
+
+
 def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
                  nrev: int, n_iter: int = 20) -> Tuple[float, float]:
     """Find the minimum psi values for the universal variable Lambert problem
@@ -683,10 +749,6 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     TODO:
         - Identify and capture any exceptions that may occur due to bad inputs
     """
-    # Define constants
-    sqrtmu = np.sqrt(MU)
-    oomu = 1.0 / sqrtmu
-
     # Check that `dm` is the correct type
     check_enum(dm, DirectionOfMotion, 'direction of motion')
 
@@ -723,40 +785,15 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         else:
             y = magr1 + magr2
         x = np.sqrt(y / c2) if abs(c2) > SMALL else 0.0
-        sqrty = np.sqrt(y)
 
         # Calculate derivatives of c2 and c3
-        if abs(psiold) > 1e-5:
-            c2dot = 0.5 / psiold * (1.0 - psiold * c3 - 2.0 * c2)
-            c3dot = 0.5 / psiold * (c2 - 3.0 * c3)
-            c2ddot = (
-                1.0 / (4.0 * psiold**2)
-                * ((8.0 - psiold) * c2 + 5.0 * psiold * c3 - 4.0)
-            )
-            c3ddot = (
-                1.0 / (4.0 * psiold**2)
-                * ((15.0 - psiold) * c3 - 7.0 * c2 + 1.0)
-            )
-        else:
-            c2dot = sum(
-                (-1) ** (i + 1) * (i + 1) * psiold ** i
-                / math.factorial(2 * i + 4)
-                for i in range(5)
-            )
-            c3dot = sum(
-                (-1) ** (i + 1) * (i + 1) * psiold ** i
-                / math.factorial(2 * i + 5)
-                for i in range(5)
-            )
-            c2ddot, c3ddot = 0.0, 0.0
+        c2dot, c3dot, c2ddot, c3ddot = _calculate_c2dot_c3dot(psiold, c2, c3)
 
         # Solve for dt = 0.0
-        dtdpsi = (
-            x ** 3 * (c3dot - 3.0 * c3 * c2dot / (2.0 * c2))
-            + 0.125 * vara * (3.0 * c3 * sqrty / c2 + vara / x)
-        ) * oomu
+        dtdpsi = _calculate_dtdpsi(x, c2, c3, c2dot, c3dot, vara, y)
 
         # Solve for second derivative of dt with respect to psi
+        sqrty = np.sqrt(y)
         q = 0.25 * vara * np.sqrt(c2) - x**2 * c2dot
         s1 = -24.0 * q * x**3 * c2 * sqrty * c3dot
         s2 = (
@@ -775,7 +812,8 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
             * sqrty / x
         )
         dtdpsi2 = (
-            -(s1 + s2 + s3 + s4) / (16.0 * sqrtmu * (c2**2 * sqrty * x**2))
+            -(s1 + s2 + s3 + s4)
+            / (16.0 * np.sqrt(MU) * (c2**2 * sqrty * x**2))
         )
 
         # Newton-Raphson update for psi
@@ -787,7 +825,7 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         loops += 1
 
     # Calculate time of flight and final psi
-    dtnew = (x**3 * c3 + vara * sqrty) * oomu
+    dtnew = (x**3 * c3 + vara * sqrty) * OOMU
     tof = dtnew
     psib = psinew
 
@@ -836,7 +874,6 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
     check_enum(de, DirectionOfEnergy, 'direction of energy')
 
     # Definitions and initialization
-    oomu = 1.0 / np.sqrt(MU)
     max_ynegktr_iters = 10  # maximum number of iterations for y < 0
     v1dv = np.zeros(3)
     v2dv = np.zeros(3)
@@ -878,7 +915,7 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
         y = magr1 + magr2
 
     xold = np.sqrt(y / c2new) if abs(c2new) > tol else 0.0
-    dtold = (xold ** 3 * c3new + vara * np.sqrt(y)) * oomu
+    dtold = (xold ** 3 * c3new + vara * np.sqrt(y)) * OOMU
 
     # Check if orbit is not possible
     if abs(vara) < 0.2:  # not exactly zero
@@ -938,30 +975,14 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
         # Check for convergence
         if ynegktr < max_ynegktr_iters:
             xold = np.sqrt(y / c2new) if abs(c2new) > tol else 0.0
-            dtnew = (xold ** 3 * c3new + vara * np.sqrt(y)) * oomu
+            dtnew = (xold ** 3 * c3new + vara * np.sqrt(y)) * OOMU
 
             # Newton-Raphson iteration for psi update
-            if abs(psiold) > tol:
-                c2dot = 0.5 / psiold * (1.0 - psiold * c3new - 2.0 * c2new)
-                c3dot = 0.5 / psiold * (c2new - 3.0 * c3new)
-            else:
-                c2dot = sum(
-                    (-1) ** (i + 1) * (i + 1) * psiold ** i
-                    / math.factorial(2 * i + 4)
-                    for i in range(5)
-                )
-                c3dot = sum(
-                    (-1) ** (i + 1) * (i + 1) * psiold ** i
-                    / math.factorial(2 * i + 5)
-                    for i in range(5)
-                )
+            c2dot, c3dot, _, _ = _calculate_c2dot_c3dot(psiold, c2new, c3new)
 
             # Calculate new psi
-            dtdpsi = (
-                (xold ** 3 * (c3dot - 3.0 * c3new * c2dot / (2.0 * c2new))
-                 + 0.125 * vara
-                 * (3.0 * c3new * np.sqrt(y) / c2new + vara / xold))
-                * oomu
+            dtdpsi = _calculate_dtdpsi(
+                xold, c2new, c3new, c2dot, c3dot, vara, y
             )
             psinew = psiold - (dtnew - dtsec) / dtdpsi
 

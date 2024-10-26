@@ -250,6 +250,32 @@ def test_lambertumins(lambert_inputs, dm, psib_exp, tof_exp):
 
 
 @pytest.mark.parametrize(
+    'psi, c2dot_exp, c3dot_exp, c2ddot_exp, c3ddot_exp',
+    [
+        (5, 0.08926, -0.00134, -0.036254, 0.009596),
+        (0, -0.041666666667, -0.008333333333, 0, 0)
+    ]
+)
+def test_calculate_c2dot_c3dot(psi, c2dot_exp, c3dot_exp, c2ddot_exp,
+                               c3ddot_exp):
+    # Check nominal case
+    c2, c3 = 0.0232, 0.0122
+    c2dot, c3dot, c2ddot, c3ddot = lambert._calculate_c2dot_c3dot(psi, c2, c3)
+    assert np.isclose(c2dot, c2dot_exp, rtol=DEFAULT_TOL)
+    assert np.isclose(c3dot, c3dot_exp, rtol=DEFAULT_TOL)
+    assert np.isclose(c2ddot, c2ddot_exp, rtol=DEFAULT_TOL)
+    assert np.isclose(c3ddot, c3ddot_exp, rtol=DEFAULT_TOL)
+
+
+def test_calculate_dtdpsi():
+    # Check nominal case
+    x, y, vara = 1346.4822, 42071.6835, -21190.1786
+    c2, c3, c2dot, c3dot = 0.0232, 0.0122, 1.756e-04, -8.67e-05
+    dtdpsi = lambert._calculate_dtdpsi(x, c2, c3, c2dot, c3dot, vara, y)
+    assert np.isclose(dtdpsi, -2162.3620971040746, rtol=DEFAULT_TOL)
+
+
+@pytest.mark.parametrize(
     'dm, de, nrev, psi_vec, v1dv_exp, v2dv_exp',
     [
         (
