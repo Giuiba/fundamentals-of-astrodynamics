@@ -68,7 +68,7 @@ function [psib, tof] = lambertumins( r1, r2, nrev, dm )
                 c2ddot = 1.0/(4.0*psiold^2) * ((8.0-psiold)*c2 + 5.0*psiold*c3 - 4.0);
                 c3ddot = 1.0/(4.0*psiold^2) * ((15.0-psiold)*c3 - 7.0*c2 + 1.0);
             else
-                c2dot = -2.0/factorial(4) + 2.0*psiold/factorial(6) - 3.0*psiold^2/factorial(8) + 4.0*psiold^3/factorial(10) - 5.0*psiold^4/factorial(12);
+                c2dot = -1.0/factorial(4) + 2.0*psiold/factorial(6) - 3.0*psiold^2/factorial(8) + 4.0*psiold^3/factorial(10) - 5.0*psiold^4/factorial(12);
                 c3dot = -1.0/factorial(5) + 2.0*psiold/factorial(7) - 3.0*psiold^2/factorial(9) + 4.0*psiold^3/factorial(11) - 5.0*psiold^4/factorial(13);
                 c2ddot = 0.0;
                 c3ddot = 0.0;
