@@ -726,6 +726,37 @@ def _calculate_dtdpsi(x: float, c2: float, c3: float, c2dot: float,
     ) * OOMU
 
 
+def lambgettbiu(r1: ArrayLike, r2: ArrayLike,
+                order: int) -> Tuple[np.ndarray, np.ndarray]:
+    """Form the minimum time and universal variable matrix for multi-rev cases.
+
+    Args:
+        r1 (array_like): Initial ECI position vector in km
+        r2 (array_like): Final ECI position vector in km
+        order (int): The number of revolutions to consider
+
+    Returns:
+        tuple: (tbi, tbil)
+            tbi (np.ndarray): Matrix of psi and time of flight for SHORT
+                              direction
+            tbil (np.ndarray): Matrix of psi and time of flight for LONG
+                               direction
+    """
+    tbi = np.zeros((order, 2))
+    for i in range(order):
+        psib, tof = lambertumins(r1, r2, DirectionOfMotion.SHORT, i + 1)
+        tbi[i, 0] = psib
+        tbi[i, 1] = tof
+
+    tbil = np.zeros((order, 2))
+    for i in range(order):
+        psib, tof = lambertumins(r1, r2, DirectionOfMotion.LONG, i + 1)
+        tbil[i, 0] = psib
+        tbil[i, 1] = tof
+
+    return tbi, tbil
+
+
 def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
                  nrev: int, n_iter: int = 20) -> Tuple[float, float]:
     """Find the minimum psi values for the universal variable Lambert problem

@@ -260,6 +260,33 @@ class TestLambertUniversal:
         dtdpsi = lambert._calculate_dtdpsi(x, c2, c3, c2dot, c3dot, vara, y)
         assert np.isclose(dtdpsi, -2162.3620971040746, rtol=DEFAULT_TOL)
 
+    def test_lambgettbiu(self, lambert_inputs):
+        # Unpack inputs
+        r1, r2, _, _, _ = lambert_inputs
+
+        # Expected values
+        tbi_exp = np.array(
+            [
+                [57.81592755194815, 15048.626881962446],
+                [195.80115373119972, 26269.95060241361],
+                [412.98000230103014, 37370.33586904963]
+            ]
+        )
+        tbil_exp = np.array(
+            [
+                [113.60281509526207, 16971.386078436695],
+                [291.6899864823016, 28199.561813444412],
+                [548.316527089472, 39301.8313984678]
+            ]
+        )
+
+        # Compute universal variable Lambert problem
+        tbi, tbil = lambert.lambgettbiu(r1, r2, order=3)
+
+        # Check results
+        assert np.allclose(tbi, tbi_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(tbil, tbil_exp, rtol=DEFAULT_TOL)
+
     @pytest.mark.parametrize(
         'dm, psib_exp, tof_exp',
         [
