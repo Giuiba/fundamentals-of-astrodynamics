@@ -29,27 +29,6 @@ def test_calculate_mag_and_angle(lambert_inputs):
     assert np.isclose(angle, 0.7660444465999809, rtol=DEFAULT_TOL)
 
 
-class TestEnumCheck:
-    def test_check_enum_valid(self):
-        lambert.check_enum(
-            lambert.DirectionOfMotion.LONG, lambert.DirectionOfMotion
-        )
-        lambert.check_enum(
-            lambert.DirectionOfEnergy.LOW, lambert.DirectionOfEnergy
-        )
-        lambert.check_enum(
-            lambert.DirectionOfFlight.DIRECT, lambert.DirectionOfFlight
-        )
-
-    def test_check_enum_invalid(self):
-        with pytest.raises(ValueError):
-            lambert.check_enum(
-                lambert.DirectionOfEnergy.LOW, lambert.DirectionOfMotion
-            )
-        with pytest.raises(ValueError):
-            lambert.check_enum('X', lambert.DirectionOfMotion)
-
-
 class TestLambert:
     @pytest.mark.parametrize(
         'dm, v_exp, aminenergy_exp, tminenergy_exp, tminabs_exp',

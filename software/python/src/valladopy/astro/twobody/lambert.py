@@ -11,7 +11,8 @@ import math
 import numpy as np
 from enum import Enum
 from numpy.typing import ArrayLike
-from typing import Tuple, Type
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, Tuple
 
 from .utils import findc2c3
 from ...constants import MU, SMALL, TWOPI
@@ -44,6 +45,23 @@ class DirectionOfFlight(Enum):
     RETROGRADE = 'R'   # Retrograde motion
 
 
+class LambertParams(BaseModel):
+    # TODO: use this model directly?
+    r1: ArrayLike
+    r2: ArrayLike
+    v1: Optional[ArrayLike] = None
+    dm: Optional[DirectionOfMotion] = None
+    de: Optional[DirectionOfEnergy] = None
+    df: Optional[DirectionOfFlight] = None
+    nrev: Optional[int] = None
+    dtsec: Optional[float] = None
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        use_enum_values=True
+    )
+
+
 ###############################################################################
 # Supporting Functions
 ###############################################################################
@@ -70,28 +88,6 @@ def calculate_mag_and_angle(r1: ArrayLike,
     return magr1, magr2, float(cosdeltanu)
 
 
-def check_enum(value: Enum, expected_type: Type[Enum],
-               param_name: str = '') -> None:
-    """Checks if a value is of the expected enum type
-
-    Args:
-        value (Enum): The value to check
-        expected_type (Type[Enum]): The expected enum class
-                                    (e.g., DirectionOfMotion)
-        param_name (str, optional): Optional parameter name for more
-                                    descriptive error messages
-
-    Raises:
-        ValueError: If `value` is not of the expected enum type
-    """
-    if not isinstance(value, expected_type):
-        param_name = param_name or expected_type.__name__
-        raise ValueError(
-            f'Invalid value for {param_name}: {value}. '
-            f'Must be of type {expected_type.__name__}.'
-        )
-
-
 ###############################################################################
 # Lambert's Problem
 ###############################################################################
@@ -112,12 +108,9 @@ def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
             aminenergy (float): Minimum energy semi-major axis in km
             tminenergy (float): Minimum energy time of flight in seconds
             tminabs (float): Minimum time of flight (parabolic) in seconds
-
-    Raises:
-        ValueError: If `dm` is not of type `DirectionOfMotion`
     """
-    # Check that `dm` is of type `DirectionOfMotion`
-    check_enum(dm, DirectionOfMotion, 'direction of motion')
+    # Validate the Pydantic model
+    _ = LambertParams(r1=r1, r2=r2, dm=dm, nrev=nrev)
 
     # Calculate r1 and r2 mag and the cosine of the angle between them
     magr1, magr2, cosdeltanu = calculate_mag_and_angle(r1, r2)
@@ -188,9 +181,8 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         ValueError: If `dm` or `de` are not of type `DirectionOfMotion` or
                     `DirectionOfEnergy`, respectively
     """
-    # Check that `dm` and `de` are the correct types
-    check_enum(dm, DirectionOfMotion, 'direction of motion')
-    check_enum(de, DirectionOfEnergy, 'direction of energy')
+    # Validate the Pydantic model
+    _ = LambertParams(r1=r1, r2=r2, dm=dm, de=de, nrev=nrev)
 
     # Create numpy arrays and compute magnitudes of r1 and r2
     magr1, magr2, cosdeltanu = calculate_mag_and_angle(r1, r2)
@@ -514,9 +506,10 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
           for the transfer, and Some values of TOF simply have no solutions.
           See plot of time vs. psi (Figure 7-16) in Vallado for more details.
     """
-    # Check that `dm` and `df` are the correct types
-    check_enum(dm, DirectionOfMotion, 'direction of motion')
-    check_enum(df, DirectionOfFlight, 'direction of flight')
+    # Validate the Pydantic model
+    _ = LambertParams(
+        r1=r1, v1=v1, r2=r2, dm=dm, df=df, nrev=nrev, dtsec=dtsec
+    )
 
     # Initialize values
     v1dv = np.array([np.NAN] * 3)
@@ -780,8 +773,8 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     TODO:
         - Identify and capture any exceptions that may occur due to bad inputs
     """
-    # Check that `dm` is the correct type
-    check_enum(dm, DirectionOfMotion, 'direction of motion')
+    # Validate the Pydantic model
+    _ = LambertParams(r1=r1, r2=r2, dm=dm, nrev=nrev)
 
     # Create numpy arrays and compute magnitudes of r1 and r2
     magr1, magr2, cosdeltanu = calculate_mag_and_angle(r1, r2)
@@ -900,9 +893,10 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
           values in `psi_vec` (for multi-rev cases) - a bad combination can
           lead to no solutions (see Vallado 2013, Figure 7-16)
     """
-    # Check that `dm` and `de` are the correct types
-    check_enum(dm, DirectionOfMotion, 'direction of motion')
-    check_enum(de, DirectionOfEnergy, 'direction of energy')
+    # Validate the Pydantic model
+    _ = LambertParams(
+        r1=r1, v1=v1, r2=r2, dtsec=dtsec, dm=dm, de=de, nrev=nrev
+    )
 
     # Definitions and initialization
     max_ynegktr_iters = 10  # maximum number of iterations for y < 0
