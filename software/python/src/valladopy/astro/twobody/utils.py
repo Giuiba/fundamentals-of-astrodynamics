@@ -7,11 +7,12 @@
 # -----------------------------------------------------------------------------
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from ...constants import RE, MU, ECCEARTHSQRD, SMALL, TWOPI
 
 
-def is_equatorial(inc):
+def is_equatorial(inc: float) -> bool:
     """Equatorial check for inclinations.
 
     Args:
@@ -23,7 +24,8 @@ def is_equatorial(inc):
     return inc < SMALL or abs(inc - np.pi) < SMALL
 
 
-def site(latgd, lon, alt):
+def site(latgd: float, lon: float,
+         alt: float) -> tuple[np.ndarray, np.ndarray]:
     """Finds the position and velocity vectors for a site.
 
     The answer is returned in the geocentric equatorial (ECEF) coordinate
@@ -60,7 +62,7 @@ def site(latgd, lon, alt):
     return rsecef, vsecef
 
 
-def findc2c3(znew):
+def findc2c3(znew: float) -> tuple[float, float]:
     """Calculates the c2 and c3 functions for the universal variable z.
 
     References:
@@ -89,7 +91,8 @@ def findc2c3(znew):
     return c2new, c3new
 
 
-def lon2nu(jdut1, lon, incl, raan, argp):
+def lon2nu(jdut1: float, lon: float, incl: float, raan: float,
+           argp: float) -> float:
     """Converts the longitude of the ascending node to the true anomaly.
 
     This function calculates the true anomaly (`nu`) of an object
@@ -131,7 +134,7 @@ def lon2nu(jdut1, lon, incl, raan, argp):
     return np.mod(arglat - argp, TWOPI)
 
 
-def gc2gd(latgc):
+def gc2gd(latgc: float) -> float:
     """Converts geocentric latitude to geodetic latitude for positions on the
     surface of the Earth.
 
@@ -147,7 +150,7 @@ def gc2gd(latgc):
     return np.arctan(np.tan(latgc) / (1.0 - ECCEARTHSQRD))
 
 
-def gd2gc(latgd):
+def gd2gc(latgd: float) -> float:
     """Converts geodetic latitude to geocentric latitude for positions on the
     surface of the Earth.
 
@@ -163,7 +166,8 @@ def gd2gc(latgd):
     return np.arctan((1.0 - ECCEARTHSQRD) * np.tan(latgd))
 
 
-def checkhitearth(altpad, r1, v1, r2, v2, nrev):
+def checkhitearth(altpad: float, r1: ArrayLike, v1: ArrayLike,
+                  r2: ArrayLike, v2: ArrayLike, nrev: int) -> tuple[bool, str]:
     """Checks if the trajectory impacts Earth during the transfer.
 
     References:
@@ -258,3 +262,111 @@ def checkhitearth(altpad, r1, v1, r2, v2, nrev):
                             hitearth, hitearthstr = True, 'Hyperbolic impact'
 
     return hitearth, hitearthstr
+
+
+###############################################################################
+# Hill's Equations
+###############################################################################
+
+def hillsr(r: ArrayLike, v: ArrayLike, alt: float,
+           dts: float) -> tuple[np.ndarray, np.ndarray]:
+    """Calculate position and velocity information for Hill's equations.
+
+    References:
+        Vallado: 2007, p. 397, Algorithm 47
+
+    Args:
+        r (array_like): Initial relative position of the interceptor in km
+        v (array_like): Initial relative velocity of the interceptor in km/s
+        alt (float): Altitude of the target satellite in km
+        dts (float): Desired time in seconds
+
+    Returns:
+        tuple: (rint, vint)
+            rint (np.array): Final relative position of the interceptor in km
+            vint (np.array): Final relative velocity of the interceptor in km/s
+
+    Notes:
+        - Distance units for r and v are flexible, but must be consistent
+    """
+    # Calculate orbital parameters
+    radius = RE + alt
+    omega = np.sqrt(MU / (radius ** 3))
+    nt = omega * dts
+    cosnt = np.cos(nt)
+    sinnt = np.sin(nt)
+
+    # Determine new positions
+    rint = np.zeros(3)
+    rint[0] = (
+        (v[0] / omega) * sinnt
+        - ((2.0 * v[1] / omega) + 3.0 * r[0]) * cosnt
+        + ((2.0 * v[1] / omega) + 4.0 * r[0])
+    )
+    rint[1] = (
+        (2.0 * v[0] / omega) * cosnt
+        + ((4.0 * v[1] / omega) + 6.0 * r[0]) * sinnt
+        + (r[1] - (2.0 * v[0] / omega))
+        - (3.0 * v[1] + 6.0 * omega * r[0]) * dts
+    )
+    rint[2] = r[2] * cosnt + (v[2] / omega) * sinnt
+
+    # Determine new velocities
+    vint = np.zeros(3)
+    vint[0] = v[0] * cosnt + (2.0 * v[1] + 3.0 * omega * r[0]) * sinnt
+    vint[1] = (
+        -2.0 * v[0] * sinnt
+        + (4.0 * v[1] + 6.0 * omega * r[0]) * cosnt
+        - (3.0 * v[1] + 6.0 * omega * r[0])
+    )
+    vint[2] = -r[2] * omega * sinnt + v[2] * cosnt
+
+    return rint, vint
+
+
+def hillsv(r: ArrayLike, alt: float, dts: float,
+           tol: float = 1e-6) -> np.ndarray:
+    """Calculate the initial velocity for Hill's equations.
+
+    References:
+        Vallado: 2007, p. 410, Eq. 6-60
+
+    Args:
+        r (array_like): Initial position vector of the interceptor in km
+        alt (float): Altitude of the target satellite in km
+        dts (float): Desired time in seconds
+        tol (float, optional): Tolerance for calculations (defaults to 1e-6)
+
+    Returns:
+        np.ndarray: Initial velocity vector of the interceptor in km/s
+
+    Notes:
+        - Distance units for r are flexible, and velocity units are consistent
+    """
+    # Calculate the orbital parameters
+    radius = RE + alt
+    omega = np.sqrt(MU / (radius ** 3))
+    nt = omega * dts
+    cosnt = np.cos(nt)
+    sinnt = np.sin(nt)
+
+    # Numerator and denominator for the initial velocity
+    numkm = (
+        (6.0 * r[0] * (nt - sinnt) - r[1]) * omega * sinnt
+        - 2.0 * omega * r[0] * (4.0 - 3.0 * cosnt) * (1.0 - cosnt)
+    )
+    denom = (
+        (4.0 * sinnt - 3.0 * nt) * sinnt + 4.0 * (1.0 - cosnt) * (1.0 - cosnt)
+    )
+
+    # Determine initial velocity
+    v = np.zeros(3)
+    v[1] = numkm / denom if abs(denom) > tol else 0.0
+    if abs(sinnt) > tol:
+        v[0] = (
+            -(omega * r[0] * (4.0 - 3.0 * cosnt) + 2.0 * (1.0 - cosnt) * v[1])
+            / sinnt
+        )
+    v[2] = -r[2] * omega / np.tan(nt)
+
+    return v
