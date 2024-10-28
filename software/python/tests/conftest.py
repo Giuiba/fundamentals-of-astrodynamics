@@ -1,7 +1,12 @@
 import numpy as np
+from numpy.typing import ArrayLike
 
 
-def custom_isclose(result, expected, rtol=1e-12, atol=1e-12):
+DEFAULT_TOL = 1e-12  # Default tolerance
+
+
+def custom_isclose(result: float, expected: float, rtol: float = DEFAULT_TOL,
+                   atol: float = DEFAULT_TOL) -> bool | np.ndarray:
     """Compare if result value is close to expected
 
     Custom function to compare result and expected values with a tolerance
@@ -23,15 +28,16 @@ def custom_isclose(result, expected, rtol=1e-12, atol=1e-12):
     return np.isclose(result, expected, rtol=rtol, atol=scaled_atol)
 
 
-def custom_allclose(a, b, rtol=1e-12, atol=1e-12):
+def custom_allclose(a: ArrayLike, b: ArrayLike, rtol: float = DEFAULT_TOL,
+                    atol: float = DEFAULT_TOL) -> bool:
     """Compare if result array is close to expected
 
     Custom function to compare arrays `a` and `b` with a tolerance that
     scales with the magnitude of the expected values in `b`
 
     Args:
-        a (array-like): Array of results
-        b (array-like): Array of expected values
+        a (array_like): Array of results
+        b (array_like): Array of expected values
         rtol (float, optional): Relative tolerance (defaults to 1e-8)
         atol (float, optional): Absolute tolerance (defaults to 1e-12)
 

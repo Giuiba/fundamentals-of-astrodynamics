@@ -7284,7 +7284,7 @@ namespace AstroLibMethods
                     psiold2 = psiold * psiold;
                     psiold3 = psiold2 * psiold;
                     psiold4 = psiold3 * psiold;
-                    c2dot = -2.0 / MathTimeLibr.factorial(4) + 2.0 * psiold / MathTimeLibr.factorial(6) - 3.0 * psiold2 / MathTimeLibr.factorial(8)
+                    c2dot = -1.0 / MathTimeLibr.factorial(4) + 2.0 * psiold / MathTimeLibr.factorial(6) - 3.0 * psiold2 / MathTimeLibr.factorial(8)
                         + 4.0 * psiold3 / MathTimeLibr.factorial(10) - 5.0 * psiold4 / MathTimeLibr.factorial(12);
                     c3dot = -1.0 / MathTimeLibr.factorial(5) + 2.0 * psiold / MathTimeLibr.factorial(7) - 3.0 * psiold2 / MathTimeLibr.factorial(9)
                         + 4.0 * psiold3 / MathTimeLibr.factorial(11) - 5.0 * psiold4 / MathTimeLibr.factorial(13);

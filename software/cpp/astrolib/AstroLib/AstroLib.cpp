@@ -6409,7 +6409,7 @@ namespace AstroLib
 				psiold2 = psiold * psiold;
 				psiold3 = psiold2 * psiold;
 				psiold4 = psiold3 * psiold;
-				c2dot = -2.0 / MathTimeLib::factorial(4) + 2.0 * psiold / MathTimeLib::factorial(6) - 3.0 * psiold2 / MathTimeLib::factorial(8) +
+				c2dot = -1.0 / MathTimeLib::factorial(4) + 2.0 * psiold / MathTimeLib::factorial(6) - 3.0 * psiold2 / MathTimeLib::factorial(8) +
 					4.0 * psiold3 / MathTimeLib::factorial(10) - 5.0 * psiold4 / MathTimeLib::factorial(12);
 				c3dot = -1.0 / MathTimeLib::factorial(5) + 2.0 * psiold / MathTimeLib::factorial(7) - 3.0 * psiold2 / MathTimeLib::factorial(9) +
 					4.0 * psiold3 / MathTimeLib::factorial(11) - 5.0 * psiold4 / MathTimeLib::factorial(13);
