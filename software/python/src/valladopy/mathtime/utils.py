@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def safe_sqrt(value: float, context: str = '') -> float:
+def safe_sqrt(value: float, context: str = "") -> float:
     """Safe square root function that checks for negative values.
 
     Args:
@@ -16,8 +16,8 @@ def safe_sqrt(value: float, context: str = '') -> float:
         ValueError: If the value is negative
     """
     if value < 0:
-        error_message = f'Cannot take square root of negative value: ({value})'
+        error_message = f"Cannot take square root of negative value: ({value})"
         if context:
-            error_message += f'\nContext: {context}'
+            error_message += f"\nContext: {context}"
         raise ValueError(error_message)
     return np.sqrt(value)
