@@ -8,11 +8,12 @@
 
 
 import numpy as np
+from typing import Tuple
 
 from ... import constants as const
 
 
-def gstime(jdut1):
+def gstime(jdut1: float) -> float:
     """Calculates the Greenwich Sidereal Time (IAU-82).
 
     References:
@@ -39,7 +40,14 @@ def gstime(jdut1):
     return np.remainder(gst * const.EARTHROT_APPROX, const.TWOPI)
 
 
-def sidereal(jdut1, deltapsi, meaneps, omega, lod, eqeterms=True):
+def sidereal(
+    jdut1: float,
+    deltapsi: float,
+    meaneps: float,
+    omega: float,
+    lod: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Calculates the transformation matrix that accounts for the effects of
     sidereal time.
 

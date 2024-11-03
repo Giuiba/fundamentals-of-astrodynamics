@@ -9,12 +9,30 @@
 
 import math
 import numpy as np
+from typing import Tuple
 
 from .iaudata import iau80in
 from ...constants import ARCSEC2RAD, DEG2ARCSEC, TWOPI
 
 
-def fundarg(ttt, opt):
+def fundarg(
+    ttt: float, opt: str
+) -> Tuple[
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+]:
     """Calculates the Delaunay variables and planetary values for several
     theories.
 
@@ -170,20 +188,20 @@ def fundarg(ttt, opt):
 
     # Convert units to radians
     twopi_deg = np.degrees(TWOPI)
-    l = np.radians(np.mod(l, twopi_deg))  # noqa
-    l1 = np.radians(np.mod(l1, twopi_deg))
-    f = np.radians(np.mod(f, twopi_deg))
-    d = np.radians(np.mod(d, twopi_deg))
-    omega = np.radians(np.mod(omega, twopi_deg))
-    lonmer = np.radians(np.mod(lonmer, twopi_deg))
-    lonven = np.radians(np.mod(lonven, twopi_deg))
-    lonear = np.radians(np.mod(lonear, twopi_deg))
-    lonmar = np.radians(np.mod(lonmar, twopi_deg))
-    lonjup = np.radians(np.mod(lonjup, twopi_deg))
-    lonsat = np.radians(np.mod(lonsat, twopi_deg))
-    lonurn = np.radians(np.mod(lonurn, twopi_deg))
-    lonnep = np.radians(np.mod(lonnep, twopi_deg))
-    precrate = np.radians(np.mod(precrate, twopi_deg))
+    l = float(np.radians(np.mod(l, twopi_deg)))  # noqa
+    l1 = float(np.radians(np.mod(l1, twopi_deg)))
+    f = float(np.radians(np.mod(f, twopi_deg)))
+    d = float(np.radians(np.mod(d, twopi_deg)))
+    omega = float(np.radians(np.mod(omega, twopi_deg)))
+    lonmer = float(np.radians(np.mod(lonmer, twopi_deg)))
+    lonven = float(np.radians(np.mod(lonven, twopi_deg)))
+    lonear = float(np.radians(np.mod(lonear, twopi_deg)))
+    lonmar = float(np.radians(np.mod(lonmar, twopi_deg)))
+    lonjup = float(np.radians(np.mod(lonjup, twopi_deg)))
+    lonsat = float(np.radians(np.mod(lonsat, twopi_deg)))
+    lonurn = float(np.radians(np.mod(lonurn, twopi_deg)))
+    lonnep = float(np.radians(np.mod(lonnep, twopi_deg)))
+    precrate = float(np.radians(np.mod(precrate, twopi_deg)))
 
     return (
         l,
@@ -203,7 +221,7 @@ def fundarg(ttt, opt):
     )
 
 
-def precess(ttt, opt):
+def precess(ttt: float, opt: str) -> Tuple[np.ndarray, float, float, float, float]:
     """Calculates the transformation matrix that accounts for the effects of
     precession. Both the 1980 and 2006 IAU theories are handled, as well as the
     FK B1950 theory.
@@ -219,7 +237,7 @@ def precess(ttt, opt):
                    '06' = IAU 2006
 
     Returns:
-        tuple: A tuple containing:
+        tuple:
             prec (np.array): Transformation matrix for MOD to J2000
             psia (float): Canonical precession angle in radians
             wa (float): Canonical precession angle in radians
@@ -351,7 +369,9 @@ def precess(ttt, opt):
     return prec, psia * ARCSEC2RAD, wa * ARCSEC2RAD, ea * ARCSEC2RAD, xa * ARCSEC2RAD
 
 
-def nutation(ttt, ddpsi, ddeps):
+def nutation(
+    ttt: float, ddpsi: float, ddeps: float
+) -> Tuple[float, float, float, float, np.ndarray]:
     """Calculates the transformation matrix that accounts for the effects of
     nutation.
 
@@ -364,7 +384,7 @@ def nutation(ttt, ddpsi, ddeps):
         ddeps (float): Delta eps correction to GCRF in radians
 
     Returns:
-        tuple: A tuple containing:
+        tuple:
             deltapsi (float): Nutation angle in radians
             trueeps (float): True obliquity of the ecliptic in radians
             meaneps (float): Mean obliquity of the ecliptic in radians
@@ -380,7 +400,7 @@ def nutation(ttt, ddpsi, ddeps):
 
     # Mean obliquity of the ecliptic
     meaneps = -46.8150 * ttt - 0.00059 * ttt2 + 0.001813 * ttt3 + 84381.448
-    meaneps = np.radians(np.remainder(meaneps / DEG2ARCSEC, np.degrees(TWOPI)))
+    meaneps = float(np.radians(np.remainder(meaneps / DEG2ARCSEC, np.degrees(TWOPI))))
 
     # Fundamental arguments using the IAU80 theory
     (
@@ -441,7 +461,7 @@ def nutation(ttt, ddpsi, ddeps):
     return deltapsi, trueeps, meaneps, omega, nut
 
 
-def polarm(xp, yp, ttt, use_iau80=True):
+def polarm(xp: float, yp: float, ttt: float, use_iau80: bool = True) -> np.ndarray:
     """Calculate the transformation matrix that accounts for polar motion.
 
     References:

@@ -7,6 +7,8 @@
 # -----------------------------------------------------------------------------
 
 import numpy as np
+from numpy.typing import ArrayLike
+from typing import Tuple
 
 from ... import constants as const
 from ...mathtime.vector import rot1, rot2, rot3, angle, unit
@@ -20,7 +22,9 @@ from .utils import site, is_equatorial
 ###############################################################################
 
 
-def adbar2rv(rmag, vmag, rtasc, decl, fpav, az):
+def adbar2rv(
+    rmag: float, vmag: float, rtasc: float, decl: float, fpav: float, az: float
+) -> Tuple[np.ndarray, np.ndarray]:
     """Conversion from spherical elements to position & velocity vectors
 
     This function transforms the orbital elements (rtasc, decl, fpav,
@@ -40,8 +44,9 @@ def adbar2rv(rmag, vmag, rtasc, decl, fpav, az):
         az (float): Satellite flight path azimuth in radians
 
     Returns:
-        r (numpy array): ECI position vector
-        v (numpy array): ECI velocity vector
+        tuple: (r, v)
+            r (np.ndarray): ECI position vector
+            v (np.ndarray): ECI velocity vector
     """
     # Form position vector
     r = np.array(
@@ -81,7 +86,9 @@ def adbar2rv(rmag, vmag, rtasc, decl, fpav, az):
     return r, v
 
 
-def rv2adbar(r, v):
+def rv2adbar(
+    r: ArrayLike, v: ArrayLike
+) -> Tuple[float, float, float, float, float, float]:
     """Conversion from position & velocity vectors to spherical elements
 
     This function transforms a position and velocity vector into the adbarv
@@ -96,12 +103,13 @@ def rv2adbar(r, v):
         v (array_like): ECI velocity vector
 
     Returns:
-        rmag (float): ECI position vector magnitude in km
-        vmag: (float): ECI velocity vector magnitude in km/sec
-        rtasc (float): Right ascension of satellite in radians
-        decl (float): Declination of satellite in radians
-        fpav (float): Satellite flight path angle from vertical in radians
-        az (float): Satellite flight path azimuth in radians
+        tuple: (rmag, vmag, rtasc, decl, fpav, az)
+            rmag (float): ECI position vector magnitude in km
+            vmag: (float): ECI velocity vector magnitude in km/sec
+            rtasc (float): Right ascension of satellite in radians
+            decl (float): Declination of satellite in radians
+            fpav (float): Satellite flight path angle from vertical in radians
+            az (float): Satellite flight path azimuth in radians
     """
     rmag = np.linalg.norm(r)
     vmag = np.linalg.norm(v)
@@ -133,7 +141,16 @@ def rv2adbar(r, v):
 ###############################################################################
 
 
-def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
+def coe2rv(
+    p: float,
+    ecc: float,
+    incl: float,
+    raan: float,
+    nu: float = 0,
+    arglat: float = 0,
+    truelon: float = 0,
+    lonper: float = 0,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Convert from classical elements to position & velocity vectors.
 
     This function finds the position and velocity vectors in geocentric
@@ -148,7 +165,7 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
         ecc (float): Eccentricity of the orbit
         incl (float): Inclination of the orbit in radians
         raan (float): Right ascension of the ascending node (RAAN) in radians
-        nu (float): True anomaly in radians
+        nu (float, optional): True anomaly in radians
         arglat (float, optional): Argument of latitude in radians
         truelon (float, optional): True longitude in radians
         lonper (float, optional): Longitude of periapsis in radians
@@ -191,7 +208,22 @@ def coe2rv(p, ecc, incl, raan, nu=0, arglat=0, truelon=0, lonper=0):
     return r, v
 
 
-def rv2coe(r, v):
+def rv2coe(
+    r: ArrayLike, v: ArrayLike
+) -> Tuple[
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    OrbitType | None,
+]:
     """Converts position and velocity vectors into classical orbital elements.
 
     Args:
@@ -317,7 +349,9 @@ def rv2coe(r, v):
 ###############################################################################
 
 
-def eq2rv(a, af, ag, chi, psi, meanlon, fr):
+def eq2rv(
+    a: float, af: float, ag: float, chi: float, psi: float, meanlon: float, fr: int
+) -> Tuple[np.ndarray, np.ndarray]:
     """Convert from equinoctial elements to position & velocity vectors.
 
     This function finds the position and velocity vectors in geocentric
@@ -388,7 +422,9 @@ def eq2rv(a, af, ag, chi, psi, meanlon, fr):
     return coe2rv(p, ecc, incl, omega, nu, arglat, truelon, lonper)
 
 
-def rv2eq(r, v):
+def rv2eq(
+    r: ArrayLike, v: ArrayLike
+) -> Tuple[float, float, float, float, float, float, float, float, int]:
     """Convert from position & velocity vectors to equinoctial elements.
 
     References:
@@ -465,7 +501,16 @@ def rv2eq(r, v):
 ###############################################################################
 
 
-def tradec2rv(trr, trtasc, tdecl, dtrr, tdrtasc, tddecl, rseci, vseci):
+def tradec2rv(
+    trr: float,
+    trtasc: float,
+    tdecl: float,
+    dtrr: float,
+    tdrtasc: float,
+    tddecl: float,
+    rseci: ArrayLike,
+    vseci: ArrayLike,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Converts topocentric coordinates (range, right ascension, declination,
     and their rates) into geocentric equatorial (ECI) position and velocity
     vectors.
@@ -481,12 +526,12 @@ def tradec2rv(trr, trtasc, tdecl, dtrr, tdrtasc, tddecl, rseci, vseci):
         tdrtasc (float): Topocentric right ascension rate in rad/s
         tddecl (float): Topocentric declination rate in rad/s
         rseci (array_like): ECI site position vector in km
-        vseci (np.array): ECI site velocity vector in km/s
+        vseci (array_like): ECI site velocity vector in km/s
 
     Returns:
         tuple: (reci, veci)
-            reci (np.array): ECI position vector in km
-            veci (np.array): ECI velocity vector in km/s
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
     """
     # Calculate topocentric slant range vectors
     rhov = np.array(
@@ -517,7 +562,9 @@ def tradec2rv(trr, trtasc, tdecl, dtrr, tdrtasc, tddecl, rseci, vseci):
     return reci, veci
 
 
-def rv2tradec(reci, veci, rseci, vseci):
+def rv2tradec(
+    reci: ArrayLike, veci: ArrayLike, rseci: ArrayLike, vseci: ArrayLike
+) -> Tuple[float, float, float, float, float, float]:
     """Converts geocentric equatorial (ECI) position and velocity vectors into
     range, topocentric right ascension, declination, and rates.
 
@@ -582,21 +629,21 @@ def rv2tradec(reci, veci, rseci, vseci):
 
 
 def flt2rv(
-    rmag,
-    vmag,
-    latgc,
-    lon,
-    fpa,
-    az,
-    ttt,
-    jdut1,
-    lod,
-    xp,
-    yp,
-    ddpsi,
-    ddeps,
-    eqeterms=True,
-):
+    rmag: float,
+    vmag: float,
+    latgc: float,
+    lon: float,
+    fpa: float,
+    az: float,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Converts flight elements into ECI position and velocity vectors.
 
     References:
@@ -680,7 +727,18 @@ def flt2rv(
     return reci, veci
 
 
-def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=True):
+def rv2flt(
+    reci: ArrayLike,
+    veci: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[float, float, float, float, float, float, float, float]:
     """Transforms a position and velocity vector to flight elements.
 
     References:
@@ -754,7 +812,9 @@ def rv2flt(reci, veci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=True):
 ###############################################################################
 
 
-def ell2rv(rr, ecllon, ecllat, drr, decllon, decllat):
+def ell2rv(
+    rr: float, ecllon: float, ecllat: float, drr: float, decllon: float, decllat: float
+) -> Tuple[np.ndarray, np.ndarray]:
     """Transforms ecliptic latitude and longitude to position and velocity
     vectors.
 
@@ -806,7 +866,9 @@ def ell2rv(rr, ecllon, ecllat, drr, decllon, decllat):
     return reci, veci
 
 
-def rv2ell(reci, veci):
+def rv2ell(
+    reci: ArrayLike, veci: ArrayLike
+) -> Tuple[float, float, float, float, float, float]:
     """Transforms position and velocity vectors to ecliptic latitude and
     longitude.
 
@@ -858,7 +920,9 @@ def rv2ell(reci, veci):
 ###############################################################################
 
 
-def radec2rv(rr, rtasc, decl, drr, drtasc, ddecl):
+def radec2rv(
+    rr: float, rtasc: float, decl: float, drr: float, drtasc: float, ddecl: float
+) -> Tuple[np.ndarray, np.ndarray]:
     """Transforms celestial (right ascension and declination) elements to
     position and velocity vectors.
 
@@ -906,7 +970,9 @@ def radec2rv(rr, rtasc, decl, drr, drtasc, ddecl):
     return r, v
 
 
-def rv2radec(r, v):
+def rv2radec(
+    r: ArrayLike, v: ArrayLike
+) -> Tuple[float, float, float, float, float, float]:
     """Transforms position and velocity vectors to celestial (right
     ascension and declination) elements.
 
@@ -955,7 +1021,9 @@ def rv2radec(r, v):
 ###############################################################################
 
 
-def raz2rvs(rho, az, el, drho, daz, del_el):
+def raz2rvs(
+    rho: float, az: float, el: float, drho: float, daz: float, del_el: float
+) -> Tuple[np.ndarray, np.ndarray]:
     """Converts range, azimuth, and elevation values with slant range and
     velocity vectors  for a satellite from a radar site in the topocentric
     horizon (SEZ) system.
@@ -972,7 +1040,7 @@ def raz2rvs(rho, az, el, drho, daz, del_el):
         del_el (float): Elevation rate in rad/s
 
     Returns:
-        tuple:
+        tuple: (rhosez, drhosez)
             rhosez (np.ndarray): SEZ range vector in km
             drhosez (np.ndarray): SEZ velocity vector in km/s
     """
@@ -995,7 +1063,9 @@ def raz2rvs(rho, az, el, drho, daz, del_el):
     return rhosez, drhosez
 
 
-def rvs2raz(rhosez, drhosez):
+def rvs2raz(
+    rhosez: ArrayLike, drhosez: ArrayLike
+) -> Tuple[float, float, float, float, float, float]:
     """Transforms SEZ range and velocity vectors to range, azimuth, and
     elevation values and their rates.
 
@@ -1052,24 +1122,24 @@ def rvs2raz(rhosez, drhosez):
 
 
 def razel2rv(
-    rho,
-    az,
-    el,
-    drho,
-    daz,
-    del_el,
-    latgd,
-    lon,
-    alt,
-    ttt,
-    jdut1,
-    lod,
-    xp,
-    yp,
-    ddpsi,
-    ddeps,
-    eqeterms,
-):
+    rho: float,
+    az: float,
+    el: float,
+    drho: float,
+    daz: float,
+    del_el: float,
+    latgd: float,
+    lon: float,
+    alt: float,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Transforms range, azimuth, elevation, and their rates to the geocentric
     equatorial (ECI) position and velocity vectors.
 
@@ -1122,8 +1192,20 @@ def razel2rv(
 
 
 def rv2razel(
-    reci, veci, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=True
-):
+    reci: ArrayLike,
+    veci: ArrayLike,
+    latgd: float,
+    lon: float,
+    alt: float,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[float, float, float, float, float, float]:
     """Transforms ECI position and velocity vectors to range, azimuth,
     elevation, and their rates.
 
@@ -1136,8 +1218,8 @@ def rv2razel(
         Vallado: 2007, p. 268-269, Algorithm 27
 
     Args:
-        reci (array): ECI position vector in km
-        veci (array): ECI velocity vector in km/s
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
         latgd (float): Geodetic latitude of site in radians
         lon (float): Longitude of site in radians
         alt (float): Altitude of site in km
@@ -1210,7 +1292,9 @@ def rv2razel(
 ###############################################################################
 
 
-def rv2rsw(reci, veci):
+def rv2rsw(
+    reci: ArrayLike, veci: ArrayLike
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Transforms position and velocity vectors into radial, tangential
     (in-track), and normal (cross-track) coordinates, i.e. RSW frame.
 
@@ -1249,7 +1333,9 @@ def rv2rsw(reci, veci):
     return rrsw, vrsw, transmat
 
 
-def rv2ntw(reci, veci):
+def rv2ntw(
+    reci: ArrayLike, veci: ArrayLike
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Transforms position and velocity vectors into normal (in-radial),
     tangential (velocity), and normal (cross-track) coordinates.
 
@@ -1293,7 +1379,7 @@ def rv2ntw(reci, veci):
 ###############################################################################
 
 
-def ecef2ll(r):
+def ecef2ll(r: ArrayLike) -> Tuple[float, float, float, float]:
     """Converts an ECEF position vector into geodetic and geocentric latitude,
     longitude, and height above the ellipsoid using the Astronomical Almanac
     method.
@@ -1352,7 +1438,7 @@ def ecef2ll(r):
     return latgc, latgd, lon, hellp
 
 
-def ecef2llb(r):
+def ecef2llb(r: ArrayLike) -> Tuple[float, float, float, float]:
     """Converts an ECEF position vector into geodetic and geocentric latitude,
     longitude, and height above the ellipsoid using the Borkowski method.
 

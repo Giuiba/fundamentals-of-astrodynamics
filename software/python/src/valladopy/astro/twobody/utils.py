@@ -7,11 +7,13 @@
 # -----------------------------------------------------------------------------
 
 import numpy as np
+from numpy.typing import ArrayLike
+from typing import Tuple
 
 from ...constants import RE, MU, ECCEARTHSQRD, SMALL, TWOPI
 
 
-def is_equatorial(inc):
+def is_equatorial(inc: float) -> bool:
     """Equatorial check for inclinations.
 
     Args:
@@ -23,7 +25,7 @@ def is_equatorial(inc):
     return inc < SMALL or abs(inc - np.pi) < SMALL
 
 
-def site(latgd, lon, alt):
+def site(latgd: float, lon: float, alt: float) -> Tuple[np.ndarray, np.ndarray]:
     """Finds the position and velocity vectors for a site.
 
     The answer is returned in the geocentric equatorial (ECEF) coordinate
@@ -39,8 +41,9 @@ def site(latgd, lon, alt):
         alt (float): Altitude in km
 
     Returns:
-        rsecef (np.array): ECEF site position vector in km
-        vsecef (np.array): ECEF site velocity vector in km/s
+        tuple: (rsecef, vsecef)
+            rsecef (np.ndarray): ECEF site position vector in km
+            vsecef (np.ndarray): ECEF site velocity vector in km/s
     """
     # Compute site position vector
     sinlat = np.sin(latgd)
@@ -56,7 +59,7 @@ def site(latgd, lon, alt):
     return rsecef, vsecef
 
 
-def findc2c3(znew):
+def findc2c3(znew: float) -> Tuple[float, float]:
     """Calculates the c2 and c3 functions for the universal variable z.
 
     References:
@@ -85,7 +88,7 @@ def findc2c3(znew):
     return c2new, c3new
 
 
-def lon2nu(jdut1, lon, incl, raan, argp):
+def lon2nu(jdut1: float, lon: float, incl: float, raan: float, argp: float) -> float:
     """Converts the longitude of the ascending node to the true anomaly.
 
     This function calculates the true anomaly (`nu`) of an object
@@ -127,7 +130,7 @@ def lon2nu(jdut1, lon, incl, raan, argp):
     return np.mod(arglat - argp, TWOPI)
 
 
-def gc2gd(latgc):
+def gc2gd(latgc: float) -> float:
     """Converts geocentric latitude to geodetic latitude for positions on the
     surface of the Earth.
 
@@ -143,7 +146,7 @@ def gc2gd(latgc):
     return np.arctan(np.tan(latgc) / (1.0 - ECCEARTHSQRD))
 
 
-def gd2gc(latgd):
+def gd2gc(latgd: float) -> float:
     """Converts geodetic latitude to geocentric latitude for positions on the
     surface of the Earth.
 
@@ -159,7 +162,9 @@ def gd2gc(latgd):
     return np.arctan((1.0 - ECCEARTHSQRD) * np.tan(latgd))
 
 
-def checkhitearth(altpad, r1, v1, r2, v2, nrev):
+def checkhitearth(
+    altpad: float, r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, v2: ArrayLike, nrev: int
+) -> Tuple[bool, str]:
     """Checks if the trajectory impacts Earth during the transfer.
 
     References:

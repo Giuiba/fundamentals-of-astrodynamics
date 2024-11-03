@@ -10,6 +10,8 @@ import logging
 from enum import Enum
 
 import numpy as np
+from numpy.typing import ArrayLike
+from typing import Tuple
 
 from ...constants import SMALL, MU, TWOPI
 from .utils import findc2c3
@@ -25,7 +27,7 @@ class OrbitType(Enum):
     EPH_INCLINED = 4  # elliptical, parabolic, hyperbolic inclined
 
 
-def determine_orbit_type(ecc, incl, tol=SMALL):
+def determine_orbit_type(ecc: float, incl: float, tol: float = SMALL) -> OrbitType:
     """Determine the type of orbit based on eccentricity and inclination
 
     Args:
@@ -51,7 +53,7 @@ def determine_orbit_type(ecc, incl, tol=SMALL):
         return OrbitType.EPH_INCLINED
 
 
-def newtone(ecc, e0):
+def newtone(ecc: float, e0: float) -> tuple[float, float]:
     """Solves for the mean anomaly and true anomaly given the eccentric,
     parabolic, or hyperbolic anomalies.
 
@@ -92,7 +94,9 @@ def newtone(ecc, e0):
     return m, nu
 
 
-def newtonnu(ecc, nu, parabolic_lim_deg=168):
+def newtonnu(
+    ecc: float, nu: float, parabolic_lim_deg: float = 168
+) -> Tuple[float, float]:
     """Solves for the eccentric anomaly and mean anomaly given the true
     anomaly.
 
@@ -111,8 +115,9 @@ def newtonnu(ecc, nu, parabolic_lim_deg=168):
         parabolic_lim_deg (float, optional): The paraboloic limit in degrees
 
     Returns:
-        e0 (float): Eccentric anomaly in radians
-        m (float): Mean anomaly in radians
+        tuple: (e0, m)
+            e0 (float): Eccentric anomaly in radians
+            m (float): Mean anomaly in radians
     """
     e0, m = np.inf, np.inf
 
@@ -148,7 +153,7 @@ def newtonnu(ecc, nu, parabolic_lim_deg=168):
     return e0, m
 
 
-def newtonm(ecc, m, n_iter=50):
+def newtonm(ecc: float, m: float, n_iter: int = 50) -> Tuple[float, float]:
     """Solves for the eccentric anomaly and true anomaly given the mean anomaly
     using Newton-Raphson iteration.
 
@@ -224,7 +229,9 @@ def newtonm(ecc, m, n_iter=50):
     return e0, nu
 
 
-def kepler(ro, vo, dtsec, n_iters=50):
+def kepler(
+    ro: ArrayLike, vo: ArrayLike, dtsec: float, n_iters: int = 50
+) -> Tuple[np.ndarray, np.ndarray]:
     """Solves Kepler's problem for orbit determination and returns a future
     geocentric equatorial (ECI) position and velocity vector using universal
     variables.
@@ -238,8 +245,8 @@ def kepler(ro, vo, dtsec, n_iters=50):
 
     Returns:
         tuple: (r, v)
-            r (np.array): Propagated ECI position vector in km
-            v (np.array): Propagated ECI velocity vector in km/s
+            r (np.ndarray): Propagated ECI position vector in km
+            v (np.ndarray): Propagated ECI velocity vector in km/s
     """
     # Convert to numpy arrays
     ro, vo = np.array(ro), np.array(vo)
