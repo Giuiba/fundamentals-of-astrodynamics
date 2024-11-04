@@ -5,8 +5,9 @@ from numpy.typing import ArrayLike
 DEFAULT_TOL = 1e-12  # Default tolerance
 
 
-def custom_isclose(result: float, expected: float, rtol: float = DEFAULT_TOL,
-                   atol: float = DEFAULT_TOL) -> bool | np.ndarray:
+def custom_isclose(
+    result: float, expected: float, rtol: float = DEFAULT_TOL, atol: float = DEFAULT_TOL
+) -> bool | np.ndarray:
     """Compare if result value is close to expected
 
     Custom function to compare result and expected values with a tolerance
@@ -21,15 +22,14 @@ def custom_isclose(result: float, expected: float, rtol: float = DEFAULT_TOL,
     Returns:
         bool: True if the two values are close within the scaled tolerances
     """
-    scale_factor = (
-        10 ** np.floor(np.log10(abs(expected))) if expected != 0 else 1
-    )
+    scale_factor = 10 ** np.floor(np.log10(abs(expected))) if expected != 0 else 1
     scaled_atol = atol * scale_factor
     return np.isclose(result, expected, rtol=rtol, atol=scaled_atol)
 
 
-def custom_allclose(a: ArrayLike, b: ArrayLike, rtol: float = DEFAULT_TOL,
-                    atol: float = DEFAULT_TOL) -> bool:
+def custom_allclose(
+    a: ArrayLike, b: ArrayLike, rtol: float = DEFAULT_TOL, atol: float = DEFAULT_TOL
+) -> bool:
     """Compare if result array is close to expected
 
     Custom function to compare arrays `a` and `b` with a tolerance that
@@ -46,9 +46,7 @@ def custom_allclose(a: ArrayLike, b: ArrayLike, rtol: float = DEFAULT_TOL,
     """
     a = np.asarray(a)
     b = np.asarray(b)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        scale_factors = np.where(
-            b != 0, 10 ** np.floor(np.log10(np.abs(b))), 1
-        )
+    with np.errstate(divide="ignore", invalid="ignore"):
+        scale_factors = np.where(b != 0, 10 ** np.floor(np.log10(np.abs(b))), 1)
     scaled_atol = atol * scale_factors
     return np.all(np.isclose(a, b, rtol=rtol, atol=scaled_atol))

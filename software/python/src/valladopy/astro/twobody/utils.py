@@ -7,11 +7,13 @@
 # -----------------------------------------------------------------------------
 
 import numpy as np
+from numpy.typing import ArrayLike
+from typing import Tuple
 
 from ...constants import RE, MU, ECCEARTHSQRD, SMALL, TWOPI
 
 
-def is_equatorial(inc):
+def is_equatorial(inc: float) -> bool:
     """Equatorial check for inclinations.
 
     Args:
@@ -23,7 +25,7 @@ def is_equatorial(inc):
     return inc < SMALL or abs(inc - np.pi) < SMALL
 
 
-def site(latgd, lon, alt):
+def site(latgd: float, lon: float, alt: float) -> Tuple[np.ndarray, np.ndarray]:
     """Finds the position and velocity vectors for a site.
 
     The answer is returned in the geocentric equatorial (ECEF) coordinate
@@ -39,20 +41,17 @@ def site(latgd, lon, alt):
         alt (float): Altitude in km
 
     Returns:
-        rsecef (np.array): ECEF site position vector in km
-        vsecef (np.array): ECEF site velocity vector in km/s
+        tuple: (rsecef, vsecef)
+            rsecef (np.ndarray): ECEF site position vector in km
+            vsecef (np.ndarray): ECEF site velocity vector in km/s
     """
     # Compute site position vector
     sinlat = np.sin(latgd)
-    cearth = RE / np.sqrt(1.0 - ECCEARTHSQRD * sinlat ** 2)
+    cearth = RE / np.sqrt(1.0 - ECCEARTHSQRD * sinlat**2)
     rdel = (cearth + alt) * np.cos(latgd)
     rk = ((1.0 - ECCEARTHSQRD) * cearth + alt) * sinlat
 
-    rsecef = np.array([
-        rdel * np.cos(lon),
-        rdel * np.sin(lon),
-        rk
-    ])
+    rsecef = np.array([rdel * np.cos(lon), rdel * np.sin(lon), rk])
 
     # Site velocity vector in ECEF frame is zero
     vsecef = np.array([0.0, 0.0, 0.0])
@@ -60,7 +59,7 @@ def site(latgd, lon, alt):
     return rsecef, vsecef
 
 
-def findc2c3(znew):
+def findc2c3(znew: float) -> Tuple[float, float]:
     """Calculates the c2 and c3 functions for the universal variable z.
 
     References:
@@ -77,11 +76,11 @@ def findc2c3(znew):
     if znew > SMALL:
         sqrtz = np.sqrt(znew)
         c2new = (1.0 - np.cos(sqrtz)) / znew
-        c3new = (sqrtz - np.sin(sqrtz)) / (sqrtz ** 3)
+        c3new = (sqrtz - np.sin(sqrtz)) / (sqrtz**3)
     elif znew < -SMALL:
         sqrtz = np.sqrt(-znew)
         c2new = (1.0 - np.cosh(sqrtz)) / znew
-        c3new = (np.sinh(sqrtz) - sqrtz) / (sqrtz ** 3)
+        c3new = (np.sinh(sqrtz) - sqrtz) / (sqrtz**3)
     else:
         c2new = 0.5
         c3new = 1.0 / 6.0
@@ -89,7 +88,7 @@ def findc2c3(znew):
     return c2new, c3new
 
 
-def lon2nu(jdut1, lon, incl, raan, argp):
+def lon2nu(jdut1: float, lon: float, incl: float, raan: float, argp: float) -> float:
     """Converts the longitude of the ascending node to the true anomaly.
 
     This function calculates the true anomaly (`nu`) of an object
@@ -131,7 +130,7 @@ def lon2nu(jdut1, lon, incl, raan, argp):
     return np.mod(arglat - argp, TWOPI)
 
 
-def gc2gd(latgc):
+def gc2gd(latgc: float) -> float:
     """Converts geocentric latitude to geodetic latitude for positions on the
     surface of the Earth.
 
@@ -147,7 +146,7 @@ def gc2gd(latgc):
     return np.arctan(np.tan(latgc) / (1.0 - ECCEARTHSQRD))
 
 
-def gd2gc(latgd):
+def gd2gc(latgd: float) -> float:
     """Converts geodetic latitude to geocentric latitude for positions on the
     surface of the Earth.
 
@@ -163,7 +162,9 @@ def gd2gc(latgd):
     return np.arctan((1.0 - ECCEARTHSQRD) * np.tan(latgd))
 
 
-def checkhitearth(altpad, r1, v1, r2, v2, nrev):
+def checkhitearth(
+    altpad: float, r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, v2: ArrayLike, nrev: int
+) -> Tuple[bool, str]:
     """Checks if the trajectory impacts Earth during the transfer.
 
     References:
@@ -183,7 +184,7 @@ def checkhitearth(altpad, r1, v1, r2, v2, nrev):
             hitearthstr (str): Explanation of the impact status
     """
     # Initialize variables
-    hitearth, hitearthstr = False, 'No impact'
+    hitearth, hitearthstr = False, "No impact"
 
     # Compute magnitudes of position vectors
     magr1 = np.linalg.norm(r1)
@@ -194,7 +195,7 @@ def checkhitearth(altpad, r1, v1, r2, v2, nrev):
 
     # Check if the initial or final position vector is below the padded radius
     if magr1 < rpad or magr2 < rpad:
-        hitearth, hitearthstr = True, 'Impact at initial/final radii'
+        hitearth, hitearthstr = True, "Impact at initial/final radii"
     else:
         rdotv1 = np.dot(r1, v1)
         rdotv2 = np.dot(r2, v2)
@@ -221,13 +222,15 @@ def checkhitearth(altpad, r1, v1, r2, v2, nrev):
             # Check if the radius of perigee is below the padded radius
             rp = a * (1.0 - ecc)
             if rp < rpad:
-                hitearth, hitearthstr = True, 'Impact during nrev'
+                hitearth, hitearthstr = True, "Impact during nrev"
 
         # Check for special cases when nrev = 0
         else:
-            if ((rdotv1 < 0.0 < rdotv2) or
-                (rdotv1 > 0.0 < rdotv2 and ecosea1 < ecosea2) or
-                    (rdotv1 < 0.0 > rdotv2 and ecosea1 > ecosea2)):
+            if (
+                (rdotv1 < 0.0 < rdotv2)
+                or (rdotv1 > 0.0 < rdotv2 and ecosea1 < ecosea2)
+                or (rdotv1 < 0.0 > rdotv2 and ecosea1 > ecosea2)
+            ):
 
                 # Check for parabolic impact
                 if abs(ainv) <= SMALL:
@@ -235,7 +238,7 @@ def checkhitearth(altpad, r1, v1, r2, v2, nrev):
                     magh = np.linalg.norm(hbar)
                     rp = magh**2 * 0.5 / MU
                     if rp < rpad:
-                        hitearth, hitearthstr = True, 'Parabolic impact'
+                        hitearth, hitearthstr = True, "Parabolic impact"
 
                 else:
                     a = 1.0 / ainv
@@ -249,12 +252,12 @@ def checkhitearth(altpad, r1, v1, r2, v2, nrev):
                     if ecc < 1.0:
                         rp = a * (1.0 - ecc)
                         if rp < rpad:
-                            hitearth, hitearthstr = True, 'Elliptical impact'
+                            hitearth, hitearthstr = True, "Elliptical impact"
 
                     # Check for hyperbolic impact
                     elif rdotv1 < 0.0 < rdotv2:
                         rp = a * (1.0 - ecc)
                         if rp < rpad:
-                            hitearth, hitearthstr = True, 'Hyperbolic impact'
+                            hitearth, hitearthstr = True, "Hyperbolic impact"
 
     return hitearth, hitearthstr
