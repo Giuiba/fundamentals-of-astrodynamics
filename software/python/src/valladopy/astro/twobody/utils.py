@@ -267,8 +267,10 @@ def checkhitearth(
 # Hill's Equations
 ###############################################################################
 
-def hillsr(r: ArrayLike, v: ArrayLike, alt: float,
-           dts: float) -> tuple[np.ndarray, np.ndarray]:
+
+def hillsr(
+    r: ArrayLike, v: ArrayLike, alt: float, dts: float
+) -> tuple[np.ndarray, np.ndarray]:
     """Calculate position and velocity information for Hill's (Clohessy-Wiltshire)
     equations.
 
@@ -292,7 +294,7 @@ def hillsr(r: ArrayLike, v: ArrayLike, alt: float,
     """
     # Calculate orbital parameters
     radius = RE + alt
-    omega = np.sqrt(MU / (radius ** 3))
+    omega = np.sqrt(MU / (radius**3))
     nt = omega * dts
     cosnt = np.cos(nt)
     sinnt = np.sin(nt)
@@ -346,27 +348,23 @@ def hillsv(r: ArrayLike, alt: float, dts: float, tol: float = 1e-6) -> np.ndarra
     """
     # Calculate the orbital parameters
     radius = RE + alt
-    omega = np.sqrt(MU / (radius ** 3))
+    omega = np.sqrt(MU / (radius**3))
     nt = omega * dts
     cosnt = np.cos(nt)
     sinnt = np.sin(nt)
 
     # Numerator and denominator for the initial velocity
-    numkm = (
-        (6.0 * r[0] * (nt - sinnt) - r[1]) * omega * sinnt
-        - 2.0 * omega * r[0] * (4.0 - 3.0 * cosnt) * (1.0 - cosnt)
-    )
-    denom = (
-        (4.0 * sinnt - 3.0 * nt) * sinnt + 4.0 * (1.0 - cosnt) * (1.0 - cosnt)
-    )
+    numkm = (6.0 * r[0] * (nt - sinnt) - r[1]) * omega * sinnt - 2.0 * omega * r[0] * (
+        4.0 - 3.0 * cosnt
+    ) * (1.0 - cosnt)
+    denom = (4.0 * sinnt - 3.0 * nt) * sinnt + 4.0 * (1.0 - cosnt) * (1.0 - cosnt)
 
     # Determine initial velocity
     v = np.zeros(3)
     v[1] = numkm / denom if abs(denom) > tol else 0.0
     if abs(sinnt) > tol:
         v[0] = (
-            -(omega * r[0] * (4.0 - 3.0 * cosnt) + 2.0 * (1.0 - cosnt) * v[1])
-            / sinnt
+            -(omega * r[0] * (4.0 - 3.0 * cosnt) + 2.0 * (1.0 - cosnt) * v[1]) / sinnt
         )
     v[2] = -r[2] * omega / np.tan(nt)
 
