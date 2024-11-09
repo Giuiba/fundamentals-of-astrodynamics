@@ -285,8 +285,8 @@ def hillsr(
 
     Returns:
         tuple: (rint, vint)
-            rint (np.array): Final relative position of the interceptor in km
-            vint (np.array): Final relative velocity of the interceptor in km/s
+            rint (np.ndarray): Final relative position of the interceptor in km
+            vint (np.ndarray): Final relative velocity of the interceptor in km/s
 
     Notes:
         - Position and velocity vectors are in the RSW frame
