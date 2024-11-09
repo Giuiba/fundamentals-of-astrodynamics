@@ -28,7 +28,7 @@ jobs:
     - name: Run Black formatter
       run: |
         cd software/python
-        black --skip-magic-trailing-comma .
+        black --check --skip-magic-trailing-comma .
     - name: Run tests
       run: |
         cd software/python
