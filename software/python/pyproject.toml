@@ -1,0 +1,2 @@
+[tool.black]
+target-version = ['py312']  # Set the target Python version

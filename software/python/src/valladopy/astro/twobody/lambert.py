@@ -28,21 +28,24 @@ OOMU = 1.0 / np.sqrt(MU)
 
 
 class DirectionOfMotion(Enum):
-    """Enum class for the direction of motion."""""
-    LONG = 'L'   # Long way
-    SHORT = 'S'  # Short way
+    """Enum class for the direction of motion."""
+
+    LONG = "L"  # Long way
+    SHORT = "S"  # Short way
 
 
 class DirectionOfEnergy(Enum):
-    """Enum class for the direction of energy."""""
-    LOW = 'L'   # Low
-    HIGH = 'H'  # High
+    """Enum class for the direction of energy."""
+
+    LOW = "L"  # Low
+    HIGH = "H"  # High
 
 
 class DirectionOfFlight(Enum):
     """Enum class for the direction of flight."""
-    DIRECT = 'D'       # Direct motion
-    RETROGRADE = 'R'   # Retrograde motion
+
+    DIRECT = "D"  # Direct motion
+    RETROGRADE = "R"  # Retrograde motion
 
 
 class LambertParams(BaseModel):
@@ -56,18 +59,15 @@ class LambertParams(BaseModel):
     nrev: Optional[int] = None
     dtsec: Optional[float] = None
 
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        use_enum_values=True
-    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, use_enum_values=True)
 
 
 ###############################################################################
 # Supporting Functions
 ###############################################################################
 
-def calculate_mag_and_angle(r1: ArrayLike,
-                            r2: ArrayLike) -> Tuple[float, float, float]:
+
+def calculate_mag_and_angle(r1: ArrayLike, r2: ArrayLike) -> Tuple[float, float, float]:
     """Calculate the magnitudes of two position vectors and the cosine of the
     angle between them.
 
@@ -92,8 +92,10 @@ def calculate_mag_and_angle(r1: ArrayLike,
 # Lambert's Problem
 ###############################################################################
 
-def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
-               nrev: int) -> Tuple[np.ndarray, float, float, float]:
+
+def lambertmin(
+    r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion, nrev: int
+) -> Tuple[np.ndarray, float, float, float]:
     """Solves the Lambert minimum energy problem.
 
     Args:
@@ -127,13 +129,12 @@ def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     # Compute the minimum energy time of flight
     # Use multiplier based on direction of motion
     sign = 1 if dm == DirectionOfMotion.SHORT else -1
-    tminenergy = (
-        np.sqrt(aminenergy**3 / MU)
-        * (2.0 * nrev * np.pi + alphae + sign * (betae - np.sin(betae)))
+    tminenergy = np.sqrt(aminenergy**3 / MU) * (
+        2.0 * nrev * np.pi + alphae + sign * (betae - np.sin(betae))
     )
 
     # Calculate the parabolic time of flight, which serves as the minimum limit
-    tminabs = (1.0 / 3.0) * np.sqrt(2.0 / MU) * (s**1.5 - (s - c)**1.5)
+    tminabs = (1.0 / 3.0) * np.sqrt(2.0 / MU) * (s**1.5 - (s - c) ** 1.5)
 
     # Compute intermediate values
     rcrossr = np.cross(r1, r2)
@@ -142,17 +143,22 @@ def lambertmin(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     sindeltanu = magrcrossr / (magr1 * magr2) * sign
 
     # Compute the minimum energy velocity vector
-    v = (
-        (np.sqrt(MU * pmin) / (magr1 * magr2 * sindeltanu))
-        * (r2 - (1.0 - magr2 / pmin * (1.0 - cosdeltanu)) * r1)
+    v = (np.sqrt(MU * pmin) / (magr1 * magr2 * sindeltanu)) * (
+        r2 - (1.0 - magr2 / pmin * (1.0 - cosdeltanu)) * r1
     )
 
     return v, aminenergy, tminenergy, tminabs
 
 
-def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
-                de: DirectionOfEnergy, nrev: int, fa_tol: float = 1e-5,
-                fa_iter: int = 20) -> Tuple[float, float, float]:
+def lambertmint(
+    r1: ArrayLike,
+    r2: ArrayLike,
+    dm: DirectionOfMotion,
+    de: DirectionOfEnergy,
+    nrev: int,
+    fa_tol: float = 1e-5,
+    fa_iter: int = 20,
+) -> Tuple[float, float, float]:
     """Solves Lambert's problem to find the minimum time of flight for
     the multi-revolution cases.
 
@@ -196,19 +202,15 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     sign_de = 1 if de == DirectionOfEnergy.LOW else -1
 
     # Calculate minimum parabolic time of flight tasee if orbit is possible
-    tminp = (
-        (1.0 / 3.0)
-        * np.sqrt(2.0 / MU)
-        * ((s**1.5) + sign_dm * (s - chord)**1.5)
-    )
+    tminp = (1.0 / 3.0) * np.sqrt(2.0 / MU) * ((s**1.5) + sign_dm * (s - chord) ** 1.5)
 
     # Calculate minimum energy ellipse time of flight
     amin = 0.5 * s
     beta = 2.0 * np.arcsin(np.sqrt((s - chord) / s))
     tminenergy = (
         (amin**1.5)
-        * ((2.0 * nrev + 1.0) * np.pi
-           + sign_dm * (beta - np.sin(beta))) / np.sqrt(MU)
+        * ((2.0 * nrev + 1.0) * np.pi + sign_dm * (beta - np.sin(beta)))
+        / np.sqrt(MU)
     )
 
     # Iteratively calculate the minimum time of flight (ellipse)
@@ -224,25 +226,19 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         beta = sign_de * 2.0 * np.arcsin(np.sqrt(0.5 * (s - chord) * alp))
         xi = alpha - beta
         eta = np.sin(alpha) - np.sin(beta)
-        fa = (
-            (6.0 * nrev * np.pi + 3.0 * xi - eta) * (np.sin(xi) + eta)
-            - 8.0 * (1.0 - np.cos(xi))
+        fa = (6.0 * nrev * np.pi + 3.0 * xi - eta) * (np.sin(xi) + eta) - 8.0 * (
+            1.0 - np.cos(xi)
         )
         fadot = (
-            (
-                (6.0 * nrev * np.pi + 3.0 * xi - eta)
-                * (np.cos(xi) + np.cos(alpha))
-                + (3.0 - np.cos(alpha)) * (np.sin(xi) + eta)
-                - 8.0 * np.sin(xi)
-            )
-            * (-alp * np.tan(0.5 * alpha))
-            + (
-                (6.0 * nrev * np.pi + 3.0 * xi - eta)
-                * (-np.cos(xi) - np.cos(alpha))
-                + (-3.0 - np.cos(beta)) * (np.sin(xi) + eta)
-                + 8.0 * np.sin(xi)
-            )
-            * (-alp * np.tan(0.5 * beta))
+            (6.0 * nrev * np.pi + 3.0 * xi - eta) * (np.cos(xi) + np.cos(alpha))
+            + (3.0 - np.cos(alpha)) * (np.sin(xi) + eta)
+            - 8.0 * np.sin(xi)
+        ) * (-alp * np.tan(0.5 * alpha)) + (
+            (6.0 * nrev * np.pi + 3.0 * xi - eta) * (-np.cos(xi) - np.cos(alpha))
+            + (-3.0 - np.cos(beta)) * (np.sin(xi) + eta)
+            + 8.0 * np.sin(xi)
+        ) * (
+            -alp * np.tan(0.5 * beta)
         )
         an = a - fa / fadot
         i += 1
@@ -256,6 +252,7 @@ def lambertmint(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
 ###############################################################################
 # Battin's Method
 ###############################################################################
+
 
 def seebatt(v: float) -> float:
     """Recursively calculates a value used in the Lambert Battin problem using
@@ -272,7 +269,7 @@ def seebatt(v: float) -> float:
     """
     # Check that v is greater than -1
     if v <= -1:
-        raise ValueError('Input value v must be greater than -1.')
+        raise ValueError("Input value v must be greater than -1.")
 
     # Coefficients derived from Battin's recursive series
     c = [
@@ -295,12 +292,12 @@ def seebatt(v: float) -> float:
         361.0 / 1443.0,
         400.0 / 1599.0,
         441.0 / 1763.0,
-        484.0 / 1935.0
+        484.0 / 1935.0,
     ]
 
     # Recursive formulaiton for the Lambert problem
     sqrtopv = np.sqrt(1.0 + v)
-    eta = v / (1.0 + sqrtopv)**2
+    eta = v / (1.0 + sqrtopv) ** 2
     ktr = 20
     term2 = 1.0 + c[ktr - 1] * eta
     for j in range(ktr - 2, -1, -1):
@@ -345,7 +342,7 @@ def kbatt(v: float) -> float:
         2548.0 / 10395.0,
         2968.0 / 11655.0,
         3190.0 / 12987.0,
-        3658.0 / 14391.0
+        3658.0 / 14391.0,
     ]
 
     # Initial values
@@ -373,9 +370,15 @@ def kbatt(v: float) -> float:
     return d[0] / term2
 
 
-def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
-                  ecc: float, dnu: float,
-                  dtsec: float) -> Tuple[np.ndarray, np.ndarray]:
+def lambhodograph(
+    r1: ArrayLike,
+    v1: ArrayLike,
+    r2: ArrayLike,
+    p: float,
+    ecc: float,
+    dnu: float,
+    dtsec: float,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Accomplishes a 180-degree (and 360-degree) transfer for the Lambert
     problem.
 
@@ -405,7 +408,7 @@ def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
 
     # Compute parameters a and b
     a = MU * (1.0 / magr1 - 1.0 / p)
-    b = (MU * ecc / p) ** 2 - a ** 2
+    b = (MU * ecc / p) ** 2 - a**2
 
     # Calculate x1 based on b
     x1 = 0.0 if b <= 0.0 else -np.sqrt(b)
@@ -417,8 +420,8 @@ def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
         norm_cross_r1_v1 = np.linalg.norm(cross_product_r1_v1)
         if norm_cross_r1_v1 < SMALL:
             raise ValueError(
-                'Vectors r1 and v1 are parallel or nearly parallel;'
-                ' the vector normal is undefined.'
+                "Vectors r1 and v1 are parallel or nearly parallel;"
+                " the vector normal is undefined."
             )
 
         # Normal vector
@@ -426,7 +429,7 @@ def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
 
         # Adjust the direction of x1 based on the time of flight
         if ecc < 1.0:
-            ptx = TWOPI * np.sqrt(p ** 3 / (MU * (1.0 - ecc ** 2) ** 3))
+            ptx = TWOPI * np.sqrt(p**3 / (MU * (1.0 - ecc**2) ** 3))
             if dtsec % ptx > ptx * 0.5:
                 x1 = -x1
     else:
@@ -441,8 +444,8 @@ def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
         norm_cross_r1_r2 = np.linalg.norm(cross_product_r1_r2)
         if norm_cross_r1_r2 < SMALL:
             raise ValueError(
-                'Vectors r1 and r2 are parallel or nearly parallel;'
-                ' the vector normal is undefined.'
+                "Vectors r1 and r2 are parallel or nearly parallel;"
+                " the vector normal is undefined."
             )
 
         # Normal vector
@@ -453,23 +456,24 @@ def lambhodograph(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, p: float,
             nvec = -nvec
 
     # Compute transfer velocity vectors
-    v1t = (
-        (np.sqrt(MU * p) / magr1)
-        * ((x1 / MU) * r1 + np.cross(nvec, r1) / magr1)
-    )
+    v1t = (np.sqrt(MU * p) / magr1) * ((x1 / MU) * r1 + np.cross(nvec, r1) / magr1)
     x2 = x1 * np.cos(dnu) + a * np.sin(dnu)
-    v2t = (
-        (np.sqrt(MU * p) / magr2)
-        * ((x2 / MU) * r2 + np.cross(nvec, r2) / magr2)
-    )
+    v2t = (np.sqrt(MU * p) / magr2) * ((x2 / MU) * r2 + np.cross(nvec, r2) / magr2)
 
     return v1t, v2t
 
 
-def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
-             dm: DirectionOfMotion, df: DirectionOfFlight, nrev: int,
-             dtsec: float, n_loops_he: int = 20,
-             n_loops_le: int = 30) -> Tuple[np.ndarray, np.ndarray]:
+def lambertb(
+    r1: ArrayLike,
+    v1: ArrayLike,
+    r2: ArrayLike,
+    dm: DirectionOfMotion,
+    df: DirectionOfFlight,
+    nrev: int,
+    dtsec: float,
+    n_loops_he: int = 20,
+    n_loops_le: int = 30,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Solves Lambert's problem using Battin's method.
 
     This method is developed in battin (1987) and explained by Thompson 2018.
@@ -507,9 +511,7 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
           See plot of time vs. psi (Figure 7-16) in Vallado for more details.
     """
     # Validate the Pydantic model
-    _ = LambertParams(
-        r1=r1, v1=v1, r2=r2, dm=dm, df=df, nrev=nrev, dtsec=dtsec
-    )
+    _ = LambertParams(r1=r1, v1=v1, r2=r2, dm=dm, df=df, nrev=nrev, dtsec=dtsec)
 
     # Initialize values
     v1dv = np.array([np.NAN] * 3)
@@ -536,14 +538,14 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
 
     # Calculate lambda, L, and m
     lam = 1.0 / s * np.sqrt(magr1 * magr2) * np.cos(dnu * 0.5)
-    l_ = ((1.0 - lam) / (1.0 + lam))**2
-    m = 8.0 * MU * dtsec**2 / (s**3 * (1.0 + lam)**6)
+    l_ = ((1.0 - lam) / (1.0 + lam)) ** 2
+    m = 8.0 * MU * dtsec**2 / (s**3 * (1.0 + lam) ** 6)
 
     # Initial guess for x
     xn = 1.0 + 4.0 * l_ if nrev > 0 else l_
 
     # Context for the safe square root function errors
-    con = 'Battin\'s method intermediate calculations: please adjust `dtsec`'
+    con = "Battin's method intermediate calculations: please adjust `dtsec`"
 
     # High energy case adjustments for long way, retrograde multi-rev
     if dm == DirectionOfMotion.LONG and nrev > 0:
@@ -559,34 +561,26 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
             h2 = temp * m * temp1 * ((l_ - x**2) * temp2 - (l_ + x))
 
             # Calculate b and f
-            b = 0.25 * 27.0 * h2 / ((temp1 * (1.0 + h1))**3)
+            b = 0.25 * 27.0 * h2 / ((temp1 * (1.0 + h1)) ** 3)
             if b < 0.0:
-                f = (
-                    2.0
-                    * np.cos(1.0 / 3.0 * np.arccos(safe_sqrt(b + 1.0), con))
-                )
+                f = 2.0 * np.cos(1.0 / 3.0 * np.arccos(safe_sqrt(b + 1.0), con))
             else:
-                a_ = (safe_sqrt(b, con) + safe_sqrt(b + 1.0, con))**(1.0 / 3.0)
+                a_ = (safe_sqrt(b, con) + safe_sqrt(b + 1.0, con)) ** (1.0 / 3.0)
                 f = a_ + 1.0 / a_
 
             # Calculate y and xn
-            y = (
-                2.0 / 3.0 * temp1 * (1.0 + h1)
-                * (safe_sqrt(b + 1.0, con) / f + 1.0)
-            )
-            xn = (
-                0.5
-                * ((m / (y**2) - (1.0 + l_))
-                   - safe_sqrt((m / (y**2) - (1.0 + l_))**2 - 4.0 * l_, con))
+            y = 2.0 / 3.0 * temp1 * (1.0 + h1) * (safe_sqrt(b + 1.0, con) / f + 1.0)
+            xn = 0.5 * (
+                (m / (y**2) - (1.0 + l_))
+                - safe_sqrt((m / (y**2) - (1.0 + l_)) ** 2 - 4.0 * l_, con)
             )
             loops += 1
 
         # Determine transfer velocity vectors for high energy case
         x = xn
-        a = s * (1.0 + lam)**2 * (1.0 + x) * (l_ + x) / (8.0 * x)
-        p = (
-            (2.0 * magr1 * magr2 * (1.0 + x) * np.sin(dnu * 0.5)**2)
-            / (s * (1 + lam)**2 * (l_ + x))
+        a = s * (1.0 + lam) ** 2 * (1.0 + x) * (l_ + x) / (8.0 * x)
+        p = (2.0 * magr1 * magr2 * (1.0 + x) * np.sin(dnu * 0.5) ** 2) / (
+            s * (1 + lam) ** 2 * (l_ + x)
         )
         ecc = safe_sqrt(1.0 - p / a, con)
         v1dv, v2dv = lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec)
@@ -599,54 +593,51 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
             x = xn
             if nrev > 0:
                 temp = 1.0 / ((1.0 + 2.0 * x + l_) * (4.0 * x**2))
-                temp1 = (
-                    (nrev * np.pi * 0.5 + np.arctan(safe_sqrt(x, con)))
-                    / safe_sqrt(x, con)
+                temp1 = (nrev * np.pi * 0.5 + np.arctan(safe_sqrt(x, con))) / safe_sqrt(
+                    x, con
                 )
                 h1 = (
-                    temp * (l_ + x)**2
-                    * (3.0 * (1.0 + x)**2 * temp1 - (3.0 + 5.0 * x))
+                    temp
+                    * (l_ + x) ** 2
+                    * (3.0 * (1.0 + x) ** 2 * temp1 - (3.0 + 5.0 * x))
                 )
                 h2 = (
-                    temp * m
-                    * ((x**2 - x * (1.0 + l_) - 3.0 * l_) * temp1
-                       + (3.0 * l_ + x))
+                    temp
+                    * m
+                    * ((x**2 - x * (1.0 + l_) - 3.0 * l_) * temp1 + (3.0 * l_ + x))
                 )
             else:
                 tempx = seebatt(x)
-                denom = (
-                    1.0
-                    / ((1.0 + 2.0 * x + l_) * (4.0 * x + tempx * (3.0 + x)))
-                )
-                h1 = (l_ + x)**2 * (1.0 + 3.0 * x + tempx) * denom
+                denom = 1.0 / ((1.0 + 2.0 * x + l_) * (4.0 * x + tempx * (3.0 + x)))
+                h1 = (l_ + x) ** 2 * (1.0 + 3.0 * x + tempx) * denom
                 h2 = m * (x - l_ + tempx) * denom
 
             # Calculate y and xn
-            b = 0.25 * 27.0 * h2 / ((1.0 + h1)**3)
+            b = 0.25 * 27.0 * h2 / ((1.0 + h1) ** 3)
             u = 0.5 * b / (1.0 + safe_sqrt(1.0 + b, con))
             k2 = kbatt(u)
-            y = (
-                ((1.0 + h1) / 3.0)
-                * (2.0 + safe_sqrt(1.0 + b, con) / (1.0 + 2.0 * u * k2 * k2))
+            y = ((1.0 + h1) / 3.0) * (
+                2.0 + safe_sqrt(1.0 + b, con) / (1.0 + 2.0 * u * k2 * k2)
             )
-            xn = (
-                safe_sqrt(((1.0 - l_) * 0.5)**2 + m / (y**2), con)
-                - (1.0 + l_) * 0.5
-            )
+            xn = safe_sqrt(((1.0 - l_) * 0.5) ** 2 + m / (y**2), con) - (1.0 + l_) * 0.5
             loops += 1
 
         # Determine transfer velocity vectors for standard case
         if loops < n_loops_le:
             p = (
-                (2.0 * magr1 * magr2 * y**2 * (1.0 + x)**2
-                 * np.sin(dnu * 0.5)**2)
-                / (m * s * (1 + lam)**2)
-            )
+                2.0 * magr1 * magr2 * y**2 * (1.0 + x) ** 2 * np.sin(dnu * 0.5) ** 2
+            ) / (m * s * (1 + lam) ** 2)
             ecc = safe_sqrt(
-                (eps**2 + 4.0 * magr2 / magr1 * np.sin(dnu * 0.5)**2
-                 * ((l_ - x) / (l_ + x))**2)
-                / (eps**2 + 4.0 * magr2 / magr1 * np.sin(dnu * 0.5)**2),
-                con
+                (
+                    eps**2
+                    + 4.0
+                    * magr2
+                    / magr1
+                    * np.sin(dnu * 0.5) ** 2
+                    * ((l_ - x) / (l_ + x)) ** 2
+                )
+                / (eps**2 + 4.0 * magr2 / magr1 * np.sin(dnu * 0.5) ** 2),
+                con,
             )
             v1dv, v2dv = lambhodograph(r1, v1, r2, p, ecc, dnu, dtsec)
 
@@ -657,8 +648,9 @@ def lambertb(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike,
 # Universal Variable Lambert Problem
 ###############################################################################
 
+
 def _calculate_c2dot_c3dot(
-        psi: float, c2: float, c3: float, tol: float = 1e-5
+    psi: float, c2: float, c3: float, tol: float = 1e-5
 ) -> Tuple[float, float, float, float]:
     """Calculate the derivatives of c2 and c3 with respect to psi.
 
@@ -678,18 +670,16 @@ def _calculate_c2dot_c3dot(
     if abs(psi) > tol:
         c2dot = 0.5 / psi * (1.0 - psi * c3 - 2.0 * c2)
         c3dot = 0.5 / psi * (c2 - 3.0 * c3)
-        c2ddot = (
-            1.0 / (4.0 * psi ** 2) * ((8.0 - psi) * c2 + 5.0 * psi * c3 - 4.0)
-        )
-        c3ddot = 1.0 / (4.0 * psi ** 2) * ((15.0 - psi) * c3 - 7.0 * c2 + 1.0)
+        c2ddot = 1.0 / (4.0 * psi**2) * ((8.0 - psi) * c2 + 5.0 * psi * c3 - 4.0)
+        c3ddot = 1.0 / (4.0 * psi**2) * ((15.0 - psi) * c3 - 7.0 * c2 + 1.0)
     else:
         # Taylor series expansion for small psi
         c2dot = sum(
-            (-1) ** (i + 1) * (i + 1) * psi ** i / math.factorial(2 * i + 4)
+            (-1) ** (i + 1) * (i + 1) * psi**i / math.factorial(2 * i + 4)
             for i in range(5)
         )
         c3dot = sum(
-            (-1) ** (i + 1) * (i + 1) * psi ** i / math.factorial(2 * i + 5)
+            (-1) ** (i + 1) * (i + 1) * psi**i / math.factorial(2 * i + 5)
             for i in range(5)
         )
         c2ddot, c3ddot = 0.0, 0.0
@@ -697,8 +687,9 @@ def _calculate_c2dot_c3dot(
     return c2dot, c3dot, c2ddot, c3ddot
 
 
-def _calculate_dtdpsi(x: float, c2: float, c3: float, c2dot: float,
-                      c3dot: float, vara: float, y: float) -> float:
+def _calculate_dtdpsi(
+    x: float, c2: float, c3: float, c2dot: float, c3dot: float, vara: float, y: float
+) -> float:
     """Calculate the derivative of time of flight with respect to psi.
 
     Args:
@@ -714,13 +705,14 @@ def _calculate_dtdpsi(x: float, c2: float, c3: float, c2dot: float,
         float: Derivative of time of flight with respect to psi
     """
     return (
-        x ** 3 * (c3dot - 3.0 * c3 * c2dot / (2.0 * c2))
+        x**3 * (c3dot - 3.0 * c3 * c2dot / (2.0 * c2))
         + 0.125 * vara * (3.0 * c3 * np.sqrt(y) / c2 + vara / x)
     ) * OOMU
 
 
-def lambgettbiu(r1: ArrayLike, r2: ArrayLike,
-                order: int) -> Tuple[np.ndarray, np.ndarray]:
+def lambgettbiu(
+    r1: ArrayLike, r2: ArrayLike, order: int
+) -> Tuple[np.ndarray, np.ndarray]:
     """Form the minimum time and universal variable matrix for multi-rev cases.
 
     Args:
@@ -750,8 +742,9 @@ def lambgettbiu(r1: ArrayLike, r2: ArrayLike,
     return tbi, tbil
 
 
-def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
-                 nrev: int, n_iter: int = 20) -> Tuple[float, float]:
+def lambertumins(
+    r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion, nrev: int, n_iter: int = 20
+) -> Tuple[float, float]:
     """Find the minimum psi values for the universal variable Lambert problem
     for multi-rev cases.
 
@@ -785,7 +778,7 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
 
     # Outer bounds for the nrev case
     lower = 4.0 * nrev**2 * np.pi**2
-    upper = 4.0 * (nrev + 1.0)**2 * np.pi**2
+    upper = 4.0 * (nrev + 1.0) ** 2 * np.pi**2
 
     # Streamline by narrowing down the bounds (since it's near the center)
     upper = lower + (upper - lower) * 0.6
@@ -820,25 +813,20 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
         sqrty = np.sqrt(y)
         q = 0.25 * vara * np.sqrt(c2) - x**2 * c2dot
         s1 = -24.0 * q * x**3 * c2 * sqrty * c3dot
-        s2 = (
-            36.0 * q * x**3 * sqrty * c3 * c2dot
-            - 16.0 * x**5 * sqrty * c3ddot * c2**2
-        )
+        s2 = 36.0 * q * x**3 * sqrty * c3 * c2dot - 16.0 * x**5 * sqrty * c3ddot * c2**2
         s3 = (
-            24.0 * x**5 * sqrty
+            24.0
+            * x**5
+            * sqrty
             * (c3dot * c2dot * c2 + c3 * c2ddot * c2 - c3 * c2dot**2)
             - 6.0 * vara * c3dot * y * c2 * x**2
         )
         s4 = (
-            -0.75 * vara ** 2 * c3 * c2 ** 1.5 * x ** 2
-            + 6.0 * vara * c3 * y * c2dot * x ** 2
-            + (vara ** 2 * c2 * (0.25 * vara * np.sqrt(c2) - x ** 2 * c2))
-            * sqrty / x
+            -0.75 * vara**2 * c3 * c2**1.5 * x**2
+            + 6.0 * vara * c3 * y * c2dot * x**2
+            + (vara**2 * c2 * (0.25 * vara * np.sqrt(c2) - x**2 * c2)) * sqrty / x
         )
-        dtdpsi2 = (
-            -(s1 + s2 + s3 + s4)
-            / (16.0 * np.sqrt(MU) * (c2**2 * sqrty * x**2))
-        )
+        dtdpsi2 = -(s1 + s2 + s3 + s4) / (16.0 * np.sqrt(MU) * (c2**2 * sqrty * x**2))
 
         # Newton-Raphson update for psi
         psinew = psiold - dtdpsi / dtdpsi2
@@ -856,10 +844,18 @@ def lambertumins(r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion,
     return psib, tof
 
 
-def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
-             dm: DirectionOfMotion, de: DirectionOfEnergy, nrev: int,
-             psi_vec: np.ndarray = None, tol: float = 1e-05,
-             n_iter: int = 20) -> Tuple[np.ndarray, np.ndarray]:
+def lambertu(
+    r1: ArrayLike,
+    v1: ArrayLike,
+    r2: ArrayLike,
+    dtsec: float,
+    dm: DirectionOfMotion,
+    de: DirectionOfEnergy,
+    nrev: int,
+    psi_vec: np.ndarray = None,
+    tol: float = 1e-05,
+    n_iter: int = 20,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Solves Lambert's problem for orbit determination, returns the velocity
     vectors at each of two given position vectors.
 
@@ -894,9 +890,7 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
           lead to no solutions (see Vallado 2013, Figure 7-16)
     """
     # Validate the Pydantic model
-    _ = LambertParams(
-        r1=r1, v1=v1, r2=r2, dtsec=dtsec, dm=dm, de=de, nrev=nrev
-    )
+    _ = LambertParams(r1=r1, v1=v1, r2=r2, dtsec=dtsec, dm=dm, de=de, nrev=nrev)
 
     # Definitions and initialization
     max_ynegktr_iters = 10  # maximum number of iterations for y < 0
@@ -912,11 +906,11 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
 
     # Set up initial bounds for bisection
     if nrev == 0:
-        lower = -16.0 * np.pi ** 2  # Hyperbolic and parabolic solutions
-        upper = 4.0 * np.pi ** 2
+        lower = -16.0 * np.pi**2  # Hyperbolic and parabolic solutions
+        upper = 4.0 * np.pi**2
     else:
-        lower = 4.0 * nrev ** 2 * np.pi ** 2
-        upper = 4.0 * (nrev + 1.0) ** 2 * np.pi ** 2
+        lower = 4.0 * nrev**2 * np.pi**2
+        upper = 4.0 * (nrev + 1.0) ** 2 * np.pi**2
         if de == DirectionOfEnergy.HIGH:
             upper = psi_vec[nrev - 1]
         else:
@@ -940,12 +934,12 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
         y = magr1 + magr2
 
     xold = np.sqrt(y / c2new) if abs(c2new) > tol else 0.0
-    dtold = (xold ** 3 * c3new + vara * np.sqrt(y)) * OOMU
+    dtold = (xold**3 * c3new + vara * np.sqrt(y)) * OOMU
 
     # Check if orbit is not possible
     if abs(vara) < 0.2:  # not exactly zero
         # Can't do bissection because w series is not accurate
-        logger.error('Orbit is not possible')
+        logger.error("Orbit is not possible")
 
         # Call Battin method or use a Hohmann transfer in 3D
         atx = (MU * (dtsec / np.pi) ** 2) ** (1.0 / 3.0)  # half period
@@ -969,13 +963,9 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
     dtnew = -10.0
 
     # Loop to find psi
-    while (abs(dtnew - dtsec) >= tol and loops < n_iter
-           and ynegktr <= max_ynegktr_iters):
+    while abs(dtnew - dtsec) >= tol and loops < n_iter and ynegktr <= max_ynegktr_iters:
         if abs(c2new) > tol:
-            y = (
-                magr1 + magr2
-                - (vara * (1.0 - psiold * c3new) / np.sqrt(c2new))
-            )
+            y = magr1 + magr2 - (vara * (1.0 - psiold * c3new) / np.sqrt(c2new))
         else:
             y = magr1 + magr2
 
@@ -983,16 +973,14 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
         if y < 0.0 < vara:
             while y < 0.0 and ynegktr < max_ynegktr_iters:
                 psinew = (
-                    0.8 * (1.0 / c3new)
+                    0.8
+                    * (1.0 / c3new)
                     * (1.0 - (magr1 + magr2) * np.sqrt(c2new) / vara)
                 )
                 c2new, c3new = findc2c3(psinew)
                 psiold = psinew
                 lower = psiold
-                y = (
-                    magr1 + magr2
-                    - (vara * (1.0 - psiold * c3new) / np.sqrt(c2new))
-                )
+                y = magr1 + magr2 - (vara * (1.0 - psiold * c3new) / np.sqrt(c2new))
                 ynegktr += 1
 
         loops += 1
@@ -1000,15 +988,13 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
         # Check for convergence
         if ynegktr < max_ynegktr_iters:
             xold = np.sqrt(y / c2new) if abs(c2new) > tol else 0.0
-            dtnew = (xold ** 3 * c3new + vara * np.sqrt(y)) * OOMU
+            dtnew = (xold**3 * c3new + vara * np.sqrt(y)) * OOMU
 
             # Newton-Raphson iteration for psi update
             c2dot, c3dot, _, _ = _calculate_c2dot_c3dot(psiold, c2new, c3new)
 
             # Calculate new psi
-            dtdpsi = _calculate_dtdpsi(
-                xold, c2new, c3new, c2dot, c3dot, vara, y
-            )
+            dtdpsi = _calculate_dtdpsi(xold, c2new, c3new, c2dot, c3dot, vara, y)
             psinew = psiold - (dtnew - dtsec) / dtdpsi
 
             # Newton iteration test to see if it keeps within the bounds
@@ -1039,11 +1025,9 @@ def lambertu(r1: ArrayLike, v1: ArrayLike, r2: ArrayLike, dtsec: float,
 
     # Check for non-convergence
     if loops >= n_iter or ynegktr >= max_ynegktr_iters:
-        logger.error(
-            'Lambert did not converge! Try different values of dtsec or psi'
-        )
+        logger.error("Lambert did not converge! Try different values of dtsec or psi")
         if ynegktr >= max_ynegktr_iters:
-            logger.error('y is negative')
+            logger.error("y is negative")
     else:
         # Compute velocity vectors using f and g series
         f = 1.0 - y / magr1

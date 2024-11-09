@@ -31,26 +31,27 @@ def test_calculate_mag_and_angle(lambert_inputs):
 
 class TestLambert:
     @pytest.mark.parametrize(
-        'dm, v_exp, aminenergy_exp, tminenergy_exp, tminabs_exp',
+        "dm, v_exp, aminenergy_exp, tminenergy_exp, tminabs_exp",
         [
             (
                 lambert.DirectionOfMotion.LONG,
                 [-2.0474089759890735, -2.924003076447717, 0.0],
                 10699.484172968232,
                 15554.50821587732,
-                1534.8915813389815
+                1534.8915813389815,
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
                 [2.0474089759890735, 2.924003076447717, 0.0],
                 10699.484172968232,
                 17488.265508772805,
-                1534.8915813389815
-            )
-        ]
+                1534.8915813389815,
+            ),
+        ],
     )
-    def test_lambertmin(self, lambert_inputs, dm, v_exp, aminenergy_exp,
-                        tminenergy_exp, tminabs_exp):
+    def test_lambertmin(
+        self, lambert_inputs, dm, v_exp, aminenergy_exp, tminenergy_exp, tminabs_exp
+    ):
         # Unpack inputs
         r1, r2, _, nrev, _ = lambert_inputs
 
@@ -65,40 +66,41 @@ class TestLambert:
         assert np.isclose(tminabs, tminabs_exp, rtol=DEFAULT_TOL)
 
     @pytest.mark.parametrize(
-        'dm, de, tmin_exp, tminp_exp, tminenergy_exp',
+        "dm, de, tmin_exp, tminp_exp, tminenergy_exp",
         [
             (
                 lambert.DirectionOfMotion.LONG,
                 lambert.DirectionOfEnergy.LOW,
                 12468.267989702517,
                 3139.7046602121873,
-                17488.26550877280
+                17488.26550877280,
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
                 lambert.DirectionOfEnergy.LOW,
                 15048.526832075213,
                 1534.8915813389815,
-                15554.50821587732
+                15554.50821587732,
             ),
             (
                 lambert.DirectionOfMotion.LONG,
                 lambert.DirectionOfEnergy.HIGH,
                 21648.968497701877,
                 3139.7046602121873,
-                17488.265508772805
+                17488.265508772805,
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
                 lambert.DirectionOfEnergy.HIGH,
                 16972.34235386572,
                 1534.8915813389815,
-                15554.50821587732
-            )
-        ]
+                15554.50821587732,
+            ),
+        ],
     )
-    def test_lambertmint(self, lambert_inputs, dm, de, tmin_exp, tminp_exp,
-                         tminenergy_exp):
+    def test_lambertmint(
+        self, lambert_inputs, dm, de, tmin_exp, tminp_exp, tminenergy_exp
+    ):
         # Unpack inputs
         r1, r2, _, nrev, _ = lambert_inputs
 
@@ -118,9 +120,7 @@ class TestLambertBattin:
 
     def test_seebatt(self, v):
         # Check nominal case
-        assert np.isclose(
-            lambert.seebatt(v), 5.153421950753984, rtol=DEFAULT_TOL
-        )
+        assert np.isclose(lambert.seebatt(v), 5.153421950753984, rtol=DEFAULT_TOL)
 
         # Check when `v` is less than -1
         v = -1.5
@@ -128,9 +128,7 @@ class TestLambertBattin:
             lambert.seebatt(v)
 
     def test_kbatt(self, v):
-        assert np.isclose(
-            lambert.kbatt(v), 0.327568960337347, rtol=DEFAULT_TOL
-        )
+        assert np.isclose(lambert.kbatt(v), 0.327568960337347, rtol=DEFAULT_TOL)
 
     def test_lambhodograph(self):
         r1 = [6888, 0, 0]
@@ -158,33 +156,33 @@ class TestLambertBattin:
             lambert.lambhodograph(r1, v1, new_r2, p, ecc, dnu, dtsec)
 
     @pytest.mark.parametrize(
-        'dm, df, v1dv_exp, v2dv_exp',
+        "dm, df, v1dv_exp, v2dv_exp",
         [
             (
                 lambert.DirectionOfMotion.LONG,
                 lambert.DirectionOfFlight.DIRECT,
                 [-0.8696153795282852, 6.3351545812502374, 0.0],
-                [-3.405994961791248, 5.41198791828363, 0.0]
+                [-3.405994961791248, 5.41198791828363, 0.0],
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
                 lambert.DirectionOfFlight.DIRECT,
                 [5.832522716212579, 1.4319944881331306, 0.0],
-                [-5.388439978490882, -2.652101898141935, 0.0]
+                [-5.388439978490882, -2.652101898141935, 0.0],
             ),
             (
                 lambert.DirectionOfMotion.LONG,
                 lambert.DirectionOfFlight.RETROGRADE,
                 [-6.241103309400493, -1.351339299630816, 0.0],
-                [5.6495867154901545, 2.976517897853268, 0.0]
+                [5.6495867154901545, 2.976517897853268, 0.0],
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
                 lambert.DirectionOfFlight.RETROGRADE,
                 [0.6411191586146303, -5.957501823796459, 0.0],
-                [3.33828270226307, -4.975814585231199, 0.0]
-            )
-        ]
+                [3.33828270226307, -4.975814585231199, 0.0],
+            ),
+        ],
     )
     def test_lambertb(self, lambert_inputs, dm, df, v1dv_exp, v2dv_exp):
         # Unpack inputs and set dtsec
@@ -215,14 +213,15 @@ class TestLambertBattin:
 
 class TestLambertUniversal:
     @pytest.mark.parametrize(
-        'psi, c2dot_exp, c3dot_exp, c2ddot_exp, c3ddot_exp',
+        "psi, c2dot_exp, c3dot_exp, c2ddot_exp, c3ddot_exp",
         [
             (5, 0.08926, -0.00134, -0.036254, 0.009596),
-            (0, -0.041666666667, -0.008333333333, 0, 0)
-        ]
+            (0, -0.041666666667, -0.008333333333, 0, 0),
+        ],
     )
-    def test_calculate_c2dot_c3dot(self, psi, c2dot_exp, c3dot_exp, c2ddot_exp,
-                                   c3ddot_exp):
+    def test_calculate_c2dot_c3dot(
+        self, psi, c2dot_exp, c3dot_exp, c2ddot_exp, c3ddot_exp
+    ):
         # Check nominal case
         c2, c3 = 0.0232, 0.0122
         out = lambert._calculate_c2dot_c3dot(psi, c2, c3)
@@ -248,14 +247,14 @@ class TestLambertUniversal:
             [
                 [57.81592755194815, 15048.626881962446],
                 [195.80115373119972, 26269.95060241361],
-                [412.98000230103014, 37370.33586904963]
+                [412.98000230103014, 37370.33586904963],
             ]
         )
         tbil_exp = np.array(
             [
                 [113.60281509526207, 16971.386078436695],
                 [291.6899864823016, 28199.561813444412],
-                [548.316527089472, 39301.8313984678]
+                [548.316527089472, 39301.8313984678],
             ]
         )
 
@@ -267,13 +266,11 @@ class TestLambertUniversal:
         assert np.allclose(tbil, tbil_exp, rtol=DEFAULT_TOL)
 
     @pytest.mark.parametrize(
-        'dm, psib_exp, tof_exp',
+        "dm, psib_exp, tof_exp",
         [
-            (lambert.DirectionOfMotion.LONG,
-             113.602815095262, 16971.386078436695),
-            (lambert.DirectionOfMotion.SHORT,
-             57.8159275519482, 15048.626881962446)
-        ]
+            (lambert.DirectionOfMotion.LONG, 113.602815095262, 16971.386078436695),
+            (lambert.DirectionOfMotion.SHORT, 57.8159275519482, 15048.626881962446),
+        ],
     )
     def test_lambertumins(self, lambert_inputs, dm, psib_exp, tof_exp):
         # Unpack inputs
@@ -287,7 +284,7 @@ class TestLambertUniversal:
         assert np.isclose(tof, tof_exp, rtol=DEFAULT_TOL)
 
     @pytest.mark.parametrize(
-        'dm, de, nrev, psi_vec, v1dv_exp, v2dv_exp',
+        "dm, de, nrev, psi_vec, v1dv_exp, v2dv_exp",
         [
             (
                 lambert.DirectionOfMotion.LONG,
@@ -295,7 +292,7 @@ class TestLambertUniversal:
                 1,
                 [113],
                 [-6.241103311949874, -1.3513393001017955, 0.0],
-                [5.649586717745847, 2.976517899131199, 0.0]
+                [5.649586717745847, 2.976517899131199, 0.0],
             ),
             (
                 lambert.DirectionOfMotion.LONG,
@@ -303,7 +300,7 @@ class TestLambertUniversal:
                 1,
                 [113],
                 [0.6411191590247107, -5.957501826310465, 0.0],
-                [3.338282703564938, -4.975814587420603, 0.0]
+                [3.338282703564938, -4.975814587420603, 0.0],
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
@@ -311,7 +308,7 @@ class TestLambertUniversal:
                 1,
                 [113],
                 [-0.8696153799562063, 6.335154583804734, 0.0],
-                [-3.40599496310541,  5.411987920515576, 0.0]
+                [-3.40599496310541, 5.411987920515576, 0.0],
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
@@ -319,7 +316,7 @@ class TestLambertUniversal:
                 1,
                 [57],  # does not converge with 113
                 [5.8325227187105835, 1.4319944886088742, 0.0],
-                [-5.388439980710266, -2.6521018993831795, 0.0]
+                [-5.388439980710266, -2.6521018993831795, 0.0],
             ),
             (
                 lambert.DirectionOfMotion.LONG,
@@ -327,12 +324,13 @@ class TestLambertUniversal:
                 0,  # test when nrev is 0
                 [113],
                 [0.8790611303752992, -6.351161592594172, 0.0],
-                [3.409048205683391, -5.43032161186189, 0.0]
-            )
-        ]
+                [3.409048205683391, -5.43032161186189, 0.0],
+            ),
+        ],
     )
-    def test_lambertu(self, lambert_inputs, dm, de, nrev, psi_vec, v1dv_exp,
-                      v2dv_exp, caplog):
+    def test_lambertu(
+        self, lambert_inputs, dm, de, nrev, psi_vec, v1dv_exp, v2dv_exp, caplog
+    ):
         # Unpack inputs
         r1, r2, v1, _, dtsec = lambert_inputs
 
@@ -347,11 +345,8 @@ class TestLambertUniversal:
         assert not caplog.records
 
     @pytest.mark.parametrize(
-        'dtsec, psi_vec',
-        [
-            (4560, [113]),     # dtsec is too small
-            (92854.234, [20])  # psi is too small
-        ]
+        "dtsec, psi_vec",
+        [(4560, [113]), (92854.234, [20])],  # dtsec is too small  # psi is too small
     )
     def test_lambertu_bad_inputs(self, lambert_inputs, dtsec, psi_vec, caplog):
         # Unpack inputs
@@ -369,9 +364,9 @@ class TestLambertUniversal:
         assert np.allclose(v2dv, np.zeros(3), rtol=DEFAULT_TOL)
 
         # Check logged error
-        assert caplog.records[0].levelname == 'ERROR'
+        assert caplog.records[0].levelname == "ERROR"
         assert caplog.records[0].message == (
-            'Lambert did not converge! Try different values of dtsec or psi'
+            "Lambert did not converge! Try different values of dtsec or psi"
         )
 
     def test_lambertu_bad_orbit(self, lambert_inputs, caplog):
@@ -397,5 +392,5 @@ class TestLambertUniversal:
         assert np.allclose(v2dv, v2dv_exp, rtol=DEFAULT_TOL)
 
         # Check logged error
-        assert caplog.records[0].levelname == 'ERROR'
-        assert caplog.records[0].message == 'Orbit is not possible'
+        assert caplog.records[0].levelname == "ERROR"
+        assert caplog.records[0].message == "Orbit is not possible"

@@ -8,11 +8,14 @@
 
 
 import numpy as np
+from typing import Tuple
 
 from ... import constants as const
 
 
-def jday(year, month, day, hour, minute, second):
+def jday(
+    year: int, month: int, day: int, hour: int, minute: int, second: float
+) -> Tuple[float, float]:
     """Calculate the Julian Date (JD) and fractional day
 
     This function finds the Julian Date given the year, month, day, and time.
@@ -29,19 +32,21 @@ def jday(year, month, day, hour, minute, second):
         second (float): Universal Time second (0.0 to 59.999)
 
     Returns:
-        jd (float): Julian Date
-        jd_frac (float): Fractional part of the Julian Date
+        tuple:
+            jd (float): Julian Date
+            jd_frac (float): Fractional part of the Julian Date
     """
     # Calculate Julian Date
-    jd = (367.0 * year
-          - np.floor((7 * (year + np.floor((month + 9) / 12.0))) * 0.25)
-          + np.floor(275 * month / 9.0)
-          + day + 1721013.5)  # Use - 678987.0 to go to MJD directly
+    jd = (
+        367.0 * year
+        - np.floor((7 * (year + np.floor((month + 9) / 12.0))) * 0.25)
+        + np.floor(275 * month / 9.0)
+        + day
+        + 1721013.5
+    )  # Use - 678987.0 to go to MJD directly
 
     # Calculate fractional part of the day
-    jd_frac = (
-        (second + minute * const.MIN2SEC + hour * const.HR2SEC) / const.DAY2SEC
-    )
+    jd_frac = (second + minute * const.MIN2SEC + hour * const.HR2SEC) / const.DAY2SEC
 
     # Adjust if jd_frac > 1
     if jd_frac > 1.0:
