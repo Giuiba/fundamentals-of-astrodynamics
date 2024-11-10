@@ -4,8 +4,8 @@ import pytest
 import numpy as np
 import scipy
 
-from src.valladopy.astro.time.iaudata import iau80in
-from ...conftest import custom_allclose
+from src.valladopy.astro.time.iaudata import iau80in, iau06era
+from ...conftest import custom_allclose, DEFAULT_TOL
 
 
 def load_matlab_data(file_path, keys):
@@ -42,4 +42,21 @@ def test_iau80in(iau80_mat_data):
 
     # Check that they are the same
     assert np.array_equal(iar80, matlab_iar80)
-    assert custom_allclose(rar80, matlab_rar80, rtol=1e-12)
+    assert custom_allclose(rar80, matlab_rar80)
+
+
+def test_iau06era():
+    # Expected values
+    era_exp = np.array(
+        [
+            [-0.8884015255896265, -0.4590672383540609, 0.0],
+            [0.4590672383540609, -0.8884015255896265, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+
+    # Call function
+    era = iau06era(2448855.009722)
+
+    # Check that they are the same
+    assert np.allclose(era, era_exp, rtol=DEFAULT_TOL, atol=DEFAULT_TOL)

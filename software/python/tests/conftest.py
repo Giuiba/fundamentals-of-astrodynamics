@@ -16,7 +16,7 @@ def custom_isclose(
     Argss:
         result (float): result value
         expected (float): expected value
-        rtol (float, optional): Relative tolerance (defaults to 1e-8)
+        rtol (float, optional): Relative tolerance (defaults to 1e-12)
         atol (float, optional): Absolute tolerance (defaults to 1e-12)
 
     Returns:
@@ -38,7 +38,7 @@ def custom_allclose(
     Args:
         a (array_like): Array of results
         b (array_like): Array of expected values
-        rtol (float, optional): Relative tolerance (defaults to 1e-8)
+        rtol (float, optional): Relative tolerance (defaults to 1e-12)
         atol (float, optional): Absolute tolerance (defaults to 1e-12)
 
     Returns:
