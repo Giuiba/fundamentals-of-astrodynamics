@@ -1,20 +1,32 @@
 import numpy as np
+import pytest
 
-from src.valladopy.astro.time.sidereal import gstime, sidereal
+from src.valladopy.astro.time.sidereal import gstime, lstime, sidereal
 from ...conftest import custom_isclose, custom_allclose
 
 
-DEFAULT_TOL = 1e-12
-
-
-def test_gstime():
-    # Test Julian Date of J2000 epoch
-    assert custom_isclose(gstime(2451545.0), np.radians(280.460618375))
-
-    # Vallado, Example 3-5 (2013)
-    assert custom_isclose(
-        gstime(2448855.009722), np.radians(152.57870762835), rtol=DEFAULT_TOL
-    )
+@pytest.mark.parametrize(
+    "jdut1, lon, gstime_exp, lstime_exp",
+    [
+        # J2000 epoch
+        (
+            2451545.0,
+            np.radians(5),
+            np.radians(280.460618375),
+            np.radians(285.460618375),
+        ),
+        # Vallado, Example 3-5 (2013)
+        (
+            2448855.009722,
+            np.radians(-104),
+            np.radians(152.57870762835046),
+            np.radians(48.57870762835046),
+        ),
+    ],
+)
+def test_gstime_lstime(jdut1, lon, gstime_exp, lstime_exp):
+    assert custom_isclose(gstime(jdut1), float(gstime_exp))
+    assert custom_allclose(lstime(lon, jdut1), [float(lstime_exp), float(gstime_exp)])
 
 
 def test_sidereal():
@@ -45,5 +57,5 @@ def test_sidereal():
         ]
     )
 
-    assert custom_allclose(st, st_exp, rtol=DEFAULT_TOL)
-    assert custom_allclose(stdot, stdot_exp, rtol=DEFAULT_TOL)
+    assert custom_allclose(st, st_exp)
+    assert custom_allclose(stdot, stdot_exp)

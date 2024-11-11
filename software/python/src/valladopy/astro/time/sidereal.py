@@ -40,6 +40,31 @@ def gstime(jdut1: float) -> float:
     return np.remainder(gst * const.EARTHROT_APPROX, const.TWOPI)
 
 
+def lstime(lon: float, jdut1: float) -> Tuple[float, float]:
+    """Calculates the local sidereal time (LST) and Greenwich sidereal time (GST) at a
+    given location (GST from IAU-82).
+
+    References:
+        Vallado: 2022, p. 190, Algorithm 15
+
+    Args:
+        lon (float): Longitude of the site in radians (-2pi to 2pi) (West is negative)
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+
+    Returns:
+        tuple[float, float]:
+            - Local sidereal time (LST) in radians (0 to 2pi)
+            - Greenwich sidereal time (GST) in radians (0 to 2pi)
+    """
+    # Calculate GST
+    gst = gstime(jdut1)
+
+    # Calculate LST
+    lst = np.mod(lon + gst, const.TWOPI)
+
+    return lst, gst
+
+
 def sidereal(
     jdut1: float,
     deltapsi: float,
