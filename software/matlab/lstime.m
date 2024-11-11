@@ -11,7 +11,7 @@
 %
 %  inputs          description                    range / units
 %    lon         - site longitude (west -)        -2pi to 2pi rad
-%    jd          - julian date                    days from 4713 bc
+%    jdut1       - julian date of ut1             days from 4713 bc
 %
 %  outputs       :
 %    lst         - local sidereal time            0.0 to 2pi rad
@@ -26,15 +26,15 @@
 %  references    :
 %    vallado       2022, 190, Alg 15, ex 3-5
 %
-% [lst,gst] = lstime ( lon, jd );
+% [lst,gst] = lstime ( lon, jdut1 );
 % -----------------------------------------------------------------------------
 
-function [lst,gst] = lstime ( lon, jd );
+function [lst,gst] = lstime ( lon, jdut1 );
 
         twopi  = 2.0*pi;
 
         % ------------------------  implementation   ------------------
-        [gst] = gstime( jd );
+        [gst] = gstime( jdut1 );
         lst = lon + gst;
 
         % ----------------------- check quadrants ---------------------
