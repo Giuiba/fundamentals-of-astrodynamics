@@ -93,6 +93,9 @@
         - 0.00000044 * ttt3 + 0.000029956 * ttt4 + 0.0000000368 * ttt5) * convrt; % " to rad
 
     gst = gmst2000 + ee2000; % rad
+    if (gst < 0.0)
+        gst = twopi + gst;
+    end;
 
     if iauhelp == 'y'
         fprintf(1,'meanobl %11.7f getsum %11.7f %11.7f eect %11.7f  \n',epsa*180/pi,gstsum0*180/pi,gstsum1*180/pi,eect2000*180/pi );

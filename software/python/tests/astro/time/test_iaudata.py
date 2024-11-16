@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 import scipy
 
-from src.valladopy.astro.time.iaudata import iau80in, iau06in, iau06era
+from src.valladopy.astro.time.iaudata import iau80in, iau06in, iau06era, iau06gst
 from ...conftest import custom_allclose, DEFAULT_TOL
 
 
@@ -103,3 +103,41 @@ def test_iau06era():
 
     # Check that they are the same
     assert np.allclose(era, era_exp, rtol=DEFAULT_TOL, atol=DEFAULT_TOL)
+
+
+def test_iau06gst():
+    delunay_elems = [
+        5.844239313494585,  # l
+        6.23840254543787,  # l1
+        3.0276889929096353,  # f
+        3.2212027489393993,  # d
+        5.089920270731961,  # omega
+    ]
+    planet_lon = [
+        0.02422268041366862,  # mercury
+        0.08339248169484563,  # venus
+        0.030584726431970796,  # earth
+        0.03334439906671072,  # mars
+        0.1029125735528856,  # jupiter
+        0.05248218685834288,  # saturn
+        0.10871847648477687,  # uranus
+        0.09936537545632083,  # neptune
+    ]
+    precrate = 4.2555121682972836e-05  # precession rate
+    judt1 = 2448855.009722  # Julian date of UT1
+    ttt = 0.1  # Terrestrial Time (TT) in Julian centuries of TT
+    deltapsi = -5.978331920752922e-05  # change in longitude
+
+    # Call function
+    gst, st = iau06gst(judt1, ttt, deltapsi, *delunay_elems, *planet_lon, precrate)
+
+    # Check against expected values
+    st_exp = np.array(
+        [
+            [-0.8894007799234658, -0.4571282671980926, 0.0],
+            [0.4571282671980926, -0.8894007799234658, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+    assert custom_allclose(gst, 2.6668289843344684)
+    assert custom_allclose(st, st_exp)

@@ -50,15 +50,15 @@ def fundarg(
             f (float): Delaunay element in radians
             d (float): Delaunay element in radians
             omega (float): Delaunay element in radians
-            lonmer (float): Planetary longitude in radians
-            lonven (float): Planetary longitude in radians
-            lonear (float): Planetary longitude in radians
-            lonmar (float): Planetary longitude in radians
-            lonjup (float): Planetary longitude in radians
-            lonsat (float): Planetary longitude in radians
-            lonurn (float): Planetary longitude in radians
-            lonnep (float): Planetary longitude in radians
-            precrate (float): Precession rate in radians
+            lonmer (float): Longitude of Mercury in radians
+            lonven (float): Longitude of Venus in radians
+            lonear (float): Longitude of Earth in radians
+            lonmar (float): Longitude of Mars in radians
+            lonjup (float): Longitude of Jupiter in radians
+            lonsat (float): Longitude of Saturn in radians
+            lonurn (float): Longitude of Uranus in radians
+            lonnep (float): Longitude of Neptune in radians
+            precrate (float): Precession rate in radians per Julian century
 
     TODO:
         - Implement commented out methods (from m-file)?
