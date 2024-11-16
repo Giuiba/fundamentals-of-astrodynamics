@@ -8,6 +8,11 @@ from ...constants import ARCSEC2RAD, DEG2ARCSEC, J2000, TWOPI
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
+###############################################################################
+# Data Loading Functions
+###############################################################################
+
+
 def iau80in() -> Tuple[np.ndarray, np.ndarray]:
     """Initializes the nutation matrices needed for reduction calculations.
 
@@ -136,6 +141,11 @@ def iau06in() -> (
     )
 
     return axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, appl, appli, agst, agsti
+
+
+###############################################################################
+# Transformation Functions
+###############################################################################
 
 
 def iau06era(jdut1: float) -> np.ndarray:

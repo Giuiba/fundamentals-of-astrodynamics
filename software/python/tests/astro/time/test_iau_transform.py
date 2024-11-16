@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 import scipy
 
-from src.valladopy.astro.time.iaudata import iau80in, iau06in, iau06era, iau06gst
+from src.valladopy.astro.time.iau_transform import iau80in, iau06in, iau06era, iau06gst
 from ...conftest import custom_allclose, DEFAULT_TOL
 
 
