@@ -75,7 +75,7 @@ def rot1mat(xval: float) -> np.ndarray:
         np.ndarray: Rotation matrix
     """
     c, s = np.cos(xval), np.sin(xval)
-    return np.array([[1.0, 0.0, 0.0], [0.0, c, -s], [0.0, s, c]])
+    return np.array([[1.0, 0.0, 0.0], [0.0, c, s], [0.0, -s, c]])
 
 
 def rot2mat(xval: float) -> np.ndarray:
@@ -89,7 +89,7 @@ def rot2mat(xval: float) -> np.ndarray:
         np.ndarray: Rotation matrix
     """
     c, s = np.cos(xval), np.sin(xval)
-    return np.array([[c, 0.0, s], [0.0, 1.0, 0.0], [-s, 0.0, c]])
+    return np.array([[c, 0.0, -s], [0.0, 1.0, 0.0], [s, 0.0, c]])
 
 
 def rot3mat(xval: float) -> np.ndarray:
@@ -103,7 +103,7 @@ def rot3mat(xval: float) -> np.ndarray:
         np.ndarray: Rotation matrix
     """
     c, s = np.cos(xval), np.sin(xval)
-    return np.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]])
+    return np.array([[c, s, 0.0], [-s, c, 0.0], [0.0, 0.0, 1.0]])
 
 
 ###############################################################################
