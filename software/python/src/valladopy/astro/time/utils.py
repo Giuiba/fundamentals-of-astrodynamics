@@ -11,7 +11,7 @@ import math
 import numpy as np
 from typing import Tuple
 
-from .iau_transform import iau80in
+from .data import iau80in
 from ...constants import ARCSEC2RAD, DEG2ARCSEC, TWOPI
 
 

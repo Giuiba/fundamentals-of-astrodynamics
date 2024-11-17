@@ -1,151 +1,9 @@
 import numpy as np
-import os
-from typing import Tuple
 
+from .data import iau06in
+from .utils import fundarg, precess
 from ...constants import ARCSEC2RAD, DEG2ARCSEC, J2000, TWOPI
-
-
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-
-
-###############################################################################
-# Data Loading Functions
-###############################################################################
-
-
-def iau80in() -> Tuple[np.ndarray, np.ndarray]:
-    """Initializes the nutation matrices needed for reduction calculations.
-
-    Returns:
-        tuple: (iar80, rar80)
-            iar80 (np.ndarray): Integers for FK5 1980
-            rar80 (np.ndarray): Reals for FK5 1980 in radians
-    """
-    # Define the path to the nut80.dat file
-    file_path = os.path.join(DATA_DIR, "nut80.dat")
-
-    # Load the nutation data
-    nut80 = np.loadtxt(file_path)
-
-    # Split into integer and real parts
-    iar80 = nut80[:, :5].astype(int)
-    rar80 = nut80[:, 5:9]
-
-    # Convert from 0.0001 arcseconds to radians
-    convrt = 1e-4 * ARCSEC2RAD
-    rar80 *= convrt
-
-    return iar80, rar80
-
-
-def iau06in() -> (
-    Tuple[
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-    ]
-):
-    """Initializes the matrices needed for IAU 2006 reduction calculations.
-
-    References:
-        Vallado, 2004, p. 205-219, 910-912
-
-    Returns:
-        tuple: (axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, appl, appli, agst, agsti)
-            axs0 (np.ndarray): Real coefficients for X in radians
-            a0xi (np.ndarray): Integer coefficients for X
-            ays0 (np.ndarray): Real coefficients for Y in radians
-            a0yi (np.ndarray): Integer coefficients for Y
-            ass0 (np.ndarray): Real coefficients for S in radians
-            a0si (np.ndarray): Integer coefficients for S
-            apn (np.ndarray): Real coefficients for nutation in radians
-            apni (np.ndarray): Integer coefficients for nutation
-            appl (np.ndarray): Real coefficients for planetary nutation in radians
-            appli (np.ndarray): Integer coefficients for planetary nutation
-            agst (np.ndarray): Real coefficients for GST in radians
-            agsti (np.ndarray): Integer coefficients for GST
-
-    Notes:
-        Data files are from the IAU 2006 precession-nutation model:
-            - iau06xtab5.2.a.dat (file for X coefficients)
-            - iau06ytab5.2.b.dat (file for Y coefficients)
-            - iau06stab5.2.d.dat (file for S coefficients)
-            - iau03n.dat (file for nutation coefficients)
-            - iau03pl.dat (file for planetary nutation coefficients)
-            - iau06gsttab5.2.e.dat (file for GST coefficients)
-    """
-    # Conversion factors
-    convrtu = 1e-6 * ARCSEC2RAD  # microarcseconds to radians
-    convrtm = 1e-3 * ARCSEC2RAD  # milliarcseconds to radians
-
-    def load_data(
-        filename, columns_real, columns_int, conv_factor, convert_exclude_last=False
-    ):
-        """Helper function to load and process data."""
-        filepath = os.path.join(DATA_DIR, filename)
-        data = np.loadtxt(filepath)
-        reals = data[:, columns_real]
-        if convert_exclude_last:
-            reals[:, :-1] *= conv_factor  # convert all except the last column
-        else:
-            reals *= conv_factor  # convert all
-        integers = data[:, columns_int].astype(int)
-        return reals, integers
-
-    # Load data
-    axs0, a0xi = load_data(
-        "iau06xtab5.2.a.dat",
-        columns_real=[1, 2],
-        columns_int=range(3, 17),
-        conv_factor=convrtu,
-    )
-    ays0, a0yi = load_data(
-        "iau06ytab5.2.b.dat",
-        columns_real=[1, 2],
-        columns_int=range(3, 17),
-        conv_factor=convrtu,
-    )
-    ass0, a0si = load_data(
-        "iau06stab5.2.d.dat",
-        columns_real=[1, 2],
-        columns_int=range(3, 17),
-        conv_factor=convrtu,
-    )
-    apn, apni = load_data(
-        "iau03n.dat",
-        columns_real=range(6, 14),
-        columns_int=range(0, 5),
-        conv_factor=convrtm,
-    )
-    appl, appli = load_data(
-        "iau03pl.dat",
-        columns_real=range(16, 21),  # include column 21 (extra)
-        columns_int=range(1, 15),
-        conv_factor=convrtm,
-        convert_exclude_last=True,
-    )
-    agst, agsti = load_data(
-        "iau06gsttab5.2.e.dat",
-        columns_real=[1, 2],
-        columns_int=range(3, 17),
-        conv_factor=convrtu,
-    )
-
-    return axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, appl, appli, agst, agsti
-
-
-###############################################################################
-# Transformation Functions
-###############################################################################
+from ...mathtime.vector import rot1mat, rot2mat, rot3mat
 
 
 def iau06era(jdut1: float) -> np.ndarray:
@@ -205,7 +63,7 @@ def iau06gst(
     Args:
         jdut1 (float): Julian date of UT1 (days from 4713 BC)
         ttt (float): Julian centuries of TT
-        deltapsi (float): Change in longitude, radians
+        deltapsi (float): Change in longitude in radians
         l (float): Delaunay element in radians
         l1 (float): Delaunay element in radians
         f (float): Delaunay element in radians
@@ -246,7 +104,8 @@ def iau06gst(
 
     # Evaluate the EE complementary terms
     gstsum0, gstsum1 = 0.0, 0.0
-    for i in range(33):
+    n_elem = len(agsti) - 1
+    for i in range(n_elem):
         tempval = (
             agsti[i, 0] * l
             + agsti[i, 1] * l1
@@ -266,24 +125,25 @@ def iau06gst(
         gstsum0 += agst[i, 0] * np.sin(tempval) + agst[i, 1] * np.cos(tempval)
 
     # MATLAB's j = 1 translates to Python index 33 (last valid index)
-    i = 33
     tempval = (
-        agsti[i, 0] * l
-        + agsti[i, 1] * l1
-        + agsti[i, 2] * f
-        + agsti[i, 3] * d
-        + agsti[i, 4] * omega
-        + agsti[i, 5] * lonmer
-        + agsti[i, 6] * lonven
-        + agsti[i, 7] * lonear
-        + agsti[i, 8] * lonmar
-        + agsti[i, 9] * lonjup
-        + agsti[i, 10] * lonsat
-        + agsti[i, 11] * lonurn
-        + agsti[i, 12] * lonnep
-        + agsti[i, 13] * precrate
+        agsti[n_elem, 0] * l
+        + agsti[n_elem, 1] * l1
+        + agsti[n_elem, 2] * f
+        + agsti[n_elem, 3] * d
+        + agsti[n_elem, 4] * omega
+        + agsti[n_elem, 5] * lonmer
+        + agsti[n_elem, 6] * lonven
+        + agsti[n_elem, 7] * lonear
+        + agsti[n_elem, 8] * lonmar
+        + agsti[n_elem, 9] * lonjup
+        + agsti[n_elem, 10] * lonsat
+        + agsti[n_elem, 11] * lonurn
+        + agsti[n_elem, 12] * lonnep
+        + agsti[n_elem, 13] * precrate
     )
-    gstsum1 += agst[i, 0] * ttt * np.sin(tempval) + agst[i, 1] * ttt * np.cos(tempval)
+    gstsum1 += agst[n_elem, 0] * ttt * np.sin(tempval) + agst[n_elem, 1] * ttt * np.cos(
+        tempval
+    )
     eect2000 = gstsum0 + gstsum1 * ttt
 
     # Equation of the equinoxes
@@ -320,3 +180,175 @@ def iau06gst(
     )
 
     return gst, st
+
+
+def iau06pna(
+    ttt: float,
+) -> tuple[
+    float,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+]:
+    """Calculates the transformation matrix for IAU 2006 precession-nutation.
+
+    References:
+        Vallado, 2004, p. 212-214
+
+    Args:
+        ttt (float): Julian centuries of TT
+
+    Returns:
+        tuple:
+            deltapsi (float): Change in longitude in radians
+            pnb (np.ndarray): Combined precession-nutation matrix
+            prec (np.ndarray): Precession transformation matrix (MOD to J2000)
+            nut (np.ndarray): Nutation transformation matrix (IRE to GCRF)
+            l (float): Delaunay element in radians
+            l1 (float): Delaunay element in radians
+            f (float): Delaunay element in radians
+            d (float): Delaunay element in radians
+            omega (float): Delaunay element in radians
+            lonmer (float): Longitude of Mercury in radians
+            lonven (float): Longitude of Venus in radians
+            lonear (float): Longitude of Earth in radians
+            lonmar (float): Longitude of Mars in radians
+            lonjup (float): Longitude of Jupiter in radians
+            lonsat (float): Longitude of Saturn in radians
+            lonurn (float): Longitude of Uranus in radians
+            lonnep (float): Longitude of Neptune in radians
+            precrate (float): Precession rate in radians per Julian century
+    """
+    # Obtain data for calculations from the 2000a theory
+    (
+        l,
+        l1,
+        f,
+        d,
+        omega,
+        lonmer,
+        lonven,
+        lonear,
+        lonmar,
+        lonjup,
+        lonsat,
+        lonurn,
+        lonnep,
+        precrate,
+    ) = fundarg(ttt, "06")
+
+    # Load IAU 2006 data
+    axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, appl, appli, agst, agsti = iau06in()
+
+    # Compute luni-solar nutation
+    pnsum, ensum = 0.0, 0.0
+    for i in range(len(apni) - 1, -1, -1):
+        tempval = (
+            apni[i, 0] * l
+            + apni[i, 1] * l1
+            + apni[i, 2] * f
+            + apni[i, 3] * d
+            + apni[i, 4] * omega
+        )
+        tempval = np.mod(tempval, TWOPI)
+        pnsum += (apn[i, 0] + apn[i, 1] * ttt) * np.sin(tempval) + apn[i, 4] * np.cos(
+            tempval
+        )
+        ensum += (apn[i, 2] + apn[i, 3] * ttt) * np.cos(tempval) + apn[i, 6] * np.sin(
+            tempval
+        )
+
+    # Compute planetary nutation
+    pplnsum, eplnsum = 0.0, 0.0
+    for i in range(len(appli)):
+        tempval = (
+            appli[i, 0] * l
+            + appli[i, 1] * l1
+            + appli[i, 2] * f
+            + appli[i, 3] * d
+            + appli[i, 4] * omega
+            + appli[i, 5] * lonmer
+            + appli[i, 6] * lonven
+            + appli[i, 7] * lonear
+            + appli[i, 8] * lonmar
+            + appli[i, 9] * lonjup
+            + appli[i, 10] * lonsat
+            + appli[i, 11] * lonurn
+            + appli[i, 12] * lonnep
+            + appli[i, 13] * precrate
+        )
+        pplnsum += appl[i, 0] * np.sin(tempval) + appl[i, 1] * np.cos(tempval)
+        eplnsum += appl[i, 2] * np.sin(tempval) + appl[i, 3] * np.cos(tempval)
+
+    # Combine nutation components
+    deltapsi = pnsum + pplnsum
+    deltaeps = ensum + eplnsum
+
+    # Apply IAU 2006 corrections
+    j2d = -2.7774e-6 * ttt * ARCSEC2RAD
+    deltapsi += deltapsi * (0.4697e-6 + j2d)
+    deltaeps += deltaeps * j2d
+
+    # Precession angles and matrix
+    prec, psia, wa, ea, xa = precess(ttt, "06")
+
+    # Obliquity
+    oblo = 84381.406 * ARCSEC2RAD
+
+    # Compute nutation matrix
+    a1 = rot1mat(ea + deltaeps)
+    a2 = rot3mat(deltapsi)
+    a3 = rot1mat(-ea)
+    nut = a3 @ a2 @ a1
+
+    # J2000 to date (precession)
+    a4 = rot3mat(-xa)
+    a5 = rot1mat(wa)
+    a6 = rot3mat(psia)
+    a7 = rot1mat(-oblo)
+
+    # Precession matrix
+    prec = a7 @ a6 @ a5 @ a4
+
+    # ICRS to J2000
+    a8 = rot1mat(-0.0068192 * ARCSEC2RAD)
+    a9 = rot2mat(0.0417750 * np.sin(oblo) * ARCSEC2RAD)
+    a10 = rot3mat(0.0146 * ARCSEC2RAD)
+
+    # Combined matrix
+    pnb = a10 @ a9 @ a8 @ prec @ nut
+
+    return (
+        deltapsi,
+        pnb,
+        prec,
+        nut,
+        l,
+        l1,
+        f,
+        d,
+        omega,
+        lonmer,
+        lonven,
+        lonear,
+        lonmar,
+        lonjup,
+        lonsat,
+        lonurn,
+        lonnep,
+        precrate,
+    )
