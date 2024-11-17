@@ -183,6 +183,62 @@ def iau06gst(
     return gst, st
 
 
+###############################################################################
+# IAU 2006 Precession-Nutation Theories (IAU2006/2000A and IAU2006/2000B)
+###############################################################################
+
+
+def _build_transformation_matrices(
+    ttt: float, deltaeps: float, deltapsi: float, use_extended_prec: bool
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Constructs nutation, precession, and combined precession-nutation matrices.
+
+    Args:
+        ttt (float): Julian centuries of TT
+        deltaeps (float): Nutation in obliquity in radians
+        deltapsi (float): Nutation in longitude in radians
+        use_extended_prec (bool): Whether to include extended precession terms.
+
+    Returns:
+        tuple:
+            nut (np.ndarray): Nutation matrix (mean to true transformation)
+            prec (np.ndarray): Precession matrix (J2000 to date transformation)
+            pnb (np.ndarray): Combined precession-nutation matrix (ICRS to GCRF)
+    """
+    # Get precession angles
+    _, psia, wa, ea, xa = precess(ttt, opt="06")
+
+    # Obliquity of the ecliptic
+    oblo = 84381.406 * ARCSEC2RAD
+
+    # Nutation matrix
+    a1 = rot1mat(ea + deltaeps)
+    a2 = rot3mat(deltapsi)
+    a3 = rot1mat(-ea)
+    nut = a3 @ a2 @ a1
+
+    # Precession matrix
+    a4 = rot3mat(-xa)
+    a5 = rot1mat(wa)
+    a6 = rot3mat(psia)
+    a7 = rot1mat(-oblo)
+
+    # ICRS to J2000
+    a8 = rot1mat(-0.0068192 * ARCSEC2RAD)
+    a9 = rot2mat(0.0417750 * np.sin(oblo) * ARCSEC2RAD)
+    a10 = rot3mat(0.0146 * ARCSEC2RAD)
+
+    # Precession and combined matrices
+    if use_extended_prec:
+        prec = a10 @ a9 @ a8 @ a7 @ a6 @ a5 @ a4
+        pnb = prec @ nut
+    else:
+        prec = a7 @ a6 @ a5 @ a4
+        pnb = a10 @ a9 @ a8 @ prec @ nut
+
+    return nut, prec, pnb
+
+
 def iau06pna(
     ttt: float,
 ) -> Tuple[
@@ -255,7 +311,7 @@ def iau06pna(
     ) = fundarg(ttt, opt="06")
 
     # Load IAU 2006 data
-    axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, appl, appli, agst, agsti = iau06in()
+    _, _, _, _, _, _, apn, apni, appl, appli, _, _ = iau06in()
 
     # Compute luni-solar nutation
     pnsum, ensum = 0.0, 0.0
@@ -306,34 +362,8 @@ def iau06pna(
     deltapsi += deltapsi * (0.4697e-6 + j2d)
     deltaeps += deltaeps * j2d
 
-    # Precession angles and matrix
-    _, psia, wa, ea, xa = precess(ttt, opt="06")
-
-    # Obliquity
-    oblo = 84381.406 * ARCSEC2RAD
-
-    # Compute nutation matrix
-    a1 = rot1mat(ea + deltaeps)
-    a2 = rot3mat(deltapsi)
-    a3 = rot1mat(-ea)
-    nut = a3 @ a2 @ a1
-
-    # J2000 to date (precession)
-    a4 = rot3mat(-xa)
-    a5 = rot1mat(wa)
-    a6 = rot3mat(psia)
-    a7 = rot1mat(-oblo)
-
-    # Precession matrix
-    prec = a7 @ a6 @ a5 @ a4
-
-    # ICRS to J2000
-    a8 = rot1mat(-0.0068192 * ARCSEC2RAD)
-    a9 = rot2mat(0.0417750 * np.sin(oblo) * ARCSEC2RAD)
-    a10 = rot3mat(0.0146 * ARCSEC2RAD)
-
-    # Combined matrix
-    pnb = a10 @ a9 @ a8 @ prec @ nut
+    # Build transformation matrices
+    nut, prec, pnb = _build_transformation_matrices(ttt, deltaeps, deltapsi, False)
 
     return (
         deltapsi,
@@ -432,7 +462,7 @@ def iau06pnb(
     ) = fundarg(ttt, opt="02")
 
     # Load IAU 2006 data
-    axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, _, _, _, _ = iau06in()
+    _, _, _, _, _, _, apn, apni, _, _, _, _ = iau06in()
 
     # Compute luni-solar nutation
     pnsum, ensum = 0.0, 0.0
@@ -459,34 +489,8 @@ def iau06pnb(
     deltapsi = pnsum + pplnsum
     deltaeps = ensum + eplnsum
 
-    # Precession angles and matrix
-    _, psia, wa, ea, xa = precess(ttt, opt="06")
-
-    # Obliquity of the ecliptic
-    oblo = 84381.406 * ARCSEC2RAD
-
-    # Nutation matrix (mean to true)
-    a1 = rot1mat(ea + deltaeps)
-    a2 = rot3mat(deltapsi)
-    a3 = rot1mat(-ea)
-    nut = a3 @ a2 @ a1
-
-    # Precession-nutation matrix (ICRS to GCRF)
-    a4 = rot3mat(-xa)
-    a5 = rot1mat(wa)
-    a6 = rot3mat(psia)
-    a7 = rot1mat(-oblo)
-
-    # Final transformation matrix
-    a8 = rot1mat(-0.0068192 * ARCSEC2RAD)
-    a9 = rot2mat(0.0417750 * np.sin(oblo) * ARCSEC2RAD)
-    a10 = rot3mat(0.0146 * ARCSEC2RAD)
-
-    # Precession matrix
-    prec = a10 @ a9 @ a8 @ a7 @ a6 @ a5 @ a4
-
-    # Combined matrix
-    pnb = prec @ nut
+    # Build transformation matrices
+    nut, prec, pnb = _build_transformation_matrices(ttt, deltaeps, deltapsi, True)
 
     return (
         deltapsi,
