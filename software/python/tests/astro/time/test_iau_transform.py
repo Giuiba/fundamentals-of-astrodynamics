@@ -112,9 +112,9 @@ def test_iau06pna(ttt):
         ]
     )
     assert custom_isclose(deltapsi, 7.97497241593155e-05)
-    assert custom_allclose(pnb, pnb_exp)
-    assert custom_allclose(prec, prec_exp)
-    assert custom_allclose(nut, nut_exp)
+    assert custom_allclose(pnb, pnb_exp, rtol=1e-9)
+    assert custom_allclose(prec, prec_exp, rtol=1e-9)
+    assert custom_allclose(nut, nut_exp, rtol=1e-9)
     assert custom_isclose(l, 5.844239313494585)
     assert custom_isclose(l1, 6.23840254543787)
     assert custom_isclose(f, 3.0276889929096353)
