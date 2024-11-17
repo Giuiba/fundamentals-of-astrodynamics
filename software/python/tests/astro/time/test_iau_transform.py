@@ -129,3 +129,67 @@ def test_iau06pna(ttt):
     assert custom_isclose(lonurn, 0.10871847648477687)
     assert custom_isclose(lonnep, 0.09936537545632083)
     assert custom_isclose(precrate, 4.2555121682972836e-05)
+
+
+def test_iau06pnb(ttt):
+    (
+        deltapsi,
+        pnb,
+        prec,
+        nut,
+        l,
+        l1,
+        f,
+        d,
+        omega,
+        lonmer,
+        lonven,
+        lonear,
+        lonmar,
+        lonjup,
+        lonsat,
+        lonurn,
+        lonnep,
+        precrate,
+    ) = iau_transform.iau06pnb(ttt)
+
+    # Check against expected values
+    pnb_exp = np.array(
+        [
+            [0.9999968301909938, 0.0023093250156609305, 0.0010033074986805486],
+            [-0.0023093387049374255, 0.9999973333958689, 1.2485872490362154e-05],
+            [-0.0010032759893189437, -1.4802809752234849e-05, 0.9999994966089566],
+        ]
+    )
+    prec_exp = np.array(
+        [
+            [0.9999970277955893, 0.002236174504540456, 0.0009715572925536376],
+            [-0.0022361744601857273, 0.9999974997581255, -1.1319406437726443e-06],
+            [-0.0009715573946422197, -1.0406343248994258e-06, 0.9999995280374617],
+        ]
+    )
+    nut_exp = np.array(
+        [
+            [0.9999999968204425, 7.316403646053429e-05, 3.171969048747087e-05],
+            [-7.316447069429023e-05, 0.9999999972297888, 1.3688778120468648e-05],
+            [-3.1718688873339126e-05, -1.3691098831258852e-05, 0.9999999994032394],
+        ]
+    )
+    assert custom_isclose(deltapsi, 7.974405939816953e-05)
+    assert custom_allclose(pnb, pnb_exp, rtol=1e-9)
+    assert custom_allclose(prec, prec_exp, rtol=1e-9)
+    assert custom_allclose(nut, nut_exp, rtol=1e-9)
+    assert custom_isclose(l, 5.844237767697117)
+    assert custom_isclose(l1, 6.2384025722571055)
+    assert custom_isclose(f, 3.02768961111037)
+    assert custom_isclose(d, 3.2212030577628026)
+    assert custom_isclose(omega, 5.08991990843217)
+    assert custom_isclose(lonmer, 0.0)
+    assert custom_isclose(lonven, 0.0)
+    assert custom_isclose(lonear, 0.0)
+    assert custom_isclose(lonmar, 0.0)
+    assert custom_isclose(lonjup, 0.0)
+    assert custom_isclose(lonsat, 0.0)
+    assert custom_isclose(lonurn, 0.0)
+    assert custom_isclose(lonnep, 0.0)
+    assert custom_isclose(precrate, 0.0)

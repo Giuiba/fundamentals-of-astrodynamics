@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Tuple
 
 from .data import iau06in
 from .utils import fundarg, precess
@@ -184,7 +185,7 @@ def iau06gst(
 
 def iau06pna(
     ttt: float,
-) -> tuple[
+) -> Tuple[
     float,
     np.ndarray,
     np.ndarray,
@@ -204,7 +205,9 @@ def iau06pna(
     float,
     float,
 ]:
-    """Calculates the transformation matrix for IAU 2006 precession-nutation.
+    """Calculates the transformation matrix that accounts for the effects of
+    precession-nutation using the IAU2006 precession theory and the IAU2000A nutation
+    model.
 
     References:
         Vallado, 2004, p. 212-214
@@ -249,7 +252,7 @@ def iau06pna(
         lonurn,
         lonnep,
         precrate,
-    ) = fundarg(ttt, "06")
+    ) = fundarg(ttt, opt="06")
 
     # Load IAU 2006 data
     axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, appl, appli, agst, agsti = iau06in()
@@ -304,7 +307,7 @@ def iau06pna(
     deltaeps += deltaeps * j2d
 
     # Precession angles and matrix
-    prec, psia, wa, ea, xa = precess(ttt, "06")
+    _, psia, wa, ea, xa = precess(ttt, opt="06")
 
     # Obliquity
     oblo = 84381.406 * ARCSEC2RAD
@@ -331,6 +334,159 @@ def iau06pna(
 
     # Combined matrix
     pnb = a10 @ a9 @ a8 @ prec @ nut
+
+    return (
+        deltapsi,
+        pnb,
+        prec,
+        nut,
+        l,
+        l1,
+        f,
+        d,
+        omega,
+        lonmer,
+        lonven,
+        lonear,
+        lonmar,
+        lonjup,
+        lonsat,
+        lonurn,
+        lonnep,
+        precrate,
+    )
+
+
+def iau06pnb(
+    ttt: float,
+) -> Tuple[
+    float,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+]:
+    """Calculates the transformation matrix that accounts for the effects of
+    precession-nutation using the IAU2006 precession theory and a simplified nutation
+    model based on IAU2000B.
+
+    References:
+        Vallado, 2004, p. 212-214
+
+    Args:
+        ttt (float): Julian centuries of TT
+
+    Returns:
+        tuple:
+            deltapsi (float): Change in longitude in radians
+            pnb (np.ndarray): Combined precession-nutation matrix
+            prec (np.ndarray): Precession transformation matrix (MOD to J2000)
+            nut (np.ndarray): Nutation transformation matrix (IRE to GCRF)
+            l (float): Delaunay element in radians
+            l1 (float): Delaunay element in radians
+            f (float): Delaunay element in radians
+            d (float): Delaunay element in radians
+            omega (float): Delaunay element in radians
+            lonmer (float): Longitude of Mercury in radians
+            lonven (float): Longitude of Venus in radians
+            lonear (float): Longitude of Earth in radians
+            lonmar (float): Longitude of Mars in radians
+            lonjup (float): Longitude of Jupiter in radians
+            lonsat (float): Longitude of Saturn in radians
+            lonurn (float): Longitude of Uranus in radians
+            lonnep (float): Longitude of Neptune in radians
+            precrate (float): Precession rate in radians per Julian century
+    """
+    # Definitions
+    iau2000b_terms = 77
+
+    # Obtain data for calculations from the 2000b theory
+    (
+        l,
+        l1,
+        f,
+        d,
+        omega,
+        lonmer,
+        lonven,
+        lonear,
+        lonmar,
+        lonjup,
+        lonsat,
+        lonurn,
+        lonnep,
+        precrate,
+    ) = fundarg(ttt, opt="02")
+
+    # Load IAU 2006 data
+    axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, _, _, _, _ = iau06in()
+
+    # Compute luni-solar nutation
+    pnsum, ensum = 0.0, 0.0
+    for i in range(iau2000b_terms - 1, -1, -1):
+        tempval = (
+            apni[i, 0] * l
+            + apni[i, 1] * l1
+            + apni[i, 2] * f
+            + apni[i, 3] * d
+            + apni[i, 4] * omega
+        )
+        pnsum += (apn[i, 0] + apn[i, 1] * ttt) * np.sin(tempval) + (
+            apn[i, 4] + apn[i, 5] * ttt
+        ) * np.cos(tempval)
+        ensum += (apn[i, 2] + apn[i, 3] * ttt) * np.cos(tempval) + (
+            apn[i, 6] + apn[i, 7] * ttt
+        ) * np.sin(tempval)
+
+    # Planetary nutation constants
+    pplnsum = -0.000135 * ARCSEC2RAD
+    eplnsum = 0.000388 * ARCSEC2RAD
+
+    # Combine nutation components
+    deltapsi = pnsum + pplnsum
+    deltaeps = ensum + eplnsum
+
+    # Precession angles and matrix
+    _, psia, wa, ea, xa = precess(ttt, opt="06")
+
+    # Obliquity of the ecliptic
+    oblo = 84381.406 * ARCSEC2RAD
+
+    # Nutation matrix (mean to true)
+    a1 = rot1mat(ea + deltaeps)
+    a2 = rot3mat(deltapsi)
+    a3 = rot1mat(-ea)
+    nut = a3 @ a2 @ a1
+
+    # Precession-nutation matrix (ICRS to GCRF)
+    a4 = rot3mat(-xa)
+    a5 = rot1mat(wa)
+    a6 = rot3mat(psia)
+    a7 = rot1mat(-oblo)
+
+    # Final transformation matrix
+    a8 = rot1mat(-0.0068192 * ARCSEC2RAD)
+    a9 = rot2mat(0.0417750 * np.sin(oblo) * ARCSEC2RAD)
+    a10 = rot3mat(0.0146 * ARCSEC2RAD)
+
+    # Precession matrix
+    prec = a10 @ a9 @ a8 @ a7 @ a6 @ a5 @ a4
+
+    # Combined matrix
+    pnb = prec @ nut
 
     return (
         deltapsi,
