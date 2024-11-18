@@ -5,6 +5,9 @@ import src.valladopy.astro.time.iau_transform as iau_transform
 from ...conftest import custom_isclose, custom_allclose, DEFAULT_TOL
 
 
+ROTATION_MATRIX_TOL = 1e-9
+
+
 @pytest.fixture()
 def ttt():
     # Terrestrial Time (TT) in Julian centuries of TT
@@ -111,10 +114,10 @@ def test_iau06pna(ttt):
             [-3.172094206683474e-05, -1.3689975420727585e-05, 0.9999999994031832],
         ]
     )
+    assert custom_allclose(pnb, pnb_exp, rtol=ROTATION_MATRIX_TOL)
+    assert custom_allclose(prec, prec_exp, rtol=ROTATION_MATRIX_TOL)
+    assert custom_allclose(nut, nut_exp, rtol=ROTATION_MATRIX_TOL)
     assert custom_isclose(deltapsi, 7.97497241593155e-05)
-    assert custom_allclose(pnb, pnb_exp, rtol=1e-9)
-    assert custom_allclose(prec, prec_exp, rtol=1e-9)
-    assert custom_allclose(nut, nut_exp, rtol=1e-9)
     assert custom_isclose(l, 5.844239313494585)
     assert custom_isclose(l1, 6.23840254543787)
     assert custom_isclose(f, 3.0276889929096353)
@@ -175,10 +178,10 @@ def test_iau06pnb(ttt):
             [-3.1718688873339126e-05, -1.3691098831258852e-05, 0.9999999994032394],
         ]
     )
+    assert custom_allclose(pnb, pnb_exp, rtol=ROTATION_MATRIX_TOL)
+    assert custom_allclose(prec, prec_exp, rtol=ROTATION_MATRIX_TOL)
+    assert custom_allclose(nut, nut_exp, rtol=ROTATION_MATRIX_TOL)
     assert custom_isclose(deltapsi, 7.974405939816953e-05)
-    assert custom_allclose(pnb, pnb_exp, rtol=1e-9)
-    assert custom_allclose(prec, prec_exp, rtol=1e-9)
-    assert custom_allclose(nut, nut_exp, rtol=1e-9)
     assert custom_isclose(l, 5.844237767697117)
     assert custom_isclose(l1, 6.2384025722571055)
     assert custom_isclose(f, 3.02768961111037)
