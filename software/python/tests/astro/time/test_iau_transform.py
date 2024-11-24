@@ -10,8 +10,41 @@ ROTATION_MATRIX_TOL = 1e-9
 
 @pytest.fixture()
 def ttt():
-    # Terrestrial Time (TT) in Julian centuries of TT
+    """Terrestrial Time (TT) in Julian centuries of TT"""
     return 0.1
+
+
+@pytest.fixture()
+def delunay_elems():
+    """Delunay elements in radians"""
+    return [
+        5.844239313494585,  # l
+        6.23840254543787,  # l1
+        3.0276889929096353,  # f
+        3.2212027489393993,  # d
+        5.089920270731961,  # omega
+    ]
+
+
+@pytest.fixture()
+def planet_lon():
+    """Planet longitudes in radians"""
+    return [
+        0.02422268041366862,  # mercury
+        0.08339248169484563,  # venus
+        0.030584726431970796,  # earth
+        0.03334439906671072,  # mars
+        0.1029125735528856,  # jupiter
+        0.05248218685834288,  # saturn
+        0.10871847648477687,  # uranus
+        0.09936537545632083,  # neptune
+    ]
+
+
+@pytest.fixture()
+def precrate():
+    """Precession rate in radians per Julian century"""
+    return 4.2555121682972836e-05
 
 
 def test_iau06era():
@@ -31,25 +64,7 @@ def test_iau06era():
     assert np.allclose(era, era_exp, rtol=DEFAULT_TOL, atol=DEFAULT_TOL)
 
 
-def test_iau06gst(ttt):
-    delunay_elems = [
-        5.844239313494585,  # l
-        6.23840254543787,  # l1
-        3.0276889929096353,  # f
-        3.2212027489393993,  # d
-        5.089920270731961,  # omega
-    ]
-    planet_lon = [
-        0.02422268041366862,  # mercury
-        0.08339248169484563,  # venus
-        0.030584726431970796,  # earth
-        0.03334439906671072,  # mars
-        0.1029125735528856,  # jupiter
-        0.05248218685834288,  # saturn
-        0.10871847648477687,  # uranus
-        0.09936537545632083,  # neptune
-    ]
-    precrate = 4.2555121682972836e-05  # precession rate
+def test_iau06gst(ttt, delunay_elems, planet_lon, precrate):
     judt1 = 2448855.009722  # Julian date of UT1
     deltapsi = -5.978331920752922e-05  # change in longitude
 
@@ -196,3 +211,13 @@ def test_iau06pnb(ttt):
     assert custom_isclose(lonurn, 0.0)
     assert custom_isclose(lonnep, 0.0)
     assert custom_isclose(precrate, 0.0)
+
+
+def test_iau06xys_series(ttt, delunay_elems, planet_lon, precrate):
+    # Call function
+    x, y, s = iau_transform.iau06xys_series(ttt, *delunay_elems, *planet_lon, precrate)
+
+    # Check against expected values
+    assert custom_isclose(x, 0.0010033097412569085)
+    assert custom_isclose(y, 1.248474017229823e-05)
+    assert custom_isclose(s, 7.765595105574456e-09)

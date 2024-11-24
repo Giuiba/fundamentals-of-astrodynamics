@@ -101,7 +101,7 @@ def iau06gst(
     epsa = np.mod(np.radians(epsa / DEG2ARCSEC), TWOPI)
 
     # Load the IAU 2006 data (GST coefficients)
-    _, _, _, _, _, _, _, _, _, _, agst, agsti = iau06in()
+    *_, agst, agsti = iau06in()
 
     # Evaluate the EE complementary terms
     gstsum0, gstsum1 = 0.0, 0.0
@@ -311,7 +311,7 @@ def iau06pna(
     ) = fundarg(ttt, opt="06")
 
     # Load IAU 2006 data
-    _, _, _, _, _, _, apn, apni, appl, appli, _, _ = iau06in()
+    _, _, _, _, _, _, apn, apni, appl, appli, *_ = iau06in()
 
     # Compute luni-solar nutation
     pnsum, ensum = 0.0, 0.0
@@ -462,7 +462,7 @@ def iau06pnb(
     ) = fundarg(ttt, opt="02")
 
     # Load IAU 2006 data
-    _, _, _, _, _, _, apn, apni, _, _, _, _ = iau06in()
+    _, _, _, _, _, _, apn, apni, *_ = iau06in()
 
     # Compute luni-solar nutation
     pnsum, ensum = 0.0, 0.0
@@ -512,3 +512,201 @@ def iau06pnb(
         lonnep,
         precrate,
     )
+
+
+###############################################################################
+# IAU 2006 XYS Parameters
+###############################################################################
+
+
+def iau06xys_series(
+    ttt: float,
+    l: float,
+    l1: float,
+    f: float,
+    d: float,
+    omega: float,
+    lonmer: float,
+    lonven: float,
+    lonear: float,
+    lonmar: float,
+    lonjup: float,
+    lonsat: float,
+    lonurn: float,
+    lonnep: float,
+    precrate: float,
+) -> Tuple[float, float, float]:
+    """Calculates the XYS parameters for the IAU2006 CIO theory.
+
+    This is the series implementation of the XYS parameters, which are used to compute
+    the Celestial Intermediate Origin (CIO) locator. Equivalent to the `iau06xysS`
+    MATLAB version.
+
+    References:
+        Vallado, 2022, p. 214-216
+
+    Args:
+        ttt (float): Julian centuries of TT
+        l (float): Delaunay element in radians
+        l1 (float): Delaunay element in radians
+        f (float): Delaunay element in radians
+        d (float): Delaunay element in radians
+        omega (float): Delaunay element in radians
+        lonmer (float): Longitude of Mercury in radians
+        lonven (float): Longitude of Venus in radians
+        lonear (float): Longitude of Earth in radians
+        lonmar (float): Longitude of Mars in radians
+        lonjup (float): Longitude of Jupiter in radians
+        lonsat (float): Longitude of Saturn in radians
+        lonurn (float): Longitude of Uranus in radians
+        lonnep (float): Longitude of Neptune in radians
+        precrate (float): Precession rate in radians per Julian century
+
+    Returns:
+        tuple: (x, y, s)
+            x (float): Coordinate of CIP in radians
+            y (float): Coordinate of CIP in radians
+            s (float): Coordinate in radians
+    """
+    # Powers of TTT
+    ttt2 = ttt * ttt
+    ttt3 = ttt2 * ttt
+    ttt4 = ttt2 * ttt2
+    ttt5 = ttt3 * ttt2
+
+    # Load IAU 2006 data
+    axs0, a0xi, ays0, a0yi, ass0, a0si, *_ = iau06in()
+
+    # Limits for the x, y, and s series. These numbers correspond to the ranges of
+    # terms used in the calculations for each group:
+    # - Group 1: Main series (1306 terms for x, 962 for y, etc.)
+    # - Group 2: Secondary contributions (253 terms for x, 277 for y, etc.)
+    # - Group 3: Smaller corrections (36 terms for x, 30 for y, etc.)
+    # - Group 4: Even smaller corrections (4 terms for x, 5 for y, etc.)
+    # - Group 5: Minimal corrections (1 term each for both x and y, 0 for s)
+
+    # Compute X
+    limits_x = [1306, 253, 36, 4, 1]  # total sum = 1600 (axs0 and a0xi length)
+    x_sums = [0.0] * len(limits_x)
+
+    # Loop over each group
+    for group, limit in enumerate(limits_x):
+        start_index = sum(limits_x[:group])
+        for i in range(limit):
+            idx = start_index + i
+            tempval = (
+                a0xi[idx, 0] * l
+                + a0xi[idx, 1] * l1
+                + a0xi[idx, 2] * f
+                + a0xi[idx, 3] * d
+                + a0xi[idx, 4] * omega
+                + a0xi[idx, 5] * lonmer
+                + a0xi[idx, 6] * lonven
+                + a0xi[idx, 7] * lonear
+                + a0xi[idx, 8] * lonmar
+                + a0xi[idx, 9] * lonjup
+                + a0xi[idx, 10] * lonsat
+                + a0xi[idx, 11] * lonurn
+                + a0xi[idx, 12] * lonnep
+                + a0xi[idx, 13] * precrate
+            )
+            x_sums[group] += axs0[idx, 0] * np.sin(tempval) + axs0[idx, 1] * np.cos(
+                tempval
+            )
+
+    # Final value for x
+    x = (
+        -0.016617
+        + 2004.191898 * ttt
+        - 0.4297829 * ttt2
+        - 0.19861834 * ttt3
+        - 0.000007578 * ttt4
+        + 0.0000059285 * ttt5
+    )
+    x = x * ARCSEC2RAD + sum(x_sums * np.array([1, ttt, ttt2, ttt3, ttt4]))
+
+    # Compute Y
+    limits_y = [962, 277, 30, 5, 1]  # total sum = 1275 (ays0 and a0yi length)
+    y_sums = [0.0] * len(limits_y)
+
+    # Loop over each group
+    for group, limit in enumerate(limits_y):
+        start_index = sum(limits_y[:group])
+        for i in range(limit):
+            idx = start_index + i
+            tempval = (
+                a0yi[idx, 0] * l
+                + a0yi[idx, 1] * l1
+                + a0yi[idx, 2] * f
+                + a0yi[idx, 3] * d
+                + a0yi[idx, 4] * omega
+                + a0yi[idx, 5] * lonmer
+                + a0yi[idx, 6] * lonven
+                + a0yi[idx, 7] * lonear
+                + a0yi[idx, 8] * lonmar
+                + a0yi[idx, 9] * lonjup
+                + a0yi[idx, 10] * lonsat
+                + a0yi[idx, 11] * lonurn
+                + a0yi[idx, 12] * lonnep
+                + a0yi[idx, 13] * precrate
+            )
+            y_sums[group] += ays0[idx, 0] * np.sin(tempval) + ays0[idx, 1] * np.cos(
+                tempval
+            )
+
+    # Final value for y
+    y = (
+        -0.006951
+        - 0.025896 * ttt
+        - 22.4072747 * ttt2
+        + 0.00190059 * ttt3
+        + 0.001112526 * ttt4
+        + 0.0000001358 * ttt5
+    )
+    y = y * ARCSEC2RAD + sum(y_sums * np.array([1, ttt, ttt2, ttt3, ttt4]))
+
+    # Compute S
+    limits_s = [33, 3, 25, 4, 1]  # total sum = 66 (ass0 and a0si length)
+    s_sums = [0.0] * len(limits_s)
+
+    # Loop over each group
+    for group, limit in enumerate(limits_s):
+        start_index = sum(limits_s[:group])
+        for i in range(limit):
+            idx = start_index + i
+            tempval = (
+                a0si[idx, 0] * l
+                + a0si[idx, 1] * l1
+                + a0si[idx, 2] * f
+                + a0si[idx, 3] * d
+                + a0si[idx, 4] * omega
+                + a0si[idx, 5] * lonmer
+                + a0si[idx, 6] * lonven
+                + a0si[idx, 7] * lonear
+                + a0si[idx, 8] * lonmar
+                + a0si[idx, 9] * lonjup
+                + a0si[idx, 10] * lonsat
+                + a0si[idx, 11] * lonurn
+                + a0si[idx, 12] * lonnep
+                + a0si[idx, 13] * precrate
+            )
+            s_sums[group] += ass0[idx, 0] * np.sin(tempval) + ass0[idx, 1] * np.cos(
+                tempval
+            )
+
+    # Final value for s
+    s = (
+        0.000094
+        + 0.00380865 * ttt
+        - 0.00012268 * ttt2
+        - 0.07257411 * ttt3
+        + 0.00002798 * ttt4
+        + 0.00001562 * ttt5
+    )
+    s = (
+        -x * y * 0.5
+        + s * ARCSEC2RAD
+        + sum(s_sums * np.array([1, ttt, ttt2, ttt3, ttt4]))
+    )
+
+    return x, y, s
