@@ -42,8 +42,8 @@
         %    many others
         %
         %  coupling      :
-        %    iau00in     - initialize the arrays
         %    fundarg     - find the fundamental arguments
+        %    iau06xysS   - find the xys series parameters
         %
         %  references    :
         %    vallado       2022, 214, 221

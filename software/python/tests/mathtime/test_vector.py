@@ -35,17 +35,17 @@ def test_rotations(func, angle, vector, expected):
         (
             vec.rot1mat,
             np.pi / 2,
-            np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]]),
+            np.array([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]]),
         ),
         (
             vec.rot2mat,
             np.pi / 2,
-            np.array([[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]]),
+            np.array([[0.0, 0.0, -1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]),
         ),
         (
             vec.rot3mat,
             np.pi / 2,
-            np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]),
+            np.array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]),
         ),
         (
             vec.rot1mat,
@@ -53,8 +53,8 @@ def test_rotations(func, angle, vector, expected):
             np.array(
                 [
                     [1.0, 0.0, 0.0],
-                    [0.0, 1 / np.sqrt(2), -1 / np.sqrt(2)],
                     [0.0, 1 / np.sqrt(2), 1 / np.sqrt(2)],
+                    [0.0, -1 / np.sqrt(2), 1 / np.sqrt(2)],
                 ]
             ),
         ),
@@ -63,9 +63,9 @@ def test_rotations(func, angle, vector, expected):
             np.pi / 4,
             np.array(
                 [
-                    [1 / np.sqrt(2), 0.0, 1 / np.sqrt(2)],
+                    [1 / np.sqrt(2), 0.0, -1 / np.sqrt(2)],
                     [0.0, 1.0, 0],
-                    [-1 / np.sqrt(2), 0.0, 1 / np.sqrt(2)],
+                    [1 / np.sqrt(2), 0.0, 1 / np.sqrt(2)],
                 ]
             ),
         ),
@@ -74,8 +74,8 @@ def test_rotations(func, angle, vector, expected):
             np.pi / 4,
             np.array(
                 [
-                    [1 / np.sqrt(2), -1 / np.sqrt(2), 0.0],
-                    [1 / np.sqrt(2), 1 / np.sqrt(2), 0],
+                    [1 / np.sqrt(2), 1 / np.sqrt(2), 0.0],
+                    [-1 / np.sqrt(2), 1 / np.sqrt(2), 0],
                     [0.0, 0.0, 1.0],
                 ]
             ),

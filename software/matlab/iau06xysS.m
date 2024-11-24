@@ -42,7 +42,7 @@
         %    many others
         %
         %  coupling      :
-        %    iau00in     - initialize the arrays
+        %    iau06in     - initialize the arrays
         %
         %  references    :
         %     vallado       2022, 214-216

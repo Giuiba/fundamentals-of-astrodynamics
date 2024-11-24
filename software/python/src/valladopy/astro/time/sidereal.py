@@ -80,7 +80,7 @@ def sidereal(
         Vallado: 2013, p. 223-224
 
     Args:
-        jdut1 (float): Julian date of UT1
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
         deltapsi (float): Nutation angle in radians
         meaneps (float): Mean obliquity of the ecliptic in radians
         omega (float): Longitude of ascending node of the moon in radians

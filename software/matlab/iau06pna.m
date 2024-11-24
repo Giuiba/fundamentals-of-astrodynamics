@@ -41,7 +41,7 @@
     %    deltaeps    - change in obliquity            rad
     %
     %  coupling      :
-    %    iau00in     - initialize the arrays
+    %    iau06in     - initialize the arrays
     %    fundarg     - find the fundamental arguments
     %    precess     - find the precession quantities
     %
