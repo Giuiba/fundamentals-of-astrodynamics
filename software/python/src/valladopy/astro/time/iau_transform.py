@@ -292,7 +292,7 @@ def iau06pna(
             lonnep (float): Longitude of Neptune in radians
             precrate (float): Precession rate in radians per Julian century
     """
-    # Obtain data for calculations from the 2000a theory
+    # Obtain data for calculations from the IAU 2006 nutation theory
     (
         l,
         l1,
@@ -710,3 +710,86 @@ def iau06xys_series(
     )
 
     return x, y, s
+
+
+def iau06xys(
+    ttt: float, ddx: float = 0.0, ddy: float = 0.0
+) -> tuple[float, float, float, np.ndarray]:
+    """Calculates the transformation matrix that accounts for the effects of
+    precession-nutation using the IAU2006 theory.
+
+    References:
+        Vallado, 2022, pp. 214, 221
+
+    Args:
+        ttt (float): Julian centuries of TT
+        ddx (float, optional): EOP correction for x in radians
+        ddy (float, optional): EOP correction for y in radians
+
+    Returns:
+        tuple: (x, y, s, nut)
+            x (float): Coordinate of CIP in radians
+            y (float): Coordinate of CIP in radians
+            s (float): Coordinate in radians
+            nut (np.ndarray): Transformation matrix for TIRS-GCRF
+    """
+    # Obtain data for calculations from the IAU 2006 nutation theory
+    (
+        l,
+        l1,
+        f,
+        d,
+        omega,
+        lonmer,
+        lonven,
+        lonear,
+        lonmar,
+        lonjup,
+        lonsat,
+        lonurn,
+        lonnep,
+        precrate,
+    ) = fundarg(ttt, opt="06")
+
+    # Calculate X, Y, and S series parameters
+    x, y, s = iau06xys_series(
+        ttt,
+        l,
+        l1,
+        f,
+        d,
+        omega,
+        lonmer,
+        lonven,
+        lonear,
+        lonmar,
+        lonjup,
+        lonsat,
+        lonurn,
+        lonnep,
+        precrate,
+    )
+
+    # Apply any corrections for x and y
+    x += ddx
+    y += ddy
+
+    # Calculate the 'a' parameter based on x and y
+    a = 0.5 + 0.125 * (x**2 + y**2)
+
+    # Build nutation matrices
+    nut1 = np.array(
+        [
+            [1.0 - a * x**2, -a * x * y, x],
+            [-a * x * y, 1.0 - a * y**2, y],
+            [-x, -y, 1.0 - a * (x**2 + y**2)],
+        ]
+    )
+    nut2 = np.array(
+        [[np.cos(s), np.sin(s), 0.0], [-np.sin(s), np.cos(s), 0.0], [0.0, 0.0, 1.0]]
+    )
+
+    # Combine to form the final nutation matrix
+    nut = np.dot(nut1, nut2)
+
+    return x, y, s, nut
