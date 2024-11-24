@@ -72,7 +72,7 @@
         axs0(i,2)= axs0(i,2) * convrtu;  % rad
     end
 
-    fileln =load('iau06ytab5.2.b.dat');
+    filein =load('iau06ytab5.2.b.dat');
     ays0 = filein(:,2:3);
     a0yi = filein(:,4:17);
     for i=1:size(ays0)

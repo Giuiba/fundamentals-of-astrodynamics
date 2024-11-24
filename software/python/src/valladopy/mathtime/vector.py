@@ -66,7 +66,6 @@ def rot3(vec: ArrayLike, xval: float) -> np.ndarray:
 
 def rot1mat(xval: float) -> np.ndarray:
     """Rotation matrix for an input angle about the first axis.
-    Assume: Use of "column" vectors
 
     Args:
         xval (float): Angle of rotation in radians
@@ -75,12 +74,11 @@ def rot1mat(xval: float) -> np.ndarray:
         np.ndarray: Rotation matrix
     """
     c, s = np.cos(xval), np.sin(xval)
-    return np.array([[1.0, 0.0, 0.0], [0.0, c, -s], [0.0, s, c]])
+    return np.array([[1.0, 0.0, 0.0], [0.0, c, s], [0.0, -s, c]])
 
 
 def rot2mat(xval: float) -> np.ndarray:
     """Rotation matrix for an input angle about the second axis.
-    Assume: Use of "column" vectors
 
     Args:
         xval (float): Angle of rotation in radians
@@ -89,12 +87,11 @@ def rot2mat(xval: float) -> np.ndarray:
         np.ndarray: Rotation matrix
     """
     c, s = np.cos(xval), np.sin(xval)
-    return np.array([[c, 0.0, s], [0.0, 1.0, 0.0], [-s, 0.0, c]])
+    return np.array([[c, 0.0, -s], [0.0, 1.0, 0.0], [s, 0.0, c]])
 
 
 def rot3mat(xval: float) -> np.ndarray:
     """Rotation matrix for an input angle about the third axis.
-    Assume: Use of "column" vectors
 
     Args:
         xval (float): Angle of rotation in radians
@@ -103,7 +100,7 @@ def rot3mat(xval: float) -> np.ndarray:
         np.ndarray: Rotation matrix
     """
     c, s = np.cos(xval), np.sin(xval)
-    return np.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]])
+    return np.array([[c, s, 0.0], [-s, c, 0.0], [0.0, 0.0, 1.0]])
 
 
 ###############################################################################
