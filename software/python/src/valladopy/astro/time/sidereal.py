@@ -32,12 +32,36 @@ def gstime(jdut1: float) -> float:
     gst = (
         -6.2e-6 * tut1**3
         + 0.093104 * tut1**2
-        + (876600.0 * 3600 + 8640184.812866) * tut1
+        + (876600.0 * const.HR2SEC + 8640184.812866) * tut1
         + 67310.54841
     )
 
     # Convert to radians
     return np.remainder(gst * const.EARTHROT_APPROX, const.TWOPI)
+
+
+def gstime0(year: int) -> float:
+    """Calculates the Greenwich Sidereal Time at the beginning (0 hr UT1 on January 1)
+    of the given year.
+
+    References:
+        Vallado: 2007, p. 195, Eq. 3-46
+
+    Args:
+        year (int): Year (e.g., 1998, 1999, etc.)
+
+    Returns:
+        float: Greenwich Sidereal Time in radians (0 to 2pi)
+    """
+    # Calculate Julian Date at 0 hr UT1 on January 1
+    jd = (
+        367.0 * year
+        - np.floor(7 * (year + np.floor((10 / 12.0))) * 0.25)
+        + np.floor(275 / 9.0)
+        + 1721014.5
+    )
+
+    return gstime(jd)
 
 
 def lstime(lon: float, jdut1: float) -> Tuple[float, float]:

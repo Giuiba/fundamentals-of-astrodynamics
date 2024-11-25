@@ -34,6 +34,7 @@
 function gst0 = gstime0(year);
 
         twopi = 2.0*pi;
+        deg2rad = pi/180.0;
 
         % ------------------------  implementation   ------------------
         jd = 367.0 * year  ...
@@ -49,7 +50,7 @@ function gst0 = gstime0(year);
              + 67310.54841;
 
         % ------------------------ check quadrants --------------------
-        temp = rem( temp,twopi );
+        temp = rem( temp*deg2rad/240.0,twopi );
         if ( temp < 0.0 )
            temp = temp + twopi;
         end
