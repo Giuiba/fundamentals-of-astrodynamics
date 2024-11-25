@@ -2,3 +2,4 @@
 omit =
     */__init__.py
     src/valladopy/constants.py
+    src/valladopy/astro/time/fk4.py
