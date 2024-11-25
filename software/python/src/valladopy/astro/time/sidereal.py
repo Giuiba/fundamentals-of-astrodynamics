@@ -61,19 +61,7 @@ def gstime0(year: int) -> float:
         + 1721014.5
     )
 
-    # Julian centuries from J2000.0
-    tut1 = (jd - const.J2000) / const.CENT2DAY
-
-    # Calculate GST in seconds
-    gst = (
-        -6.2e-6 * tut1**3
-        + 0.093104 * tut1**2
-        + (876600.0 * const.HR2SEC + 8640184.812866) * tut1
-        + 67310.54841
-    )
-
-    # Normalize GST to [0, 2π) in radians
-    return np.remainder(gst * const.EARTHROT_APPROX, const.TWOPI)
+    return gstime(jd)
 
 
 def lstime(lon: float, jdut1: float) -> Tuple[float, float]:
