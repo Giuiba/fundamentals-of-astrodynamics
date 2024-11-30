@@ -140,3 +140,26 @@ def test_eci2pef(
     assert custom_allclose(rpef_exp, rpef_out)
     assert custom_allclose(vpef_exp, vpef_out)
     assert custom_allclose(apef_exp, apef_out)
+
+
+def test_pef2eci(t_inputs, orbit_effects_inputs, rva_eci):
+    # Expected ECI output vectors
+    reci, veci, aeci = rva_eci
+
+    # Orbit effects inputs
+    *_, ddpsi, ddeps, eqeterms = orbit_effects_inputs
+
+    # Input PEF vectors
+    rpef = [-1033.4750313057266, 7901.305585585349, 6380.344532748868]
+    vpef = [-3.225632746974616, -2.872442510803122, 5.531931287696299]
+    apef = [0.000293685046453725, 0.0031151716514636447, 0.0030001437204660755]
+
+    # Call the function with test inputs
+    reci_out, veci_out, aeci_out = fc.pef2eci(
+        rpef, vpef, apef, *t_inputs, ddpsi, ddeps, eqeterms
+    )
+
+    # Expected ECI output vectors
+    assert custom_allclose(reci, reci_out)
+    assert custom_allclose(veci, veci_out)
+    assert custom_allclose(aeci, aeci_out)

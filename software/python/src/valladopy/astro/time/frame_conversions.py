@@ -40,6 +40,7 @@ def calc_orbit_effects(
         ddpsi (float): Delta psi correction to GCRF in radians
         ddeps (float): Delta epsilon correction to GCRF in radians
         opt (str, optional): Option for precession/nutation model ('50', '80', or '06')
+                             (default '80')
         eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
@@ -275,3 +276,59 @@ def eci2pef(
     )
 
     return rpef, vpef, apef
+
+
+def pef2eci(
+    rpef: ArrayLike,
+    vpef: ArrayLike,
+    apef: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the pseudo Earth-fixed (PEF) frame to the ECI mean
+    equator, mean equinox (J2000) frame using the IAU 1980 model.
+
+    References:
+        Vallado: 2001, p. 219, Eq. 3-68
+
+    Args:
+        rpef (array_like): PEf position vector in km
+        vpef (array_like): PEF velocity vector in km/s
+        apef (array_like): PEF acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple:
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+            aeci (np.ndarray): ECI acceleration vector in km/s²
+    """
+    # Find matrices that account for various orbit effects
+    prec, nut, st, _, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, 0, 0, ddpsi, ddeps, eqeterms=eqeterms
+    )
+
+    # Transform vectors
+    reci = prec @ nut @ st @ np.asarray(rpef)
+    veci = prec @ nut @ st @ (np.asarray(vpef) + np.cross(omegaearth, rpef))
+    aeci = (
+        prec
+        @ nut
+        @ st
+        @ (
+            np.asarray(apef)
+            + np.cross(omegaearth, np.cross(omegaearth, rpef))
+            + 2.0 * np.cross(omegaearth, vpef)
+        )
+    )
+
+    return reci, veci, aeci
