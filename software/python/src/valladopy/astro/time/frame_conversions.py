@@ -44,11 +44,12 @@ def calc_orbit_effects(
         eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
-        prec (np.array): Transformation matrix for MOD to J2000
-        nut (np.ndarray): Transformation matrix for TOD - MOD
-        st (np.ndarray): Transformation matrix for PEF to TOD
-        pm (np.ndarray): Transformation matrix for ECEF to PEF
-        omegaearth (np.ndarray): Earth angular rotation vecctor
+        tuple: (prec, nut, st, pm, omegaearth)
+            prec (np.array): Transformation matrix for MOD to J2000
+            nut (np.ndarray): Transformation matrix for TOD - MOD
+            st (np.ndarray): Transformation matrix for PEF to TOD
+            pm (np.ndarray): Transformation matrix for ECEF to PEF
+            omegaearth (np.ndarray): Earth angular rotation vecctor
     """
     # Find matrices that account for various orbit effects
     prec, *_ = precess(ttt, opt=opt)
@@ -101,7 +102,7 @@ def ecef2eci(
         eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
-        tuple:
+        tuple: (reci, veci, aeci)
             reci (np.ndarray): ECI position vector
             veci (np.ndarray): ECI velocity vector
             aeci (np.ndarray): ECI acceleration vector
@@ -162,7 +163,7 @@ def eci2ecef(
         eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
-        tuple:
+        tuple: (recef, vecef, aecef)
             recef (np.ndarray): ECEF position vector
             vecef (np.ndarray): ECEF velocity vector
             aecef (np.ndarray): ECEF acceleration vector
@@ -310,7 +311,7 @@ def pef2eci(
         eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
-        tuple:
+        tuple: (reci, veci, aeci)
             reci (np.ndarray): ECI position vector in km
             veci (np.ndarray): ECI velocity vector in km/s
             aeci (np.ndarray): ECI acceleration vector in km/s²
@@ -371,7 +372,7 @@ def eci2tod(
         ddy (float, optional): EOP correction for y in radians
 
     Returns:
-        tuple:
+        tuple: (rtod, vtod, atod)
             rtod (np.ndarray): TOD position vector in km
             vtod (np.ndarray): TOD velocity vector in km/s
             atod (np.ndarray): TOD acceleration vector in km/s²
@@ -408,3 +409,45 @@ def eci2tod(
     atod = nut.T @ prec.T @ np.asarray(aeci)
 
     return rtod, vtod, atod
+
+
+def tod2eci(
+    rtod: ArrayLike,
+    vtod: ArrayLike,
+    atod: ArrayLike,
+    ttt: float,
+    ddpsi: float,
+    ddeps: float,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the true equator, true equinox of date (TOD) frame
+    to the ECI mean equator, mean equinox (J2000) frame.
+
+    References:
+        Vallado: 2001, p. 219-220, Eq. 3-68
+
+    Args:
+        rtod (array_like): TOD position vector in km
+        vtod (array_like): TOD velocity vector in km/s
+        atod (array_like): TOD acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+
+    Returns:
+        tuple: (reci, veci, aeci)
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+            aeci (np.ndarray): ECI acceleration vector in km/s²
+    """
+    # Precession (IAU 1980 model)
+    prec, *_ = precess(ttt, opt="80")
+
+    # Nutation
+    *_, nut = nutation(ttt, ddpsi, ddeps)
+
+    # Transform vectors
+    reci = prec @ nut @ np.asarray(rtod)
+    veci = prec @ nut @ np.asarray(vtod)
+    aeci = prec @ nut @ np.asarray(atod)
+
+    return reci, veci, aeci

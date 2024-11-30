@@ -217,3 +217,25 @@ def test_eci2tod(
     assert custom_allclose(rtod_exp, rtod_out)
     assert custom_allclose(vtod_exp, vtod_out)
     assert custom_allclose(atod_exp, atod_out)
+
+
+def test_tod2eci(t_inputs, orbit_effects_inputs, rva_eci):
+    # Expected ECI output vectors
+    reci, veci, aeci = rva_eci
+
+    # Extract inputs
+    ttt, *_ = t_inputs
+    *_, ddpsi, ddeps, _ = orbit_effects_inputs
+
+    # Input TOD vectors
+    rtod = [2994.049189091933, -7384.738996771148, 6380.344532748868]
+    vtod = [2.9348194081733827, 3.8118380124472613, 5.531931287696299]
+    atod = [-3.801990321023478e-05, -0.002699702600291877, 0.0030001437204660755]
+
+    # Call the function with test inputs
+    reci_out, veci_out, aeci_out = fc.tod2eci(rtod, vtod, atod, ttt, ddpsi, ddeps)
+
+    # Expected ECI output vectors
+    assert custom_allclose(reci, reci_out)
+    assert custom_allclose(veci, veci_out)
+    assert custom_allclose(aeci, aeci_out)
