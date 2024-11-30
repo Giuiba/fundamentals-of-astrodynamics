@@ -64,7 +64,7 @@ def calc_orbit_effects(
 
 
 ###############################################################################
-# ECI to ECEF and vice versa
+# ECI <-> ECEF Frame Conversions
 ###############################################################################
 
 
@@ -191,7 +191,7 @@ def eci2ecef(
 
 
 ###############################################################################
-# ECI to PEF and vice versa
+# ECI <-> PEF Frame Conversions
 ###############################################################################
 
 
@@ -199,14 +199,14 @@ def eci2pef(
     reci: ArrayLike,
     veci: ArrayLike,
     aeci: ArrayLike,
-    opt: str,
     ttt: float,
     jdut1: float,
     lod: float,
     ddpsi: float,
     ddeps: float,
-    ddx: float = 0,
-    ddy: float = 0,
+    opt: str,
+    ddx: float = 0.0,
+    ddy: float = 0.0,
     eqeterms: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Transforms a vector from the mean equator, mean equinox frame (J2000),
@@ -219,12 +219,12 @@ def eci2pef(
         reci (array_like): ECI position vector in km
         veci (array_like): ECi velocity vector in km/s
         aeci (array_like): ECI acceleration vector in km/s²
-        opt (str): Option for precession/nutation model ('80', '06a', '06b', or '06c')
         ttt (float): Julian centuries of TT
         jdut1 (float): Julian date of UT1 (days from 4713 BC)
         lod (float): Excess length of day in seconds
         ddpsi (float): Nutation correction for delta psi in radians
         ddeps (float): Nutation correction for delta epsilon in radians
+        opt (str): Option for precession/nutation model ('80', '06a', '06b', or '06c')
         ddx (float, optional): EOP correction for x in radians
                                (required for IAU 2006 models)
         ddy (float, optional): EOP correction for y in radians
@@ -245,24 +245,27 @@ def eci2pef(
 
     # Get orbit effects based on the option
     if opt == "80":
+        # IAU 1980 model
         deltapsi, _, meaneps, omega, nut = nutation(ttt, ddpsi, ddeps)
         st, _ = sidereal(jdut1, deltapsi, meaneps, omega, lod, eqeterms)
     else:
-        # CEO based, IAU 2006 precession/nutation model
         if opt == "06c":
-            x, y, s, pnb = iau.iau06xys(ttt, ddx, ddy)
+            # CEO based, IAU 2006 precession/nutation model
+            *_, pnb = iau.iau06xys(ttt, ddx, ddy)
             st = iau.iau06era(jdut1)
-        # Class equinox based, IAU 2006a model
         elif opt == "06a":
+            # Classical equinox-based IAU 2006A model
             deltapsi, pnb, prec, nut, *_ = iau.iau06pna(ttt)
-            gst, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
-        # Class equinox based, IAU 2006b model
+            _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
         elif opt == "06b":
+            # Classical equinox-based IAU 2006B model
             deltapsi, pnb, prec, nut, *_ = iau.iau06pnb(ttt)
-            gst, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
-        # Invalid option
+            _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
         else:
-            raise ValueError(f"Invalid option for opt: {opt}")
+            # Invalid option
+            raise ValueError(
+                f"Invalid opt value: {opt}. Must be '80', '6a', '6b', or '6c'."
+            )
         prec = np.eye(3)
         nut = pnb
 
@@ -332,3 +335,76 @@ def pef2eci(
     )
 
     return reci, veci, aeci
+
+
+###############################################################################
+# ECI <-> TOD Frame Conversions
+###############################################################################
+
+
+def eci2tod(
+    reci: ArrayLike,
+    veci: ArrayLike,
+    aeci: ArrayLike,
+    ttt: float,
+    ddpsi: float,
+    ddeps: float,
+    opt: str,
+    ddx: float = 0.0,
+    ddy: float = 0.0,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the ECI mean equator, mean equinox frame
+    (J2000) to the true equator, true equinox of date (TOD) frame.
+
+    References:
+        Vallado: 2001, p. 216-219, Eq. 3-65
+
+    Args:
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
+        aeci (array_like): ECI acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        opt (str): Option for precession/nutation model ('80', '06a', '06b', or '06c')
+        ddx (float, optional): EOP correction for x in radians
+        ddy (float, optional): EOP correction for y in radians
+
+    Returns:
+        tuple:
+            rtod (np.ndarray): TOD position vector in km
+            vtod (np.ndarray): TOD velocity vector in km/s
+            atod (np.ndarray): TOD acceleration vector in km/s²
+    """
+    # Precession
+    iau_opt = "06" if "06" in opt else opt
+    prec, *_ = precess(ttt, opt=iau_opt)
+
+    # Get orbit effects based on the option
+    if opt == "80":
+        # IAU 1980 model
+        *_, meaneps, omega, nut = nutation(ttt, ddpsi, ddeps)
+    else:
+        if opt == "06c":
+            # CEO based, IAU 2006 precession/nutation model
+            *_, pnb = iau.iau06xys(ttt, ddx, ddy)
+        elif opt == "06a":
+            # Classical equinox-based IAU 2006A model
+            _, pnb, prec, nut, *_ = iau.iau06pna(ttt)
+        elif opt == "06b":
+            # Classical equinox-based IAU 2006B model
+            _, pnb, prec, nut, *_ = iau.iau06pnb(ttt)
+        else:
+            # Invalid option
+            raise ValueError(
+                f"Invalid opt value: {opt}. Must be '80', '6a', '6b', or '6c'."
+            )
+        prec = np.eye(3)
+        nut = pnb
+
+    # Transform vectors
+    rtod = nut.T @ prec.T @ np.asarray(reci)
+    vtod = nut.T @ prec.T @ np.asarray(veci)
+    atod = nut.T @ prec.T @ np.asarray(aeci)
+
+    return rtod, vtod, atod
