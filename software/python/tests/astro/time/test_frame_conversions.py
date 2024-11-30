@@ -31,19 +31,26 @@ def t_inputs():
     # Time inputs
     ttt = 0.042623631888994  # Julian centuries of TT
     jdut1 = 2.4531015e06  # Julian date of UT1
-    lod = 0.0015563  # Excess length of day, sec
+    lod = 0.0015563  # excess length of day, sec
     return ttt, jdut1, lod
 
 
 @pytest.fixture
 def orbit_effects_inputs():
     # Other inputs for accounting for orbit effectgs
-    xp = -0.140682 * ARCSEC2RAD  # Polar motion coefficient
-    yp = 0.333309 * ARCSEC2RAD  # Polar motion coefficient
-    ddpsi = -0.052195 * ARCSEC2RAD  # Delta psi correction to GCRF, raed
-    ddeps = -0.003875 * ARCSEC2RAD  # Delta epsilon correction to GCRF
-    eqeterms = True  # Add extra terms for ast calculation
+    xp = -0.140682 * ARCSEC2RAD  # polar motion coefficient, rad
+    yp = 0.333309 * ARCSEC2RAD  # polar motion coefficient, rad
+    ddpsi = -0.052195 * ARCSEC2RAD  # delta psi correction to GCRF, rad
+    ddeps = -0.003875 * ARCSEC2RAD  # delta epsilon correction to GCRF, rad
+    eqeterms = True  # add extra terms for ast calculation
     return xp, yp, ddpsi, ddeps, eqeterms
+
+
+@pytest.fixture
+def eop_corrections():
+    ddx = -0.000205 * ARCSEC2RAD  # delta x correction to GCRF, rad
+    ddy = -0.000136 * ARCSEC2RAD  # delta y correction to GCRF, rad
+    return ddx, ddy
 
 
 def test_ecef2eci(rva_ecef, rva_eci, t_inputs, orbit_effects_inputs):
@@ -80,3 +87,56 @@ def test_eci2ecef(rva_ecef, rva_eci, t_inputs, orbit_effects_inputs):
         [0.0002936830002159169, 0.0031151668034451073, 0.003000148416052949]
     )
     assert custom_allclose(aecef, aecef_out)
+
+
+@pytest.mark.parametrize(
+    "opt, rpef_exp, vpef_exp, apef_exp",
+    [
+        (
+            "80",
+            [-1033.4750313057266, 7901.305585585349, 6380.344532748868],
+            [-3.225632746974616, -2.872442510803122, 5.531931287696299],
+            [0.000293685046453725, 0.0031151716514636447, 0.0030001437204660755],
+        ),
+        (
+            "06a",
+            [-1033.4734337662508, 7901.305790524991, 6380.3445377211865],
+            [-3.225633311574051, -2.872441866986253, 5.531931294553923],
+            [0.00029368567694983984, 0.0031151715898397126, 0.003000143719901478],
+        ),
+        (
+            "06b",
+            [-1033.4734456702645, 7901.305791560639, 6380.344534510474],
+            [-3.22563332182, -2.8724418652201553, 5.531931287939059],
+            [0.0002936856715466058, 0.003115171591826446, 0.003000143720818848],
+        ),
+        (
+            "06c",
+            [-1033.4734409358227, 7901.305788025019, 6380.344539655799],
+            [-3.2256333179729153, -2.8724418686308826, 5.531931289126641],
+            [0.00029368567330056804, 0.003115171589584073, 0.0030001437217282664],
+        ),
+    ],
+)
+def test_eci2pef(
+    rva_eci,
+    t_inputs,
+    orbit_effects_inputs,
+    eop_corrections,
+    opt,
+    rpef_exp,
+    vpef_exp,
+    apef_exp,
+):
+    # Orbit effects inputs
+    *_, ddpsi, ddeps, eqeterms = orbit_effects_inputs
+
+    # Call the function with test inputs
+    rpef_out, vpef_out, apef_out = fc.eci2pef(
+        *rva_eci, opt, *t_inputs, ddpsi, ddeps, *eop_corrections, eqeterms
+    )
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(rpef_exp, rpef_out)
+    assert custom_allclose(vpef_exp, vpef_out)
+    assert custom_allclose(apef_exp, apef_out)
