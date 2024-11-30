@@ -239,3 +239,21 @@ def test_tod2eci(t_inputs, orbit_effects_inputs, rva_eci):
     assert custom_allclose(reci, reci_out)
     assert custom_allclose(veci, veci_out)
     assert custom_allclose(aeci, aeci_out)
+
+
+def test_eci2mod(rva_eci, t_inputs):
+    # Extract inputs
+    ttt, *_ = t_inputs
+
+    # Call the function with test inputs
+    rmod_out, vmod_out, amod_out = fc.eci2mod(*rva_eci, ttt)
+
+    # Expected MOD output vectors
+    rmod = [2994.30249664958, -7384.348641268552, 6380.677444947862]
+    vmod = [2.934478765910065, 3.8121950281090644, 5.531865978456613]
+    amod = [-3.79431747506729e-05, -0.0026995983568731115, 0.003000238492782315]
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(rmod, rmod_out)
+    assert custom_allclose(vmod, vmod_out)
+    assert custom_allclose(amod, amod_out)
