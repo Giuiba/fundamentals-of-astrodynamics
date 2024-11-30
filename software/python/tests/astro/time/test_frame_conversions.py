@@ -133,7 +133,7 @@ def test_eci2pef(
 
     # Call the function with test inputs
     rpef_out, vpef_out, apef_out = fc.eci2pef(
-        *rva_eci, opt, *t_inputs, ddpsi, ddeps, *eop_corrections, eqeterms
+        *rva_eci, *t_inputs, ddpsi, ddeps, opt, *eop_corrections, eqeterms
     )
 
     # Check if the output vectors are close to the expected values
@@ -158,6 +158,82 @@ def test_pef2eci(t_inputs, orbit_effects_inputs, rva_eci):
     reci_out, veci_out, aeci_out = fc.pef2eci(
         rpef, vpef, apef, *t_inputs, ddpsi, ddeps, eqeterms
     )
+
+    # Expected ECI output vectors
+    assert custom_allclose(reci, reci_out)
+    assert custom_allclose(veci, veci_out)
+    assert custom_allclose(aeci, aeci_out)
+
+
+@pytest.mark.parametrize(
+    "opt, rtod_exp, vtod_exp, atod_exp",
+    [
+        (
+            "80",
+            [2994.049189091933, -7384.738996771148, 6380.344532748868],
+            [2.9348194081733827, 3.8118380124472613, 5.531931287696299],
+            [-3.801990321023478e-05, -0.002699702600291877, 0.0030001437204660755],
+        ),
+        (
+            "06a",
+            [2994.0511035304567, -7384.738216289892, 6380.3445377211865],
+            [2.934818401418668, 3.8118387776179086, 5.531931294553923],
+            [-3.8019204736770936e-05, -0.0026997026107558153, 0.003000143719901478],
+        ),
+        (
+            "06b",
+            [2994.051083864024, -7384.73822703743, 6380.344534510474],
+            [2.934818427864671, 3.8118387668563694, 5.531931287939059],
+            [-3.8019210693728655e-05, -0.0026997026096524635, 0.003000143720818848],
+        ),
+        (
+            "06c",
+            [2987.4142083334755, -7387.425590613056, 6380.344539655799],
+            [2.9382424201279527, 3.809200107170083, 5.531931289126641],
+            [-4.044505401041308e-05, -0.002699667356008036, 0.0030001437217282664],
+        ),
+    ],
+)
+def test_eci2tod(
+    rva_eci,
+    t_inputs,
+    orbit_effects_inputs,
+    eop_corrections,
+    opt,
+    rtod_exp,
+    vtod_exp,
+    atod_exp,
+):
+    # Extract inputs
+    ttt, *_ = t_inputs
+    _, _, ddpsi, ddeps, _ = orbit_effects_inputs
+
+    # Call the function with test inputs
+    rtod_out, vtod_out, atod_out = fc.eci2tod(
+        *rva_eci, ttt, ddpsi, ddeps, opt, *eop_corrections
+    )
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(rtod_exp, rtod_out)
+    assert custom_allclose(vtod_exp, vtod_out)
+    assert custom_allclose(atod_exp, atod_out)
+
+
+def test_tod2eci(t_inputs, orbit_effects_inputs, rva_eci):
+    # Expected ECI output vectors
+    reci, veci, aeci = rva_eci
+
+    # Extract inputs
+    ttt, *_ = t_inputs
+    *_, ddpsi, ddeps, _ = orbit_effects_inputs
+
+    # Input TOD vectors
+    rtod = [2994.049189091933, -7384.738996771148, 6380.344532748868]
+    vtod = [2.9348194081733827, 3.8118380124472613, 5.531931287696299]
+    atod = [-3.801990321023478e-05, -0.002699702600291877, 0.0030001437204660755]
+
+    # Call the function with test inputs
+    reci_out, veci_out, aeci_out = fc.tod2eci(rtod, vtod, atod, ttt, ddpsi, ddeps)
 
     # Expected ECI output vectors
     assert custom_allclose(reci, reci_out)
