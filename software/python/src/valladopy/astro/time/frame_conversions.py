@@ -474,7 +474,7 @@ def eci2mod(
         ttt (float): Julian centuries of TT
 
     Returns:
-        tuple:
+        tuple: (rmod, vmod, amod)
             rmod (np.ndarray): MOD position vector in km
             vmod (np.ndarray): MOD velocity vector in km/s
             amod (np.ndarray): MOD acceleration vector in km/s²
@@ -488,3 +488,35 @@ def eci2mod(
     amod = prec.T @ np.asarray(aeci)
 
     return rmod, vmod, amod
+
+
+def mod2eci(
+    rmod: ArrayLike, vmod: ArrayLike, amod: ArrayLike, ttt: float
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the mean equator, mean equinox of date (MOD) frame
+    to the ECI mean equator, mean equinox (J2000) frame.
+
+    References:
+        Vallado: 2013, p. 219-220, Eq. 3-68
+
+    Args:
+        rmod (array_like): MOD position vector in km
+        vmod (array_like): MOD velocity vector in km/s
+        amod (array_like): MOD acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+
+    Returns:
+        tuple: (reci, veci, aeci)
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+            aeci (np.ndarray): ECI acceleration vector in km/s²
+    """
+    # Precession (IAU 1980 model)
+    prec, *_ = precess(ttt, opt="80")
+
+    # Transform vectors
+    reci = prec @ np.asarray(rmod)
+    veci = prec @ np.asarray(vmod)
+    aeci = prec @ np.asarray(amod)
+
+    return reci, veci, aeci
