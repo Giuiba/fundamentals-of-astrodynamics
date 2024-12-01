@@ -689,7 +689,7 @@ def ecef2pef(
     use_iau80 = True if opt == "80" else False
     pm = polarm(xp, yp, ttt, use_iau80)
 
-    # Transform position, velocity, and acceleration
+    # Transform vectors
     rpef = pm @ np.asarray(recef)
     vpef = pm @ np.asarray(vecef)
     apef = pm @ np.asarray(aecef)
