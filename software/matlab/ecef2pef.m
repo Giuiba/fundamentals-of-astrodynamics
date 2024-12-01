@@ -14,8 +14,8 @@
 %    recef       - position vector earth fixed    km
 %    vecef       - velocity vector earth fixed    km/s
 %    aecef       - acceleration vector earth fixedkm/s2
-%    xp          - polar motion coefficient       arc sec
-%    yp          - polar motion coefficient       arc sec
+%    xp          - polar motion coefficient       rad
+%    yp          - polar motion coefficient       rad
 %    ttt         - julian centuries of tt         centuries
 %
 %  outputs       :
