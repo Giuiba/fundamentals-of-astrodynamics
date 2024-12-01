@@ -69,67 +69,6 @@ def calc_orbit_effects(
 ###############################################################################
 
 
-def ecef2eci(
-    recef: ArrayLike,
-    vecef: ArrayLike,
-    aecef: ArrayLike,
-    ttt: float,
-    jdut1: float,
-    lod: float,
-    xp: float,
-    yp: float,
-    ddpsi: float,
-    ddeps: float,
-    eqeterms: bool = True,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Transforms a vector from the Earth-fixed (ITRF) frame (ECEF) to the ECI
-    mean equator, mean equinox (J2000) frame.
-
-    References:
-        Vallado: 2013, p. 223-229
-
-    Args:
-        recef (array_like): ECEF position vector in km
-        vecef (array_like): ECEF velocity vector in km/s
-        aecef (array_like): ECEF acceleration vector in km/s²
-        ttt (float): Julian centuries of TT
-        jdut1 (float): Julian date of UT1 (days from 4713 BC)
-        lod (float): Excess length of day in seconds
-        xp (float): Polar motion coefficient in radians
-        yp (float): Polar motion coefficient in radians
-        ddpsi (float): Delta psi correction to GCRF in radians
-        ddeps (float): Delta epsilon correction to GCRF in radians
-        eqeterms (bool, optional): Add terms for ast calculation (default True)
-
-    Returns:
-        tuple: (reci, veci, aeci)
-            reci (np.ndarray): ECI position vector
-            veci (np.ndarray): ECI velocity vector
-            aeci (np.ndarray): ECI acceleration vector
-    """
-    # Find matrices that account for various orbit effects
-    prec, nut, st, pm, omegaearth = calc_orbit_effects(
-        ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=eqeterms
-    )
-
-    # Position transformation
-    rpef = np.dot(pm, recef)
-    reci = np.dot(prec, np.dot(nut, np.dot(st, rpef)))
-
-    # Velocity transformation
-    vpef = np.dot(pm, vecef)
-    veci = np.dot(prec, np.dot(nut, np.dot(st, vpef + np.cross(omegaearth, rpef))))
-
-    # Acceleration transformation
-    aeci = (
-        np.dot(prec, np.dot(nut, np.dot(st, np.dot(pm, aecef))))
-        + np.cross(omegaearth, np.cross(omegaearth, rpef))
-        + 2.0 * np.cross(omegaearth, vpef)
-    )
-
-    return reci, veci, aeci
-
-
 def eci2ecef(
     reci: ArrayLike,
     veci: ArrayLike,
@@ -189,6 +128,67 @@ def eci2ecef(
     )
 
     return recef, vecef, aecef
+
+
+def ecef2eci(
+    recef: ArrayLike,
+    vecef: ArrayLike,
+    aecef: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Earth-fixed (ITRF) frame (ECEF) to the ECI
+    mean equator, mean equinox (J2000) frame.
+
+    References:
+        Vallado: 2013, p. 223-229
+
+    Args:
+        recef (array_like): ECEF position vector in km
+        vecef (array_like): ECEF velocity vector in km/s
+        aecef (array_like): ECEF acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (reci, veci, aeci)
+            reci (np.ndarray): ECI position vector
+            veci (np.ndarray): ECI velocity vector
+            aeci (np.ndarray): ECI acceleration vector
+    """
+    # Find matrices that account for various orbit effects
+    prec, nut, st, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=eqeterms
+    )
+
+    # Position transformation
+    rpef = np.dot(pm, recef)
+    reci = np.dot(prec, np.dot(nut, np.dot(st, rpef)))
+
+    # Velocity transformation
+    vpef = np.dot(pm, vecef)
+    veci = np.dot(prec, np.dot(nut, np.dot(st, vpef + np.cross(omegaearth, rpef))))
+
+    # Acceleration transformation
+    aeci = (
+        np.dot(prec, np.dot(nut, np.dot(st, np.dot(pm, aecef))))
+        + np.cross(omegaearth, np.cross(omegaearth, rpef))
+        + 2.0 * np.cross(omegaearth, vpef)
+    )
+
+    return reci, veci, aeci
 
 
 ###############################################################################
