@@ -26,23 +26,25 @@
 %
 %  references    :
 %
-% [iar80,rar80] = iau80in();
+% [iau80arr] = iau80in(infilename)
 % ----------------------------------------------------------------------------- }
 
-function [iar80,rar80] = iau80in();
+function [iau80arr] = iau80in(infilename)
 
        % ------------------------  implementation   -------------------
        % 0.0001" to rad
        convrt= 0.0001 * pi / (180*3600.0);
 
-       load nut80.dat;
+       iau80arr = struct('rar80',zeros(106, 4), 'iar80',zeros(106, 5));
 
-       iar80 = nut80(:,1:5);
-       rar80 = nut80(:,6:9);
+       nut80 = load(infilename);
+
+       iau80arr.iar80 = nut80(:,1:5);
+       iau80arr.rar80 = nut80(:,6:9);
 
        for i=1:106
            for j=1:4
-               rar80(i,j)= rar80(i,j) * convrt;
+               iau80arr.rar80(i,j)= iau80arr.rar80(i,j) * convrt;
            end
        end
 

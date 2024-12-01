@@ -45,11 +45,10 @@
     %  references    :
     %    vallado     2004, pg 205-219, 910-912
     %
-    % [axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, appl, appli, agst, agsti] = iau06in;
-    % -----------------------------------------------------------------------------
+    % [iau06arr] = iau06in(infilename)
+    % ----------------------------------------------------------------------------- }
 
-    function [axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, appl, appli, agst, agsti] = iau06in;
-    %function [axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, ape, apei, agst, agsti] = iau06in;
+function [iau06arr] = iau06in(infilename)
 
     % ------------------------  implementation   -------------------
     % " to rad
@@ -59,61 +58,108 @@
     % ------------------------------
     %  note that since all these coefficients have only a single
     %  decimal place, one could store them as integres, and then simply
-    %  divide by one additional power of ten. it woul dmake memeory
+    %  divide by one additional power of ten. it would make memeory
     %  storage much smaller and potentially faster.
     % ------------------------------
 
+    iau06arr = struct('ax0',zeros(1600, 2), 'ax0i',zeros(1600, 14), ...
+        'ay0',zeros(1275, 2), 'ay0i',zeros(1275, 14), ...
+        'as0',zeros(66, 2), 'as0i',zeros(66, 14), ...
+        'ag0',zeros(35, 2), 'ag0i',zeros(35), ...
+        'apn0',zeros(1358, 2), 'apn0i',zeros(1358, 14), ...
+        'apl0',zeros(687, 2), 'apl0i',zeros(687, 14), ...
+        'aapn0',zeros(678, 6), 'aapn0i',zeros(678, 5), ...
+        'aapl0',zeros(687, 5), 'aapl0i',zeros(687, 14) );
+
     % xys values
-    filein = load('iau06xtab5.2.a.dat');
-    axs0 = filein(:,2:3);  % reals
-    a0xi = filein(:,4:17); % integers
-    for i=1:size(axs0)
-        axs0(i,1)= axs0(i,1) * convrtu;  % rad
-        axs0(i,2)= axs0(i,2) * convrtu;  % rad
+    fid = fopen(append(infilename,'iau06xtab5.2.a.dat'));  % 1600
+    %      1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+    Dataarr = textscan( fid, '%d %f %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d ', 'Headerlines', 2, 'MultipleDelimsAsOne', true );
+    fclose(fid);
+    iau06arr.ax0(:,1)   = cell2mat(Dataarr(:,2));
+    iau06arr.ax0(:,2)   = cell2mat(Dataarr(:,3));
+    iau06arr.a0xi(:,1:14)   = cell2mat(Dataarr(:,4:17)); 
+    for i=1:size(iau06arr.ax0)
+        iau06arr.ax0(i,1)= iau06arr.ax0(i,1) * convrtu;  % rad
+        iau06arr.ax0(i,2)= iau06arr.ax0(i,2) * convrtu;  % rad
     end
 
-    filein =load('iau06ytab5.2.b.dat');
-    ays0 = filein(:,2:3);
-    a0yi = filein(:,4:17);
-    for i=1:size(ays0)
-        ays0(i,1)= ays0(i,1) * convrtu;
-        ays0(i,2)= ays0(i,2) * convrtu;
+
+    fid = fopen(append(infilename,'iau06ytab5.2.b.dat')); % 1275
+    %       1       1538.18     9205236.26    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+    Dataarr = textscan( fid, '%d %f %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d ', 'Headerlines', 2, 'MultipleDelimsAsOne', true );
+    fclose(fid);
+    iau06arr.ay0(:,1)   = cell2mat(Dataarr(:,2));
+    iau06arr.ay0(:,2)   = cell2mat(Dataarr(:,3));
+    iau06arr.a0yi(:,1:14)   = cell2mat(Dataarr(:,4:17)); 
+    for i=1:size(iau06arr.ay0)
+        iau06arr.ay0(i,1)= iau06arr.ay0(i,1) * convrtu;
+        iau06arr.ay0(i,2)= iau06arr.ay0(i,2) * convrtu;
     end
 
-    filein = load('iau06stab5.2.d.dat');
-    ass0 = filein(:,2:3);
-    a0si = filein(:,4:17);
-    for i=1:size(ass0)
-        ass0(i,1)= ass0(i,1) * convrtu;
-        ass0(i,2)= ass0(i,2) * convrtu;
+
+    fid = fopen(append(infilename,'iau06stab5.2.d.dat'));  % 66
+    %      1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+    Dataarr = textscan( fid, '%d %f %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d ', 'Headerlines', 2, 'MultipleDelimsAsOne', true );
+    fclose(fid);
+    iau06arr.as0(:,1)   = cell2mat(Dataarr(:,2));
+    iau06arr.as0(:,2)   = cell2mat(Dataarr(:,3));
+    iau06arr.a0si(:,1:14)   = cell2mat(Dataarr(:,4:17)); 
+    for i=1:size(iau06arr.as0)
+        iau06arr.as0(i,1)= iau06arr.as0(i,1) * convrtu;
+        iau06arr.as0(i,2)= iau06arr.as0(i,2) * convrtu;
     end
 
+
+    fid = fopen(append(infilename,'iau06ansofa.dat'));  % 678
+    %  0     0     0     0     1               -172064161.0  -174666.0   33386.0  92052331.0   9086.0  15377.0
+    Dataarr = textscan( fid, '%d %d %d %d %d %f %f %f %f %f %f ', 'Headerlines', 2, 'MultipleDelimsAsOne', true );
+    fclose(fid);
+    iau06arr.aapn0(:,1:6)   = cell2mat(Dataarr(:,6:11));
+    iau06arr.aapn0i(:,1:5)   = cell2mat(Dataarr(:,1:5));
+    %     2000a nutation values old approach iau2000a
+    for i=1:size(iau06arr.aapn0)
+        iau06arr.aapn0(i,1)= iau06arr.aapn0(i,1) * convrtm;
+        iau06arr.aapn0(i,2)= iau06arr.aapn0(i,2) * convrtm;
+        iau06arr.aapn0(i,3)= iau06arr.aapn0(i,3) * convrtm;
+        iau06arr.aapn0(i,4)= iau06arr.aapn0(i,4) * convrtm;
+        iau06arr.aapn0(i,5)= iau06arr.aapn0(i,5) * convrtm;
+    end
 
     % nutation values old approach iau2003
-    filein = load('iau03n.dat');
-    apni = filein(:,1:5);
-    apn  = filein(:,7:14);
-    for i=1:size(apn)
-        apn(i,1)= apn(i,1) * convrtm;
-        apn(i,2)= apn(i,2) * convrtm;
-        apn(i,3)= apn(i,3) * convrtm;
-        apn(i,4)= apn(i,4) * convrtm;
-        apn(i,5)= apn(i,5) * convrtm;
-        apn(i,6)= apn(i,6) * convrtm;
-        apn(i,7)= apn(i,7) * convrtm;
-        apn(i,8)= apn(i,8) * convrtm;
+    %filein = load('iau03n.dat');
+    % 2000a planetary nutation values
+    fid = fopen(append(infilename,'iau06anplsofa.dat'));  % 687
+    %       0   0   0   0   0   0   0   8 -16   4   5   0   0   0                   1440           0           0           0  
+    Dataarr = textscan( fid, '%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d ', 'Headerlines', 2, 'MultipleDelimsAsOne', true );
+    fclose(fid);
+    iau06arr.apl0(:,1:4)   = cell2mat(Dataarr(:,15:18));
+    iau06arr.apl0i(:,1:14)   = cell2mat(Dataarr(:,1:14));
+    for i=1:size(iau06arr.apl0)
+        iau06arr.apl0(i,1)= iau06arr.apl0(i,1) * convrtm;
+        iau06arr.apl0(i,2)= iau06arr.apl0(i,2) * convrtm;
+        iau06arr.apl0(i,3)= iau06arr.apl0(i,3) * convrtm;
+        iau06arr.apl0(i,4)= iau06arr.apl0(i,4) * convrtm;
     end
 
-    % planetary nutation values
-    filein = load('iau03pl.dat');
-    appli = filein(:,2:15);
-    appl  = filein(:,17:21);  % 21 is extra
-    for i=1:size(appl)
-        appl(i,1)= appl(i,1) * convrtm;
-        appl(i,2)= appl(i,2) * convrtm;
-        appl(i,3)= appl(i,3) * convrtm;
-        appl(i,4)= appl(i,4) * convrtm;
+    % tab5.3a.txt in IERS
+    % nutation values planetary now included new iau2006
+    %     1   -17206424.18        3338.60    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+    % nutation in longitude
+    fid = fopen(append(infilename,'iau06nlontab5.3.a.dat'));  % 1358
+    Dataarr = textscan( fid, '%d %f %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d ', 'Headerlines', 2, 'MultipleDelimsAsOne', true );
+    fclose(fid);
+    iau06arr.apn0(:,1:2)   = cell2mat(Dataarr(:,2:3));
+    iau06arr.apn0i(:,1:14)   = cell2mat(Dataarr(:,4:17));
+    for i=1:size(iau06arr.apn0)
+        iau06arr.apn0(i,1)= iau06arr.apn0(i,1) * convrtm;
+        iau06arr.apn0(i,2)= iau06arr.apn0(i,2) * convrtm;
     end
+
+
+    % tab5.3b.txt in IERS
+    % nutation in obliquity
+    %        fileData = File.ReadAllLines(nutLoc + "iau06nobltab5.3.b.dat");  // 1056
 
 
     % nutation values planetary now included new iau2006
@@ -133,15 +179,18 @@
     %           ape(i,2)= ape(i,2) * convrtu;
     %       end;
 
+    % tab5.2e.txt in IERS
     % gmst values
     % note - these are very similar to the first 34 elements of iau00s.dat,
     % but they are not the same.
-    filein = load('iau06gsttab5.2.e.dat');
-    agst  = filein(:,2:3);
-    agsti = filein(:,4:17);
-    for i=1:size(agst)
-        agst(i,1)= agst(i,1) * convrtu;
-        agst(i,2)= agst(i,2) * convrtu;
+    fid = fopen(append(infilename,'iau06gsttab5.2.e.dat'));
+    Dataarr = textscan( fid, '%d %f %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d ', 'Headerlines', 2, 'MultipleDelimsAsOne', true );
+    fclose(fid);
+    iau06arr.agst(:,1:2)   = cell2mat(Dataarr(:,2:3));
+    iau06arr.agsti(:,1:14)   = cell2mat(Dataarr(:,4:17));
+    for i=1:size(iau06arr.agst)
+        iau06arr.agst(i,1)= iau06arr.agst(i,1) * convrtu;
+        iau06arr.agst(i,2)= iau06arr.agst(i,2) * convrtu;
     end
 
 
