@@ -34,7 +34,7 @@
 function gst0 = gstime0(year);
 
         twopi = 2.0*pi;
-        deg2rad    = pi/180.0;
+        deg2rad = pi/180.0;
 
         % ------------------------  implementation   ------------------
         jd = 367.0 * year  ...

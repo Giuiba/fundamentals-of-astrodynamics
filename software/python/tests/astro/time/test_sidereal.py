@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.valladopy.astro.time.sidereal import gstime, lstime, sidereal
+from src.valladopy.astro.time.sidereal import gstime, gstime0, lstime, sidereal
 from ...conftest import custom_isclose, custom_allclose
 
 
@@ -27,6 +27,14 @@ from ...conftest import custom_isclose, custom_allclose
 def test_gstime_lstime(jdut1, lon, gstime_exp, lstime_exp):
     assert custom_isclose(gstime(jdut1), float(gstime_exp))
     assert custom_allclose(lstime(lon, jdut1), [float(lstime_exp), float(gstime_exp)])
+
+
+def test_gstime0():
+    # Definitions
+    year = 1989
+
+    # Compute GST at the beginning of the year
+    assert custom_isclose(gstime0(year), 1.7561909422996962)
 
 
 def test_sidereal():
