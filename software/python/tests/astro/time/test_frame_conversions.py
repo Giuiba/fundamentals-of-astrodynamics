@@ -26,6 +26,19 @@ def rva_eci():
     return reci, veci, aeci
 
 
+def get_rvpef():
+    # Example PEF vectors (km, km/s, km/s^2) [opt = "80"]
+    rpef = [-1033.4750313057266, 7901.305585585349, 6380.344532748868]
+    vpef = [-3.225632746974616, -2.872442510803122, 5.531931287696299]
+    apef = [0.000293685046453725, 0.0031151716514636447, 0.0030001437204660755]
+    return rpef, vpef, apef
+
+
+@pytest.fixture
+def rva_pef():
+    return get_rvpef()
+
+
 @pytest.fixture
 def rva_mod():
     # Example MOD vectors (km, km/s, km/s^2)
@@ -35,8 +48,22 @@ def rva_mod():
     return rmod, vmod, amod
 
 
+def get_rvatod():
+    # Example TOD vectors (km, km/s, km/s^2) [opt = "80"]
+    rtod = [2994.049189091933, -7384.738996771148, 6380.344532748868]
+    vtod = [2.9348194081733827, 3.8118380124472613, 5.531931287696299]
+    atod = [-3.801990321023478e-05, -0.002699702600291877, 0.0030001437204660755]
+    return rtod, vtod, atod
+
+
+@pytest.fixture
+def rva_tod():
+    return get_rvatod()
+
+
 @pytest.fixture
 def rva_teme():
+    # Example TEME vectors (km, km/s, km/s^2)
     rteme = [2994.454240128889, -7384.574761007484, 6380.344532748868]
     vteme = [2.9346103230979974, 3.8119989825937415, 5.531931287696299]
     ateme = [-3.787182351239877e-05, -0.0026997046816358795, 0.0030001437204660755]
@@ -109,12 +136,7 @@ def test_eci2ecef(rva_ecef, rva_eci, t_inputs, orbit_effects_inputs):
 @pytest.mark.parametrize(
     "opt, rpef_exp, vpef_exp, apef_exp",
     [
-        (
-            "80",
-            [-1033.4750313057266, 7901.305585585349, 6380.344532748868],
-            [-3.225632746974616, -2.872442510803122, 5.531931287696299],
-            [0.000293685046453725, 0.0031151716514636447, 0.0030001437204660755],
-        ),
+        ("80", *get_rvpef()),
         (
             "06a",
             [-1033.4734337662508, 7901.305790524991, 6380.3445377211865],
@@ -159,21 +181,16 @@ def test_eci2pef(
     assert custom_allclose(apef_exp, apef_out)
 
 
-def test_pef2eci(t_inputs, orbit_effects_inputs, rva_eci):
+def test_pef2eci(t_inputs, orbit_effects_inputs, rva_eci, rva_pef):
     # Expected ECI output vectors
     reci, veci, aeci = rva_eci
 
     # Orbit effects inputs
     *_, ddpsi, ddeps, eqeterms = orbit_effects_inputs
 
-    # Input PEF vectors
-    rpef = [-1033.4750313057266, 7901.305585585349, 6380.344532748868]
-    vpef = [-3.225632746974616, -2.872442510803122, 5.531931287696299]
-    apef = [0.000293685046453725, 0.0031151716514636447, 0.0030001437204660755]
-
     # Call the function with test inputs
     reci_out, veci_out, aeci_out = fc.pef2eci(
-        rpef, vpef, apef, *t_inputs, ddpsi, ddeps, eqeterms
+        *rva_pef, *t_inputs, ddpsi, ddeps, eqeterms
     )
 
     # Expected ECI output vectors
@@ -185,12 +202,7 @@ def test_pef2eci(t_inputs, orbit_effects_inputs, rva_eci):
 @pytest.mark.parametrize(
     "opt, rtod_exp, vtod_exp, atod_exp",
     [
-        (
-            "80",
-            [2994.049189091933, -7384.738996771148, 6380.344532748868],
-            [2.9348194081733827, 3.8118380124472613, 5.531931287696299],
-            [-3.801990321023478e-05, -0.002699702600291877, 0.0030001437204660755],
-        ),
+        ("80", *get_rvatod()),
         (
             "06a",
             [2994.0511035304567, -7384.738216289892, 6380.3445377211865],
@@ -236,7 +248,7 @@ def test_eci2tod(
     assert custom_allclose(atod_exp, atod_out)
 
 
-def test_tod2eci(t_inputs, orbit_effects_inputs, rva_eci):
+def test_tod2eci(t_inputs, orbit_effects_inputs, rva_eci, rva_tod):
     # Expected ECI output vectors
     reci, veci, aeci = rva_eci
 
@@ -244,13 +256,8 @@ def test_tod2eci(t_inputs, orbit_effects_inputs, rva_eci):
     ttt, *_ = t_inputs
     *_, ddpsi, ddeps, _ = orbit_effects_inputs
 
-    # Input TOD vectors
-    rtod = [2994.049189091933, -7384.738996771148, 6380.344532748868]
-    vtod = [2.9348194081733827, 3.8118380124472613, 5.531931287696299]
-    atod = [-3.801990321023478e-05, -0.002699702600291877, 0.0030001437204660755]
-
     # Call the function with test inputs
-    reci_out, veci_out, aeci_out = fc.tod2eci(rtod, vtod, atod, ttt, ddpsi, ddeps)
+    reci_out, veci_out, aeci_out = fc.tod2eci(*rva_tod, ttt, ddpsi, ddeps)
 
     # Expected ECI output vectors
     assert custom_allclose(reci, reci_out)
