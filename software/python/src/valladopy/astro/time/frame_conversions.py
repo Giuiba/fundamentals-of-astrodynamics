@@ -527,6 +527,44 @@ def mod2eci(
 ###############################################################################
 
 
+def _get_teme_eci_transform(
+    ttt: float, ddpsi: float, ddeps: float
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Generates the transformation matrices for TEME ↔ ECI.
+
+    Args:
+        ttt (float): Julian centuries of TT
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+
+    Returns:
+        tuple: (prec, nut, eqe)
+            prec (np.ndarray): Precession matrix
+            nut (np.ndarray): Nutation matrix
+            eqe (np.ndarray): Equation of equinoxes rotation matrix
+    """
+    # Precession (IAU 1980 model)
+    prec, *_ = precess(ttt, opt="80")
+
+    # Nutation
+    deltapsi, _, meaneps, _, nut = nutation(ttt, ddpsi, ddeps)
+
+    # Equation of equinoxes (geometric terms only)
+    eqeg = deltapsi * np.cos(meaneps)
+    eqeg = np.remainder(eqeg, 2.0 * np.pi)
+
+    # Construct the rotation matrix for the equation of equinoxes
+    eqe = np.array(
+        [
+            [np.cos(eqeg), np.sin(eqeg), 0.0],
+            [-np.sin(eqeg), np.cos(eqeg), 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+
+    return prec, nut, eqe
+
+
 def eci2teme(
     reci: ArrayLike,
     veci: ArrayLike,
@@ -535,8 +573,8 @@ def eci2teme(
     ddpsi: float,
     ddeps: float,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Transforms a vector from the ECI mean equator, mean equinox (J2000) frame
-    to the true equator, mean equinox (TEME) frame.
+    """Transforms a vector from the ECI mean equator, mean equinox (J2000) frame to the
+    true equator, mean equinox (TEME) frame.
 
     References:
         Vallado: 2013, p. 231-233
@@ -555,24 +593,8 @@ def eci2teme(
             vteme (np.ndarray): TEME velocity vector in km/s
             ateme (np.ndarray): TEME acceleration vector in km/s²
     """
-    # Precession (IAU 1980 model)
-    prec, *_ = precess(ttt, opt="80")
-
-    # Nutation
-    deltapsi, _, meaneps, _, nut = nutation(ttt, ddpsi, ddeps)
-
-    # Equation of equinoxes (geometric terms only)
-    eqeg = deltapsi * np.cos(meaneps)
-    eqeg = np.remainder(eqeg, 2.0 * np.pi)
-
-    # Construct the rotation matrix
-    eqe = np.array(
-        [
-            [np.cos(eqeg), np.sin(eqeg), 0.0],
-            [-np.sin(eqeg), np.cos(eqeg), 0.0],
-            [0.0, 0.0, 1.0],
-        ]
-    )
+    # Get the individual transformation matrices
+    prec, nut, eqe = _get_teme_eci_transform(ttt, ddpsi, ddeps)
 
     # Combined transformation matrix
     tm = eqe @ nut.T @ prec.T
@@ -593,7 +615,7 @@ def teme2eci(
     ddpsi: float,
     ddeps: float,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Transforms a vector from the true equator, mean equinox (TEME) frame  to the ECI
+    """Transforms a vector from the true equator, mean equinox (TEME) frame to the ECI
     mean equator, mean equinox (J2000) frame.
 
     References:
@@ -609,29 +631,13 @@ def teme2eci(
         ddeps (float): Delta epsilon correction to GCRF in radians
 
     Returns:
-        tuple:
+        tuple: (reci, veci, aeci)
             reci (np.ndarray): ECI position vector in km
             veci (np.ndarray): ECI velocity vector in km/s
             aeci (np.ndarray): ECI acceleration vector in km/s²
     """
-    # Precession (IAU 1980 model)
-    prec, *_ = precess(ttt, opt="80")
-
-    # Nutation
-    deltapsi, _, meaneps, _, nut = nutation(ttt, ddpsi, ddeps)
-
-    # Equation of equinoxes (geometric terms only)
-    eqeg = deltapsi * np.cos(meaneps)
-    eqeg = np.remainder(eqeg, 2.0 * np.pi)
-
-    # Construct the rotation matrix for the equation of equinoxes
-    eqe = np.array(
-        [
-            [np.cos(eqeg), np.sin(eqeg), 0.0],
-            [-np.sin(eqeg), np.cos(eqeg), 0.0],
-            [0.0, 0.0, 1.0],
-        ]
-    )
+    # Get the individual transformation matrices
+    prec, nut, eqe = _get_teme_eci_transform(ttt, ddpsi, ddeps)
 
     # Combined transformation matrix
     tm = prec @ nut @ eqe.T
