@@ -520,3 +520,66 @@ def mod2eci(
     aeci = prec @ np.asarray(amod)
 
     return reci, veci, aeci
+
+
+###############################################################################
+# ECI <-> TEME Frame Conversions
+###############################################################################
+
+
+def eci2teme(
+    reci: ArrayLike,
+    veci: ArrayLike,
+    aeci: ArrayLike,
+    ttt: float,
+    ddpsi: float,
+    ddeps: float,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the ECI mean equator, mean equinox (J2000) frame
+    to the true equator, mean equinox (TEME) frame.
+
+    References:
+        Vallado: 2013, p. 231-233
+
+    Args:
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
+        aeci (array_like): ECI acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+
+    Returns:
+        tuple: (rteme, vteme, ateme)
+            rteme (np.ndarray): TEME position vector in km
+            vteme (np.ndarray): TEME velocity vector in km/s
+            ateme (np.ndarray): TEME acceleration vector in km/s²
+    """
+    # Precession (IAU 1980 model)
+    prec, *_ = precess(ttt, opt="80")
+
+    # Nutation
+    deltapsi, _, meaneps, _, nut = nutation(ttt, ddpsi, ddeps)
+
+    # Equation of equinoxes (geometric terms only)
+    eqeg = deltapsi * np.cos(meaneps)
+    eqeg = np.remainder(eqeg, 2.0 * np.pi)
+
+    # Construct the rotation matrix
+    eqe = np.array(
+        [
+            [np.cos(eqeg), np.sin(eqeg), 0.0],
+            [-np.sin(eqeg), np.cos(eqeg), 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+
+    # Combined transformation matrix
+    tm = eqe @ nut.T @ prec.T
+
+    # Transform vectors
+    rteme = tm @ np.asarray(reci)
+    vteme = tm @ np.asarray(veci)
+    ateme = tm @ np.asarray(aeci)
+
+    return rteme, vteme, ateme

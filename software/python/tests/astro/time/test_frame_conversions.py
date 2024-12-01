@@ -280,3 +280,22 @@ def test_mod2eci(rva_eci, rva_mod, t_inputs):
     assert custom_allclose(reci, reci_out)
     assert custom_allclose(veci, veci_out)
     assert custom_allclose(aeci, aeci_out)
+
+
+def test_eci2teme(rva_eci, t_inputs, orbit_effects_inputs):
+    # Expected TEME output vectors
+    rteme = [2994.454240128889, -7384.574761007484, 6380.344532748868]
+    vteme = [2.9346103230979974, 3.8119989825937415, 5.531931287696299]
+    ateme = [-3.787182351239877e-05, -0.0026997046816358795, 0.0030001437204660755]
+
+    # Extract inputs
+    ttt, *_ = t_inputs
+    _, _, ddpsi, ddeps, _ = orbit_effects_inputs
+
+    # Call the function with test inputs
+    rteme_out, vteme_out, ateme_out = fc.eci2teme(*rva_eci, ttt, ddpsi, ddeps)
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(rteme, rteme_out)
+    assert custom_allclose(vteme, vteme_out)
+    assert custom_allclose(ateme, ateme_out)
