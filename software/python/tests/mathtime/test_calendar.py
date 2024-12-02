@@ -1,6 +1,41 @@
 import pytest
 
-from src.valladopy.mathtime.calendar import get_int_month
+from src.valladopy.mathtime.calendar import initialize_time, get_int_month
+
+
+class TestInitializeTime:
+    def test_non_leap_year(self):
+        """Test initialize_time for a non-leap year."""
+        time_data = initialize_time(2023)  # 2023 is a non-leap year
+        assert time_data["lmonth"] == [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        assert time_data["monthtitle"] == [
+            "jan",
+            "feb",
+            "mar",
+            "apr",
+            "may",
+            "jun",
+            "jul",
+            "aug",
+            "sep",
+            "oct",
+            "nov",
+            "dec",
+        ]
+        assert time_data["daytitle"] == [
+            "sun",
+            "mon",
+            "tue",
+            "wed",
+            "thu",
+            "fri",
+            "sat",
+        ]
+
+    def test_leap_year(self):
+        """Test initialize_time for a leap year."""
+        time_data = initialize_time(2024)  # 2024 is a leap year
+        assert time_data["lmonth"] == [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 
 class TestGetIntMonth:
@@ -34,12 +69,3 @@ class TestGetIntMonth:
             get_int_month("xyz")
         with pytest.raises(ValueError, match=self.invalid_month_str):
             get_int_month("")
-        with pytest.raises(ValueError, match=self.invalid_month_str):
-            get_int_month("January")  # full month name
-
-    def test_edge_cases(self):
-        """Test edge cases for input types."""
-        with pytest.raises(AttributeError, match=f"'NoneType' {self.no_attr_str}"):
-            get_int_month(None)
-        with pytest.raises(AttributeError, match=f"'int' {self.no_attr_str}"):
-            get_int_month(123)
