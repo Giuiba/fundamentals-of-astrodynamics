@@ -106,6 +106,8 @@ def eci2ecef(
             recef (np.ndarray): ECEF position vector
             vecef (np.ndarray): ECEF velocity vector
             aecef (np.ndarray): ECEF acceleration vector
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Find matrices that account for various orbit effects
     prec, nut, st, pm, omegaearth = calc_orbit_effects(
@@ -684,6 +686,8 @@ def ecef2pef(
             rpef (np.ndarray): PEF position vector in km
             vpef (np.ndarray): PEF velocity vector in km/s
             apef (np.ndarray): PEF acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Compute polar motion matrix
     use_iau80 = True if opt == "80" else False
@@ -726,6 +730,8 @@ def pef2ecef(
             recef (np.ndarray): ECEF position vector in km
             vecef (np.ndarray): ECEF velocity vector in km/s
             aecef (np.ndarray): ECEF acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Compute polar motion matrix
     use_iau80 = True if opt == "80" else False
@@ -780,6 +786,9 @@ def ecef2mod(
         tuple: (rmod, vmod, amod)
             rmod (np.ndarray): MOD position vector in km
             vmod (np.ndarray): MOD velocity vector in km/s
+            amod (np.ndarray): MOD acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Find matrices that account for various orbit effects
     _, nut, st, pm, omegaearth = calc_orbit_effects(
@@ -842,6 +851,8 @@ def mod2ecef(
             recef (np.ndarray): ECEF position vector in km
             vecef (np.ndarray): ECEF velocity vector in km/s
             aecef (np.ndarray): ECEF acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Find matrices that account for various orbit effects
     _, nut, st, pm, omegaearth = calc_orbit_effects(
