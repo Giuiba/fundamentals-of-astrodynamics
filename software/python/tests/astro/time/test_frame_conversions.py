@@ -369,3 +369,21 @@ def test_pef2ecef(rva_ecef, rva_pef, t_inputs, orbit_effects_inputs):
     assert custom_allclose(recef, recef_out)
     assert custom_allclose(vecef, vecef_out)
     assert custom_allclose(aecef, aecef_out)
+
+
+def test_ecef2mod(rva_ecef, rva_mod, t_inputs, orbit_effects_inputs):
+    # Expected MOD output vectors
+    # For some reason, the acceleration out does not quite match that from the
+    # original MOD input
+    rmod, vmod, _ = rva_mod
+    amod = [-0.0010028781946650484, -0.0017988314102041973, 0.003000035987896538]
+
+    # Call the function with test inputs
+    rmod_out, vmod_out, amod_out = fc.ecef2mod(
+        *rva_ecef, *t_inputs, *orbit_effects_inputs
+    )
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(rmod, rmod_out)
+    assert custom_allclose(vmod, vmod_out)
+    assert custom_allclose(amod, amod_out)

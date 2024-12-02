@@ -737,3 +737,69 @@ def pef2ecef(
     aecef = pm.T @ np.asarray(apef)
 
     return recef, vecef, aecef
+
+
+###############################################################################
+# ECEF <-> MOD Frame Conversions
+###############################################################################
+
+
+def ecef2mod(
+    recef: ArrayLike,
+    vecef: ArrayLike,
+    aecef: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Earth-fixed (ITRF) frame to the mean-of-date (MOD)
+    frame.
+
+    References:
+        Vallado: 2004, p. 219-228
+
+    Args:
+        recef (array_like): ECEF position vector in km
+        vecef (array_like): ECEF velocity vector in km/s
+        aecef (array_like): ECEF acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (rmod, vmod, amod)
+            rmod (np.ndarray): MOD position vector in km
+            vmod (np.ndarray): MOD velocity vector in km/s
+    """
+    # Find matrices that account for various orbit effects
+    _, nut, st, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=eqeterms
+    )
+
+    # Transform position
+    rpef = pm @ recef
+    rmod = nut @ st @ rpef
+
+    # Transform velocity
+    vpef = pm @ vecef
+    vmod = nut @ st @ (vpef + np.cross(omegaearth, rpef))
+
+    # Transform acceleration
+    temp = np.cross(omegaearth, rpef)
+    amod = (
+        nut
+        @ st
+        @ (pm @ aecef + np.cross(omegaearth, temp) + 2.0 * np.cross(omegaearth, vpef))
+    )
+
+    return rmod, vmod, amod
