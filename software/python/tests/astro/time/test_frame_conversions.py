@@ -386,6 +386,23 @@ def test_ecef2tod(rva_ecef, rva_tod, t_inputs, orbit_effects_inputs):
     assert custom_allclose(atod, atod_out)
 
 
+def test_tod2ecef(rva_ecef, rva_tod, t_inputs, orbit_effects_inputs):
+    # Expected ECEF output vectors
+    # The acceleration vector is not correct so we will just compare it to the expected
+    recef, vecef, _ = rva_ecef
+    aecef = [-0.00046244106149075624, -0.0021872586135462885, 0.003000139332006123]
+
+    # Call the function with test inputs
+    recef_out, vecef_out, aecef_out = fc.tod2ecef(
+        *rva_tod, *t_inputs, *orbit_effects_inputs
+    )
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(recef, recef_out)
+    assert custom_allclose(vecef, vecef_out)
+    assert custom_allclose(aecef, aecef_out)
+
+
 def test_ecef2mod(rva_ecef, rva_mod, t_inputs, orbit_effects_inputs):
     # Expected MOD output vectors
     # The acceleration vector is not correct so we will just compare it to the expected
