@@ -12,7 +12,7 @@ from numpy.typing import ArrayLike
 from typing import Tuple
 
 from . import iau_transform as iau
-from .sidereal import sidereal
+from .sidereal import gstime, sidereal
 from .utils import precess, nutation, polarm
 from ... import constants as const
 
@@ -787,6 +787,8 @@ def ecef2tod(
             rtod (np.ndarray): TOD position vector in km
             vtod (np.ndarray): TOD velocity vector in km/s
             atod (np.ndarray): TOD acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Find matrices that account for various orbit effects
     _, nut, st, pm, omegaearth = calc_orbit_effects(
@@ -848,6 +850,8 @@ def tod2ecef(
             recef (np.ndarray): ECEF position vector in km
             vecef (np.ndarray): ECEF velocity vector in km/s
             aecef (np.ndarray): ECEF acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Find matrices that account for various orbit effects
     _, nut, st, pm, omegaearth = calc_orbit_effects(
@@ -997,6 +1001,183 @@ def mod2ecef(
     # Transform acceleration
     aecef = (
         pm.T @ (st.T @ nut.T @ amod)
+        - np.cross(omegaearth, np.cross(omegaearth, rpef))
+        - 2.0 * np.cross(omegaearth, vpef)
+    )
+
+    return recef, vecef, aecef
+
+
+###############################################################################
+# ECEF <-> TEME Frame Conversions
+###############################################################################
+
+
+def get_teme_transform_matrices(
+    ttt: float, jdut1: float, lod: float, xp: float, yp: float, eqeterms: bool
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Compute the matrices and Earth rotation vector for TEME transformations.
+
+    Args:
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        eqeterms (bool): Add terms for ast calculation (True/False)
+
+    Returns:
+        tuple: (st, pm, omegaearth)
+            st (np.ndarray): Sidereal time matrix (PEF to TEME)
+            pm (np.ndarray): Polar motion matrix (ECEF to PEF)
+            omegaearth (np.ndarray): Earth's angular velocity vector
+    """
+    # Compute Greenwich Mean Sidereal Time (GMST)
+    gmst = gstime(jdut1)
+
+    # Compute omega from nutation theory
+    omega = (
+        125.04452222
+        + (-6962890.5390 * ttt + 7.455 * ttt**2 + 0.008 * ttt**3) / const.DEG2ARCSEC
+    )
+    omega = np.remainder(np.radians(omega), const.TWOPI)
+
+    # Adjust GMST for geometric terms (kinematic after 1997)
+    if jdut1 > 2450449.5 and eqeterms:
+        gmstg = (
+            gmst
+            + 0.00264 * const.ARCSEC2RAD * np.sin(omega)
+            + 0.000063 * const.ARCSEC2RAD * np.sin(2.0 * omega)
+        )
+    else:
+        gmstg = gmst
+
+    gmstg = np.remainder(gmstg, const.TWOPI)
+
+    # Sidereal time matrix
+    st = np.array(
+        [
+            [np.cos(gmstg), -np.sin(gmstg), 0.0],
+            [np.sin(gmstg), np.cos(gmstg), 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+
+    # Polar motion matrix and Earth's rotation vector
+    *_, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, 0.0, 0.0, eqeterms=eqeterms
+    )
+
+    return st, pm, omegaearth
+
+
+def ecef2teme(
+    recef: ArrayLike,
+    vecef: ArrayLike,
+    aecef: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Earth-fixed (ITRF) frame to the
+    true equator, mean equinox (TEME) frame.
+
+    Results take into account the effects of sidereal time and polar motion.
+
+    References:
+        Vallado: 2013, p. 231-233
+
+    Args:
+        recef (array_like): ECEF position vector in km
+        vecef (array_like): ECEF velocity vector in km/s
+        aecef (array_like): ECEF acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (rteme, vteme, ateme)
+            rteme (np.ndarray): TEME position vector in km
+            vteme (np.ndarray): TEME velocity vector in km/s
+            ateme (np.ndarray): TEME acceleration vector in km/s²
+    """
+    # Get common matrices and Earth rotation vector
+    st, pm, omegaearth = get_teme_transform_matrices(ttt, jdut1, lod, xp, yp, eqeterms)
+
+    # Transform position
+    rpef = pm @ recef
+    rteme = st @ rpef
+
+    # Transform velocity
+    vpef = pm @ vecef
+    vteme = st @ (vpef + np.cross(omegaearth, rpef))
+
+    # Transform acceleration
+    ateme = st @ (
+        pm @ aecef
+        + np.cross(omegaearth, np.cross(omegaearth, rpef))
+        + 2.0 * np.cross(omegaearth, vpef)
+    )
+
+    return rteme, vteme, ateme
+
+
+def teme2ecef(
+    rteme: ArrayLike,
+    vteme: ArrayLike,
+    ateme: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the true equator, mean equinox (TEME) frame to the
+    Earth-fixed (ITRF) frame.
+
+    Results take into account the effects of sidereal time and polar motion.
+
+    References:
+        Vallado: 2013, p. 231-233
+
+    Args:
+        rteme (array_like): TEME position vector in km
+        vteme (array_like): TEME velocity vector in km/s
+        ateme (array_like): TEME acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (recef, vecef, aecef)
+            recef (np.ndarray): ECEF position vector in km
+            vecef (np.ndarray): ECEF velocity vector in km/s
+            aecef (np.ndarray): ECEF acceleration vector in km/s²
+    """
+    # Get common matrices and Earth rotation vector
+    st, pm, omegaearth = get_teme_transform_matrices(ttt, jdut1, lod, xp, yp, eqeterms)
+
+    # Transform position
+    rpef = st.T @ rteme
+    recef = pm.T @ rpef
+
+    # Transform velocity
+    vpef = st.T @ vteme - np.cross(omegaearth, rpef)
+    vecef = pm.T @ vpef
+
+    # Transform acceleration
+    aecef = (
+        pm.T @ ateme
         - np.cross(omegaearth, np.cross(omegaearth, rpef))
         - 2.0 * np.cross(omegaearth, vpef)
     )
