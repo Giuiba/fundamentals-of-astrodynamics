@@ -787,6 +787,8 @@ def ecef2tod(
             rtod (np.ndarray): TOD position vector in km
             vtod (np.ndarray): TOD velocity vector in km/s
             atod (np.ndarray): TOD acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Find matrices that account for various orbit effects
     _, nut, st, pm, omegaearth = calc_orbit_effects(
@@ -848,6 +850,8 @@ def tod2ecef(
             recef (np.ndarray): ECEF position vector in km
             vecef (np.ndarray): ECEF velocity vector in km/s
             aecef (np.ndarray): ECEF acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Find matrices that account for various orbit effects
     _, nut, st, pm, omegaearth = calc_orbit_effects(
