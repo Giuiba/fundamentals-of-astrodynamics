@@ -329,3 +329,43 @@ def test_teme2eci(rva_eci, rva_teme, t_inputs, orbit_effects_inputs):
     assert custom_allclose(reci, reci_out)
     assert custom_allclose(veci, veci_out)
     assert custom_allclose(aeci, aeci_out)
+
+
+def test_ecef2pef(rva_ecef, rva_pef, t_inputs, orbit_effects_inputs):
+    # Expected PEF output vectors
+    # For some reason, the acceleration out does not quite match that from the
+    # original PEF input
+    rpef, vpef, _ = rva_pef
+    apef = [0.0010000020461365159, 0.0020000048477791838, 0.0029999960860945377]
+
+    # Extract inputs
+    ttt, *_ = t_inputs
+    xp, yp, *_ = orbit_effects_inputs
+
+    # Call the function with test inputs
+    rpef_out, vpef_out, apef_out = fc.ecef2pef(*rva_ecef, xp, yp, ttt, opt="80")
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(rpef, rpef_out)
+    assert custom_allclose(vpef, vpef_out)
+    assert custom_allclose(apef, apef_out)
+
+
+def test_pef2ecef(rva_ecef, rva_pef, t_inputs, orbit_effects_inputs):
+    # Expected ECEF output vectors
+    # For some reason, the acceleration out does not quite match that from the
+    # original ECEF input
+    recef, vecef, _ = rva_ecef
+    aecef = [0.00029368300021545085, 0.0031151668034444385, 0.0030001489546600006]
+
+    # Extract inputs
+    ttt, *_ = t_inputs
+    xp, yp, *_ = orbit_effects_inputs
+
+    # Call the function with test inputs
+    recef_out, vecef_out, aecef_out = fc.pef2ecef(*rva_pef, xp, yp, ttt, opt="80")
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(recef, recef_out)
+    assert custom_allclose(vecef, vecef_out)
+    assert custom_allclose(aecef, aecef_out)

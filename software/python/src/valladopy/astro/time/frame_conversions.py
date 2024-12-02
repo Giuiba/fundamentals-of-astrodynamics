@@ -648,3 +648,92 @@ def teme2eci(
     aeci = tm @ np.asarray(ateme)
 
     return reci, veci, aeci
+
+
+###############################################################################
+# ECEF <-> PEF Frame Conversions
+###############################################################################
+
+
+def ecef2pef(
+    recef: ArrayLike,
+    vecef: ArrayLike,
+    aecef: ArrayLike,
+    xp: float,
+    yp: float,
+    ttt: float,
+    opt: str,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Earth-fixed (ITRF) frame to the pseudo
+    Earth-fixed (PEF) frame.
+
+    References:
+        Vallado: 2001, p. 219, Eq. 3-65 to 3-66
+
+    Args:
+        recef (array_like): ECEF position vector in km
+        vecef (array_like): ECEF velocity vector in km/s
+        aecef (array_like): ECEF acceleration vector in km/s²
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ttt (float): Julian centuries of TT
+        opt (str): Polar motion model option ('80' or '06')
+
+    Returns:
+        tuple: (rpef, vpef, apef)
+            rpef (np.ndarray): PEF position vector in km
+            vpef (np.ndarray): PEF velocity vector in km/s
+            apef (np.ndarray): PEF acceleration vector in km/s²
+    """
+    # Compute polar motion matrix
+    use_iau80 = True if opt == "80" else False
+    pm = polarm(xp, yp, ttt, use_iau80)
+
+    # Transform vectors
+    rpef = pm @ np.asarray(recef)
+    vpef = pm @ np.asarray(vecef)
+    apef = pm @ np.asarray(aecef)
+
+    return rpef, vpef, apef
+
+
+def pef2ecef(
+    rpef: ArrayLike,
+    vpef: ArrayLike,
+    apef: ArrayLike,
+    xp: float,
+    yp: float,
+    ttt: float,
+    opt: str,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the pseudo Earth-fixed (PEF) frame to the
+    Earth-fixed (ITRF) frame.
+
+    References:
+        Vallado: 2001, p. 219, Eq. 3-65 to 3-66
+
+    Args:
+        rpef (array_like): PEF position vector in km
+        vpef (array_like): PEF velocity vector in km/s
+        apef (array_like): PEF acceleration vector in km/s²
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ttt (float): Julian centuries of TT
+        opt (str): Polar motion model option ('80' or '06')
+
+    Returns:
+        tuple: (recef, vecef, aecef)
+            recef (np.ndarray): ECEF position vector in km
+            vecef (np.ndarray): ECEF velocity vector in km/s
+            aecef (np.ndarray): ECEF acceleration vector in km/s²
+    """
+    # Compute polar motion matrix
+    use_iau80 = True if opt == "80" else False
+    pm = polarm(xp, yp, ttt, use_iau80)
+
+    # Transform vectors
+    recef = pm.T @ np.asarray(rpef)
+    vecef = pm.T @ np.asarray(vpef)
+    aecef = pm.T @ np.asarray(apef)
+
+    return recef, vecef, aecef
