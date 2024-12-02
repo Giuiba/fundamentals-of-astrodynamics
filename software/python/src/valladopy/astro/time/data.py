@@ -15,6 +15,8 @@ def iau80in() -> Tuple[np.ndarray, np.ndarray]:
         tuple: (iar80, rar80)
             iar80 (np.ndarray): Integers for FK5 1980
             rar80 (np.ndarray): Reals for FK5 1980 in radians
+
+    TODO: Update with latest MATLAB updates
     """
     # Define the path to the nut80.dat file
     file_path = os.path.join(DATA_DIR, "nut80.dat")
@@ -77,6 +79,8 @@ def iau06in() -> (
             - iau03n.dat (file for nutation coefficients)
             - iau03pl.dat (file for planetary nutation coefficients)
             - iau06gsttab5.2.e.dat (file for GST coefficients)
+
+    TODO: Update with latest MATLAB updates
     """
     # Conversion factors
     convrtu = 1e-6 * ARCSEC2RAD  # microarcseconds to radians
