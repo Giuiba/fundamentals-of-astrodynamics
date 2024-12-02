@@ -40,18 +40,3 @@
     fprintf(1,'jd %18.10f  %18.10f   %18.10f \n\n\n',jd, jdfrac, jd + jdfrac);
 
     
-    % alt tests
-    [year,mon,day,hr,minute,secs] = invjday ( 2450382.5, jdfrac );
-    fprintf(1,'year %5i   mon %4i day %3i %3i:%2i:%8.6f\n',year, mon, day, hr, minute, secs);
-
-    [year,mon,day,hr,minute,secs] = invjday ( 2450382.5, jdfrac - 0.2 );
-    fprintf(1,'year %5i   mon %4i day %3i %3i:%2i:%8.6f\n',year, mon, day, hr, minute, secs);
-
-    [year,mon,day,hr,minute,secs] = invjday ( 2450382.5 + 1, jdfrac + 1.5 );
-    fprintf(1,'year %5i   mon %4i day %3i %3i:%2i:%8.6f\n',year, mon, day, hr, minute, secs);
-
-    [year,mon,day,hr,minute,secs] = invjday ( 2450382.5, -0.5 );
-    fprintf(1,'year %5i   mon %4i day %3i %3i:%2i:%8.6f\n',year, mon, day, hr, minute, secs);
-
-    [year,mon,day,hr,minute,secs] = invjday ( 2450382.5, +0.5 );
-    fprintf(1,'year %5i   mon %4i day %3i %3i:%2i:%8.6f\n',year, mon, day, hr, minute, secs);
