@@ -1013,6 +1013,64 @@ def mod2ecef(
 ###############################################################################
 
 
+def get_teme_transform_matrices(
+    ttt: float, jdut1: float, lod: float, xp: float, yp: float, eqeterms: bool
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Compute the matrices and Earth rotation vector for TEME transformations.
+
+    Args:
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        eqeterms (bool): Add terms for ast calculation (True/False)
+
+    Returns:
+        tuple: (st, pm, omegaearth)
+            st (np.ndarray): Sidereal time matrix (PEF to TEME)
+            pm (np.ndarray): Polar motion matrix (ECEF to PEF)
+            omegaearth (np.ndarray): Earth's angular velocity vector
+    """
+    # Compute Greenwich Mean Sidereal Time (GMST)
+    gmst = gstime(jdut1)
+
+    # Compute omega from nutation theory
+    omega = (
+        125.04452222
+        + (-6962890.5390 * ttt + 7.455 * ttt**2 + 0.008 * ttt**3) / const.DEG2ARCSEC
+    )
+    omega = np.remainder(np.radians(omega), const.TWOPI)
+
+    # Adjust GMST for geometric terms (kinematic after 1997)
+    if jdut1 > 2450449.5 and eqeterms:
+        gmstg = (
+            gmst
+            + 0.00264 * const.ARCSEC2RAD * np.sin(omega)
+            + 0.000063 * const.ARCSEC2RAD * np.sin(2.0 * omega)
+        )
+    else:
+        gmstg = gmst
+
+    gmstg = np.remainder(gmstg, const.TWOPI)
+
+    # Sidereal time matrix
+    st = np.array(
+        [
+            [np.cos(gmstg), -np.sin(gmstg), 0.0],
+            [np.sin(gmstg), np.cos(gmstg), 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+
+    # Polar motion matrix and Earth's rotation vector
+    *_, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, 0.0, 0.0, eqeterms=eqeterms
+    )
+
+    return st, pm, omegaearth
+
+
 def ecef2teme(
     recef: ArrayLike,
     vecef: ArrayLike,
@@ -1049,41 +1107,8 @@ def ecef2teme(
             vteme (np.ndarray): TEME velocity vector in km/s
             ateme (np.ndarray): TEME acceleration vector in km/s²
     """
-    # Compute Greenwich Mean Sidereal Time (GMST)
-    gmst = gstime(jdut1)
-
-    # Compute omega from nutation theory
-    omega = (
-        125.04452222
-        + (-6962890.5390 * ttt + 7.455 * ttt**2 + 0.008 * ttt**3) / const.DEG2ARCSEC
-    )
-    omega = np.remainder(np.radians(omega), const.TWOPI)
-
-    # Adjust GMST for geometric terms (kinematic after 1997)
-    if jdut1 > 2450449.5 and eqeterms:
-        gmstg = (
-            gmst
-            + 0.00264 * const.ARCSEC2RAD * np.sin(omega)
-            + 0.000063 * const.ARCSEC2RAD * np.sin(2.0 * omega)
-        )
-    else:
-        gmstg = gmst
-
-    gmstg = np.remainder(gmstg, const.TWOPI)
-
-    # Compute sidereal time matrix
-    st = np.array(
-        [
-            [np.cos(gmstg), -np.sin(gmstg), 0.0],
-            [np.sin(gmstg), np.cos(gmstg), 0.0],
-            [0.0, 0.0, 1.0],
-        ]
-    )
-
-    # Get polar motion matrix and Earth rotation vector
-    *_, pm, omegaearth = calc_orbit_effects(
-        ttt, jdut1, lod, xp, yp, 0.0, 0.0, eqeterms=eqeterms
-    )
+    # Get common matrices and Earth rotation vector
+    st, pm, omegaearth = get_teme_transform_matrices(ttt, jdut1, lod, xp, yp, eqeterms)
 
     # Transform position
     rpef = pm @ recef
@@ -1139,41 +1164,8 @@ def teme2ecef(
             vecef (np.ndarray): ECEF velocity vector in km/s
             aecef (np.ndarray): ECEF acceleration vector in km/s²
     """
-    # Compute Greenwich Mean Sidereal Time (GMST)
-    gmst = gstime(jdut1)
-
-    # Compute omega from nutation theory
-    omega = (
-        125.04452222
-        + (-6962890.5390 * ttt + 7.455 * ttt**2 + 0.008 * ttt**3) / const.DEG2ARCSEC
-    )
-    omega = np.remainder(np.radians(omega), const.TWOPI)
-
-    # Adjust GMST for geometric terms (kinematic after 1997)
-    if jdut1 > 2450449.5 and eqeterms:
-        gmstg = (
-            gmst
-            + 0.00264 * const.ARCSEC2RAD * np.sin(omega)
-            + 0.000063 * const.ARCSEC2RAD * np.sin(2.0 * omega)
-        )
-    else:
-        gmstg = gmst
-
-    gmstg = np.remainder(gmstg, const.TWOPI)
-
-    # Compute sidereal time matrix
-    st = np.array(
-        [
-            [np.cos(gmstg), -np.sin(gmstg), 0.0],
-            [np.sin(gmstg), np.cos(gmstg), 0.0],
-            [0.0, 0.0, 1.0],
-        ]
-    )
-
-    # Get polar motion matrix and Earth rotation vector
-    *_, pm, omegaearth = calc_orbit_effects(
-        ttt, jdut1, lod, xp, yp, 0.0, 0.0, eqeterms=eqeterms
-    )
+    # Get common matrices and Earth rotation vector
+    st, pm, omegaearth = get_teme_transform_matrices(ttt, jdut1, lod, xp, yp, eqeterms)
 
     # Transform position
     rpef = st.T @ rteme
