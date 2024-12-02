@@ -106,6 +106,8 @@ def eci2ecef(
             recef (np.ndarray): ECEF position vector
             vecef (np.ndarray): ECEF velocity vector
             aecef (np.ndarray): ECEF acceleration vector
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Find matrices that account for various orbit effects
     prec, nut, st, pm, omegaearth = calc_orbit_effects(
@@ -684,6 +686,8 @@ def ecef2pef(
             rpef (np.ndarray): PEF position vector in km
             vpef (np.ndarray): PEF velocity vector in km/s
             apef (np.ndarray): PEF acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Compute polar motion matrix
     use_iau80 = True if opt == "80" else False
@@ -726,6 +730,8 @@ def pef2ecef(
             recef (np.ndarray): ECEF position vector in km
             vecef (np.ndarray): ECEF velocity vector in km/s
             aecef (np.ndarray): ECEF acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
     """
     # Compute polar motion matrix
     use_iau80 = True if opt == "80" else False
@@ -735,5 +741,137 @@ def pef2ecef(
     recef = pm.T @ np.asarray(rpef)
     vecef = pm.T @ np.asarray(vpef)
     aecef = pm.T @ np.asarray(apef)
+
+    return recef, vecef, aecef
+
+
+###############################################################################
+# ECEF <-> MOD Frame Conversions
+###############################################################################
+
+
+def ecef2mod(
+    recef: ArrayLike,
+    vecef: ArrayLike,
+    aecef: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Earth-fixed (ITRF) frame to the mean-of-date (MOD)
+    frame.
+
+    References:
+        Vallado: 2004, p. 219-228
+
+    Args:
+        recef (array_like): ECEF position vector in km
+        vecef (array_like): ECEF velocity vector in km/s
+        aecef (array_like): ECEF acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (rmod, vmod, amod)
+            rmod (np.ndarray): MOD position vector in km
+            vmod (np.ndarray): MOD velocity vector in km/s
+            amod (np.ndarray): MOD acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
+    """
+    # Find matrices that account for various orbit effects
+    _, nut, st, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=eqeterms
+    )
+
+    # Transform position
+    rpef = pm @ recef
+    rmod = nut @ st @ rpef
+
+    # Transform velocity
+    vpef = pm @ vecef
+    vmod = nut @ st @ (vpef + np.cross(omegaearth, rpef))
+
+    # Transform acceleration
+    temp = np.cross(omegaearth, rpef)
+    amod = (
+        nut
+        @ st
+        @ (pm @ aecef + np.cross(omegaearth, temp) + 2.0 * np.cross(omegaearth, vpef))
+    )
+
+    return rmod, vmod, amod
+
+
+def mod2ecef(
+    rmod: ArrayLike,
+    vmod: ArrayLike,
+    amod: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the mean-of-date (MOD) frame to the Earth-fixed (ITRF)
+    frame.
+
+    References:
+        Vallado: 2004, p. 219-228
+
+    Args:
+        rmod (array_like): MOD position vector in km
+        vmod (array_like): MOD velocity vector in km/s
+        amod (array_like): MOD acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (recef, vecef, aecef)
+            recef (np.ndarray): ECEF position vector in km
+            vecef (np.ndarray): ECEF velocity vector in km/s
+            aecef (np.ndarray): ECEF acceleration vector in km/s²
+
+    TODO: The acceleration transformation is not correct and needs to be fixed.
+    """
+    # Find matrices that account for various orbit effects
+    _, nut, st, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=eqeterms
+    )
+
+    # Transform position
+    rpef = st.T @ nut.T @ rmod
+    recef = pm.T @ rpef
+
+    # Transform velocity
+    vpef = st.T @ nut.T @ vmod - np.cross(omegaearth, rpef)
+    vecef = pm.T @ vpef
+
+    # Transform acceleration
+    aecef = (
+        pm.T @ (st.T @ nut.T @ amod)
+        - np.cross(omegaearth, np.cross(omegaearth, rpef))
+        - 2.0 * np.cross(omegaearth, vpef)
+    )
 
     return recef, vecef, aecef
