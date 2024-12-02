@@ -37,7 +37,7 @@ function [iau80arr] = iau80in(infilename)
 
        iau80arr = struct('rar80',zeros(106, 4), 'iar80',zeros(106, 5));
 
-       nut80 = load(infilename);
+       nut80 = load(append(infilename, 'nut80.dat'));
 
        iau80arr.iar80 = nut80(:,1:5);
        iau80arr.rar80 = nut80(:,6:9);

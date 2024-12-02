@@ -27,12 +27,12 @@
         %    s           - coordinate                     rad
         %
         %  locals        :
-        %    axs0        - real coefficients for x        rad
-        %    a0xi        - integer coefficients for x
-        %    ays0        - real coefficients for y        rad
-        %    a0yi        - integer coefficients for y
-        %    ass0        - real coefficients for s        rad
-        %    a0si        - integer coefficients for s
+        %    iau06arr.axs0        - real coefficients for x        rad
+        %    iau06arr.a0xi        - integer coefficients for x
+        %    iau06arr.ays0        - real coefficients for y        rad
+        %    iau06arr.a0yi        - integer coefficients for y
+        %    iau06arr.ass0        - real coefficients for s        rad
+        %    iau06arr.a0si        - integer coefficients for siau06arr.a0xi
         %    apn         - real coefficients for nutation rad
         %    apni        - integer coefficients for nutation
         %    appl        - real coefficients for planetary nutation rad
@@ -42,7 +42,7 @@
         %    many others
         %
         %  coupling      :
-        %    iau06in     - initialize the arrays
+        %    iau00in     - initialize the arrays
         %
         %  references    :
         %     vallado       2022, 214-216
@@ -51,8 +51,7 @@
         %    lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate )
         % ----------------------------------------------------------------------------
 
-function [x,y,s] = iau06xysS (ttt, l, l1, f, d, omega, ...
-            lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate )
+function [x,y,s] = iau06xysS (ttt, iau06arr, fArgs )
 
         sethelp;
 
@@ -65,53 +64,54 @@ function [x,y,s] = iau06xysS (ttt, l, l1, f, d, omega, ...
         ttt4 = ttt2 * ttt2;
         ttt5 = ttt3 * ttt2;
 
-        [axs0, a0xi, ays0, a0yi, ass0, a0si, apn, apni, appl, appli, agst, agsti] = iau06in;
+    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau06arr] = iau06in(nutLoc);
 
         % ---------------- first find x
         % the iers code puts the constants in here, however
         % don't sum constants in here because they're larger than the last few terms
         xsum0 = 0.0;
         for i = 1306: -1 : 1
-            tempval = a0xi(i,1)*l + a0xi(i,2)*l1 + a0xi(i,3)*f + a0xi(i,4)*d + a0xi(i,5)*omega + ...
-                a0xi(i,6)*lonmer  + a0xi(i,7)*lonven  + a0xi(i,8)*lonear  + a0xi(i,9)*lonmar + ...
-                a0xi(i,10)*lonjup + a0xi(i,11)*lonsat + a0xi(i,12)*lonurn + a0xi(i,13)*lonnep + a0xi(i,14)*precrate;
-            xsum0 = xsum0 + axs0(i,1)*sin(tempval) + axs0(i,2) * cos(tempval);
+            tempval = iau06arr.a0xi(i,1)*l + iau06arr.a0xi(i,2)*l1 + iau06arr.a0xi(i,3)*f + iau06arr.a0xi(i,4)*d + iau06arr.a0xi(i,5)*omega + ...
+                iau06arr.a0xi(i,6)*lonmer  + iau06arr.a0xi(i,7)*lonven  + iau06arr.a0xi(i,8)*lonear  + iau06arr.a0xi(i,9)*lonmar + ...
+                iau06arr.a0xi(i,10)*lonjup + iau06arr.a0xi(i,11)*lonsat + iau06arr.a0xi(i,12)*lonurn + iau06arr.a0xi(i,13)*lonnep + iau06arr.a0xi(i,14)*precrate;
+            xsum0 = xsum0 + iau06arr.axs0(i,1)*sin(tempval) + iau06arr.axs0(i,2) * cos(tempval);
         end
         xsum1 = 0.0;
-        % note that the index changes here to j. this is because the a0xi etc
+        % note that the index changes here to j. this is because the iau06arr.a0xi etc
         % indicies go from 1 to 1600, but there are 5 groups. the i index counts through each
         % calculation, and j takes care of the individual summations. note that
         % this same process is used for y and s.
         for j = 253: -1 : 1
             i = 1306 + j;
-            tempval = a0xi(i,1)*l + a0xi(i,2)*l1 + a0xi(i,3)*f + a0xi(i,4)*d + a0xi(i,5)*omega + ...
-                a0xi(i,6)*lonmer  + a0xi(i,7)*lonven  + a0xi(i,8)*lonear  + a0xi(i,9)*lonmar + ...
-                a0xi(i,10)*lonjup + a0xi(i,11)*lonsat + a0xi(i,12)*lonurn + a0xi(i,13)*lonnep + a0xi(i,14)*precrate;
-            xsum1 = xsum1 + axs0(i,1)*sin(tempval) + axs0(i,2)*cos(tempval);
+            tempval = iau06arr.a0xi(i,1)*l + iau06arr.a0xi(i,2)*l1 + iau06arr.a0xi(i,3)*f + iau06arr.a0xi(i,4)*d + iau06arr.a0xi(i,5)*omega + ...
+                iau06arr.a0xi(i,6)*lonmer  + iau06arr.a0xi(i,7)*lonven  + iau06arr.a0xi(i,8)*lonear  + iau06arr.a0xi(i,9)*lonmar + ...
+                iau06arr.a0xi(i,10)*lonjup + iau06arr.a0xi(i,11)*lonsat + iau06arr.a0xi(i,12)*lonurn + iau06arr.a0xi(i,13)*lonnep + iau06arr.a0xi(i,14)*precrate;
+            xsum1 = xsum1 + iau06arr.axs0(i,1)*sin(tempval) + iau06arr.axs0(i,2)*cos(tempval);
         end
         xsum2 = 0.0;
         for j = 36: -1 : 1
-            i = 1306 + 253 + j;
-            tempval = a0xi(i,1)*l + a0xi(i,2)*l1 + a0xi(i,3)*f + a0xi(i,4)*d + a0xi(i,5)*omega + ...
-                a0xi(i,6)*lonmer  + a0xi(i,7)*lonven  + a0xi(i,8)*lonear  + a0xi(i,9)*lonmar + ...
-                a0xi(i,10)*lonjup + a0xi(i,11)*lonsat + a0xi(i,12)*lonurn + a0xi(i,13)*lonnep + a0xi(i,14)*precrate;
-            xsum2 = xsum2 + axs0(i,1)*sin(tempval) + axs0(i,2)*cos(tempval);
+            i = 1306 + 253 + j;iau06arr.axs0
+            tempval = iau06arr.a0xi(i,1)*l + iau06arr.a0xi(i,2)*l1 + iau06arr.a0xi(i,3)*f + iau06arr.a0xi(i,4)*d + iau06arr.a0xi(i,5)*omega + ...
+                iau06arr.a0xi(i,6)*lonmer  + iau06arr.a0xi(i,7)*lonven  + iau06arr.a0xi(i,8)*lonear  + iau06arr.a0xi(i,9)*lonmar + ...
+                iau06arr.a0xi(i,10)*lonjup + iau06arr.a0xi(i,11)*lonsat + iau06arr.a0xi(i,12)*lonurn + iau06arr.a0xi(i,13)*lonnep + iau06arr.a0xi(i,14)*precrate;
+            xsum2 = xsum2 + iau06arr.axs0(i,1)*sin(tempval) + iau06arr.axs0(i,2)*cos(tempval);
         end
         xsum3 = 0.0;
         for j = 4: -1 : 1
             i = 1306 + 253 + 36 + j;
-            tempval = a0xi(i,1)*l + a0xi(i,2)*l1 + a0xi(i,3)*f + a0xi(i,4)*d + a0xi(i,5)*omega + ...
-                a0xi(i,6)*lonmer  + a0xi(i,7)*lonven  + a0xi(i,8)*lonear  + a0xi(i,9)*lonmar + ...
-                a0xi(i,10)*lonjup + a0xi(i,11)*lonsat + a0xi(i,12)*lonurn + a0xi(i,13)*lonnep + a0xi(i,14)*precrate;
-            xsum3 = xsum3 + axs0(i,1)*sin(tempval) + axs0(i,2)*cos(tempval);
+            tempval = iau06arr.a0xi(i,1)*l + iau06arr.a0xi(i,2)*l1 + iau06arr.a0xi(i,3)*f + iau06arr.a0xi(i,4)*d + iau06arr.a0xi(i,5)*omega + ...
+                iau06arr.a0xi(i,6)*lonmer  + iau06arr.a0xi(i,7)*lonven  + iau06arr.a0xi(i,8)*lonear  + iau06arr.a0xi(i,9)*lonmar + ...
+                iau06arr.a0xi(i,10)*lonjup + iau06arr.a0xi(i,11)*lonsat + iau06arr.a0xi(i,12)*lonurn + iau06arr.a0xi(i,13)*lonnep + iau06arr.a0xi(i,14)*precrate;
+            xsum3 = xsum3 + iau06arr.axs0(i,1)*sin(tempval) + iau06arr.axs0(i,2)*cos(tempval);
         end
         xsum4 = 0.0;
         for j = 1: -1 : 1
             i = 1306 + 253 + 36 + 4 + j;
-            tempval = a0xi(i,1)*l + a0xi(i,2)*l1 + a0xi(i,3)*f + a0xi(i,4)*d + a0xi(i,5)*omega + ...
-                a0xi(i,6)*lonmer  + a0xi(i,7)*lonven  + a0xi(i,8)*lonear  + a0xi(i,9)*lonmar + ...
-                a0xi(i,10)*lonjup + a0xi(i,11)*lonsat + a0xi(i,12)*lonurn + a0xi(i,13)*lonnep + a0xi(i,14)*precrate;
-            xsum4 = xsum4 + axs0(i,1)*sin(tempval) + axs0(i,2)*cos(tempval);
+            tempval = iau06arr.a0xi(i,1)*l + iau06arr.a0xi(i,2)*l1 + iau06arr.a0xi(i,3)*f + iau06arr.a0xi(i,4)*d + iau06arr.a0xi(i,5)*omega + ...
+                iau06arr.a0xi(i,6)*lonmer  + iau06arr.a0xi(i,7)*lonven  + iau06arr.a0xi(i,8)*lonear  + iau06arr.a0xi(i,9)*lonmar + ...
+                iau06arr.a0xi(i,10)*lonjup + iau06arr.a0xi(i,11)*lonsat + iau06arr.a0xi(i,12)*lonurn + iau06arr.a0xi(i,13)*lonnep + iau06arr.a0xi(i,14)*precrate;
+            xsum4 = xsum4 + iau06arr.axs0(i,1)*sin(tempval) + iau06arr.axs0(i,2)*cos(tempval);
         end
 
         x = -0.016617 + 2004.191898 * ttt - 0.4297829 * ttt2 ...
@@ -125,43 +125,43 @@ function [x,y,s] = iau06xysS (ttt, l, l1, f, d, omega, ...
         % ---------------- now find y
         ysum0 = 0.0;
         for i = 962: -1 : 1
-            tempval = a0yi(i,1)*l + a0yi(i,2)*l1 + a0yi(i,3)*f + a0yi(i,4)*d + a0yi(i,5)*omega + ...
-                a0yi(i,6)*lonmer  + a0yi(i,7)*lonven  + a0yi(i,8)*lonear  + a0yi(i,9)*lonmar + ...
-                a0yi(i,10)*lonjup + a0yi(i,11)*lonsat + a0yi(i,12)*lonurn + a0yi(i,13)*lonnep + a0yi(i,14)*precrate;
-            ysum0 = ysum0 + ays0(i,1)*sin(tempval) + ays0(i,2) * cos(tempval);
+            tempval = iau06arr.a0yi(i,1)*l + iau06arr.a0yi(i,2)*l1 + iau06arr.a0yi(i,3)*f + iau06arr.a0yi(i,4)*d + iau06arr.a0yi(i,5)*omega + ...
+                iau06arr.a0yi(i,6)*lonmer  + iau06arr.a0yi(i,7)*lonven  + iau06arr.a0yi(i,8)*lonear  + iau06arr.a0yi(i,9)*lonmar + ...
+                iau06arr.a0yi(i,10)*lonjup + iau06arr.a0yi(i,11)*lonsat + iau06arr.a0yi(i,12)*lonurn + iau06arr.a0yi(i,13)*lonnep + iau06arr.a0yi(i,14)*precrate;
+            ysum0 = ysum0 + iau06arr.ays0(i,1)*sin(tempval) + iau06arr.ays0(i,2) * cos(tempval);
         end
 
         ysum1 = 0.0;
         for j = 277: -1 : 1
             i = 962 + j;
-            tempval = a0yi(i,1)*l + a0yi(i,2)*l1 + a0yi(i,3)*f + a0yi(i,4)*d + a0yi(i,5)*omega + ...
-                a0yi(i,6)*lonmer  + a0yi(i,7)*lonven  + a0yi(i,8)*lonear  + a0yi(i,9)*lonmar + ...
-                a0yi(i,10)*lonjup + a0yi(i,11)*lonsat + a0yi(i,12)*lonurn + a0yi(i,13)*lonnep + a0yi(i,14)*precrate;
-            ysum1 = ysum1 + ays0(i,1)*sin(tempval) + ays0(i,2)*cos(tempval);
+            tempval = iau06arr.a0yi(i,1)*l + iau06arr.a0yi(i,2)*l1 + iau06arr.a0yi(i,3)*f + iau06arr.a0yi(i,4)*d + iau06arr.a0yi(i,5)*omega + ...
+                iau06arr.a0yi(i,6)*lonmer  + iau06arr.a0yi(i,7)*lonven  + iau06arr.a0yi(i,8)*lonear  + iau06arr.a0yi(i,9)*lonmar + ...
+                iau06arr.a0yi(i,10)*lonjup + iau06arr.a0yi(i,11)*lonsat + iau06arr.a0yi(i,12)*lonurn + iau06arr.a0yi(i,13)*lonnep + iau06arr.a0yi(i,14)*precrate;
+            ysum1 = ysum1 + iau06arr.ays0(i,1)*sin(tempval) + iau06arr.ays0(i,2)*cos(tempval);
         end
         ysum2 = 0.0;
         for j = 30: -1 : 1
             i = 962 + 277 + j;
-            tempval = a0yi(i,1)*l + a0yi(i,2)*l1 + a0yi(i,3)*f + a0yi(i,4)*d + a0yi(i,5)*omega + ...
-                a0yi(i,6)*lonmer  + a0yi(i,7)*lonven  + a0yi(i,8)*lonear  + a0yi(i,9)*lonmar + ...
-                a0yi(i,10)*lonjup + a0yi(i,11)*lonsat + a0yi(i,12)*lonurn + a0yi(i,13)*lonnep + a0yi(i,14)*precrate;
-            ysum2 = ysum2 + ays0(i,1)*sin(tempval) + ays0(i,2)*cos(tempval);
+            tempval = iau06arr.a0yi(i,1)*l + iau06arr.a0yi(i,2)*l1 + iau06arr.a0yi(i,3)*f + iau06arr.a0yi(i,4)*d + iau06arr.a0yi(i,5)*omega + ...
+                iau06arr.a0yi(i,6)*lonmer  + iau06arr.a0yi(i,7)*lonven  + iau06arr.a0yi(i,8)*lonear  + iau06arr.a0yi(i,9)*lonmar + ...
+                iau06arr.a0yi(i,10)*lonjup + iau06arr.a0yi(i,11)*lonsat + iau06arr.a0yi(i,12)*lonurn + iau06arr.a0yi(i,13)*lonnep + iau06arr.a0yi(i,14)*precrate;
+            ysum2 = ysum2 + iau06arr.ays0(i,1)*sin(tempval) + iau06arr.ays0(i,2)*cos(tempval);
         end
         ysum3 = 0.0;
         for j = 5: -1 : 1
             i = 962 + 277 + 30 + j;
-            tempval = a0yi(i,1)*l + a0yi(i,2)*l1 + a0yi(i,3)*f + a0yi(i,4)*d + a0yi(i,5)*omega + ...
-                a0yi(i,6)*lonmer  + a0yi(i,7)*lonven  + a0yi(i,8)*lonear  + a0yi(i,9)*lonmar + ...
-                a0yi(i,10)*lonjup + a0yi(i,11)*lonsat + a0yi(i,12)*lonurn + a0yi(i,13)*lonnep + a0yi(i,14)*precrate;
-            ysum3 = ysum3 + ays0(i,1)*sin(tempval) + ays0(i,2)*cos(tempval);
+            tempval = iau06arr.a0yi(i,1)*l + iau06arr.a0yi(i,2)*l1 + iau06arr.a0yi(i,3)*f + iau06arr.a0yi(i,4)*d + iau06arr.a0yi(i,5)*omega + ...
+                iau06arr.a0yi(i,6)*lonmer  + iau06arr.a0yi(i,7)*lonven  + iau06arr.a0yi(i,8)*lonear  + iau06arr.a0yi(i,9)*lonmar + ...
+                iau06arr.a0yi(i,10)*lonjup + iau06arr.a0yi(i,11)*lonsat + iau06arr.a0yi(i,12)*lonurn + iau06arr.a0yi(i,13)*lonnep + iau06arr.a0yi(i,14)*precrate;
+            ysum3 = ysum3 + iau06arr.ays0(i,1)*sin(tempval) + iau06arr.ays0(i,2)*cos(tempval);
         end
         ysum4 = 0.0;
         for j = 1: -1 : 1
             i = 962 + 277 + 30 + 5 + j;
-            tempval = a0yi(i,1)*l + a0yi(i,2)*l1 + a0yi(i,3)*f + a0yi(i,4)*d + a0yi(i,5)*omega + ...
-                a0yi(i,6)*lonmer  + a0yi(i,7)*lonven  + a0yi(i,8)*lonear  + a0yi(i,9)*lonmar + ...
-                a0yi(i,10)*lonjup + a0yi(i,11)*lonsat + a0yi(i,12)*lonurn + a0yi(i,13)*lonnep + a0yi(i,14)*precrate;
-            ysum4 = ysum4 + ays0(i,1)*sin(tempval) + ays0(i,2)*cos(tempval);
+            tempval = iau06arr.a0yi(i,1)*l + iau06arr.a0yi(i,2)*l1 + iau06arr.a0yi(i,3)*f + iau06arr.a0yi(i,4)*d + iau06arr.a0yi(i,5)*omega + ...
+                iau06arr.a0yi(i,6)*lonmer  + iau06arr.a0yi(i,7)*lonven  + iau06arr.a0yi(i,8)*lonear  + iau06arr.a0yi(i,9)*lonmar + ...
+                iau06arr.a0yi(i,10)*lonjup + iau06arr.a0yi(i,11)*lonsat + iau06arr.a0yi(i,12)*lonurn + iau06arr.a0yi(i,13)*lonnep + iau06arr.a0yi(i,14)*precrate;
+            ysum4 = ysum4 + iau06arr.ays0(i,1)*sin(tempval) + iau06arr.ays0(i,2)*cos(tempval);
         end
 
         y = -0.006951 - 0.025896 * ttt - 22.4072747 * ttt2 ...
@@ -175,42 +175,42 @@ function [x,y,s] = iau06xysS (ttt, l, l1, f, d, omega, ...
         % ---------------- now find s
         ssum0 = 0.0;
         for i = 33: -1 : 1
-            tempval = a0si(i,1)*l + a0si(i,2)*l1 + a0si(i,3)*f + a0si(i,4)*d + a0si(i,5)*omega + ...
-                a0si(i,6)*lonmer  + a0si(i,7)*lonven  + a0si(i,8)*lonear  + a0si(i,9)*lonmar + ...
-                a0si(i,10)*lonjup + a0si(i,11)*lonsat + a0si(i,12)*lonurn + a0si(i,13)*lonnep + a0si(i,14)*precrate;
-            ssum0 = ssum0 + ass0(i,1)*sin(tempval) + ass0(i,2)*cos(tempval);
+            tempval = iau06arr.a0si(i,1)*l + iau06arr.a0si(i,2)*l1 + iau06arr.a0si(i,3)*f + iau06arr.a0si(i,4)*d + iau06arr.a0si(i,5)*omega + ...
+                iau06arr.a0si(i,6)*lonmer  + iau06arr.a0si(i,7)*lonven  + iau06arr.a0si(i,8)*lonear  + iau06arr.a0si(i,9)*lonmar + ...
+                iau06arr.a0si(i,10)*lonjup + iau06arr.a0si(i,11)*lonsat + iau06arr.a0si(i,12)*lonurn + iau06arr.a0si(i,13)*lonnep + iau06arr.a0si(i,14)*precrate;
+            ssum0 = ssum0 + iau06arr.ass0(i,1)*sin(tempval) + iau06arr.ass0(i,2)*cos(tempval);
         end
         ssum1 = 0.0;
         for j = 3: -1 : 1
             i = 33 + j;
-            tempval = a0si(i,1)*l + a0si(i,2)*l1 + a0si(i,3)*f + a0si(i,4)*d + a0si(i,5)*omega + ...
-                a0si(i,6)*lonmer  + a0si(i,7)*lonven  + a0si(i,8)*lonear  + a0si(i,9)*lonmar + ...
-                a0si(i,10)*lonjup + a0si(i,11)*lonsat + a0si(i,12)*lonurn + a0si(i,13)*lonnep + a0si(i,14)*precrate;
-            ssum1 = ssum1 + ass0(i,1)*sin(tempval) + ass0(i,2)*cos(tempval);
+            tempval = iau06arr.a0si(i,1)*l + iau06arr.a0si(i,2)*l1 + iau06arr.a0si(i,3)*f + iau06arr.a0si(i,4)*d + iau06arr.a0si(i,5)*omega + ...
+                iau06arr.a0si(i,6)*lonmer  + iau06arr.a0si(i,7)*lonven  + iau06arr.a0si(i,8)*lonear  + iau06arr.a0si(i,9)*lonmar + ...
+                iau06arr.a0si(i,10)*lonjup + iau06arr.a0si(i,11)*lonsat + iau06arr.a0si(i,12)*lonurn + iau06arr.a0si(i,13)*lonnep + iau06arr.a0si(i,14)*precrate;
+            ssum1 = ssum1 + iau06arr.ass0(i,1)*sin(tempval) + iau06arr.ass0(i,2)*cos(tempval);
         end
         ssum2 = 0.0;
         for j = 25: -1 : 1
             i = 33 + 3 + j;
-            tempval = a0si(i,1)*l + a0si(i,2)*l1 + a0si(i,3)*f + a0si(i,4)*d + a0si(i,5)*omega + ...
-                a0si(i,6)*lonmer  + a0si(i,7)*lonven  + a0si(i,8)*lonear  + a0si(i,9)*lonmar + ...
-                a0si(i,10)*lonjup + a0si(i,11)*lonsat + a0si(i,12)*lonurn + a0si(i,13)*lonnep + a0si(i,14)*precrate;
-            ssum2 = ssum2 + ass0(i,1)*sin(tempval) + ass0(i,2)*cos(tempval);
+            tempval = iau06arr.a0si(i,1)*l + iau06arr.a0si(i,2)*l1 + iau06arr.a0si(i,3)*f + iau06arr.a0si(i,4)*d + iau06arr.a0si(i,5)*omega + ...
+                iau06arr.a0si(i,6)*lonmer  + iau06arr.a0si(i,7)*lonven  + iau06arr.a0si(i,8)*lonear  + iau06arr.a0si(i,9)*lonmar + ...
+                iau06arr.a0si(i,10)*lonjup + iau06arr.a0si(i,11)*lonsat + iau06arr.a0si(i,12)*lonurn + iau06arr.a0si(i,13)*lonnep + iau06arr.a0si(i,14)*precrate;
+            ssum2 = ssum2 + iau06arr.ass0(i,1)*sin(tempval) + iau06arr.ass0(i,2)*cos(tempval);
         end
         ssum3 = 0.0;
         for j = 4: -1 : 1
             i = 33 + 3 + 25 + j;
-            tempval = a0si(i,1)*l + a0si(i,2)*l1 + a0si(i,3)*f + a0si(i,4)*d + a0si(i,5)*omega + ...
-                a0si(i,6)*lonmer  + a0si(i,7)*lonven  + a0si(i,8)*lonear  + a0si(i,9)*lonmar + ...
-                a0si(i,10)*lonjup + a0si(i,11)*lonsat + a0si(i,12)*lonurn + a0si(i,13)*lonnep + a0si(i,14)*precrate;
-            ssum3 = ssum3 + ass0(i,1)*sin(tempval) + ass0(i,2)*cos(tempval);
+            tempval = iau06arr.a0si(i,1)*l + iau06arr.a0si(i,2)*l1 + iau06arr.a0si(i,3)*f + iau06arr.a0si(i,4)*d + iau06arr.a0si(i,5)*omega + ...
+                iau06arr.a0si(i,6)*lonmer  + iau06arr.a0si(i,7)*lonven  + iau06arr.a0si(i,8)*lonear  + iau06arr.a0si(i,9)*lonmar + ...
+                iau06arr.a0si(i,10)*lonjup + iau06arr.a0si(i,11)*lonsat + iau06arr.a0si(i,12)*lonurn + iau06arr.a0si(i,13)*lonnep + iau06arr.a0si(i,14)*precrate;
+            ssum3 = ssum3 + iau06arr.ass0(i,1)*sin(tempval) + iau06arr.ass0(i,2)*cos(tempval);
         end
         ssum4 = 0.0;
         for j = 1: -1 : 1
             i = 33 + 3 + 25 + 4 + j;
-            tempval = a0si(i,1)*l + a0si(i,2)*l1 + a0si(i,3)*f + a0si(i,4)*d + a0si(i,5)*omega + ...
-                a0si(i,6)*lonmer  + a0si(i,7)*lonven  + a0si(i,8)*lonear  + a0si(i,9)*lonmar + ...
-                a0si(i,10)*lonjup + a0si(i,11)*lonsat + a0si(i,12)*lonurn + a0si(i,13)*lonnep + a0si(i,14)*precrate;
-            ssum4 = ssum4 + ass0(i,1)*sin(tempval) + ass0(i,2)*cos(tempval);
+            tempval = iau06arr.a0si(i,1)*l + iau06arr.a0si(i,2)*l1 + iau06arr.a0si(i,3)*f + iau06arr.a0si(i,4)*d + iau06arr.a0si(i,5)*omega + ...
+                iau06arr.a0si(i,6)*lonmer  + iau06arr.a0si(i,7)*lonven  + iau06arr.a0si(i,8)*lonear  + iau06arr.a0si(i,9)*lonmar + ...
+                iau06arr.a0si(i,10)*lonjup + iau06arr.a0si(i,11)*lonsat + iau06arr.a0si(i,12)*lonurn + iau06arr.a0si(i,13)*lonnep + iau06arr.a0si(i,14)*precrate;
+            ssum4 = ssum4 + iau06arr.ass0(i,1)*sin(tempval) + iau06arr.ass0(i,2)*cos(tempval);
         end
 
             s = 0.000094 + 0.00380865 * ttt - 0.00012268 * ttt2  ...

@@ -44,15 +44,15 @@
     % [recef,vecef,aecef] = eci2ecefiau06  ( reci,veci,aeci,ttt,jdut1,lod,xp,yp,option, ddx, ddy );
     % ----------------------------------------------------------------------------
 
-    function [recef,vecef,aecef] = eci2ecefiau06( reci,veci,aeci,ttt,jdut1,lod,xp,yp,option, ddx, ddy )
-constastro;
+function [recef,vecef,aecef] = eci2ecefiau06( reci,veci,aeci,ttt,jdut1,lod,xp,yp,option, ddx, ddy )
+    constastro;
     %      sethelp;
 
     % ---- ceo based, iau2000
     if option == 'c'
         [x,y,s,pnb] = iau06xys (ttt, ddx, ddy);
         [st]  = iau06era (jdut1 );
-    end;
+    end
 
     % ---- class equinox based, 2000a
     if option == 'a'
@@ -61,7 +61,7 @@ constastro;
             ] = iau06pna (ttt);
         [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
             lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
-    end;
+    end
 
     % ---- class equinox based, 2000b
     if option == 'b'
@@ -70,7 +70,7 @@ constastro;
             ] = iau06pnb (ttt);
         [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
             lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
-    end;
+    end
 
     [pm] = polarm(xp,yp,ttt,'01');
 
@@ -98,13 +98,13 @@ constastro;
         fprintf(1,' v %14.9f %14.9f %14.9f',vmod20 );
         fprintf(1,' a %14.9f %14.9f %14.9f\n',aeci );
         fprintf(1,'ERS           IAU-2006 %c   %14.7f %14.7f %14.7f',option, rtirs );
-    end;
+    end
     if option == 'c'
         fprintf(1,'CIRS          IAU-2006 CIO %14.7f %14.7f %14.7f',rtirs );
-    end;
+    end
     fprintf(1,' v %14.9f %14.9f %14.9f\n',vtirs );
     fprintf(1,'TIRS          IAU-2006 %c   %14.7f %14.7f %14.7f',option, rpef );
     fprintf(1,' v %14.9f %14.9f %14.9f\n',vpef );
-    %          end;
+    %          end
 
 
