@@ -455,3 +455,23 @@ def test_ecef2teme(rva_ecef, rva_teme, t_inputs, orbit_effects_inputs):
     assert custom_allclose(rteme, rteme_out)
     assert custom_allclose(vteme, vteme_out)
     assert custom_allclose(ateme, ateme_out)
+
+
+def test_teme2ecef(rva_ecef, rva_teme, t_inputs, orbit_effects_inputs):
+    # Expected ECEF output vectors
+    # The acceleration vector is not correct so we will just compare it to the expected
+    recef, vecef, _ = rva_ecef
+    aecef = [-0.0004622929817929205, -0.002187260694890291, 0.0030001393321037566]
+
+    # Extract inputs
+    xp, yp, *_, eqeterms = orbit_effects_inputs
+
+    # Call the function with test inputs
+    recef_out, vecef_out, aecef_out = fc.teme2ecef(
+        *rva_teme, *t_inputs, xp, yp, eqeterms
+    )
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(recef, recef_out)
+    assert custom_allclose(vecef, vecef_out)
+    assert custom_allclose(aecef, aecef_out)
