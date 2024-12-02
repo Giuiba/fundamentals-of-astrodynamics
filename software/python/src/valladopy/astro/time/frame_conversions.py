@@ -803,3 +803,64 @@ def ecef2mod(
     )
 
     return rmod, vmod, amod
+
+
+def mod2ecef(
+    rmod: ArrayLike,
+    vmod: ArrayLike,
+    amod: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the mean-of-date (MOD) frame to the Earth-fixed (ITRF)
+    frame.
+
+    References:
+        Vallado: 2004, p. 219-228
+
+    Args:
+        rmod (array_like): MOD position vector in km
+        vmod (array_like): MOD velocity vector in km/s
+        amod (array_like): MOD acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (recef, vecef, aecef)
+            recef (np.ndarray): ECEF position vector in km
+            vecef (np.ndarray): ECEF velocity vector in km/s
+            aecef (np.ndarray): ECEF acceleration vector in km/s²
+    """
+    # Find matrices that account for various orbit effects
+    _, nut, st, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=eqeterms
+    )
+
+    # Transform position
+    rpef = st.T @ nut.T @ rmod
+    recef = pm.T @ rpef
+
+    # Transform velocity
+    vpef = st.T @ nut.T @ vmod - np.cross(omegaearth, rpef)
+    vecef = pm.T @ vpef
+
+    # Transform acceleration
+    aecef = (
+        pm.T @ (st.T @ nut.T @ amod)
+        - np.cross(omegaearth, np.cross(omegaearth, rpef))
+        - 2.0 * np.cross(omegaearth, vpef)
+    )
+
+    return recef, vecef, aecef
