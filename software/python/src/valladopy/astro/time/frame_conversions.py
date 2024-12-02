@@ -746,6 +746,133 @@ def pef2ecef(
 
 
 ###############################################################################
+# ECEF <-> TOD Frame Conversions
+###############################################################################
+
+
+def ecef2tod(
+    recef: ArrayLike,
+    vecef: ArrayLike,
+    aecef: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Earth-fixed (ITRF) frame to the true-of-date (TOD)
+    frame.
+
+    References:
+        Vallado: 2013, p. 223-231
+
+    Args:
+        recef (array_like): ECEF position vector in km
+        vecef (array_like): ECEF velocity vector in km/s
+        aecef (array_like): ECEF acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (rtod, vtod, atod)
+            rtod (np.ndarray): TOD position vector in km
+            vtod (np.ndarray): TOD velocity vector in km/s
+            atod (np.ndarray): TOD acceleration vector in km/s²
+    """
+    # Find matrices that account for various orbit effects
+    _, nut, st, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=eqeterms
+    )
+
+    # Transform position
+    rpef = pm @ recef
+    rtod = st @ rpef
+
+    # Transform velocity
+    vpef = pm @ vecef
+    vtod = st @ (vpef + np.cross(omegaearth, rpef))
+
+    # Transform acceleration
+    atod = st @ (
+        pm @ aecef
+        + np.cross(omegaearth, np.cross(omegaearth, rpef))
+        + 2.0 * np.cross(omegaearth, vpef)
+    )
+
+    return rtod, vtod, atod
+
+
+def tod2ecef(
+    rtod: ArrayLike,
+    vtod: ArrayLike,
+    atod: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the true-of-date (TOD) frame to the Earth-fixed (ITRF)
+    frame.
+
+    References:
+        Vallado: 2013, p. 223-231
+
+    Args:
+        rtod (array_like): TOD position vector in km
+        vtod (array_like): TOD velocity vector in km/s
+        atod (array_like): TOD acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (recef, vecef, aecef)
+            recef (np.ndarray): ECEF position vector in km
+            vecef (np.ndarray): ECEF velocity vector in km/s
+            aecef (np.ndarray): ECEF acceleration vector in km/s²
+    """
+    # Find matrices that account for various orbit effects
+    _, nut, st, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms=eqeterms
+    )
+
+    # Transform position
+    rpef = st.T @ rtod
+    recef = pm.T @ rpef
+
+    # Transform velocity
+    vpef = st.T @ vtod - np.cross(omegaearth, rpef)
+    vecef = pm.T @ vpef
+
+    # Transform acceleration
+    aecef = (
+        pm.T @ atod
+        - np.cross(omegaearth, np.cross(omegaearth, rpef))
+        - 2.0 * np.cross(omegaearth, vpef)
+    )
+
+    return recef, vecef, aecef
+
+
+###############################################################################
 # ECEF <-> MOD Frame Conversions
 ###############################################################################
 
