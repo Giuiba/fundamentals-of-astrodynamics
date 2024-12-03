@@ -48,16 +48,16 @@ def test_hms_rad_conversions(hours, minutes, seconds, radians):
 
 
 @pytest.mark.parametrize(
-    "degrees, minutes, seconds, expected_output",
+    "degrees, minutes, seconds, radians",
     [
         (1, 1, 1, 0.01774902886542011),  # normal case
         (0, 0, 0, 0),  # edge case
         (-1, -1, -1, -0.01774902886542011),  # negative case
     ],
 )
-def test_dms2rad(degrees, minutes, seconds, expected_output):
-    result = utils.dms2rad(degrees, minutes, seconds)
-    assert np.isclose(result, expected_output)
+def test_dms_rad_conversions(degrees, minutes, seconds, radians):
+    assert utils.dms2rad(degrees, minutes, seconds) == radians
+    assert utils.rad2dms(radians) == (degrees, minutes, seconds)
 
 
 def test_jd2sse():

@@ -115,6 +115,33 @@ def dms2rad(degrees: float, minutes: float, seconds: float) -> float:
     )
 
 
+def rad2dms(radians: float) -> tuple[float, float, float]:
+    """Convert radians to degrees, minutes, and seconds.
+
+    Args:
+        radians (float): The total number of radians
+
+    Returns:
+        tuple: (degrees, minutes, seconds)
+            degrees (float): The number of degrees
+            minutes (float): The number of minutes
+            seconds (float): The number of seconds
+    """
+    # Convert radians to total degrees
+    total_degrees = np.degrees(radians)
+    degrees = int(total_degrees)
+    degrees_fraction = total_degrees - degrees
+
+    # Get minutes and seconds
+    minutes = int(degrees_fraction * const.DEG2MIN)
+    secs = (degrees_fraction - minutes / const.DEG2MIN) * const.DEG2ARCSEC
+
+    # Adjust seconds to avoid floating-point errors
+    secs = round(secs) if abs(secs - round(secs)) < const.SMALL else secs
+
+    return degrees, minutes, secs
+
+
 def jd2sse(julian_date: float) -> float:
     """Converts Julian Date to seconds since epoch.
 
