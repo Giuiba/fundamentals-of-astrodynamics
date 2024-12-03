@@ -1,8 +1,8 @@
 import numpy as np
 
-from src.valladopy.astro.time.julian_date import jday
+from src.valladopy.mathtime.julian_date import jday
 
-DEFAULT_TOL = 1e-12
+from ..conftest import DEFAULT_TOL
 
 
 def test_jday():

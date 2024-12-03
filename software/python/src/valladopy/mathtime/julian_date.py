@@ -10,7 +10,7 @@
 import numpy as np
 from typing import Tuple
 
-from ... import constants as const
+from .. import constants as const
 
 
 def jday(
