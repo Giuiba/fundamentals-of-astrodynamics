@@ -28,22 +28,16 @@ OOMU = 1.0 / np.sqrt(MU)
 
 
 class DirectionOfMotion(Enum):
-    """Enum class for the direction of motion."""
-
     LONG = "L"  # Long way
     SHORT = "S"  # Short way
 
 
 class DirectionOfEnergy(Enum):
-    """Enum class for the direction of energy."""
-
     LOW = "L"  # Low
     HIGH = "H"  # High
 
 
 class DirectionOfFlight(Enum):
-    """Enum class for the direction of flight."""
-
     DIRECT = "D"  # Direct motion
     RETROGRADE = "R"  # Retrograde motion
 

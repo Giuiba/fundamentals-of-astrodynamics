@@ -25,6 +25,7 @@ NMPH2KMPH = 0.5144444
 
 # Time
 DAY2SEC = 86400
+DAY2HR = 24
 HR2SEC = 3600
 MIN2SEC = 60
 YR2DAY = 365.25
@@ -38,13 +39,16 @@ DEG2MIN = 60
 DEG2ARCSEC = DEG2MIN * MIN2SEC
 ARCSEC2RAD = np.radians(1 / DEG2ARCSEC)
 DEG2SEC = np.degrees(TWOPI) / DAY2SEC
+DEG2HR = np.degrees(TWOPI) / DAY2HR
+HR2RAD = DEG2HR * np.radians(1)
 
 ###############################################################################
 # Astrodynamic Operations
 ###############################################################################
 
 # Time
-J2000 = 2451545.0  # Julian date of the epoch J2000.0
+J2000 = 2451545.0  # Julian date of the epoch J2000.0 (noon)
+J2000_UTC = 2451544.5  # Julian date of the epoch J2000.0 in UTC (midnight)
 
 # EGM-08 (Earth) constants used here
 # fmt: off
