@@ -6,12 +6,19 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
-
-import numpy as np
 from enum import Enum
 from typing import Tuple
 
+import numpy as np
+
+from .calendar import days_to_mdh
 from .. import constants as const
+
+
+# Constants
+JULIAN_DATE_REFERENCE_YEAR = 1900  # Reference year for the Julian Date
+JULIAN_DATE_1900 = 2415019.5  # Julian date for January 0, 1900
+JULIAN_DATE_EPOCH_OFFSET = 4716  # Julian date offset from the Gregorian calendar
 
 
 class CalendarType(Enum):
@@ -91,7 +98,7 @@ def jdayall(
     Returns:
         tuple: (jd, jdfrac)
             jd (float): Julian Date
-            jdfrac (float): Fractional Julian Day
+            jdfrac (float): Fractional part of the Julian Date
     """
     if month <= 2:
         year -= 1
@@ -99,9 +106,9 @@ def jdayall(
 
     # Determine B based on the calendar type
     if calendar_type == CalendarType.JULIAN:
-        b = 0.0  # Julian calendar
+        b = 0.0
     elif calendar_type == CalendarType.GREGORIAN:
-        b = 2 - (year // 100) + (year // 400)  # Gregorian calendar
+        b = 2 - (year // 100) + (year // 400)
     else:
         raise ValueError(
             "Invalid calendar type. Must be either CalendarType.JULIAN or"
@@ -110,7 +117,7 @@ def jdayall(
 
     # Compute Julian Date
     jd = (
-        int(const.YR2DAY * (year + const.JD_EPOCH_OFFSET))
+        int(const.YR2DAY * (year + JULIAN_DATE_EPOCH_OFFSET))
         + int(30.6001 * (month + 1))
         + day
         + b
@@ -126,6 +133,64 @@ def jdayall(
         jdfrac %= 1.0
 
     return jd, jdfrac
+
+
+def invjday(jd: float, jdfrac: float) -> Tuple[int, int, int, int, int, float]:
+    """Converts Julian Date and fractional day to calendar date and time.
+
+    Args:
+        jd (float): Julian Date (days from 4713 BC)
+        jdfrac (float): Fractional part of the Julian Date
+
+    Returns:
+        tuple: (year, month, day, hour, minute, second)
+            year (int): Year
+            month (int): Month
+            day (int): Day
+            hour (int): Hour
+            minute (int): Minute
+            second (float): Second
+
+    Notes:
+        - This assumes the Gregorian calendar type.
+    """
+    # Normalize jdfrac if it spans multiple days
+    if abs(jdfrac) >= 1.0:
+        jd += int(jdfrac)
+        jdfrac %= 1.0
+
+    # Adjust for fraction of a day in the Julian Date
+    dt = jd - int(jd) - 0.5
+    if abs(dt) > 1e-8:
+        jd -= dt
+        jdfrac += dt
+
+    # Compute year and day of year
+    temp = jd - JULIAN_DATE_1900
+    tu = temp / const.YR2DAY
+    year = JULIAN_DATE_REFERENCE_YEAR + int(tu)
+    leap_years = (year - (JULIAN_DATE_REFERENCE_YEAR + 1)) // 4
+    days = int(
+        temp
+        - ((year - JULIAN_DATE_REFERENCE_YEAR) * np.floor(const.YR2DAY) + leap_years)
+    )
+
+    # Handle start-of-year edge case
+    if days + jdfrac < 1.0:
+        year -= 1
+        leap_years = (year - (JULIAN_DATE_REFERENCE_YEAR + 1)) // 4
+        days = int(
+            temp
+            - (
+                (year - JULIAN_DATE_REFERENCE_YEAR) * np.floor(const.YR2DAY)
+                + leap_years
+            )
+        )
+
+    # Convert days of year + fractional day to calendar date and time
+    month, day, hour, minute, second = days_to_mdh(year, days + jdfrac)
+
+    return year, month, day, hour, minute, second
 
 
 def day_of_week(jd: float) -> int:

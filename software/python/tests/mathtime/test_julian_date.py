@@ -31,6 +31,12 @@ def test_jdayall(ymdhms, calendar_type, expected_jd, expected_jd_frac):
     assert np.isclose(jd_frac, expected_jd_frac, rtol=DEFAULT_TOL)
 
 
+def test_invjday():
+    jd, jd_frac = 2447550.5, 0.8579050925925926
+    ymdhms = julian_date.invjday(jd, jd_frac)
+    assert ymdhms == (1989, 1, 24, 20, 35, 23)
+
+
 def test_day_of_week():
     jd = 2448854.125
     dow = julian_date.day_of_week(jd)
