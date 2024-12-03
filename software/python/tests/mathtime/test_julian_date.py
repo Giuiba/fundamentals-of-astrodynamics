@@ -1,18 +1,37 @@
 import numpy as np
+import pytest
 
-from src.valladopy.mathtime.julian_date import jday, day_of_week
+import src.valladopy.mathtime.julian_date as julian_date
 
 from ..conftest import DEFAULT_TOL
 
 
 def test_jday():
     year, month, day, hour, minute, second = (1992, 8, 20, 12, 14, 33)
-    jd, jd_frac = jday(year, month, day, hour, minute, second)
+    jd, jd_frac = julian_date.jday(year, month, day, hour, minute, second)
     assert np.isclose(jd, 2448854.5, rtol=DEFAULT_TOL)
     assert np.isclose(jd_frac, 0.5101041666666667, rtol=DEFAULT_TOL)
 
 
+@pytest.mark.parametrize(
+    "ymdhms, calendar_type, expected_jd, expected_jd_frac",
+    [
+        (
+            (1989, 1, 24, 20, 35, 23),
+            julian_date.CalendarType.JULIAN,
+            2447563.5,
+            0.8579050925925926,
+        ),
+        ((2024, 12, 2, 12, 0, 0), julian_date.CalendarType.GREGORIAN, 2460646.5, 0.5),
+    ],
+)
+def test_jdayall(ymdhms, calendar_type, expected_jd, expected_jd_frac):
+    jd, jd_frac = julian_date.jdayall(*ymdhms, calendar_type)
+    assert np.isclose(jd, expected_jd, rtol=DEFAULT_TOL)
+    assert np.isclose(jd_frac, expected_jd_frac, rtol=DEFAULT_TOL)
+
+
 def test_day_of_week():
     jd = 2448854.125
-    dow = day_of_week(jd)
+    dow = julian_date.day_of_week(jd)
     assert dow == 4

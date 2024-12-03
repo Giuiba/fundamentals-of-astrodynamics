@@ -45,6 +45,7 @@ DEG2SEC = np.degrees(TWOPI) / DAY2SEC
 
 # Time
 J2000 = 2451545.0  # Julian date of the epoch J2000.0
+JD_EPOCH_OFFSET = 4716  # Julian date offset from the Gregorian calendar
 
 # EGM-08 (Earth) constants used here
 # fmt: off
