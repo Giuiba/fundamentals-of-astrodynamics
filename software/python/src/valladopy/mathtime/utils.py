@@ -39,6 +39,33 @@ def hms2sec(hours: float, minutes: float, seconds: float) -> float:
     return hours * const.HR2SEC + minutes * const.MIN2SEC + seconds
 
 
+def sec2hms(seconds: float) -> tuple[float, float, float]:
+    """Convert seconds to hours, minutes, and seconds.
+
+    Args:
+        seconds (float): The total number of seconds
+
+    Returns:
+        tuple: (hours, minutes, seconds)
+            hours (float): The number of hours
+            minutes (float): The number of minutes
+            seconds (float): The number of seconds
+    """
+    # Get the hours and the fraction of hours
+    total_hours = seconds / const.HR2SEC
+    hours = int(total_hours)
+    hours_fraction = total_hours - hours
+
+    # Get the minutes and seconds
+    minutes = int(hours_fraction * const.MIN2SEC)
+    secs = (hours_fraction - minutes / const.MIN2SEC) * const.HR2SEC
+
+    # Adjust seconds to avoid floating point errors
+    secs = round(secs) if abs(secs - round(secs)) < const.SMALL else secs
+
+    return hours, minutes, secs
+
+
 def hms2rad(hours: float, minutes: float, seconds: float) -> float:
     """Convert hours, minutes, and seconds to radians.
 
