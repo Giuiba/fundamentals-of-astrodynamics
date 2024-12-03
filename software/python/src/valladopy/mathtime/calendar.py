@@ -1,3 +1,12 @@
+# -----------------------------------------------------------------------------
+# Author: David Vallado
+# Date: 27 May 2002
+#
+# Copyright (c) 2024
+# For license information, see LICENSE file
+# -----------------------------------------------------------------------------
+
+
 import calendar
 from datetime import datetime
 from typing import Dict, List
