@@ -54,3 +54,22 @@ def jday(
         jd_frac -= np.floor(jd_frac)
 
     return jd, jd_frac
+
+
+def day_of_week(jd: float) -> int:
+    """Finds the day of the week for a given Julian date.
+
+    References:
+        Vallado: 2007, p. 188, Eq. 3-39
+
+    Args:
+        jd (float): Julian date (days from 4713 BC)
+
+    Returns:
+        int: Day of the week (1 for Sunday, 2 for Monday, etc.)
+    """
+    # Ensure the Julian date corresponds to 0.0 hours of the day
+    jd = int(jd + 0.5)
+
+    # Calculate the day of the week (1 = Sunday, ..., 7 = Saturday)
+    return ((jd + 1) % 7) + 1
