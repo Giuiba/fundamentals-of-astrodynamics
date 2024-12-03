@@ -115,3 +115,15 @@ class TestGetIntDay:
 )
 def test_days_to_mdh(year, days, mdh_exp):
     assert cal.days_to_mdh(year, days) == mdh_exp
+
+
+@pytest.mark.parametrize(
+    "ymdhms, days_frac_exp",
+    [
+        ((2023, 1, 1, 0, 0, 0.0), 1.0),  # Jan 1, 2023, 00:00:00
+        ((2023, 2, 3, 13, 36, 28.8), 34.567),  # non-leap year, fraction
+        ((2024, 2, 29, 6, 30, 30.5), 60.27118634259259),  # leap year, fraction
+    ],
+)
+def test_find_days(ymdhms, days_frac_exp):
+    assert cal.find_days(*ymdhms) == days_frac_exp

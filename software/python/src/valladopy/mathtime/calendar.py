@@ -11,6 +11,12 @@ import calendar
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 
+from .. import constants as const
+
+
+# Constants
+SEC2MICROSEC = 1e6
+
 
 def initialize_time(year: int) -> Dict[str, List]:
     """Initializes time-related information for a given year.
@@ -97,6 +103,41 @@ def days_to_mdh(year: int, days: float) -> Tuple[int, int, int, int, float]:
     day = full_date.day
     hour = full_date.hour
     minute = full_date.minute
-    second = full_date.second + full_date.microsecond / 1e6
+    second = full_date.second + full_date.microsecond / SEC2MICROSEC
 
     return month, day, hour, minute, second
+
+
+def find_days(
+    year: int, month: int, day: int, hour: int, minute: int, second: float
+) -> float:
+    """Finds the fractional days through a year.
+
+    Args:
+        year (int): Year (1900 .. 2100)
+        month (int): Month (1 .. 12)
+        day (int): Day (1 .. 28, 29, 30, 31)
+        hour (int): Hour (0 .. 23)
+        minute (int): Minute (0 .. 59)
+        second (float): Second (0.0 .. 59.999)
+
+    Returns:
+        float: Day of the year plus fraction of the day
+    """
+    # Start of the year
+    start_of_year = datetime(year, 1, 1)
+
+    # Current date and time
+    current_date = datetime(
+        year, month, day, hour, minute, int(second), int((second % 1) * SEC2MICROSEC)
+    )
+
+    # Compute the difference in days
+    delta = current_date - start_of_year
+
+    # Fractional days
+    return (
+        delta.days
+        + delta.seconds / const.DAY2SEC
+        + delta.microseconds / const.DAY2SEC / SEC2MICROSEC
+    ) + 1  # add 1 since days=1.0 means Jan 1
