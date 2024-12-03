@@ -8,8 +8,8 @@
 
 
 import calendar
-from datetime import datetime
-from typing import Dict, List
+from datetime import datetime, timedelta
+from typing import Dict, List, Tuple
 
 
 def initialize_time(year: int) -> Dict[str, List]:
@@ -68,3 +68,35 @@ def get_int_day(day_str: str) -> int:
         return shifted_days.index(day_str.lower()) + 1
     except ValueError as e:
         raise ValueError(f"Invalid day abbreviation: {day_str}") from e
+
+
+def days_to_mdh(year: int, days: float) -> Tuple[int, int, int, int, float]:
+    """Converts day of the year to month, day, hour, minute, and second.
+
+    Args:
+        year (int): Year (e.g., 1900 .. 2100)
+        days (float): Day of the year (1.0 .. 366.0)
+
+    Returns:
+        tuple: (month, day, hour, minute, second)
+            month (int): Integer month (1 .. 12)
+            day (int): Integer day (1 .. 31)
+            hour (int): Integer hour (0 .. 23)
+            minute (int): Integer minute (0 .. 59)
+            second (float): Seconds (0.0 .. 59.999999)
+    """
+    # Get the start of the year
+    start_of_year = datetime(year, 1, 1)
+
+    # Calculate the full date and time by adding the fractional days
+    delta = timedelta(days=days - 1)  # subtract 1 since days=1.0 means Jan 1
+    full_date = start_of_year + delta
+
+    # Extract the components
+    month = full_date.month
+    day = full_date.day
+    hour = full_date.hour
+    minute = full_date.minute
+    second = full_date.second + full_date.microsecond / 1e6
+
+    return month, day, hour, minute, second

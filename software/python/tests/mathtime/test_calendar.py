@@ -39,59 +39,79 @@ class TestInitializeTime:
 
 
 class TestGetIntMonth:
-    invalid_month_str = "Invalid month abbreviation:"
+    @pytest.mark.parametrize(
+        "month_str, month_int_exp",
+        [
+            ("jan", 1),
+            ("feb", 2),
+            ("mar", 3),
+            ("apr", 4),
+            ("may", 5),
+            ("jun", 6),
+            ("jul", 7),
+            ("aug", 8),
+            ("sep", 9),
+            ("oct", 10),
+            ("nov", 11),
+            ("dec", 12),
+        ],
+    )
+    def test_valid_months(self, month_str, month_int_exp):
+        assert cal.get_int_month(month_str) == month_int_exp
 
-    def test_valid_months(self):
-        """Test valid month abbreviations."""
-        assert cal.get_int_month("jan") == 1
-        assert cal.get_int_month("feb") == 2
-        assert cal.get_int_month("mar") == 3
-        assert cal.get_int_month("apr") == 4
-        assert cal.get_int_month("may") == 5
-        assert cal.get_int_month("jun") == 6
-        assert cal.get_int_month("jul") == 7
-        assert cal.get_int_month("aug") == 8
-        assert cal.get_int_month("sep") == 9
-        assert cal.get_int_month("oct") == 10
-        assert cal.get_int_month("nov") == 11
-        assert cal.get_int_month("dec") == 12
-
-    def test_case_insensitivity(self):
+    @pytest.mark.parametrize(
+        "month_str, month_int_exp", [("JAN", 1), ("Feb", 2), ("DeC", 12)]
+    )
+    def test_case_insensitivity(self, month_str, month_int_exp):
         """Test that the function is case-insensitive."""
-        assert cal.get_int_month("JAN") == 1
-        assert cal.get_int_month("Feb") == 2
-        assert cal.get_int_month("DeC") == 12
+        assert cal.get_int_month(month_str) == month_int_exp
 
-    def test_invalid_month(self):
+    @pytest.mark.parametrize("month_str", ["xyz", ""])
+    def test_invalid_months(self, month_str):
         """Test invalid month abbreviations."""
-        with pytest.raises(ValueError, match=self.invalid_month_str):
-            cal.get_int_month("xyz")
-        with pytest.raises(ValueError, match=self.invalid_month_str):
-            cal.get_int_month("")
+        with pytest.raises(ValueError, match="Invalid month abbreviation:"):
+            cal.get_int_month(month_str)
 
 
 class TestGetIntDay:
-    invalid_day_str = "Invalid day abbreviation:"
-
-    def test_valid_days(self):
+    @pytest.mark.parametrize(
+        "day_str, day_int_exp",
+        [
+            ("sun", 1),
+            ("mon", 2),
+            ("tue", 3),
+            ("wed", 4),
+            ("thu", 5),
+            ("fri", 6),
+            ("sat", 7),
+        ],
+    )
+    def test_valid_days(self, day_str, day_int_exp):
         """Test valid day abbreviations."""
-        assert cal.get_int_day("sun") == 1
-        assert cal.get_int_day("mon") == 2
-        assert cal.get_int_day("tue") == 3
-        assert cal.get_int_day("wed") == 4
-        assert cal.get_int_day("thu") == 5
-        assert cal.get_int_day("fri") == 6
-        assert cal.get_int_day("sat") == 7
+        assert cal.get_int_day(day_str) == day_int_exp
 
-    def test_case_insensitivity(self):
+    @pytest.mark.parametrize(
+        "day_str, day_int_exp", [("SUN", 1), ("Mon", 2), ("Fri", 6)]
+    )
+    def test_case_insensitivity(self, day_str, day_int_exp):
         """Test case-insensitivity for day abbreviations."""
-        assert cal.get_int_day("SUN") == 1
-        assert cal.get_int_day("Mon") == 2
-        assert cal.get_int_day("fRI") == 6
+        assert cal.get_int_day(day_str) == day_int_exp
 
-    def test_invalid_day(self):
+    @pytest.mark.parametrize("day_str", ["xyz", ""])
+    def test_invalid_day(self, day_str):
         """Test invalid day abbreviations."""
-        with pytest.raises(ValueError, match=self.invalid_day_str):
-            cal.get_int_day("xyz")
-        with pytest.raises(ValueError, match=self.invalid_day_str):
-            cal.get_int_day("")
+        with pytest.raises(ValueError, match="Invalid day abbreviation:"):
+            cal.get_int_day(day_str)
+
+
+@pytest.mark.parametrize(
+    "year, days, mdh_exp",
+    [
+        (2023, 1.0, (1, 1, 0, 0, 0.0)),  # Jan 1, 2023, 00:00:00
+        (2023, 365.0, (12, 31, 0, 0, 0.0)),  # Dec 31, 2023, 00:00:00
+        (2023, 34.567, (2, 3, 13, 36, 28.8)),  # Feb 3, 2023, 13:36:28.800
+        (2024, 60.0, (2, 29, 0, 0, 0.0)),  # Feb 29, 2024, 00:00:00 (leap year)
+    ],
+)
+def test_days_to_mdh(year, days, mdh_exp):
+    assert cal.days_to_mdh(year, days) == mdh_exp
