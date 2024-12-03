@@ -67,3 +67,15 @@ def dms2rad(degrees: float, minutes: float, seconds: float) -> float:
     return float(
         np.radians(degrees + minutes / const.DEG2MIN + seconds / const.DEG2ARCSEC)
     )
+
+
+def jd2sse(julian_date: float) -> float:
+    """Converts Julian Date to seconds since epoch.
+
+    Args:
+        julian_date (float): The Julian Date (days from 4713 BC)
+
+    Returns:
+        float: Seconds since epoch (1 Jan 2000 00:00:00 UTC)
+    """
+    return (julian_date - const.J2000_UTC) * const.DAY2SEC

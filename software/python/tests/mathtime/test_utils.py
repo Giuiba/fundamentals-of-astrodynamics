@@ -58,3 +58,7 @@ def test_hms2rad(hours, minutes, seconds, expected_output):
 def test_dms2rad(degrees, minutes, seconds, expected_output):
     result = utils.dms2rad(degrees, minutes, seconds)
     assert np.isclose(result, expected_output)
+
+
+def test_jd2sse():
+    assert np.isclose(utils.jd2sse(2460647.567), 786504988.7999833)
