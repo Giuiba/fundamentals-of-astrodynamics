@@ -39,3 +39,23 @@ def get_int_month(month_str: str):
         return datetime.strptime(month_str[:3].capitalize(), "%b").month
     except ValueError as e:
         raise ValueError(f"Invalid month abbreviation: {month_str}") from e
+
+
+def get_int_day(day_str: str) -> int:
+    """Converts a 3-character day abbreviation to its integer equivalent.
+
+    Args:
+        day_str (str): Abbreviation of the day (e.g., 'sun', 'mon')
+
+    Returns:
+        int: Integer representation of the day (1 for Sunday, 2 for Monday, etc.)
+
+    Raises:
+        ValueError: If the day abbreviation is invalid
+    """
+    # Shift days to start with Sunday
+    shifted_days = [calendar.day_abbr[(i + 6) % 7].lower() for i in range(7)]
+    try:
+        return shifted_days.index(day_str.lower()) + 1
+    except ValueError as e:
+        raise ValueError(f"Invalid day abbreviation: {day_str}") from e
