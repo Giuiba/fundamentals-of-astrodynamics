@@ -1,5 +1,7 @@
 import numpy as np
 
+from .. import constants as const
+
 
 def safe_sqrt(value: float, context: str = "") -> float:
     """Safe square root function that checks for negative values.
@@ -21,3 +23,17 @@ def safe_sqrt(value: float, context: str = "") -> float:
             error_message += f"\nContext: {context}"
         raise ValueError(error_message)
     return np.sqrt(value)
+
+
+def hms2sec(hours: float, minutes: float, seconds: float) -> float:
+    """Convert hours, minutes, and seconds to seconds.
+
+    Args:
+        hours (float): The number of hours
+        minutes (float): The number of minutes
+        seconds (float): The number of seconds
+
+    Returns:
+        float: The total number of seconds
+    """
+    return hours * const.HR2SEC + minutes * const.MIN2SEC + seconds
