@@ -80,6 +80,25 @@ def hms2rad(hours: float, minutes: float, seconds: float) -> float:
     return (hours + minutes / const.MIN2SEC + seconds / const.HR2SEC) * const.HR2RAD
 
 
+def rad2hms(radians: float) -> tuple[float, float, float]:
+    """Convert radians to hours, minutes, and seconds.
+
+    Args:
+        radians (float): The total number of radians
+
+    Returns:
+        tuple: (hours, minutes, seconds)
+            hours (float): The number of hours
+            minutes (float): The number of minutes
+            seconds (float): The number of seconds
+    """
+    # Get the total seconds from the radians
+    total_seconds = radians / const.HR2RAD * const.HR2SEC
+
+    # Convert the total seconds to hours, minutes, and seconds
+    return sec2hms(total_seconds)
+
+
 def dms2rad(degrees: float, minutes: float, seconds: float) -> float:
     """Convert degrees, minutes, and seconds to radians.
 

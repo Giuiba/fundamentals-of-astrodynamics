@@ -35,16 +35,16 @@ def test_hms_sec_conversions(hours, minutes, seconds, total_seconds):
 
 
 @pytest.mark.parametrize(
-    "hours, minutes, seconds, expected_output",
+    "hours, minutes, seconds, radians",
     [
         (1, 1, 1, 0.26623543298130165),  # normal case
         (0, 0, 0, 0),  # edge case
         (-1, -1, -1, -0.26623543298130165),  # negative case
     ],
 )
-def test_hms2rad(hours, minutes, seconds, expected_output):
-    result = utils.hms2rad(hours, minutes, seconds)
-    assert np.isclose(result, expected_output)
+def test_hms_rad_conversions(hours, minutes, seconds, radians):
+    assert utils.hms2rad(hours, minutes, seconds) == radians
+    assert utils.rad2hms(radians) == (hours, minutes, seconds)
 
 
 @pytest.mark.parametrize(
