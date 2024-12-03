@@ -285,7 +285,7 @@ def convtime(
     ut1 = utc + dut1
     hrtemp, mintemp, sectemp = sec2hms(ut1)
     jdut1, jdut1frac = jday(year, month, day, hrtemp, mintemp, sectemp)
-    tut1 = (jdut1 + jdut1frac - 2451545.0) / 36525.0
+    tut1 = (jdut1 + jdut1frac - const.J2000) / const.CENT2DAY
 
     # TAI
     tai = utc + dat
@@ -294,7 +294,7 @@ def convtime(
     tt = tai + 32.184  # seconds
     hrtemp, mintemp, sectemp = sec2hms(tt)
     jdtt, jdttfrac = jday(year, month, day, hrtemp, mintemp, sectemp)
-    ttt = (jdtt + jdttfrac - 2451545.0) / 36525.0
+    ttt = (jdtt + jdttfrac - const.J2000) / const.CENT2DAY
 
     # TDB
     tdb = (
@@ -309,7 +309,7 @@ def convtime(
     )
     hrtemp, mintemp, sectemp = sec2hms(tdb)
     jdtdb, jdtdbfrac = jday(year, month, day, hrtemp, mintemp, sectemp)
-    ttdb = (jdtdb + jdtdbfrac - 2451545.0) / 36525.0
+    ttdb = (jdtdb + jdtdbfrac - const.J2000) / const.CENT2DAY
 
     return (
         ut1,
