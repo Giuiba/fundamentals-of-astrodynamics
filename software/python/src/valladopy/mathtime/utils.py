@@ -37,3 +37,17 @@ def hms2sec(hours: float, minutes: float, seconds: float) -> float:
         float: The total number of seconds
     """
     return hours * const.HR2SEC + minutes * const.MIN2SEC + seconds
+
+
+def hms2rad(hours: float, minutes: float, seconds: float) -> float:
+    """Convert hours, minutes, and seconds to radians.
+
+    Args:
+        hours (float): The number of hours
+        minutes (float): The number of minutes
+        seconds (float): The number of seconds
+
+    Returns:
+        float: The total number of radians
+    """
+    return (hours + minutes / const.MIN2SEC + seconds / const.HR2SEC) * const.HR2RAD

@@ -32,3 +32,16 @@ def test_safe_sqrt(value, context, expected_output, raises_error):
 def test_hms2sec(hours, minutes, seconds, expected_output):
     result = utils.hms2sec(hours, minutes, seconds)
     assert result == expected_output
+
+
+@pytest.mark.parametrize(
+    "hours, minutes, seconds, expected_output",
+    [
+        (1, 1, 1, 0.26623543298130165),  # Normal case
+        (0, 0, 0, 0),  # Edge case
+        (-1, -1, -1, -0.26623543298130165),  # Negative case
+    ],
+)
+def test_hms2rad(hours, minutes, seconds, expected_output):
+    result = utils.hms2rad(hours, minutes, seconds)
+    assert np.isclose(result, expected_output)
