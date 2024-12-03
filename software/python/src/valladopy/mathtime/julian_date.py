@@ -12,6 +12,7 @@ from typing import Tuple
 import numpy as np
 
 from .calendar import days_to_mdh
+from .utils import hms2sec, sec2hms
 from .. import constants as const
 
 
@@ -210,3 +211,119 @@ def day_of_week(jd: float) -> int:
 
     # Calculate the day of the week (1 = Sunday, ..., 7 = Saturday)
     return ((jd + 1) % 7) + 1
+
+
+def convtime(
+    year: int,
+    month: int,
+    day: int,
+    hour: int,
+    minute: int,
+    second: float,
+    timezone: int,
+    dut1: float,
+    dat: float,
+) -> Tuple[
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+]:
+    """Convert UTC or UT1 to various time systems.
+
+    This function finds the time parameters and Julian Century values for inputs of UTC
+    or UT1. Since calucations are in UTC, you must include timezone if you enter a local
+    time; otherwise it should be zero.
+
+    References:
+        Vallado: 2007, p. 201, Algorithm 16, Example 3-7
+
+    Args:
+        year (int): Year (1900 .. 2100)
+        month (int): Month (1 .. 12)
+        day (int): Day (1 .. 31)
+        hour (int): Universal Time hour (0 .. 23)
+        minute (int): Universal Time minute (0 .. 59)
+        second (float): Universal Time second (0.0 .. 59.999)
+        timezone (int): Offset to UTC from local time (0 .. 23 hr)
+        dut1 (float): Delta of UT1 - UTC in seconds
+        dat (float): Delta of TAI - UTC in seconds
+
+    Returns:
+        tuple: (ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb,
+                ttdb, jdtdb, jdtdbfrac)
+            ut1 (float): UT1 in seconds (from start of day)
+            tut1 (float): Julian centuries since J2000 for UT1
+            jdut1 (float): Julian Date for UT1 (days only, days from 4713 BC)
+            jdut1frac (float): Julian Date for UT1 (fractional part)
+            utc (float): Coordinated Universal Time in seconds
+            tai (float): International Atomic Time in seconds
+            tt (float): Terrestrial Time in seconds (from start of day)
+            ttt (float): Julian centuries since J2000 for TT
+            jdtt (float): Julian Date for TT (days only, days from 4713 BC)
+            jdttfrac (float): Julian Date for TT (fractional part)
+            tdb (float): Terrestrial Barycentric Time in seconds (from start of day)
+            ttdb (float): Julian centuries since J2000 for TDB
+            jdtdb (float): Julian Date for TDB (days only, days from 4713 BC)
+            jdtdbfrac (float): Julian Date for TDB (fractional part)
+    """
+    # UTC in seconds from the start of the day
+    local_hour = timezone + hour
+    utc = hms2sec(local_hour, minute, second)
+
+    # UT1
+    ut1 = utc + dut1
+    hrtemp, mintemp, sectemp = sec2hms(ut1)
+    jdut1, jdut1frac = jday(year, month, day, hrtemp, mintemp, sectemp)
+    tut1 = (jdut1 + jdut1frac - 2451545.0) / 36525.0
+
+    # TAI
+    tai = utc + dat
+
+    # TT
+    tt = tai + 32.184  # seconds
+    hrtemp, mintemp, sectemp = sec2hms(tt)
+    jdtt, jdttfrac = jday(year, month, day, hrtemp, mintemp, sectemp)
+    ttt = (jdtt + jdttfrac - 2451545.0) / 36525.0
+
+    # TDB
+    tdb = (
+        tt
+        + 0.001657 * np.sin(628.3076 * ttt + 6.2401)
+        + 0.000022 * np.sin(575.3385 * ttt + 4.2970)
+        + 0.000014 * np.sin(1256.6152 * ttt + 6.1969)
+        + 0.000005 * np.sin(606.9777 * ttt + 4.0212)
+        + 0.000005 * np.sin(52.9691 * ttt + 0.4444)
+        + 0.000002 * np.sin(21.3299 * ttt + 5.5431)
+        + 0.000010 * ttt * np.sin(628.3076 * ttt + 4.2490)
+    )
+    hrtemp, mintemp, sectemp = sec2hms(tdb)
+    jdtdb, jdtdbfrac = jday(year, month, day, hrtemp, mintemp, sectemp)
+    ttdb = (jdtdb + jdtdbfrac - 2451545.0) / 36525.0
+
+    return (
+        ut1,
+        tut1,
+        jdut1,
+        jdut1frac,
+        utc,
+        tai,
+        tt,
+        ttt,
+        jdtt,
+        jdttfrac,
+        tdb,
+        ttdb,
+        jdtdb,
+        jdtdbfrac,
+    )

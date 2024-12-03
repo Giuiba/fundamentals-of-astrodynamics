@@ -25,12 +25,12 @@ def safe_sqrt(value: float, context: str = "") -> float:
     return np.sqrt(value)
 
 
-def hms2sec(hours: float, minutes: float, seconds: float) -> float:
+def hms2sec(hours: int, minutes: int, seconds: float) -> float:
     """Convert hours, minutes, and seconds to seconds.
 
     Args:
-        hours (float): The number of hours
-        minutes (float): The number of minutes
+        hours (int): The number of hours
+        minutes (int): The number of minutes
         seconds (float): The number of seconds
 
     Returns:
@@ -39,7 +39,7 @@ def hms2sec(hours: float, minutes: float, seconds: float) -> float:
     return hours * const.HR2SEC + minutes * const.MIN2SEC + seconds
 
 
-def sec2hms(seconds: float) -> tuple[float, float, float]:
+def sec2hms(seconds: float) -> tuple[int, int, float]:
     """Convert seconds to hours, minutes, and seconds.
 
     Args:
@@ -47,8 +47,8 @@ def sec2hms(seconds: float) -> tuple[float, float, float]:
 
     Returns:
         tuple: (hours, minutes, seconds)
-            hours (float): The number of hours
-            minutes (float): The number of minutes
+            hours (int): The number of hours
+            minutes (int): The number of minutes
             seconds (float): The number of seconds
     """
     # Get the hours and the fraction of hours
@@ -66,12 +66,12 @@ def sec2hms(seconds: float) -> tuple[float, float, float]:
     return hours, minutes, secs
 
 
-def hms2rad(hours: float, minutes: float, seconds: float) -> float:
+def hms2rad(hours: int, minutes: int, seconds: float) -> float:
     """Convert hours, minutes, and seconds to radians.
 
     Args:
-        hours (float): The number of hours
-        minutes (float): The number of minutes
+        hours (int): The number of hours
+        minutes (int): The number of minutes
         seconds (float): The number of seconds
 
     Returns:
@@ -80,7 +80,7 @@ def hms2rad(hours: float, minutes: float, seconds: float) -> float:
     return (hours + minutes / const.MIN2SEC + seconds / const.HR2SEC) * const.HR2RAD
 
 
-def rad2hms(radians: float) -> tuple[float, float, float]:
+def rad2hms(radians: float) -> tuple[int, int, float]:
     """Convert radians to hours, minutes, and seconds.
 
     Args:
@@ -88,8 +88,8 @@ def rad2hms(radians: float) -> tuple[float, float, float]:
 
     Returns:
         tuple: (hours, minutes, seconds)
-            hours (float): The number of hours
-            minutes (float): The number of minutes
+            hours (int): The number of hours
+            minutes (int): The number of minutes
             seconds (float): The number of seconds
     """
     # Get the total seconds from the radians
@@ -99,12 +99,12 @@ def rad2hms(radians: float) -> tuple[float, float, float]:
     return sec2hms(total_seconds)
 
 
-def dms2rad(degrees: float, minutes: float, seconds: float) -> float:
+def dms2rad(degrees: int, minutes: int, seconds: float) -> float:
     """Convert degrees, minutes, and seconds to radians.
 
     Args:
-        degrees (float): The number of degrees
-        minutes (float): The number of minutes
+        degrees (int): The number of degrees
+        minutes (int): The number of minutes
         seconds (float): The number of seconds
 
     Returns:
@@ -115,7 +115,7 @@ def dms2rad(degrees: float, minutes: float, seconds: float) -> float:
     )
 
 
-def rad2dms(radians: float) -> tuple[float, float, float]:
+def rad2dms(radians: float) -> tuple[int, int, float]:
     """Convert radians to degrees, minutes, and seconds.
 
     Args:
@@ -123,8 +123,8 @@ def rad2dms(radians: float) -> tuple[float, float, float]:
 
     Returns:
         tuple: (degrees, minutes, seconds)
-            degrees (float): The number of degrees
-            minutes (float): The number of minutes
+            degrees (int): The number of degrees
+            minutes (int): The number of minutes
             seconds (float): The number of seconds
     """
     # Convert radians to total degrees

@@ -41,3 +41,47 @@ def test_day_of_week():
     jd = 2448854.125
     dow = julian_date.day_of_week(jd)
     assert dow == 4
+
+
+def test_convtime():
+    (
+        ut1,
+        tut1,
+        jdut1,
+        jdut1frac,
+        utc,
+        tai,
+        tt,
+        ttt,
+        jdtt,
+        jdttfrac,
+        tdb,
+        ttdb,
+        jdtdb,
+        jdtdbfrac,
+    ) = julian_date.convtime(
+        year=2024,
+        month=5,
+        day=10,
+        hour=12,
+        minute=42,
+        second=23.4,
+        timezone=3,
+        dut1=0.1,
+        dat=35.7,
+    )
+
+    assert np.isclose(ut1, 56543.5, rtol=DEFAULT_TOL)
+    assert np.isclose(tut1, 0.24356343432326408, rtol=DEFAULT_TOL)
+    assert np.isclose(jdut1, 2460440.5, rtol=DEFAULT_TOL)
+    assert np.isclose(jdut1frac, 0.6544386574074074, rtol=DEFAULT_TOL)
+    assert np.isclose(utc, 56543.4, rtol=DEFAULT_TOL)
+    assert np.isclose(tai, 56579.1, rtol=DEFAULT_TOL)
+    assert np.isclose(tt, 56611.284, rtol=DEFAULT_TOL)
+    assert np.isclose(ttt, 0.24356345580272443, rtol=DEFAULT_TOL)
+    assert np.isclose(jdtt, 2460440.5, rtol=DEFAULT_TOL)
+    assert np.isclose(jdttfrac, 0.6552231944444444, rtol=DEFAULT_TOL)
+    assert np.isclose(tdb, 56611.28533755204, rtol=DEFAULT_TOL)
+    assert np.isclose(ttdb, 0.24356345580314515, rtol=DEFAULT_TOL)
+    assert np.isclose(jdtdb, 2460440.5, rtol=DEFAULT_TOL)
+    assert np.isclose(jdtdbfrac, 0.6552232099253709, rtol=DEFAULT_TOL)
