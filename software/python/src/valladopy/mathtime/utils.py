@@ -51,3 +51,19 @@ def hms2rad(hours: float, minutes: float, seconds: float) -> float:
         float: The total number of radians
     """
     return (hours + minutes / const.MIN2SEC + seconds / const.HR2SEC) * const.HR2RAD
+
+
+def dms2rad(degrees: float, minutes: float, seconds: float) -> float:
+    """Convert degrees, minutes, and seconds to radians.
+
+    Args:
+        degrees (float): The number of degrees
+        minutes (float): The number of minutes
+        seconds (float): The number of seconds
+
+    Returns:
+        float: The total number of radians
+    """
+    return float(
+        np.radians(degrees + minutes / const.DEG2MIN + seconds / const.DEG2ARCSEC)
+    )
