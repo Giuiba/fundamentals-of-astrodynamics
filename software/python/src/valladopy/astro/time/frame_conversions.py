@@ -48,7 +48,7 @@ def calc_orbit_effects(
 
     Returns:
         tuple: (prec, nut, st, pm, omegaearth)
-            prec (np.array): Transformation matrix for MOD to J2000
+            prec (np.ndarray): Transformation matrix for MOD to J2000
             nut (np.ndarray): Transformation matrix for TOD - MOD
             st (np.ndarray): Transformation matrix for PEF to TOD
             pm (np.ndarray): Transformation matrix for ECEF to PEF
