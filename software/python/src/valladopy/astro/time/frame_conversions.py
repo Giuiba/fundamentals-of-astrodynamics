@@ -9,7 +9,7 @@
 
 import numpy as np
 from numpy.typing import ArrayLike
-from typing import Tuple
+from typing import Literal, Tuple
 
 from . import iau_transform as iau
 from .sidereal import gstime, sidereal
@@ -70,6 +70,57 @@ def calc_orbit_effects(
 ###############################################################################
 # ECI <-> ECEF Frame Conversions
 ###############################################################################
+
+
+def compute_iau06_matrices(
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    option: Literal["06a", "06b", "06c"],
+    ddx: float = 0.0,
+    ddy: float = 0.0,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Computes the precession/nutation matrix, sidereal time matrix,
+    polar motion matrix, and Earth rotation vector.
+
+    Args:
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        option (Literal["06a", "06b", "06c"]): Option for precession/nutation model
+        ddx (float, optional): EOP correction for x in radians (defaults to 0.0)
+        ddy (float, optional): EOP correction for y in radians (defaults to 0.0)
+
+    Returns:
+        tuple: (pnb, st, pm, omegaearth)
+            pnb (np.ndarray): Precession/nutation matrix
+            st (np.ndarray): Sidereal time matrix
+            pm (np.ndarray): Polar motion matrix
+            omegaearth (np.ndarray): Earth rotation vector
+    """
+    # Precession/nutation and sidereal time matrices
+    if option == "06c":
+        *_, pnb = iau.iau06xys(ttt, ddx, ddy)
+        st = iau.iau06era(jdut1)
+    elif option == "06a":
+        deltapsi, pnb, _, _, *_ = iau.iau06pna(ttt)
+        _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
+    elif option == "06b":
+        deltapsi, pnb, _, _, *_ = iau.iau06pnb(ttt)
+        _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
+    else:
+        raise ValueError("Invalid option. Use '06a', '06b', or '06c'.")
+
+    # Polar motion matrix and Earth rotation vector
+    *_, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, 0, 0, use_iau80=False
+    )
+
+    return pnb, st, pm, omegaearth
 
 
 def eci2ecef(
@@ -144,7 +195,7 @@ def eci2ecefiau06(
     lod: float,
     xp: float,
     yp: float,
-    option: str,
+    option: Literal["06a", "06b", "06c"],
     ddx: float = 0.0,
     ddy: float = 0.0,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -163,7 +214,7 @@ def eci2ecefiau06(
         lod (float): Excess length of day in seconds
         xp (float): Polar motion coefficient in radians
         yp (float): Polar motion coefficient in radians
-        option (str): Option for precession/nutation model ('06a', '06b', or '06c')
+        option (Literal["06a", "06b", "06c"]): Option for precession/nutation model
         ddx (float): EOP correction for x in radians
         ddy (float): EOP correction for y in radians
 
@@ -173,21 +224,9 @@ def eci2ecefiau06(
             vecef (np.ndarray): ECEF velocity vector in km/s
             aecef (np.ndarray): ECEF acceleration vector in km/s²
     """
-    if option == "06c":
-        *_, pnb = iau.iau06xys(ttt, ddx, ddy)
-        st = iau.iau06era(jdut1)
-    elif option == "06a":
-        deltapsi, pnb, _, _, *_ = iau.iau06pna(ttt)
-        _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
-    elif option == "06b":
-        deltapsi, pnb, _, _, *_ = iau.iau06pnb(ttt)
-        _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
-    else:
-        raise ValueError("Invalid option. Use '06a', '06b', or '06c'.")
-
-    # Find matrices that account for various orbit effects
-    *_, pm, omegaearth = calc_orbit_effects(
-        ttt, jdut1, lod, xp, yp, 0, 0, use_iau80=False
+    # Compute the IAU 2006 matrices
+    pnb, st, pm, omegaearth = compute_iau06_matrices(
+        ttt, jdut1, lod, xp, yp, option, ddx, ddy
     )
 
     # Transform position
@@ -278,7 +317,7 @@ def ecef2eciiau06(
     lod: float,
     xp: float,
     yp: float,
-    option: str,
+    option: Literal["06a", "06b", "06c"],
     ddx: float = 0.0,
     ddy: float = 0.0,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -296,7 +335,7 @@ def ecef2eciiau06(
         lod (float): Excess length of day in seconds
         xp (float): Polar motion coefficient in radians
         yp (float): Polar motion coefficient in radians
-        option (str): Option for precession/nutation model ('06a', '06b', or '06c')
+        option (Literal["06a", "06b", "06c"]): Option for precession/nutation model
         ddx (float): EOP correction for x in radians
         ddy (float): EOP correction for y in radians
 
@@ -306,22 +345,9 @@ def ecef2eciiau06(
             veci (np.ndarray): ECI velocity vector in km/s
             aeci (np.ndarray): ECI acceleration vector in km/s²
     """
-    # Determine approach
-    if option == "06c":
-        *_, pnb = iau.iau06xys(ttt, ddx, ddy)
-        st = iau.iau06era(jdut1)
-    elif option == "06a":
-        deltapsi, pnb, _, _, *_ = iau.iau06pna(ttt)
-        _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
-    elif option == "06b":
-        deltapsi, pnb, _, _, *_ = iau.iau06pnb(ttt)
-        _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
-    else:
-        raise ValueError("Invalid option. Use '06a', '06b', or '06c'.")
-
-    # Find matrices that account for various orbit effects
-    *_, pm, omegaearth = calc_orbit_effects(
-        ttt, jdut1, lod, xp, yp, 0, 0, use_iau80=False
+    # Compute the IAU 2006 matrices
+    pnb, st, pm, omegaearth = compute_iau06_matrices(
+        ttt, jdut1, lod, xp, yp, option, ddx, ddy
     )
 
     # Transform position
