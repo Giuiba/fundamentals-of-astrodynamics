@@ -374,6 +374,74 @@ def ecef2eciiau06(
 ###############################################################################
 
 
+def compute_iau_matrices(
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    ddpsi: float,
+    ddeps: float,
+    opt: Literal["80", "06a", "06b", "06c"],
+    ddx: float = 0.0,
+    ddy: float = 0.0,
+    eqeterms: bool = True,
+):
+    """Computes the precession/nutation matrix, sidereal time matrix,
+    polar motion matrix, and Earth rotation vector.
+
+    Args:
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        ddpsi (float): Nutation correction for delta psi in radians
+        ddeps (float): Nutation correction for delta epsilon in radians
+        opt (Literal["80", "06a", "06b", "06c"]): Option for precession/nutation model
+        ddx (float, optional): EOP correction for x in radians (default 0.0)
+        ddy (float, optional): EOP correction for y in radians (default 0.0)
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+
+    Returns:
+        tuple: (prec, nut, st, pm, omegaearth)
+            prec (np.ndarray): Precession matrix
+            nut (np.ndarray): Nutation matrix
+            st (np.ndarray): Sidereal time matrix
+            pm (np.ndarray): Polar motion matrix
+            omegaearth (np.ndarray): Earth rotation vector
+    """
+    # Get the precession matrix and the Earth's rotation vector
+    iau_opt = "06" if "06" in opt else opt
+    prec, *_, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, 0.0, 0.0, ddpsi, ddeps, opt=iau_opt, eqeterms=eqeterms
+    )
+
+    # Get orbit effects based on the option
+    if opt == "80":
+        # IAU 1980 model
+        deltapsi, _, meaneps, omega, nut = nutation(ttt, ddpsi, ddeps)
+        st, _ = sidereal(jdut1, deltapsi, meaneps, omega, lod, eqeterms)
+    else:
+        if opt == "06c":
+            # CEO based, IAU 2006 precession/nutation model
+            *_, pnb = iau.iau06xys(ttt, ddx, ddy)
+            st = iau.iau06era(jdut1)
+        elif opt == "06a":
+            # Classical equinox-based IAU 2006A model
+            deltapsi, pnb, prec, nut, *_ = iau.iau06pna(ttt)
+            _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
+        elif opt == "06b":
+            # Classical equinox-based IAU 2006B model
+            deltapsi, pnb, prec, nut, *_ = iau.iau06pnb(ttt)
+            _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
+        else:
+            # Invalid option
+            raise ValueError(
+                f"Invalid opt value: {opt}. Must be '80', '6a', '6b', or '6c'."
+            )
+        prec = np.eye(3)
+        nut = pnb
+
+    return prec, nut, st, omegaearth
+
+
 def eci2pef(
     reci: ArrayLike,
     veci: ArrayLike,
@@ -414,37 +482,10 @@ def eci2pef(
             vpef (np.ndarray): PEF velocity vector in km/s
             apef (np.ndarray): PEF acceleration vector in km/s²
     """
-    # Get the precession matrix and the Earth's rotation vector
-    iau_opt = "06" if "06" in opt else opt
-    prec, *_, omegaearth = calc_orbit_effects(
-        ttt, jdut1, lod, 0.0, 0.0, ddpsi, ddeps, opt=iau_opt, eqeterms=eqeterms
+    # Compute the IAU matrices
+    prec, nut, st, omegaearth = compute_iau_matrices(
+        ttt, jdut1, lod, ddpsi, ddeps, opt, ddx, ddy, eqeterms=eqeterms
     )
-
-    # Get orbit effects based on the option
-    if opt == "80":
-        # IAU 1980 model
-        deltapsi, _, meaneps, omega, nut = nutation(ttt, ddpsi, ddeps)
-        st, _ = sidereal(jdut1, deltapsi, meaneps, omega, lod, eqeterms)
-    else:
-        if opt == "06c":
-            # CEO based, IAU 2006 precession/nutation model
-            *_, pnb = iau.iau06xys(ttt, ddx, ddy)
-            st = iau.iau06era(jdut1)
-        elif opt == "06a":
-            # Classical equinox-based IAU 2006A model
-            deltapsi, pnb, prec, nut, *_ = iau.iau06pna(ttt)
-            _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
-        elif opt == "06b":
-            # Classical equinox-based IAU 2006B model
-            deltapsi, pnb, prec, nut, *_ = iau.iau06pnb(ttt)
-            _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
-        else:
-            # Invalid option
-            raise ValueError(
-                f"Invalid opt value: {opt}. Must be '80', '6a', '6b', or '6c'."
-            )
-        prec = np.eye(3)
-        nut = pnb
 
     # Transform vectors
     rpef = st.T @ nut.T @ prec.T @ reci
@@ -553,31 +594,10 @@ def eci2tod(
             vtod (np.ndarray): TOD velocity vector in km/s
             atod (np.ndarray): TOD acceleration vector in km/s²
     """
-    # Precession
-    iau_opt = "06" if "06" in opt else opt
-    prec, *_ = precess(ttt, opt=iau_opt)
-
-    # Get orbit effects based on the option
-    if opt == "80":
-        # IAU 1980 model
-        *_, meaneps, omega, nut = nutation(ttt, ddpsi, ddeps)
-    else:
-        if opt == "06c":
-            # CEO based, IAU 2006 precession/nutation model
-            *_, pnb = iau.iau06xys(ttt, ddx, ddy)
-        elif opt == "06a":
-            # Classical equinox-based IAU 2006A model
-            _, pnb, prec, nut, *_ = iau.iau06pna(ttt)
-        elif opt == "06b":
-            # Classical equinox-based IAU 2006B model
-            _, pnb, prec, nut, *_ = iau.iau06pnb(ttt)
-        else:
-            # Invalid option
-            raise ValueError(
-                f"Invalid opt value: {opt}. Must be '80', '6a', '6b', or '6c'."
-            )
-        prec = np.eye(3)
-        nut = pnb
+    # Compute the IAU matrices
+    prec, nut, *_ = compute_iau_matrices(
+        ttt, 0, 0, ddpsi, ddeps, opt, ddx, ddy, eqeterms=False
+    )
 
     # Transform vectors
     rtod = nut.T @ prec.T @ np.asarray(reci)
