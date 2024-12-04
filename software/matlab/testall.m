@@ -1343,13 +1343,13 @@ function testeci_ecef()
         jdftt = jdFrac + (dat + 32.184) / 86400.0;
         ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
-        [fArgs] = fundarg(ttt, AstroLib.EOpt.e80);
+        [fArgs] = fundarg(ttt, '80');
 
         ddpsi = 0.0;
         ddeps = 0.0;
         deltapsi = 0.0;
         deltaeps = 0.0;
-        for ii = 105; ii >= 0; ii--
+         for ii= 106:-1: 1
 
             tempval = iau80arr.iar80[ii, 0] * fArgs(1) + iau80arr.iar80[ii, 1] * fArgs(2) + iau80arr.iar80[ii, 2] * fArgs(3) +
             iau80arr.iar80[ii, 3] * fArgs(4) + iau80arr.iar80[ii, 4] * fArgs(5);
@@ -1362,7 +1362,7 @@ function testeci_ecef()
         deltaeps = (deltaeps + ddeps); % (2.0 * pi);
 
         % CIO parameters
-        [fArgs] = fundarg(ttt, AstroLib.EOpt.e06cio);
+        [fArgs] = fundarg(ttt, '06');
         ddx = 0.0;
         ddy = 0.0;
         [x, y, s] = iau06xys(jdtt, jdftt, ddx, ddy, interp, iau06arr, fArgs, jdxysstart);
@@ -1382,6 +1382,7 @@ function testtod2ecef()
 
     recef = [ -1033.4793830, 7901.2952754, 6380.3565958 ];
     vecef = [ -3.225636520, -2.872451450, 5.531924446 ];
+    aecef = [0.00001, 0.00001, 0.00001];
     year = 2004;
     mon = 4;
     day = 6;
@@ -1399,6 +1400,7 @@ function testtod2ecef()
     ddeps = -0.003875 * conv;
     ddx = -0.000205 * conv;    % ' to rad
     ddy = -0.000136 * conv;
+    eqeterms = 2;
 
     reci = [ 0.0, 0.0, 0.0 ];
     veci = [ 0.0, 0.0, 0.0 ];
@@ -1412,62 +1414,61 @@ function testtod2ecef()
     jdftt = jdFrac + (dat + 32.184) / 86400.0;
     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
+    [fArgs] = fundarg(ttt, '80');
+
     % now read it in
     double jdfxysstart;
-    AstroLib.xysdataClass[] xysarr = xysarr;
-    [jdxysstart, jdfxysstart, xys06arr] = initxys(infilename);
+    %[jdxysstart, jdfxysstart, xys06arr] = initxys(infilename);
 
     jdut1 = jd + jdFrac + dut1 / 86400.0;
 
     fprintf(1,'ITRF start    IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recef(1), recef(2), recef(3), vecef(1), vecef(2), vecef(3));
 
     % PEF
-    [rpef,vpef,apef] = ecef2pef  ( recef,vecef,aecef,ttt,xp,yp );
+    [rpef, vpef, apef] = ecef2pef ( recef,vecef,aecef, '80', ttt, xp, yp );
     fprintf(1,'GCRF          IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
 
-    ecef_pef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,    AstroLib.EOpt.e80, ttt, xp, yp);
+    [recii, vecii, aecii] = pef2ecef(rpef, vpef, apef, '80', ttt, xp, yp);
     fprintf(1,'ITRF  rev     IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    ecef_pef(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rtemp, ref vtemp,    AstroLib.EOpt.e06cio, ttt, xp, yp);
+    [rtemp, vtemp, atemp] = ecef2pef(recef, vecef, aecef, '06', ttt, xp, yp);
     fprintf(1,'TIRS          IAU-2006 CIO %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtemp(1), rtemp(2), rtemp(3), vtemp(1), vtemp(2), vtemp(3));
-    ecef_pef(ref recefi, ref vecefi, MathTimeLib.Edirection.efrom, ref rtemp, ref vtemp,    AstroLib.EOpt.e06cio, ttt, xp, yp);
+    [recefi, vecefi, aecefi] = pef2ecef(rtemp, vtemp, atemp, '06', ttt, xp, yp);
     fprintf(1,'ITRF rev      IAU-2006 CIO %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % TOD
-    [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, ttt, jdut1, lod, xp, yp, eqeterms, 0.0, 0.0 )
+    [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, 0.0, 0.0);
     fprintf(1,'TOD wo corr   IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtod(1), rtod(2), rtod(3), vtod(1), vtod(2), vtod(3));
-    [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+    [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'TOD w corr    IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtod(1), rtod(2), rtod(3), vtod(1), vtod(2), vtod(3));
-    [recefi,vecefi,aecefi] = tod2ecef  ( rtod,vtod,atod,ttt,jdut1,lod,xp,yp,eqeterms,ddpsi,ddeps );
+    [recefi,vecefi,aecefi] = tod2ecef ( rtod, vtod, atod, iau80arr, fArgs, jdut1, ttt, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'ITRFi         IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
-    [rtemp,vtemp,atemp] = ecef2tod(recef, vecef, aecef,ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
+    [rtemp,vtemp,atemp] = ecef2tod(recef, vecef, aecef,iau80arr, fArgs, ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
     fprintf(1,'CIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtemp(1), rtemp(2), rtemp(3), vtemp(1), vtemp(2), vtemp(3));
-    [recefi,vecefi,aecefi] = tod2ecef  ( rtod,vtod,atod,ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
+    [recefi,vecefi,aecefi] = tod2ecef  ( rtod,vtod,atod, iau80arr, fArgs, ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
     fprintf(1,'ITRF rev      IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % MOD
-    [rmod, vmod, amod] = ecef2mod(recef, vecef, aecef, ttt, jdut1, lod, xp, yp, eqeterms, 0.0, 0.0 );
+    [rmod, vmod, amod] = ecef2mod( recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, 0.0, 0.0);
     fprintf(1,'MOD wo corr   IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rmod(1), rmod(2), rmod(3), vmod(1), vmod(2), vmod(3));
-    [rmod, vmod, amod] = ecef2mod(recef, vecef, aecef, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    [rmod, vmod, amod] = ecef2mod( recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'MOD  w corr   IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rmod(1), rmod(2), rmod(3), vmod(1), vmod(2), vmod(3));
-    [recefi,vecefi,aecefi] = mod2ecef  ( rmod,vmod,amod,ttt,jdut1,lod,xp,yp,eqeterms, ddpsi, ddeps );
+    [recefi,vecefi,aecefi] = mod2ecef( rmod, vmod, amod, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'ITRF  rev     IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
 
     % J2000
-    [recii,vecii,aecii] = ecef2eci  ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,eqeterms,0.0, 0.0 );
+    [recii, vecii, aecii] = ecef2eci(recef,vecef,aecef,iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, 0.0, 0.0 );
     fprintf(1,'J2000 wo corr IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
     % GCRF
-    [reci,veci,aeci] = ecef2eci  ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,eqeterms,ddpsi,ddeps );
+    [reci, veci, aeci] = ecef2eci(recef,vecef,aecef,iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'GCRF w corr   IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
-    eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recefi, ref vecefi,
-    AstroLib.EOpt.e80, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+    [recefi, vecefi, aecefi] = eci2ecef(reci, veci, aeci, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'ITRF rev      IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
-    eci_ecef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-    AstroLib.EOpt.e06cio, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+    [recii vecii, aecii] = ecef2eci(recef, vecef, aecef,   iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp,ddx, ddy);
     fprintf(1,'GCRF          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
     [recefi,vecefi,aecefi] = eci2ecefiau06  ( recii,vecii,aecii,ttt,jdut1,lod,xp,yp,option, ddx, ddy );    
     fprintf(1,'ITRF rev      IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
@@ -1483,39 +1484,31 @@ function testtod2ecef()
     + veci(1), veci(2), veci(3));
 
     % PEF
-    eci_pef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rpef, ref vpef,
-    AstroLib.EOpt.e80, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+    [rpef, vpef, apef] = eci2pef(reci, veci, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
     fprintf(1,'PEF           IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
-    eci_pef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,
-    AstroLib.EOpt.e80, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+    [recii, vecii, aecii] = pef2eci(rpef, vpef, apef, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
     fprintf(1,'ECI rev       IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    eci_pef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rpef, ref vpef,
-    AstroLib.EOpt.e06cio, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+    [rpef, vpef, apef] = eci2pefiau06(reci, veci, aeci, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddx, ddy);
     fprintf(1,'TIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
-    eci_pef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,
-    AstroLib.EOpt.e06cio, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+    [recii vecii, aecii] = pef2eciiau06(rpef, vpef, qpef, iau06arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddx, ddy);
     fprintf(1,'ECI rev       IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
     % TOD
-    eci_tod(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rtod, ref vtod,
-    AstroLib.EOpt.e80, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+    [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
     fprintf(1,'TOD           IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtod(1), rtod(2), rtod(3), vtod(1), vtod(2), vtod(3));
-    eci_tod(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rtod, ref vtod,
-    AstroLib.EOpt.e80, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+    [recii, vecii, aecii] = tod2eci(rtod, vtod, amod, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
     fprintf(1,'ECI rev       IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    eci_tod(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rtod, ref vtod,
-    AstroLib.EOpt.e06cio, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+    [rtod, vtod, atod] = eci2todiau06(reci, veci, aeci, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
     fprintf(1,'CIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtod(1), rtod(2), rtod(3), vtod(1), vtod(2), vtod(3));
-    eci_tod(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rtod, ref vtod,
-    AstroLib.EOpt.e06cio, iau80arr, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+    [recii vecii, aecii] = tod2eciiau06(rtod, vtod, amod, iau80arr,  jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
     fprintf(1,'ECI rev       IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
     % MOD
-    eci_mod(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rmod, ref vmod,    '80', iau80arr, iau06arr, ttt);
+    [rmod, vmod, amod] = eci2mod(reci, veci, aeci,  '80', iau80arr, ttt);
     fprintf(1,'MOD           IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rmod(1), rmod(2), rmod(3), vmod(1), vmod(2), vmod(3));
-    eci_mod(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rmod, ref vmod,    '80', iau80arr, iau06arr, ttt);
+    [recii vecii, aecii] = eci2mod(rmod, vmod, amod,  '80', iau80arr, ttt);
     fprintf(1,'ECI rev       IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 end
 
@@ -1607,7 +1600,7 @@ function testqmod2ecef()
     ttt = 0.042623631889;
     jdutc = 2453101.82740678310;
 
-    fundarg(ttt, opt, out fArgs);
+    [fArgs] = fundarg(ttt, opt);
 
     nutLoc = 'D:\Codes\LIBRARY\DataLib\';
     [iau80arr] = iau80in(nutLoc);

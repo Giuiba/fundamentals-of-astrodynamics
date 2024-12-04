@@ -14,8 +14,8 @@
 %    recef       - position vector earth fixed    km
 %    vecef       - velocity vector earth fixed    km/s
 %    aecef       - acceleration vector earth fixedkm/s2
-%    xp          - polar motion coefficient       rad
-%    yp          - polar motion coefficient       rad
+%    xp          - polar motion coefficient       arc sec
+%    yp          - polar motion coefficient       arc sec
 %    ttt         - julian centuries of tt         centuries
 %
 %  outputs       :
@@ -34,14 +34,14 @@
 % [rpef,vpef,apef] = ecef2pef  ( recef,vecef,aecef, opt, xp, yp, ttt )
 % ----------------------------------------------------------------------------
 
-function [rpef,vpef,apef] = ecef2pef  ( recef,vecef,aecef, opt, xp, yp, ttt )
+function [rpef,vpef,apef] = ecef2pef  ( recef, vecef, aecef, opt, xp, yp, ttt )
 
-        [pm] = polarm(xp,yp,ttt,opt);
+        [pm] = polarm(xp, yp, ttt, opt);
+ 
+        rpef = pm*recef';
 
-        rpef = pm*recef;
+        vpef = pm*vecef'; 
 
-        vpef = pm*vecef; 
-
-        apef = pm*aecef;
+        apef = pm*aecef';
 
 
