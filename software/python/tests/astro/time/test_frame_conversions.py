@@ -180,6 +180,53 @@ def test_ecef2eci(rva_ecef, rva_eci, t_inputs, orbit_effects_inputs):
 
 
 @pytest.mark.parametrize(
+    "opt, reci_exp, veci_exp, aeci_exp",
+    [
+        (
+            "06a",
+            [2989.906715244367, -7387.199965493092, 6379.438177274583],
+            [2.9404011963603653, 3.809395796399821, 5.530649350151951],
+            [-0.0010033492952305192, -0.0017978754928479098, 0.0030004514574182846],
+        ),
+        (
+            "06b",
+            [2989.9067034637646, -7387.199967484449, 6379.4381804899685],
+            [2.9404011861473762, 3.809395794673409, 5.530649356770861],
+            [-0.0010033493007712768, -0.0017978754937844617, 0.0030004514550042755],
+        ),
+        (
+            "06c",
+            [2989.906708933223, -7387.199969715912, 6379.438175342585],
+            [2.9404011908908405, 3.809395792738789, 5.530649355581499],
+            [-0.0010033492981985355, -0.0017978754948335825, 0.003000451455235964],
+        ),
+    ],
+)
+def test_ecef2eciiau06(
+    rva_ecef,
+    t_inputs,
+    orbit_effects_inputs,
+    eop_corrections,
+    opt,
+    reci_exp,
+    veci_exp,
+    aeci_exp,
+):
+    # Extract inputs
+    xp, yp, *_ = orbit_effects_inputs
+
+    # Call the function with test inputs
+    reci_out, veci_out, aeci_out = fc.ecef2eciiau06(
+        *rva_ecef, *t_inputs, xp, yp, opt, *eop_corrections
+    )
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(reci_exp, reci_out)
+    assert custom_allclose(veci_exp, veci_out)
+    assert custom_allclose(aeci_exp, aeci_out)
+
+
+@pytest.mark.parametrize(
     "opt, rpef_exp, vpef_exp, apef_exp",
     [
         ("80", *get_rvpef()),

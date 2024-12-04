@@ -169,9 +169,9 @@ def eci2ecefiau06(
 
     Returns:
         tuple: (recef, vecef, aecef)
-            recef: ECEF position vector in km
-            vecef: ECEF velocity vector in km/s
-            aecef: ECEF acceleration vector in km/s²
+            recef (np.ndarray): ECEF position vector in km
+            vecef (np.ndarray): ECEF velocity vector in km/s
+            aecef (np.ndarray): ECEF acceleration vector in km/s²
     """
     if option == "06c":
         *_, pnb = iau.iau06xys(ttt, ddx, ddy)
@@ -264,6 +264,80 @@ def ecef2eci(
         np.dot(prec, np.dot(nut, np.dot(st, np.dot(pm, aecef))))
         + np.cross(omegaearth, np.cross(omegaearth, rpef))
         + 2.0 * np.cross(omegaearth, vpef)
+    )
+
+    return reci, veci, aeci
+
+
+def ecef2eciiau06(
+    recef: ArrayLike,
+    vecef: ArrayLike,
+    aecef: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    option: str,
+    ddx: float = 0.0,
+    ddy: float = 0.0,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Earth-fixed frame (ITRF) to the ECI frame (GCRF).
+
+    References:
+        Vallado, 2004, pp. 205-219
+
+    Args:
+        recef (ArrayLike): ECEF position vector in km
+        vecef (ArrayLike): ECEF velocity vector in km/s
+        aecef (ArrayLike): ECEF acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        option (str): Option for precession/nutation model ('06a', '06b', or '06c')
+        ddx (float): EOP correction for x in radians
+        ddy (float): EOP correction for y in radians
+
+    Returns:
+        tuple: (reci, veci, aeci)
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+            aeci (np.ndarray): ECI acceleration vector in km/s²
+    """
+    # Determine approach
+    if option == "06c":
+        *_, pnb = iau.iau06xys(ttt, ddx, ddy)
+        st = iau.iau06era(jdut1)
+    elif option == "06a":
+        deltapsi, pnb, _, _, *_ = iau.iau06pna(ttt)
+        _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
+    elif option == "06b":
+        deltapsi, pnb, _, _, *_ = iau.iau06pnb(ttt)
+        _, st = iau.iau06gst(jdut1, ttt, deltapsi, *_)
+    else:
+        raise ValueError("Invalid option. Use '06a', '06b', or '06c'.")
+
+    # Find matrices that account for various orbit effects
+    *_, pm, omegaearth = calc_orbit_effects(
+        ttt, jdut1, lod, xp, yp, 0, 0, use_iau80=False
+    )
+
+    # Transform position
+    rpef = pm @ recef
+    reci = pnb @ st @ rpef
+
+    # Transform velocity
+    vpef = pm @ vecef
+    veci = pnb @ st @ (vpef + np.cross(omegaearth, rpef))
+
+    # Transform acceleration
+    temp = np.cross(omegaearth, rpef)
+    aeci = (
+        pnb
+        @ st
+        @ (pm @ aecef + np.cross(omegaearth, temp) + 2.0 * np.cross(omegaearth, vpef))
     )
 
     return reci, veci, aeci
