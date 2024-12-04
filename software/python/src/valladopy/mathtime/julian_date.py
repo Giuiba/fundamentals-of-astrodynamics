@@ -252,6 +252,9 @@ def find_dst_date(year, month, target_week, weekday):
 def daylight_savings(year: int, lon: float) -> tuple[int, int, float, float]:
     """Find the start and stop dates for daylight savings time (DST) in a given year.
 
+    References:
+        Vallado: 2007, p. 188
+
     This function uses U.S.-specific DST rules:
         - Before 2007: DST starts on the first Sunday of April and ends on the last
           Sunday of October.
