@@ -26,21 +26,21 @@
 % [spwarr, mjdspwstart, ktrActObs, updDate] = readspw(spwFileName);
 % -----------------------------------------------------------------------------
 
-function [spwarr, mjdspwstart, ktrActObs, updDate] = readspw(spwFileName);
+function [spwarr, mjdspwstart, ktrActObs, updDate] = readspw(spwFileName)
 
-    spwarr = struct('xp',zeros(25000), 'xperr',zeros(25000), ...
-        'yp',zeros(25000), 'yperr',zeros(25000), ...
-        'dut1',zeros(25000), 'dut1err',zeros(25000), 'lod',zeros(25000), ...
-        'ddpsi',zeros(25000), 'ddeps',zeros(25000), ...
-        'dx',zeros(25000), 'dy',zeros(25000), ...
-        'yr',zeros(25000), 'mon',zeros(25000), 'day',zeros(25000), 'mjd',zeros(25000) );
+    spwarr = struct('kparray',zeros(28000,8), 'sumkp',zeros(28000), ...
+        'aparray',zeros(28000,8), 'avgap',zeros(28000), ...
+        'adjf107',zeros(28000), 'adjctrf81',zeros(28000), 'adjlstf81',zeros(28000), ...
+        'obsf107',zeros(28000), 'obsctrf81',zeros(28000), 'obslstf81',zeros(28000), ...
+        'mjd',zeros(28000) );
     
     updDate = '';
     infile = fopen(spwFileName, 'r');
     
+    
     while (~feof(infile))
         longstr = fgets(infile);
-        while ( (longstr(1) == '#') && (feof(infile) == 0) )str2double
+        while ( (longstr(1) == '#') && (feof(infile) == 0) )
             longstr = fgets(infile);
     
             if (contains(longstr, 'UPDATED'))
@@ -50,86 +50,60 @@ function [spwarr, mjdspwstart, ktrActObs, updDate] = readspw(spwFileName);
             if (contains(longstr, 'NUM_OBSERVED_POINTS'))
                 numrecsobs = str2double(longstr(20:end));
                 longstr = fgets(infile);
+
                 % ---- process observed records only
-                % 1962 01 01 37665 -0.012700  0.213000  0.0326338  0.0017230  0.064261  0.006067  0.000000  0.000000   2 
-                for ktr = 1: numrecsobs + 1
-
-        %  yy mm dd BSRN ND Kp Kp Kp Kp Kp Kp Kp Kp Sum Ap  Ap  Ap  Ap  Ap  Ap  Ap  Ap  Avg Cp C9 ISN F10.7 Q Ctr81 Lst81 F10.7 Ctr81 Lst81
-        Dataarr = textscan( fid, '%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %f %d %d %f %d %f %f %f %f %f', 'Headerlines', 0, 'MultipleDelimsAsOne', true );
-        fclose(fid);
-    
-        yr   = cell2mat(Dataarr(:,1));  % yr
-        mon   = cell2mat(Dataarr(:,2));  % mon
-        day   = cell2mat(Dataarr(:,3));  % day
-        ap(1,:)  = cell2mat(Dataarr(:,15));  % ap1
-        ap(2,:)  = cell2mat(Dataarr(:,16));  % ap2
-        ap(3,:)  = cell2mat(Dataarr(:,17));  % ap3
-        ap(4,:)  = cell2mat(Dataarr(:,18));  % ap4
-        ap(5,:)  = cell2mat(Dataarr(:,19));  % ap5
-        ap(6,:)  = cell2mat(Dataarr(:,20));  % ap6
-        ap(7,:)  = cell2mat(Dataarr(:,21));  % ap7
-        ap(8,:)  = cell2mat(Dataarr(:,22));  % ap8
-        adjf107 = cell2mat(Dataarr(:,27));  % adjf10.7
-        ctrf107 = cell2mat(Dataarr(:,29));  % ctrf10.7
-    
-                    
-                    
+                % 1957 10 02 1700 20 37 37 17 17 27 23 17 30 203  22  22   6   6  12   9   6  15  12 0.7 3 234 253.5 6  265.7 231.4 253.3 267.4 231.7 233.3 233.0 215.9 211.6
+                for ktr = 1: numrecsobs
                     longstr = fgets(infile);
-                    spwarr(ktr).yr = str2double(longstr(0)); 
-                    spwarr(ktr).mon = str2double(longstr(1));
-                    spwarr(ktr).day = str2double(longstr(2));
-                    spwarr(ktr).brsn = str2double(longstr(3));
-                    spwarr(ktr).nd = str2double(longstr(4));
-                    spwarr(ktr).kparr[0] = str2double(longstr(5));
-                    spwarr(ktr).kparr[1] = str2double(longstr(6));
-                    spwarr(ktr).kparr[2] = str2double(longstr(7));
-                    spwarr(ktr).kparr[3] = str2double(longstr(8));
-                    spwarr(ktr).kparr[4] = str2double(longstr(9));
-                    spwarr(ktr).kparr[5] = str2double(longstr(10));
-                    spwarr(ktr).kparr[6] = str2double(longstr(11));
-                    spwarr(ktr).kparr[7] = str2double(longstr(12));
-                    spwarr(ktr).sumkp = str2double(longstr(13));
-                    spwarr(ktr).aparr[0] = str2double(longstr(14));
-                    spwarr(ktr).aparr[1] = str2double(longstr(15));
-                    spwarr(ktr).aparr[2] = str2double(longstr(16));
-                    spwarr(ktr).aparr[3] = str2double(longstr(17));
-                    spwarr(ktr).aparr[4] = str2double(longstr(18));
-                    spwarr(ktr).aparr[5] = str2double(longstr(19));
-                    spwarr(ktr).aparr[6] = str2double(longstr(20));
-                    spwarr(ktr).aparr[7] = str2double(longstr(21));
-                    spwarr(ktr).avgap = str2double(longstr(22));
-                    spwarr(ktr).cp = str2double(longstr(23));
-                    spwarr(ktr).c9 = str2double(longstr(24));
-                    spwarr(ktr).isn = str2double(longstr(25));
-                    spwarr(ktr).adjf10 = str2double(longstr(26));
-                    spwarr(ktr).q = str2double(longstr(27));
-                    spwarr(ktr).adjctrf81 = str2double(longstr(28));
-                    spwarr(ktr).adjlstf81 = str2double(longstr(29));
-                    spwarr(ktr).obsf10 = str2double(longstr(30));
-                    spwarr(ktr).obsctrf81 = str2double(longstr(31));
-                    spwarr(ktr).obslstf81 = str2double(longstr(32));
-                    %spwarr(ktr).adjf30 = str2double(longstr(33));
-                    %spwarr(ktr).obsf30 = str2double(longstr(34));
-                    %spwarr(ktr).adjlstf30f81 = str2double(longstr(35));
-                    %spwarr(ktr).obslstf30f81 = str2double(longstr(36));
-                    MathTimeLibr.jday(spwarr(ktr).yr, spwarr(ktr).mon, spwarr(ktr).day, 0, 0, 0.0, out jd, out jdFrac);
-                    if ktr > 0
-                        oldjd = spwarr[ktr - 1].mjd;
-                    spwarr(ktr).mjd = str2double(jd + jdFrac - 2400000.5);
-
-
-
-
-
-
-
+                    [linearr] = sscanf( longstr, '%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %f %d %d %f %d %f %f %f %f %f');
+                    
+                    %spwarr(ktr).yr = linearr(1); 
+                    %spwarr(ktr).mon = linearr(2);
+                    %spwarr(ktr).day = linearr(3);
+                    %spwarr(ktr).brsn = linearr(4);
+                    %spwarr(ktr).nd = linearr(5);
+                    spwarr(ktr).kparr(1) = linearr(6);
+                    spwarr(ktr).kparr(2) = linearr(7);
+                    spwarr(ktr).kparr(3) = linearr(8);
+                    spwarr(ktr).kparr(4) = linearr(9);
+                    spwarr(ktr).kparr(5) = linearr(10);
+                    spwarr(ktr).kparr(6) = linearr(11);
+                    spwarr(ktr).kparr(7) = linearr(12);
+                    spwarr(ktr).kparr(8) = linearr(13);
+                    spwarr(ktr).sumkp = linearr(14);
+                    spwarr(ktr).aparr(1) = linearr(15);
+                    spwarr(ktr).aparr(2) = linearr(16);
+                    spwarr(ktr).aparr(3) = linearr(17);
+                    spwarr(ktr).aparr(4) = linearr(18);
+                    spwarr(ktr).aparr(5) = linearr(19);
+                    spwarr(ktr).aparr(6) = linearr(20);
+                    spwarr(ktr).aparr(7) = linearr(21);
+                    spwarr(ktr).aparr(8) = linearr(22);
+                    spwarr(ktr).avgap = linearr(23);
+                    %spwarr(ktr).cp = linearr(24);
+                    %spwarr(ktr).c9 = linearr(25);
+                    %spwarr(ktr).isn = linearr(26);
+                    spwarr(ktr).adjf107 = linearr(27);
+                    %spwarr(ktr).q = linearr(28);
+                    spwarr(ktr).adjctrf81 = linearr(29);
+                    spwarr(ktr).adjlstf81 = linearr(30);
+                    spwarr(ktr).obsf107 = linearr(31);
+                    spwarr(ktr).obsctrf81 = linearr(32);
+                    spwarr(ktr).obslstf81 = linearr(33);
+                    %spwarr(ktr).adjf30 = linearr(34);
+                    %spwarr(ktr).obsf30 = linearr(35);
+                    %spwarr(ktr).adjlstf30f81 = linearr(36);
+                    %spwarr(ktr).obslstf30f81 = linearr(37);
+                    [jd, jdFrac] = jday(linearr(1), linearr(2), linearr(3), 0, 0, 0.0);
+                    spwarr(ktr).mjd = jd + jdFrac - 2400000.5;
+    
                     % ---- find epoch date
                     if (ktr == 1)
                         mjdspwstart = spwarr(ktr).mjd;
                     end
                 end  % for through observed
                 
-                ktrActObs = ktr
+                ktrActObs = ktr;
             end
        
             % ---- process predicted records
@@ -138,31 +112,54 @@ function [spwarr, mjdspwstart, ktrActObs, updDate] = readspw(spwFileName);
                 longstr = fgets(infile);
                 % ---- process predicted records only
                 % 1962 01 01 37665 -0.012700  0.213000  0.0326338  0.0017230  0.064261  0.006067  0.000000  0.000000   2 
-                for i = 1: numrecsobs + 1
+                for i = 1: numrecsobs
                     longstr = fgets(infile);
-                    spwarr(ktr+i).year = str2double(longstr(1:4));
-                    spwarr(ktr+i).mon = str2double(longstr(5:3));
-                    spwarr(ktr+i).day = str2double(longstr(8:3));
-                    spwarr(ktr+i).mjd = str2double(longstr(11:6));
-                    spwarr(ktr+i).xp = str2double(longstr(17:10));
-                    spwarr(ktr+i).xerr = 0.0;
-                    spwarr(ktr+i).yp = str2double(longstr(27:10));
-                    spwarr(ktr+i).yerr = 0.0;
-                    spwarr(ktr+i).dut1 = str2double(longstr(37:11));
-                    spwarr(ktr+i).dut1err = 0.0;
-                    spwarr(ktr+i).lod = str2double(longstr(48:11));
-                    spwarr(ktr+i).ddpsi = str2double(longstr(59:10));
-                    spwarr(ktr+i).ddeps = str2double(longstr(69:10));
-                    spwarr(ktr+i).dx = str2double(longstr(79:10));
-                    spwarr(ktr+i).dy = str2double(longstr(89:10));
-                    spwarr(ktr+i).dat = str2double(longstr(99:4));
-    
+                    [linearr] = sscanf( longstr, '%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %f %d %d %f %d %f %f %f %f %f');
+                    
+                    %spwarr(ktr+i).yr = linearr(1); 
+                    %spwarr(ktr+i).mon = linearr(2);
+                    %spwarr(ktr+i).day = linearr(3);
+                    %spwarr(ktr+i).brsn = linearr(4);
+                    %spwarr(ktr+i).nd = linearr(5);
+                    spwarr(ktr+i).kparr(1) = linearr(6);
+                    spwarr(ktr+i).kparr(2) = linearr(7);
+                    spwarr(ktr+i).kparr(3) = linearr(8);
+                    spwarr(ktr+i).kparr(4) = linearr(9);
+                    spwarr(ktr+i).kparr(5) = linearr(10);
+                    spwarr(ktr+i).kparr(6) = linearr(11);
+                    spwarr(ktr+i).kparr(7) = linearr(12);
+                    spwarr(ktr+i).kparr(8) = linearr(13);
+                    spwarr(ktr+i).sumkp = linearr(14);
+                    spwarr(ktr+i).aparr(1) = linearr(15);
+                    spwarr(ktr+i).aparr(2) = linearr(16);
+                    spwarr(ktr+i).aparr(3) = linearr(17);
+                    spwarr(ktr+i).aparr(4) = linearr(18);
+                    spwarr(ktr+i).aparr(5) = linearr(19);
+                    spwarr(ktr+i).aparr(6) = linearr(20);
+                    spwarr(ktr+i).aparr(7) = linearr(21);
+                    spwarr(ktr+i).aparr(8) = linearr(22);
+                    spwarr(ktr+i).avgap = linearr(23);
+                    %spwarr(ktr+i).cp = linearr(24);
+                    %spwarr(ktr+i).c9 = linearr(25);
+                    %spwarr(ktr+i).isn = linearr(26);
+                    spwarr(ktr+i).adjf107 = linearr(27);
+                    %spwarr(ktr+i).q = linearr(28);
+                    spwarr(ktr+i).adjctrf81 = linearr(29);
+                    spwarr(ktr+i).adjlstf81 = linearr(30);
+                    spwarr(ktr+i).obsf107 = linearr(31);
+                    spwarr(ktr+i).obsctrf81 = linearr(32);
+                    spwarr(ktr+i).obslstf81 = linearr(33);
+                    %spwarr(ktr+i).adjf30 = linearr(34);
+                    %spwarr(ktr+i).obsf30 = linearr(35);
+                    %spwarr(ktr+i).adjlstf30f81 = linearr(36);
+                    %spwarr(ktr+i).obslstf30f81 = linearr(37);
+                    [jd, jdFrac] = jday(linearr(1), linearr(2), linearr(3), 0, 0, 0.0);
+                    spwarr(ktr+i).mjd = jd + jdFrac - 2400000.5;
                 end  % for through observed
                
             end
     
         end  % while through file
-
 
     end
 

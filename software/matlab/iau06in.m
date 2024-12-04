@@ -22,11 +22,11 @@
     %    iau00gs.dat - file for gmst coefficients
     %
     %  outputs       :
-    %    axs0        - real coefficients for x        rad
+    %    ax0        - real coefficients for x        rad
     %    a0xi        - integer coefficients for x
-    %    ays0        - real coefficients for y        rad
+    %    ay0        - real coefficients for y        rad
     %    a0yi        - integer coefficients for y
-    %    ass0        - real coefficients for s        rad
+    %    as0        - real coefficients for s        rad
     %    a0si        - integer coefficients for s
     %    apn         - real coefficients for nutation rad
     %    apni        - integer coefficients for nutation

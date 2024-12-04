@@ -42,8 +42,8 @@
         %    many others
         %
         %  coupling      :
+        %    iau00in     - initialize the arrays
         %    fundarg     - find the fundamental arguments
-        %    iau06xysS   - find the xys series parameters
         %
         %  references    :
         %    vallado       2022, 214, 221
@@ -51,30 +51,24 @@
         % [x,y,s,nut] = iau06xys (jdtt, ttt, ddx, ddy, interp);
         % ----------------------------------------------------------------------------
 
-        %function [x,y,s,nut] = iau06xys (jdtt, ttt, ddx, ddy, interpopt)
-        function [x,y,s,nut] = iau06xys (ttt, ddx, ddy)
+function [x, y, s, pn] = iau06xys (iau06arr, fArgs, opt1, ttt, ddx, ddy)
 
         sethelp;
 
         rad = 180.0 / pi;
 
-        [ l, l1, f, d, omega, ...
-            lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate, ...
-            ] = fundarg( ttt, '06' );
-
-        %if (interpopt ~= 'x')
-            [x, y, s] = iau06xysS(ttt, l, l1, f, d, omega, ...
-            lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
-        %else
-        %    [x, y, s] = findxysparam(jdtt, 0.0, interp, xysarr, jdxysstart);
-        %end
+        if (strcmp(opt1, 's'))
+            [x ,y, s] = iau06xysS (iau06arr, fArgs, ttt );
+        else
+            [x, y, s] = findxysparam(jdtt, 0.0, interp, xysarr, jdxysstart);
+        end
 
         % add corrections if available
         x = x + ddx;
         y = y + ddy;
 
         % ---------------- now find a
-        a = 0.5 + 0.125*(x*x + y*y); % units take on whatever x and y are
+        a = 0.5 + 0.125*(x*x + y*y);    % units take on whatever x and y are
 
         %if iauhelp == 'x'
         fprintf(1,'06xys  x  %14.12f y  %14.12f s %14.12f a %14.12f rad \n',x, y, s, a );
@@ -100,7 +94,7 @@
         nut2(1,2) =  sin(s);
         nut2(2,1) = -sin(s);
 
-        nut = nut1*nut2;
+        pn = nut1*nut2;
 
         %       the matrix appears to be orthogonal now, so the extra processing is not needed.
         %        if (x ~= 0.0) && (y ~= 0.0)

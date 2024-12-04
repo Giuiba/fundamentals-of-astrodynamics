@@ -42,7 +42,7 @@ function [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName)
         'dut1',zeros(25000), 'dut1err',zeros(25000), 'lod',zeros(25000), ...
         'ddpsi',zeros(25000), 'ddeps',zeros(25000), ...
         'dx',zeros(25000), 'dy',zeros(25000), ...
-        'year',zeros(25000), 'mon',zeros(25000), 'day',zeros(25000), 'mjd',zeros(25000), 'dat',zeros(25000));
+        'mjd',zeros(25000), 'dat',zeros(25000));
     
     updDate = '';
     infile = fopen(eopFileName, 'r');
@@ -61,24 +61,24 @@ function [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName)
                 longstr = fgets(infile);
                 % ---- process observed records only
                 % 1962 01 01 37665 -0.012700  0.213000  0.0326338  0.0017230  0.064261  0.006067  0.000000  0.000000   2 
-                for ktr = 1: numrecsobs + 1
+                for ktr = 1: numrecsobs
                     longstr = fgets(infile);
-                    eoparr(ktr).year = str2double(longstr(1:4));
-                    eoparr(ktr).mon = str2double(longstr(5:3));
-                    eoparr(ktr).day = str2double(longstr(8:3));
-                    eoparr(ktr).mjd = str2double(longstr(11:6));
-                    eoparr(ktr).xp = str2double(longstr(17:10));
+                    %eoparr(ktr).year = str2double(longstr(1:4));
+                    %eoparr(ktr).mon = str2double(longstr(5:8));
+                    %eoparr(ktr).day = str2double(longstr(8:11));
+                    eoparr(ktr).mjd = str2double(longstr(11:17));
+                    eoparr(ktr).xp = str2double(longstr(17:27));
                     eoparr(ktr).xerr = 0.0;
-                    eoparr(ktr).yp = str2double(longstr(27:10));
+                    eoparr(ktr).yp = str2double(longstr(27:37));
                     eoparr(ktr).yerr = 0.0;
-                    eoparr(ktr).dut1 = str2double(longstr(37:11));
+                    eoparr(ktr).dut1 = str2double(longstr(37:48));
                     eoparr(ktr).dut1err = 0.0;
-                    eoparr(ktr).lod = str2double(longstr(48:11));
-                    eoparr(ktr).ddpsi = str2double(longstr(59:10));
-                    eoparr(ktr).ddeps = str2double(longstr(69:10));
-                    eoparr(ktr).dx = str2double(longstr(79:10));
-                    eoparr(ktr).dy = str2double(longstr(89:10));
-                    eoparr(ktr).dat = str2double(longstr(99:4));
+                    eoparr(ktr).lod = str2double(longstr(48:59));
+                    eoparr(ktr).ddpsi = str2double(longstr(59:69));
+                    eoparr(ktr).ddeps = str2double(longstr(69:79));
+                    eoparr(ktr).dx = str2double(longstr(79:89));
+                    eoparr(ktr).dy = str2double(longstr(89:99));
+                    eoparr(ktr).dat = str2double(longstr(99:103));
     
                     % ---- find epoch date
                     if (ktr == 1)
@@ -86,7 +86,7 @@ function [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName)
                     end
                 end  % for through observed
                 
-                ktrActObs = ktr
+                ktrActObs = ktr;
             end
        
             % ---- process predicted records
@@ -95,25 +95,25 @@ function [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName)
                 longstr = fgets(infile);
                 % ---- process predicted records only
                 % 1962 01 01 37665 -0.012700  0.213000  0.0326338  0.0017230  0.064261  0.006067  0.000000  0.000000   2 
-                for i = 1: numrecsobs + 1
+                for i = 1: numrecsobs
                     longstr = fgets(infile);
-                    eoparr(ktr+i).year = str2double(longstr(1:4));
-                    eoparr(ktr+i).mon = str2double(longstr(5:3));
-                    eoparr(ktr+i).day = str2double(longstr(8:3));
-                    eoparr(ktr+i).mjd = str2double(longstr(11:6));
-                    eoparr(ktr+i).xp = str2double(longstr(17:10));
+                    %eoparr(ktr+i).year = str2double(longstr(1:4));
+                    %eoparr(ktr+i).mon = str2double(longstr(5:8));
+                    %eoparr(ktr+i).day = str2double(longstr(8:11));
+                    eoparr(ktr+i).mjd = str2double(longstr(11:17));
+                    eoparr(ktr+i).xp = str2double(longstr(17:27));
                     eoparr(ktr+i).xerr = 0.0;
-                    eoparr(ktr+i).yp = str2double(longstr(27:10));
+                    eoparr(ktr+i).yp = str2double(longstr(27:37));
                     eoparr(ktr+i).yerr = 0.0;
-                    eoparr(ktr+i).dut1 = str2double(longstr(37:11));
+                    eoparr(ktr+i).dut1 = str2double(longstr(37:48));
                     eoparr(ktr+i).dut1err = 0.0;
-                    eoparr(ktr+i).lod = str2double(longstr(48:11));
-                    eoparr(ktr+i).ddpsi = str2double(longstr(59:10));
-                    eoparr(ktr+i).ddeps = str2double(longstr(69:10));
-                    eoparr(ktr+i).dx = str2double(longstr(79:10));
-                    eoparr(ktr+i).dy = str2double(longstr(89:10));
-                    eoparr(ktr+i).dat = str2double(longstr(99:4));
-    
+                    eoparr(ktr+i).lod = str2double(longstr(48:59));
+                    eoparr(ktr+i).ddpsi = str2double(longstr(59:69));
+                    eoparr(ktr+i).ddeps = str2double(longstr(69:79));
+                    eoparr(ktr+i).dx = str2double(longstr(79:89));
+                    eoparr(ktr+i).dy = str2double(longstr(89:99));
+                    eoparr(ktr+i).dat = str2double(longstr(99:103));
+        
                 end  % for through observed
                
             end

@@ -16,7 +16,7 @@
 %    xp          - polar motion coefficient       rad
 %    yp          - polar motion coefficient       rad
 %    ttt         - julian centuries of tt (00 theory only)
-%    opt         - method option                  '01', '02', '80'
+%    opt         - method option                  '06', '80'
 %
 %  outputs       :
 %    pm          - transformation matrix for ecef - pef

@@ -34,7 +34,7 @@
 % [rpef,vpef,apef] = ecef2pef  ( recef,vecef,aecef, opt, xp, yp, ttt )
 % ----------------------------------------------------------------------------
 
-function [rpef,vpef,apef] = ecef2pef  ( recef, vecef, aecef, opt, xp, yp, ttt )
+function [rpef,vpef,apef] = ecef2pef  ( recef, vecef, aecef, opt, ttt, xp, yp )
 
         [pm] = polarm(xp, yp, ttt, opt);
  

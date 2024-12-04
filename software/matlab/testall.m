@@ -932,8 +932,8 @@ function testiau80in()
     fprintf(1,'EOP tests  mfme    dut1  dat    lod           xp                      yp               ddpsi                   ddeps               ddx                 ddy\n');
     for i = 0: 90
 
-        [jd, jdfrac] = jday(year, mon, day, hr + i, minute, second);
-        [dut1, dat, lod, xp, yp, ddpsi,ddeps, ddx, ddy] = findeopparam(jd, jdFrac, 's', eopdata, mjdeopstart + 2400000.5);
+        [jd, jdFrac] = jday(year, mon, day, hr + i, minute, second);
+        [dut1, dat, lod, xp, yp, ddpsi,ddeps, ddx, ddy] = findeopparam(jd, jdFrac, 's', eoparr, mjdeopstart + 2400000.5);
         [y, m, d, h, mm, ss] = invjday(jd, jdFrac);
         fprintf(1,' %i  %i  %i  %i  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f \n', ...
             y, m, d, h * 60 + mm, dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
@@ -946,7 +946,7 @@ function testiau80in()
 
         [jd, jdFrac] = jday(year, mon, day, hr + i, minute, second);
         % adj obs, last ctr, act con
-        [f107, f107bar, ap, avgap, aparr, kp, sumkp, kparr] = findspwparam(jd, jdFrac, 's', 'a', 'l', 'a', EOPSPWLibr.spwdata, mjdspwstart + 2400000.5);
+        [f107, f107bar, ap, avgap, aparr, kp, sumkp, kparr] = findspwparam(jd, jdFrac, 's', spwdata, mjdspwstart + 2400000.5);
         [y, m, d, h, mm, ss] = invjday(jd, jdFrac);
         fprintf(1,'%i  %i  %i  %i  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f \n', ...
             y, m, d, h * 60 + mm, f107, f107bar, ap, avgap, kp, sumkp, aparr(1), aparr(2), aparr(3));
@@ -1019,7 +1019,7 @@ function testnutation()
 
     [fArgs] = fundarg(ttt, opt);
 
-    [deltapsi, deltaeps, trueeps, meaneps, nut] = nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs);
+    [deltapsi, deltaeps, trueeps, meaneps, nut] = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs);
 
     fprintf(1,'nut = %11.7f  %11.7f  %11.7f \n', nut(1, 1), nut(1, 2), nut(1, 3));
     fprintf(1,'nut = %11.7f  %11.7f  %11.7f \n', nut(2, 1), nut(2, 2), nut(2, 3));
@@ -1070,7 +1070,7 @@ function testsidereal()
     ddeps = -0.003875;
 
     [fArgs] = fundarg(ttt, opt);
-    [deltapsi, deltaeps, trueeps, meaneps, nut] = nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs);
+    [deltapsi, deltaeps, trueeps, meaneps, nut] = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs);
     st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, opt);
     fprintf(1,'st = %11.7f  %11.7f  %11.7f \n', st(1, 1), st(1, 2), st(1, 3));
     fprintf(1,'st = %11.7f  %11.7f  %11.7f \n', st(2, 1), st(2, 2), st(2, 3));
@@ -1079,7 +1079,7 @@ function testsidereal()
 
     opt = '06';
     [fArgs] = fundarg(ttt, opt);
-    [deltapsi, deltaeps, trueeps, meaneps, nut] = nutation(ttt, ddpsi, ddeps, iau06arr, opt, fArgs);
+    [deltapsi, deltaeps, trueeps, meaneps, nut] = nutation(ttt, ddpsi, ddeps, iau06arr, fArgs);
     st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, opt);
     fprintf(1,'st00 = %11.7f  %11.7f  %11.7f \n', st(1, 1), st(1, 2), st(1, 3));
     fprintf(1,'st00 = %11.7f  %11.7f  %11.7f \n', st(2, 1), st(2, 2), st(2, 3));
@@ -1337,8 +1337,7 @@ function testeci_ecef()
     for (i = 0; i < 14; i++)   % 14500
 
         [jd, jdFrac] = jday(year, mon, day + i, hr, minute, second);
-        %EOPSPWLibr.findeopparam(jd, jdFrac, 's', EOPSPWLibr.eopdata, mjdeopstart + 2400000.5, out dut1, out dat,
-        %   out lod, out xp, out yp, out ddpsi, out ddeps, out ddx, out ddy);
+        [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd, jdFrac, 's', eoparr, mjdeopstart + 2400000.5);
         jdtt = jd;
         jdftt = jdFrac + (dat + 32.184) / 86400.0;
         ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
@@ -1415,6 +1414,7 @@ function testtod2ecef()
     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
     [fArgs] = fundarg(ttt, '80');
+    [fArgs06] = fundarg(ttt, '06');
 
     % now read it in
     double jdfxysstart;
@@ -1425,15 +1425,15 @@ function testtod2ecef()
     fprintf(1,'ITRF start    IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recef(1), recef(2), recef(3), vecef(1), vecef(2), vecef(3));
 
     % PEF
-    [rpef, vpef, apef] = ecef2pef ( recef,vecef,aecef, '80', ttt, xp, yp );
-    fprintf(1,'GCRF          IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
+    [rpef, vpef, apef] = ecef2pef ( recef, vecef, aecef, '80', ttt, xp, yp );
+    fprintf(1,'PEF           IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
 
     [recii, vecii, aecii] = pef2ecef(rpef, vpef, apef, '80', ttt, xp, yp);
     fprintf(1,'ITRF  rev     IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    [rtemp, vtemp, atemp] = ecef2pef(recef, vecef, aecef, '06', ttt, xp, yp);
+    [rtemp, vtemp, atemp] = ecef2pef06(recef, vecef, aecef, '06', ttt, xp, yp);
     fprintf(1,'TIRS          IAU-2006 CIO %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtemp(1), rtemp(2), rtemp(3), vtemp(1), vtemp(2), vtemp(3));
-    [recefi, vecefi, aecefi] = pef2ecef(rtemp, vtemp, atemp, '06', ttt, xp, yp);
+    [recefi, vecefi, aecefi] = pef2ecef06(rtemp, vtemp, atemp, '06', ttt, xp, yp);
     fprintf(1,'ITRF rev      IAU-2006 CIO %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % TOD
@@ -1444,9 +1444,9 @@ function testtod2ecef()
     [recefi,vecefi,aecefi] = tod2ecef ( rtod, vtod, atod, iau80arr, fArgs, jdut1, ttt, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'ITRFi         IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
-    [rtemp,vtemp,atemp] = ecef2tod(recef, vecef, aecef,iau80arr, fArgs, ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
+    [rtemp,vtemp,atemp] = ecef2tod06(recef, vecef, aecef,iau06arr, fArgs06, ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
     fprintf(1,'CIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtemp(1), rtemp(2), rtemp(3), vtemp(1), vtemp(2), vtemp(3));
-    [recefi,vecefi,aecefi] = tod2ecef  ( rtod,vtod,atod, iau80arr, fArgs, ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
+    [recefi,vecefi,aecefi] = tod2ecef06  ( rtod,vtod,atod, iau06arr, fArgs06, ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
     fprintf(1,'ITRF rev      IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % MOD
@@ -1468,9 +1468,9 @@ function testtod2ecef()
     [recefi, vecefi, aecefi] = eci2ecef(reci, veci, aeci, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'ITRF rev      IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
-    [recii vecii, aecii] = ecef2eci(recef, vecef, aecef,   iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp,ddx, ddy);
+    [recii vecii, aecii] = ecef2eci06(recef, vecef, aecef,   iau06arr, fArgs06,   ttt, jdut1, lod, xp, yp,ddx, ddy, 'c');
     fprintf(1,'GCRF          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
-    [recefi,vecefi,aecefi] = eci2ecefiau06  ( recii,vecii,aecii,ttt,jdut1,lod,xp,yp,option, ddx, ddy );    
+    [recefi,vecefi,aecefi] = eci2ecef06  ( recii,vecii,aecii,iau06arr, fArgs06,ttt,jdut1,lod,xp,yp, ddx, ddy, 'c' );    
     fprintf(1,'ITRF rev      IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % sofa
@@ -1480,8 +1480,7 @@ function testtod2ecef()
 
 
     % now reverses from eci
-    fprintf(1,'GCRF wco STARTIAU-76/FK5   ' + reci(1), reci(2), reci(3)
-    + veci(1), veci(2), veci(3));
+    fprintf(1,'GCRF wco STARTIAU-76/FK5   ' + reci(1), reci(2), reci(3)  + veci(1), veci(2), veci(3));
 
     % PEF
     [rpef, vpef, apef] = eci2pef(reci, veci, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
@@ -1679,8 +1678,7 @@ function testrv_elatlon()
     order =  106;
     terms = 2;
     % , tcg, jdtcg,jdtcgfrac, tcb, jdtcb,jdtcbfrac
-    [ ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, ...
-        tdb, ttdb, jdtdb, jdtdbfrac ] ...
+    [ ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac ] ...
         = convtime ( year, mon, day, hr, min, sec, timezone, dut1, dat );
     fprintf(1,'ut1 %8.6f tut1 %16.12f jdut1 %18.11f\n',ut1,tut1,jdut1 );
     fprintf(1,'utc %8.6f\n',utc );
@@ -2779,9 +2777,8 @@ function testrv2coe()
                             [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName);
     
                             % now read it in
-                            jdxysstart, jdfxysstart;
-                            AstroLib.xysdataClass[] xysarr = xysarr;
-    [jdxysstart, jdfxysstart, xys06arr] = initxys(infilename);
+                            infilename = 'D:\Codes\LIBRARY\DataLib\';
+                            [jdxysstart, jdfxysstart, xys06arr] = readxys(infilename);
     
                             % gooding tests cases from Gooding paper (1997 CMDA)
                             los1;
@@ -3043,8 +3040,7 @@ function testrv2coe()
                                 %jd2 = jd[idx2] + jdf[idx2];
                                 %jd3 = jd[idx3] + jdf[idx3];
                                 site(latgd[idx1], lon[idx1], alt[idx1], out rsecef1, out vsecef1);
-                                EOPSPWLibr.findeopparam(jd[idx1], jdf[idx1], 's', EOPSPWLibr.eopdata, mjdeopstart + 2400000.5,
-                                out dut1, out dat, out lod, out xp, out yp, out ddpsi, out ddeps, out ddx, out ddy);
+ [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd[idx1], jdFrac[idx1], 's', eoparr, mjdeopstart + 2400000.5);                                out dut1, out dat, out lod, out xp, out yp, out ddpsi, out ddeps, out ddx, out ddy);
                                 %convtime(year[idx1], mon[idx1], day[idx1], hr[idx1], minute[idx1], second[idx1], 0, dut1, dat,
                                 %    out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
                                 %    out tt, out ttt, out jdtt, out jdttfrac, out tdb, out ttdb, out jdtdb, out jdtdbfrac);
@@ -3059,9 +3055,8 @@ function testrv2coe()
                                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
     
                                 site(latgd[idx2], lon[idx2], alt[idx2], out rsecef2, out vsecef2);
-                                EOPSPWLibr.findeopparam(jd[idx2], jdf[idx2], 's', EOPSPWLibr.eopdata, mjdeopstart + 2400000.5,
-                                out dut1, out dat, out lod, out xp, out yp, out ddpsi, out ddeps, out ddx, out ddy);
-                                %convtime(year[idx2], mon[idx2], day[idx2], hr[idx2], minute[idx2], second[idx2], 0, dut1, dat,
+ [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd[idx2], jdFrac, 's', eoparr, mjdeopstart + 2400000.5);
+                                 %convtime(year[idx2], mon[idx2], day[idx2], hr[idx2], minute[idx2], second[idx2], 0, dut1, dat,
                                 %    out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
                                 %    out tt, out ttt, out jdtt, out jdttfrac, out tdb, out ttdb, out jdtdb, out jdtdbfrac);
                                 jdtt = jd[idx2];
@@ -3077,8 +3072,7 @@ function testrv2coe()
     
     
                                 site(latgd[idx3], lon[idx3], alt[idx3], out rsecef3, out vsecef3);
-                                EOPSPWLibr.findeopparam(jd[idx3], jdf[idx3], 's', EOPSPWLibr.eopdata, mjdeopstart + 2400000.5,
-                                out dut1, out dat, out lod, out xp, out yp, out ddpsi, out ddeps, out ddx, out ddy);
+ [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd[idx3], jdFrac[idx3], 's', eoparr, mjdeopstart + 2400000.5);
                                 jdtt = jd[idx3];
                                 jdftt = jdf[idx3] + (dat + 32.184) / 86400.0;
                                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
