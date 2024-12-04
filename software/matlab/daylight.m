@@ -36,7 +36,7 @@
 
 function [startday,stopday,jdstartdst,jdstopdst] = daylight(year,lon);
 
-        rad2deg = pi/180.0;
+        rad2deg = 180.0/pi;
 
         % ------------------------  implementation   ------------------
         zone = floor(lon*rad2deg/15.0);
