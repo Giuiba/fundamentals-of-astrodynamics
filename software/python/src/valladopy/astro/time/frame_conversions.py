@@ -25,7 +25,7 @@ def calc_orbit_effects(
     yp: float,
     ddpsi: float,
     ddeps: float,
-    opt: str = "80",
+    opt: Literal["50", "80", "06"] = "80",
     eqeterms: bool = True,
     use_iau80: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -40,8 +40,8 @@ def calc_orbit_effects(
         yp (float): Polar motion coefficient in radians
         ddpsi (float): Delta psi correction to GCRF in radians
         ddeps (float): Delta epsilon correction to GCRF in radians
-        opt (str, optional): Option for precession/nutation model ('50', '80', or '06')
-                             (default '80')
+        opt (Literal["50", "80", "06"], optional): Option for precession/nutation model
+                                                   (default "80")
         eqeterms (bool, optional): Add terms for ast calculation (default True)
         use_iau80 (bool, optional): Use IAU 1980 model for precession/nutation
                                     (default True)
@@ -92,8 +92,8 @@ def compute_iau06_matrices(
         xp (float): Polar motion coefficient in radians
         yp (float): Polar motion coefficient in radians
         option (Literal["06a", "06b", "06c"]): Option for precession/nutation model
-        ddx (float, optional): EOP correction for x in radians (defaults to 0.0)
-        ddy (float, optional): EOP correction for y in radians (defaults to 0.0)
+        ddx (float, optional): EOP correction for x in radians (default 0.0)
+        ddy (float, optional): EOP correction for y in radians (default 0.0)
 
     Returns:
         tuple: (pnb, st, pm, omegaearth)
@@ -215,8 +215,8 @@ def eci2ecefiau06(
         xp (float): Polar motion coefficient in radians
         yp (float): Polar motion coefficient in radians
         option (Literal["06a", "06b", "06c"]): Option for precession/nutation model
-        ddx (float): EOP correction for x in radians
-        ddy (float): EOP correction for y in radians
+        ddx (float, optional): EOP correction for x in radians (default 0.0)
+        ddy (float, optional): EOP correction for y in radians (default 0.0)
 
     Returns:
         tuple: (recef, vecef, aecef)
@@ -336,8 +336,8 @@ def ecef2eciiau06(
         xp (float): Polar motion coefficient in radians
         yp (float): Polar motion coefficient in radians
         option (Literal["06a", "06b", "06c"]): Option for precession/nutation model
-        ddx (float): EOP correction for x in radians
-        ddy (float): EOP correction for y in radians
+        ddx (float, optional): EOP correction for x in radians (default 0.0)
+        ddy (float, optional): EOP correction for y in radians (default 0.0)
 
     Returns:
         tuple: (reci, veci, aeci)
@@ -383,7 +383,7 @@ def eci2pef(
     lod: float,
     ddpsi: float,
     ddeps: float,
-    opt: str,
+    opt: Literal["80", "06a", "06b", "06c"],
     ddx: float = 0.0,
     ddy: float = 0.0,
     eqeterms: bool = True,
@@ -403,11 +403,9 @@ def eci2pef(
         lod (float): Excess length of day in seconds
         ddpsi (float): Nutation correction for delta psi in radians
         ddeps (float): Nutation correction for delta epsilon in radians
-        opt (str): Option for precession/nutation model ('80', '06a', '06b', or '06c')
-        ddx (float, optional): EOP correction for x in radians
-                               (required for IAU 2006 models)
-        ddy (float, optional): EOP correction for y in radians
-                               (required for IAU 2006 models)
+        opt (Literal["80", "06a", "06b", "06c"]): Option for precession/nutation model
+        ddx (float, optional): EOP correction for x in radians (default 0.0)
+        ddy (float, optional): EOP correction for y in radians (default 0.0)
         eqeterms (bool): Add terms for ast calculation (default True)
 
     Returns:
@@ -528,7 +526,7 @@ def eci2tod(
     ttt: float,
     ddpsi: float,
     ddeps: float,
-    opt: str,
+    opt: Literal["80", "06a", "06b", "06c"],
     ddx: float = 0.0,
     ddy: float = 0.0,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -545,9 +543,9 @@ def eci2tod(
         ttt (float): Julian centuries of TT
         ddpsi (float): Delta psi correction to GCRF in radians
         ddeps (float): Delta epsilon correction to GCRF in radians
-        opt (str): Option for precession/nutation model ('80', '06a', '06b', or '06c')
-        ddx (float, optional): EOP correction for x in radians
-        ddy (float, optional): EOP correction for y in radians
+        opt (Literal["80", "06a", "06b", "06c"]): Option for precession/nutation model
+        ddx (float, optional): EOP correction for x in radians (default 0.0)
+        ddy (float, optional): EOP correction for y in radians (default 0.0)
 
     Returns:
         tuple: (rtod, vtod, atod)
@@ -840,7 +838,7 @@ def ecef2pef(
     xp: float,
     yp: float,
     ttt: float,
-    opt: str,
+    opt: Literal["80", "06"],
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Transforms a vector from the Earth-fixed (ITRF) frame to the pseudo
     Earth-fixed (PEF) frame.
@@ -855,7 +853,7 @@ def ecef2pef(
         xp (float): Polar motion coefficient in radians
         yp (float): Polar motion coefficient in radians
         ttt (float): Julian centuries of TT
-        opt (str): Polar motion model option ('80' or '06')
+        opt (Literal["80", "06"]): Polar motion model option ('80' or '06')
 
     Returns:
         tuple: (rpef, vpef, apef)
@@ -884,7 +882,7 @@ def pef2ecef(
     xp: float,
     yp: float,
     ttt: float,
-    opt: str,
+    opt: Literal["80", "06"],
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Transforms a vector from the pseudo Earth-fixed (PEF) frame to the
     Earth-fixed (ITRF) frame.
@@ -899,7 +897,7 @@ def pef2ecef(
         xp (float): Polar motion coefficient in radians
         yp (float): Polar motion coefficient in radians
         ttt (float): Julian centuries of TT
-        opt (str): Polar motion model option ('80' or '06')
+        opt (Literal["80", "06"]): Polar motion model option ('80' or '06')
 
     Returns:
         tuple: (recef, vecef, aecef)
