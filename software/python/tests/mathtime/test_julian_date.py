@@ -43,6 +43,24 @@ def test_day_of_week():
     assert dow == 4
 
 
+@pytest.mark.parametrize(
+    "year, exp_startday, exp_stopday, exp_jdstartdst, exp_jdstopdst",
+    [
+        (2000, 2, 29, 2451636.7916666665, 2451846.7916666665),  # before DST rule change
+        (2024, 10, 3, 2460379.7916666665, 2460617.7916666665),  # after DST rule change
+    ],
+)
+def test_daylight_savings(
+    year, exp_startday, exp_stopday, exp_jdstartdst, exp_jdstopdst
+):
+    lon = np.radians(-75)
+    startday, stopday, jdstartdst, jdstopdst = julian_date.daylight_savings(year, lon)
+    assert startday == exp_startday
+    assert stopday == exp_stopday
+    assert np.isclose(jdstartdst, exp_jdstartdst, rtol=DEFAULT_TOL)
+    assert np.isclose(jdstopdst, exp_jdstopdst, rtol=DEFAULT_TOL)
+
+
 def test_convtime():
     (
         ut1,

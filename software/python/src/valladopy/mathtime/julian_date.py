@@ -6,6 +6,8 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
+import calendar
+import logging
 from enum import Enum
 from typing import Tuple
 
@@ -16,10 +18,16 @@ from .utils import hms2sec, sec2hms
 from .. import constants as const
 
 
+# Initialize the logger
+logger = logging.getLogger(__name__)
+
+
 # Constants
 JULIAN_DATE_REFERENCE_YEAR = 1900  # Reference year for the Julian Date
 JULIAN_DATE_1900 = 2415019.5  # Julian date for January 0, 1900
 JULIAN_DATE_EPOCH_OFFSET = 4716  # Julian date offset from the Gregorian calendar
+DST_RULE_CHANGE_YEAR = 2007  # Year when DST rules changed in the US
+DST_CHANGE_UTC_HOUR = -10.0  # Hour when DST changes in UTC (02:00)
 
 
 class CalendarType(Enum):
@@ -213,6 +221,103 @@ def day_of_week(jd: float) -> int:
     return ((jd + 1) % 7) + 1
 
 
+def find_dst_date(year, month, target_week, weekday):
+    """Find the nth occurrence or the last occurrence of a specific weekday in a given
+    month.
+
+    Args:
+        year (int): Year of interest
+        month (int): Month of interest
+        target_week (int): Week index (1-based for nth week, -1 for last week)
+        weekday (int): Day of the week (0=Monday, 6=Sunday)
+
+    Returns:
+        int: Day of the month for the specified weekday and week
+    """
+    weeks = calendar.monthcalendar(year, month)
+    if target_week == -1:  # last occurrence
+        for week in reversed(weeks):
+            if week[weekday] != 0:  # non-zero means the day exists
+                return week[weekday]
+    else:  # nth occurrence
+        count = 0
+        for week in weeks:
+            if week[weekday] != 0:  # non-zero means the day exists
+                count += 1
+                if count == target_week:
+                    return week[weekday]
+    return None
+
+
+def daylight_savings(year: int, lon: float) -> tuple[int, int, float, float]:
+    """Find the start and stop dates for daylight savings time (DST) in a given year.
+
+    References:
+        Vallado: 2007, p. 188
+
+    This function uses U.S.-specific DST rules:
+        - Before 2007: DST starts on the first Sunday of April and ends on the last
+          Sunday of October.
+        - From 2007 onward: DST starts on the second Sunday of March and ends on the
+          first Sunday of November.
+
+    Args:
+        year (int): The year (1900 .. 2100)
+        lon (float): Longitude of the site (WEST is negative) in radians
+
+    Returns:
+        tuple: (startday, stopday, jdstartdst, jdstopdst)
+            startday (int): Day in March when DST starts
+            stopday (int): Day in November when DST ends
+            jdstartdst (float): Julian date of DST start
+            jdstopdst (float): Julian date of DST end
+    """
+    # Check if the longitude corresponds to a U.S. time zone
+    lon_deg = np.degrees(lon)
+    if lon_deg < -125 or lon_deg > -66:
+        logger.warning(
+            "Longitude does not correspond to a U.S. time zone. DST dates may not align"
+            "with local transitions."
+        )
+
+    # Determine the site zone (0.0 gives Greenwich time)
+    zone = int(lon_deg / const.DEG2HR)
+    if zone > 0:
+        zone -= const.DAY2HR
+
+    # Find the start and stop days for DST
+    if year < DST_RULE_CHANGE_YEAR:
+        # Pre-2007: DST starts 1st Sunday in April, ends last Sunday in October
+        startday = find_dst_date(year, 4, 1, calendar.SUNDAY)
+        stopday = find_dst_date(year, 10, -1, calendar.SUNDAY)
+    else:
+        # 2007 and later: DST starts 2nd Sunday in March, ends 1st Sunday in November
+        startday = find_dst_date(year, 3, 2, calendar.SUNDAY)
+        stopday = find_dst_date(year, 11, 1, calendar.SUNDAY)
+
+    # Check for invalid dates
+    if startday is None or stopday is None:
+        logger.warning("Invalid DST dates. Using default values.")
+        startday = 1 if year < DST_RULE_CHANGE_YEAR else 8
+        stopday = 31
+
+    # Julian date for DST start
+    jdstartdst, jdstartdst_frac = jday(
+        year, 3 if year >= DST_RULE_CHANGE_YEAR else 4, startday, 12, 0, 0.0
+    )
+    jdstartdst += jdstartdst_frac
+    jdstartdst += (DST_CHANGE_UTC_HOUR - zone) / const.DAY2HR
+
+    # Julian date for DST end
+    jdstopdst, jdstopdst_frac = jday(
+        year, 11 if year >= DST_RULE_CHANGE_YEAR else 10, stopday, 12, 0, 0.0
+    )
+    jdstopdst += jdstopdst_frac
+    jdstopdst += (DST_CHANGE_UTC_HOUR - zone) / const.DAY2HR
+
+    return startday, stopday, jdstartdst, jdstopdst
+
+
 def convtime(
     year: int,
     month: int,
@@ -285,7 +390,7 @@ def convtime(
     ut1 = utc + dut1
     hrtemp, mintemp, sectemp = sec2hms(ut1)
     jdut1, jdut1frac = jday(year, month, day, hrtemp, mintemp, sectemp)
-    tut1 = (jdut1 + jdut1frac - 2451545.0) / 36525.0
+    tut1 = (jdut1 + jdut1frac - const.J2000) / const.CENT2DAY
 
     # TAI
     tai = utc + dat
@@ -294,7 +399,7 @@ def convtime(
     tt = tai + 32.184  # seconds
     hrtemp, mintemp, sectemp = sec2hms(tt)
     jdtt, jdttfrac = jday(year, month, day, hrtemp, mintemp, sectemp)
-    ttt = (jdtt + jdttfrac - 2451545.0) / 36525.0
+    ttt = (jdtt + jdttfrac - const.J2000) / const.CENT2DAY
 
     # TDB
     tdb = (
@@ -309,7 +414,7 @@ def convtime(
     )
     hrtemp, mintemp, sectemp = sec2hms(tdb)
     jdtdb, jdtdbfrac = jday(year, month, day, hrtemp, mintemp, sectemp)
-    ttdb = (jdtdb + jdtdbfrac - 2451545.0) / 36525.0
+    ttdb = (jdtdb + jdtdbfrac - const.J2000) / const.CENT2DAY
 
     return (
         ut1,
