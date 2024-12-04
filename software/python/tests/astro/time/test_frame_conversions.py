@@ -74,7 +74,7 @@ def rva_teme():
 def t_inputs():
     # Time inputs
     ttt = 0.042623631888994  # Julian centuries of TT
-    jdut1 = 2.4531015e06  # Julian date of UT1
+    jdut1 = 2453101.5  # Julian date of UT1
     lod = 0.0015563  # excess length of day, sec
     return ttt, jdut1, lod
 
@@ -115,6 +115,53 @@ def test_eci2ecef(rva_ecef, rva_eci, t_inputs, orbit_effects_inputs):
         [0.0002936830002159169, 0.0031151668034451073, 0.003000148416052949]
     )
     assert custom_allclose(aecef, aecef_out)
+
+
+@pytest.mark.parametrize(
+    "opt, recef_exp, vecef_exp, aecef_exp",
+    [
+        (
+            "06a",
+            [-1033.4777855285595, 7901.295480330733, 6380.35660077374],
+            [-3.225637084574707, -2.872450806210915, 5.531924452858275],
+            [0.00029368363068474384, 0.003115166741823036, 0.0030001489540957336],
+        ),
+        (
+            "06b",
+            [-1033.477797432571, 7901.295481366386, 6380.356597563021],
+            [-3.2256370948206516, -2.872450804444807, 5.5319244462434085],
+            [0.0002936836252815092, 0.003115166743809768, 0.003000148955013103],
+        ),
+        (
+            "06c",
+            [-1033.4777926981328, 7901.2954778307585, 6380.356602708344],
+            [-3.2256370909735677, -2.872450807855536, 5.531924447430987],
+            [0.0002936836270354708, 0.003115166741567394, 0.003000148955922519],
+        ),
+    ],
+)
+def test_eci2ecefiau06(
+    rva_eci,
+    t_inputs,
+    orbit_effects_inputs,
+    eop_corrections,
+    opt,
+    recef_exp,
+    vecef_exp,
+    aecef_exp,
+):
+    # Extract inputs
+    xp, yp, *_ = orbit_effects_inputs
+
+    # Call the function with test inputs
+    recef_out, vecef_out, aecef_out = fc.eci2ecefiau06(
+        *rva_eci, *t_inputs, xp, yp, opt, *eop_corrections
+    )
+
+    # Check if the output vectors are close to the expected values
+    assert custom_allclose(recef_exp, recef_out)
+    assert custom_allclose(vecef_exp, vecef_out)
+    assert custom_allclose(aecef_exp, aecef_out)
 
 
 def test_ecef2eci(rva_ecef, rva_eci, t_inputs, orbit_effects_inputs):
