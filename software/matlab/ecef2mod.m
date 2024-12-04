@@ -46,15 +46,15 @@
 %  references    :
 %    vallado       2004, 219-228
 %
-% [rmod,vmod,amod] = ecef2mod (recef,vecef,aecef,ttt,jdut1,lod,xp,yp,eqeterms,ddpsi,ddeps )
+%  [rmod, vmod, amod] = ecef2mod( recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 % ----------------------------------------------------------------------------
 
-function [rmod,vmod,amod] = ecef2mod  ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,eqeterms,ddpsi,ddeps )
+function [rmod, vmod, amod] = ecef2mod( recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 constastro;
         % ---- find matrices
-        [deltapsi,trueeps,meaneps,omega,nut] = nutation(ttt,ddpsi,ddeps);
+        [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-        [st,stdot] = sidereal(jdut1,deltapsi,meaneps,omega,lod,eqeterms );
+        [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
 
         [pm] = polarm(xp,yp,ttt,'80');
 
@@ -65,13 +65,13 @@ constastro;
 %trueeps-meaneps
 %deltapsi
 %nut
-        rpef = pm*recef;
+        rpef = pm*recef';
         rmod = nut*st*rpef;
 
-        vpef = pm*vecef;
+        vpef = pm*vecef';
         vmod = nut*st*(vpef + cross(omegaearth,rpef));
 
         temp = cross(omegaearth,rpef);
-        amod = nut*st*( pm*aecef + cross(omegaearth,temp) ...
+        amod = nut*st*( pm*aecef' + cross(omegaearth,temp) ...
                + 2.0*cross(omegaearth,vpef) );
 

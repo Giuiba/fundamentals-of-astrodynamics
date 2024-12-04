@@ -39,14 +39,12 @@
 %  references    :
 %    vallado       2013, 224-226
 %
-% [deltapsi, trueeps, meaneps, omega,nut] = nutation  (ttt, ddpsi, ddeps );
+% [deltapsi, trueeps, meaneps, nut] = nutation (ttt, ddpsi, ddeps, iau80arr, fArgs);
 % ----------------------------------------------------------------------------
 
-function [deltapsi, trueeps, meaneps, omega, nut] = nutation  (ttt, ddpsi, ddeps);
+function [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs)
 
         deg2rad = pi/180.0;
-
-        [iar80,rar80] = iau80in;  % coeff in deg
 
         % ---- determine coefficients for iau 1980 nutation theory ----
         ttt2= ttt*ttt;
@@ -56,18 +54,13 @@ function [deltapsi, trueeps, meaneps, omega, nut] = nutation  (ttt, ddpsi, ddeps
         meaneps = rem( meaneps/3600.0, 360.0 );
         meaneps = meaneps * deg2rad;
 
-        [ l, l1, f, d, omega, ...
-          lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate ...
-        ] = fundarg( ttt, '80' );
-%fprintf(1,'nut del arg %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  \n',l*180/pi,l1*180/pi,f*180/pi,d*180/pi,omega*180/pi );
-
         deltapsi= 0.0;
         deltaeps= 0.0;
-        for i= 106:-1: 1
-            tempval= iar80(i,1)*l + iar80(i,2)*l1 + iar80(i,3)*f + ...
-                     iar80(i,4)*d + iar80(i,5)*omega;
-            deltapsi= deltapsi + (rar80(i,1)+rar80(i,2)*ttt) * sin( tempval );
-            deltaeps= deltaeps + (rar80(i,3)+rar80(i,4)*ttt) * cos( tempval );
+         for ii= 106:-1: 1
+            tempval = iau80arr.iar80(ii, 1) * fArgs(1) + iau80arr.iar80(ii, 2) * fArgs(2) + iau80arr.iar80(ii, 3) * fArgs(3) + ...
+                      iau80arr.iar80(ii, 4) * fArgs(4) + iau80arr.iar80(ii, 5) * fArgs(5);
+            deltapsi = deltapsi + (iau80arr.rar80(ii, 1) + iau80arr.rar80(ii, 2) * ttt) * sin(tempval);
+            deltaeps = deltaeps + (iau80arr.rar80(ii, 3) + iau80arr.rar80(ii, 4) * ttt) * cos(tempval);
         end
 
         % --------------- find nutation parameters --------------------

@@ -30,13 +30,11 @@
 %    vallado       vallado       2022, 210-212, 226
 %
 % [ l, l1, f, d, omega, ...
-%   lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate ...
-% ] = fundarg( ttt, opt );
+%   lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate 
+% [fArgs] = fundarg( ttt, opt );
 % ----------------------------------------------------------------------------
 
-function [ l, l1, f, d, omega, ...
-           lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate ...
-         ] = fundarg( ttt, opt )
+function [fArgs] = fundarg( ttt, opt )
 
         sethelp;
 
@@ -44,9 +42,6 @@ function [ l, l1, f, d, omega, ...
         deg2rad = pi/180.0;
         % arcsec to deg
         oo3600 = 1.0 / 3600.0;
-
-        ttt2 = ttt * ttt;
-        ttt3 = ttt2 * ttt;
 
         % ---- determine coefficients for iau 2000 nutation theory ----
         % ---- iau 2006 theory
@@ -179,7 +174,22 @@ function [ l, l1, f, d, omega, ...
             fprintf(1,'fa %11.7f  \n',precrate*180/pi );
         end
           
-          
+
+            fArgs(1) = l;   % delaunay variables
+            fArgs(2) = l1;
+            fArgs(3) = f;
+            fArgs(4) = d;
+            fArgs(5) = omega;
+            fArgs(6) = lonmer;  % begin planetary longitudes
+            fArgs(7) = lonven;
+            fArgs(8) = lonear;
+            fArgs(9) = lonmar;
+            fArgs(10) = lonjup;
+            fArgs(11) = lonsat;
+            fArgs(12) = lonurn;
+            fArgs(13) = lonnep;
+            fArgs(14) = precrate;
+
        % test if they are equivalent
        % most around 1e-10, but some at 1e-6
 %         oo3600 = 1.0 / 3600.0;

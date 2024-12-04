@@ -42,8 +42,8 @@ function [iau80arr] = iau80in(infilename)
        iau80arr.iar80 = nut80(:,1:5);
        iau80arr.rar80 = nut80(:,6:9);
 
-       for i=1:106
-           for j=1:4
+       for i = 1:106
+           for j = 1:4
                iau80arr.rar80(i,j)= iau80arr.rar80(i,j) * convrt;
            end
        end

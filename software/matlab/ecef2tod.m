@@ -48,12 +48,12 @@
 %  [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 % ----------------------------------------------------------------------------
 
-function [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps)
+function [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps)
 constastro;
         % ---- find matrices - note nut is only needed for st argument inputs
-        [deltapsi, trueeps, meaneps, omega, nut] = nutation(ttt, ddpsi, ddeps);
+        [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-        [st, stdot] = sidereal(jdut1, deltapsi, meaneps, omega, lod, eqeterms);
+        [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms);
 
         [pm] = polarm(xp, yp, ttt, '80');
 
@@ -61,13 +61,12 @@ constastro;
         thetasa= earthrot * (1.0  - lod/86400.0 );
         omegaearth = [0; 0; thetasa;];
 
-        rpef = pm*recef;
+        rpef = pm*recef';
         rtod = st*rpef;
 
-        vpef = pm*vecef;
+        vpef = pm*vecef';
         vtod = st*(vpef + cross(omegaearth,rpef));
 
         temp = cross(omegaearth,rpef);
-        atod = st*( pm*aecef + cross(omegaearth,temp) ...
-               + 2.0*cross(omegaearth,vpef) );
+        atod = st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
 
