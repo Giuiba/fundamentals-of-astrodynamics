@@ -186,7 +186,7 @@ def eci2ecef(
     return recef, vecef, aecef
 
 
-def eci2ecefiau06(
+def eci2ecef06(
     reci: ArrayLike,
     veci: ArrayLike,
     aeci: ArrayLike,
@@ -308,7 +308,7 @@ def ecef2eci(
     return reci, veci, aeci
 
 
-def ecef2eciiau06(
+def ecef2eci06(
     recef: ArrayLike,
     vecef: ArrayLike,
     aecef: ArrayLike,
