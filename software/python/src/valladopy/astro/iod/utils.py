@@ -10,21 +10,33 @@ import warnings
 from typing import Tuple
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from ... import constants as const
 from ...mathtime.vector import unit
 
 
 def gibbs(
-    r1: np.ndarray, r2: np.ndarray, r3: np.ndarray, orbit_tol: float = 1e-6
+    r1: ArrayLike,
+    r2: ArrayLike,
+    r3: ArrayLike,
+    tol_angle: float = np.radians(1),
+    orbit_tol: float = 1e-6,
 ) -> Tuple[np.ndarray, float, float, float]:
     """Performs the Gibbs method for orbit determination.
 
+    This method determines the velocity at the middle point of the 3 given position
+    vectors.
+
+    References:
+        Vallado: 2007, p. 456, Algorithm 52
+
     Args:
-        r1 (np.ndarray): ECI position vector #1 in km
-        r2 (np.ndarray): ECI position vector #2 in km
-        r3 (np.ndarray): ECI position vector #3 in km
-        orbit_tol (float, optional): Tolerance for orbit determination (default 1e-6)
+        r1 (array_like): ECI position vector #1 in km
+        r2 (array_like): ECI position vector #2 in km
+        r3 (array_like): ECI position vector #3 in km
+        tol_angle (float, optional): Tolerance for angles (1 degree)
+        orbit_tol (float, optional): Tolerance for orbit calculations (default 1e-6)
 
     Returns:
         tuple: (v2, theta12, theta23, copa)
@@ -57,7 +69,7 @@ def gibbs(
     copa = np.arcsin(np.dot(pn, r1n))
 
     # Check for coplanarity
-    if abs(np.dot(r1n, pn)) > np.sin(np.radians(1)):
+    if abs(np.dot(r1n, pn)) > np.sin(tol_angle):
         warnings.warn(
             "Vectors are not coplanar - results might be inaccurate.", UserWarning
         )
@@ -97,5 +109,79 @@ def gibbs(
     # Compute velocity at r2
     tover2 = lg / magr2
     v2 = tover2 * b + lg * s
+
+    return v2, theta12, theta23, copa
+
+
+def hgibbs(
+    r1: ArrayLike,
+    r2: ArrayLike,
+    r3: ArrayLike,
+    jd1: float,
+    jd2: float,
+    jd3: float,
+    tol_angle: float = np.radians(1),
+) -> Tuple[np.ndarray, float, float, float]:
+    """Performs the Herrick-Gibbs method for orbit determination.
+
+    This method determines the velocity at the middle point of the 3 given position
+    vectors.
+
+    References:
+        Vallado: 2007, p. 462, Algorithm 52
+
+    Args:
+        r1 (array_like): ECI position vector #1 in km
+        r2 (array_like): ECI position vector #2 in km
+        r3 (array_likey): ECI position vector #3 in km
+        jd1 (float): Julian date of the 1st sighting in days
+        jd2 (float): Julian date of the 2nd sighting in days
+        jd3 (float): Julian date of the 3rd sighting in days
+        tol_angle (float, optional): Tolerance for angles in radians (default = 1 deg)
+
+    Returns:
+        tuple: (v2, theta12, theta23, copa)
+            v2 (np.ndarray): Velocity vector at r2 (km/s)
+            theta12 (float): Angle between r1 and r2 (radians)
+            theta23 (float): Angle between r2 and r3 (radians)
+            copa (float): Co-planarity angle (radians)
+    """
+    # Magnitudes of position vectors
+    magr1 = np.linalg.norm(r1)
+    magr2 = np.linalg.norm(r2)
+    magr3 = np.linalg.norm(r3)
+
+    # Time differences in seconds
+    dt21 = (jd2 - jd1) * const.DAY2SEC
+    dt31 = (jd3 - jd1) * const.DAY2SEC
+    dt32 = (jd3 - jd2) * const.DAY2SEC
+
+    # Calculate coplanarity
+    p = np.cross(r2, r3)
+    pn = p / np.linalg.norm(p)
+    r1n = r1 / magr1
+    copa = np.arcsin(np.dot(pn, r1n))
+
+    # Check for coplanarity
+    if abs(copa) > np.sin(tol_angle):
+        warnings.warn(
+            "Vectors are not coplanar - results might be inaccurate.", UserWarning
+        )
+
+    # Check angle tolerance between position vectors
+    theta12 = np.arccos(np.clip(np.dot(r1, r2) / (magr1 * magr2), -1, 1))
+    theta23 = np.arccos(np.clip(np.dot(r2, r3) / (magr2 * magr3), -1, 1))
+
+    # Warn if angles exceed tolerance
+    if theta12 > tol_angle or theta23 > tol_angle:
+        warnings.warn("Angles between vectors exceed tolerance.", UserWarning)
+
+    # Herrick-Gibbs method
+    term1 = -dt32 * (1.0 / (dt21 * dt31) + const.MU / (12.0 * magr1**3))
+    term2 = (dt32 - dt21) * (1.0 / (dt21 * dt32) + const.MU / (12.0 * magr2**3))
+    term3 = dt21 * (1.0 / (dt32 * dt31) + const.MU / (12.0 * magr3**3))
+
+    # Calculate velocity at r2
+    v2 = term1 * np.array(r1) + term2 * np.array(r2) + term3 * np.array(r3)
 
     return v2, theta12, theta23, copa
