@@ -11,6 +11,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from typing import Tuple
 
+from .utils import gibbs, hgibbs
 from ... import constants as const
 
 
@@ -28,9 +29,9 @@ def anglesl(
     jd3: float,
     jdf3: float,
     diffsites: bool,
-    rs1: ArrayLike,
-    rs2: ArrayLike,
-    rs3: ArrayLike,
+    rseci1: ArrayLike,
+    rseci2: ArrayLike,
+    rseci3: ArrayLike,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Solve orbit determination problem using three optical sightings and Laplace's
     method.
@@ -52,14 +53,14 @@ def anglesl(
         jd3 (float): Julian date of third sighting (days from 4713 BC)
         jdf3 (float): Julian date fraction of third sighting (days from 4713 BC)
         diffsites (bool): True if different sites, False if same site
-        rs1 (array_like): ECI site position vector of first sighting in km
-        rs2 (array_like):  ECI site position vector of second sighting in km
-        rs3 (array_like):  ECI site position vector of third sighting in km
+        rseci1 (array_like): ECI site position vector of first sighting in km
+        rseci2 (array_like):  ECI site position vector of second sighting in km
+        rseci3 (array_like):  ECI site position vector of third sighting in km
 
     Returns:
-        tuple: (reci, veci)
-            reci (np.ndarray): ECI position vector in km
-            veci (np.ndarray): ECI velocity vector in km/s
+        tuple: (r2, v2)
+            r2 (np.ndarray): ECI position vector in km
+            v2 (np.ndarray): ECI velocity vector in km/s
     """
     # Convert Julian dates to time intervals
     tau12 = ((jd1 - jd2) + (jdf1 - jdf2)) * const.DAY2SEC
@@ -99,18 +100,18 @@ def anglesl(
     # First and second derivatives of rs2
     if not diffsites:
         earth_rot_vec = [0.0, 0.0, const.EARTHROT]
-        rs2dot = np.cross(earth_rot_vec, rs2)
+        rs2dot = np.cross(earth_rot_vec, rseci2)
         rs2ddot = np.cross(earth_rot_vec, rs2dot)
     else:
-        rs2dot = s1 * np.array(rs1) + s2 * np.array(rs2) + s3 * np.array(rs3)
-        rs2ddot = s4 * np.array(rs1) + s5 * np.array(rs2) + s6 * np.array(rs3)
+        rs2dot = s1 * np.array(rseci1) + s2 * np.array(rseci2) + s3 * np.array(rseci3)
+        rs2ddot = s4 * np.array(rseci1) + s5 * np.array(rseci2) + s6 * np.array(rseci3)
 
     # Determinants for position and velocity
     dmat = np.column_stack((los2, ldot, lddot))
     dmat1 = np.column_stack((los2, ldot, rs2ddot))
-    dmat2 = np.column_stack((los2, ldot, rs2))
+    dmat2 = np.column_stack((los2, ldot, rseci2))
     dmat3 = np.column_stack((los2, rs2ddot, lddot))
-    dmat4 = np.column_stack((los2, rs2, lddot))
+    dmat4 = np.column_stack((los2, rseci2, lddot))
 
     d = 2.0 * np.linalg.det(dmat)
     d1 = np.linalg.det(dmat1)
@@ -123,10 +124,10 @@ def anglesl(
         raise ValueError("Determinant is too small; system may be singular.")
 
     # Solve the 8th-order polynomial
-    l2dotrs = np.dot(los2, rs2)
+    l2dotrs = np.dot(los2, rseci2)
     poly = np.zeros(9)
     poly[0] = 1.0
-    poly[2] = l2dotrs * 4.0 * d1 / d - 4.0 * d1**2 / d**2 - np.linalg.norm(rs2) ** 2
+    poly[2] = l2dotrs * 4.0 * d1 / d - 4.0 * d1**2 / d**2 - np.linalg.norm(rseci2) ** 2
     poly[5] = const.MU * (l2dotrs * 4.0 * d2 / d - 8.0 * d1 * d2 / d**2)
     poly[8] = -4.0 * const.MU**2 * d2**2 / d**2
     roots = np.roots(poly)
@@ -138,8 +139,219 @@ def anglesl(
     rho = -2.0 * d1 / d - 2.0 * const.MU * d2 / (bigr2**3 * d)
     rhodot = -d3 / d - const.MU * d4 / (bigr2**3 * d)
 
-    # Position and velocity vectors
-    reci = rho * los2 + rs2
-    veci = rhodot * los2 + rho * ldot + rs2dot
+    # Position and velocity vectors at the middle
+    r2 = rho * los2 + rseci2
+    v2 = rhodot * los2 + rho * ldot + rs2dot
 
-    return reci, veci
+    return r2, v2
+
+
+def _update_fg_series(
+    ll: int,
+    r1: np.ndarray,
+    r2: np.ndarray,
+    r3: np.ndarray,
+    v2: np.ndarray,
+    tau12: float,
+    tau32: float,
+    bigr2: float,
+    ll_iters: int = 8,
+) -> Tuple[float, float, float, float]:
+    """Helper function to compute or refine the f and g series.
+
+    Args:
+        ll (int): Current iteration count
+        r1 (np.ndarray): ECI position vector at t1 in km
+        r2 (np.ndarray): ECI position vector at t2 in km
+        r3 (np.ndarray): ECI position vector at t3 in km
+        v2 (np.ndarray): ECI velocity vector at t2 in km/s
+        tau12 (float): Time interval between t1 and t2 in seconds
+        tau32 (float): Time interval between t3 and t2 in seconds
+        bigr2 (float): Magnitude of r2 in km
+        ll_iters (int, optional): Maximum number of iterations for exact method
+                                  (default 8)
+
+    Returns:
+        tuple: (f1, g1, f3, g3)
+            f1 (float): Value of f1
+            g1 (float): Value of g1
+            f3 (float): Value of f3
+            g3 (float): Value of g3
+    """
+    if ll <= ll_iters:
+        # Approximate method for early iterations
+        u = const.MU / np.linalg.norm(r2) ** 3
+        rdot = np.dot(r2, v2) / np.linalg.norm(r2)
+        udot = -3 * const.MU * rdot / np.linalg.norm(r2) ** 4
+
+        f1 = 1 - 0.5 * u * tau12**2 - (1 / 6) * udot * tau12**3
+        g1 = tau12 - (1 / 6) * u * tau12**3 - (1 / 12) * udot * tau12**4
+        f3 = 1 - 0.5 * u * tau32**2 - (1 / 6) * udot * tau32**3
+        g3 = tau32 - (1 / 6) * u * tau32**3 - (1 / 12) * udot * tau32**4
+    else:
+        # Exact method for later iterations
+        theta12 = np.arccos(
+            np.clip(np.dot(r1, r2) / (np.linalg.norm(r1) * np.linalg.norm(r2)), -1, 1)
+        )
+        theta23 = np.arccos(
+            np.clip(np.dot(r2, r3) / (np.linalg.norm(r2) * np.linalg.norm(r3)), -1, 1)
+        )
+
+        f1 = 1 - np.linalg.norm(r1) * (1 - np.cos(theta12)) / bigr2
+        g1 = np.linalg.norm(r1) * np.linalg.norm(r2) * np.sin(theta12) / np.sqrt(bigr2)
+        f3 = 1 - np.linalg.norm(r3) * (1 - np.cos(theta23)) / bigr2
+        g3 = np.linalg.norm(r3) * np.linalg.norm(r2) * np.sin(theta23) / np.sqrt(bigr2)
+
+    return f1, g1, f3, g3
+
+
+def anglesg(
+    decl1: float,
+    decl2: float,
+    decl3: float,
+    rtasc1: float,
+    rtasc2: float,
+    rtasc3: float,
+    jd1: float,
+    jdf1: float,
+    jd2: float,
+    jdf2: float,
+    jd3: float,
+    jdf3: float,
+    rseci1: np.ndarray,
+    rseci2: np.ndarray,
+    rseci3: np.ndarray,
+    angle_tol: float = np.radians(1),
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Solve orbit determination problem using three optical sightings and the
+    Gaussian method.
+
+    References:
+        Vallado: 2007, p. 429-439
+
+    Args:
+        decl1 (float): Declination of first sighting in radians
+        decl2 (float): Declination of second sighting in radians
+        decl3 (float): Declination of third sighting in radians
+        rtasc1 (float): Right ascension of first sighting in radians
+        rtasc2 (float): Right ascension of second sighting in radians
+        rtasc3 (float): Right ascension of third sighting in radians
+        jd1 (float): Julian date of first sighting (days from 4713 BC)
+        jdf1 (float): Julian date fraction of first sighting (days from 4713 BC)
+        jd2 (float): Julian date of second sighting (days from 4713 BC)
+        jdf2 (float): Julian date fraction of second sighting (days from 4713 BC)
+        jd3 (float): Julian date of third sighting (days from 4713 BC)
+        jdf3 (float): Julian date fraction of third sighting (days from 4713 BC)
+        rseci1 (np.ndarray): ECI site position vector of first sighting in km
+        rseci2 (np.ndarray): ECI site position vector of second sighting in km
+        rseci3 (np.ndarray): ECI site position vector of third sighting in km
+        angle_tol (float, optional): Tolerance for angles in radians (default = 1 deg)
+
+    Returns:
+        tuple: (r2, v2)
+            r2 (np.ndarray): ECI position vector in km
+            v2 (np.ndarray): ECI velocity vector in km/s
+    """
+    # Time intervals in seconds
+    tau12 = ((jd1 - jd2) + (jdf1 - jdf2)) * const.DAY2SEC
+    tau32 = ((jd3 - jd2) + (jdf3 - jdf2)) * const.DAY2SEC
+
+    # Line-of-sight unit vectors
+    los1 = np.array(
+        [np.cos(decl1) * np.cos(rtasc1), np.cos(decl1) * np.sin(rtasc1), np.sin(decl1)]
+    )
+    los2 = np.array(
+        [np.cos(decl2) * np.cos(rtasc2), np.cos(decl2) * np.sin(rtasc2), np.sin(decl2)]
+    )
+    los3 = np.array(
+        [np.cos(decl3) * np.cos(rtasc3), np.cos(decl3) * np.sin(rtasc3), np.sin(decl3)]
+    )
+
+    # Construct l-matrix and determinant
+    lmat = np.column_stack([los1, los2, los3])
+    d = np.linalg.det(lmat)
+
+    # Check determinant value
+    if abs(d) < const.SMALL:
+        raise ValueError("Determinant too small; unable to proceed with calculations.")
+
+    # Inverse of l-matrix
+    lmati = np.linalg.inv(lmat)
+
+    # Range-site matrix
+    rsmat = np.column_stack([rseci1, rseci2, rseci3])
+    lir = lmati @ rsmat
+
+    # Calculate coefficients for polynomial
+    a1 = tau32 / (tau32 - tau12)
+    a1u = (tau32 * ((tau32 - tau12) ** 2 - tau32**2)) / (6.0 * (tau32 - tau12))
+    a3 = -tau12 / (tau32 - tau12)
+    a3u = -(tau12 * ((tau32 - tau12) ** 2 - tau12**2)) / (6.0 * (tau32 - tau12))
+
+    dl1 = lir[1, 0] * a1 - lir[1, 1] + lir[1, 2] * a3
+    dl2 = lir[1, 0] * a1u + lir[1, 2] * a3u
+
+    magrs2 = np.linalg.norm(rseci2)
+    l2dotrs = np.dot(los2, rseci2)
+
+    # Polynomial coefficients
+    poly = np.zeros(9)
+    poly[0] = 1.0
+    poly[2] = -(dl1**2 + 2.0 * dl1 * l2dotrs + magrs2**2)
+    poly[5] = -2.0 * const.MU * (l2dotrs * dl2 + dl1 * dl2)
+    poly[8] = -const.MU**2 * dl2**2
+
+    # Roots of the polynomial
+    roots = np.roots(poly)
+    roots = roots[np.isreal(roots)].real  # filter real roots
+    if len(roots) == 0:
+        raise ValueError("No valid roots found.")
+
+    bigr2 = max(roots)
+
+    # Solve for improved estimates of f and g series
+    u = const.MU / bigr2**3
+    c1 = a1 + a1u * u
+    c2 = -1.0
+    c3 = a3 + a3u * u
+
+    # Compute range values
+    cmat = np.array([-c1, -c2, -c3]).reshape(-1, 1)
+    rhomat = lir @ cmat
+    rhoold2 = rhomat[1, 0] / c2
+    rho2 = np.inf
+
+    # Iteratively solve for r2 and v2
+    ll = 0
+    r2, v2 = np.zeros(3), np.zeros(3)
+    while abs(rhoold2 - rho2) > const.SMALL and ll <= 0:
+        ll += 1
+        rho2 = rhoold2
+
+        # Recompute range values
+        r1 = rhomat[0, 0] * los1 / c1 + rseci1
+        r2 = rhomat[1, 0] * los2 / -1.0 + rseci2
+        r3 = rhomat[2, 0] * los3 / c3 + rseci3
+
+        # Call gibbs method
+        v2, theta12, theta23, _ = gibbs(r1, r2, r3)
+
+        # Check for fallback to hgibbs
+        v2_empty = np.all(np.isclose(v2, 0))
+        if v2_empty or any(abs(theta) < angle_tol for theta in (theta12, theta23)):
+            v2, *_ = hgibbs(r1, r2, r3, jd1 + jdf1, jd2 + jdf2, jd3 + jdf3)
+
+        # Update f and g series
+        f1, g1, f3, g3 = _update_fg_series(ll, r1, r2, r3, v2, tau12, tau32, bigr2)
+
+        # Recalculate coefficients
+        c1 = g3 / (f1 * g3 - f3 * g1)
+        c3 = -g1 / (f1 * g3 - f3 * g1)
+
+        # Recompute rhomat with updated coefficients
+        rhomat = lir @ np.array([-c1, -c2, -c3]).reshape(-1, 1)
+
+        # Update the range value for convergence
+        rhoold2 = rhomat[1, 0] / c2
+
+    return r2, v2
