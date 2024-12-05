@@ -48,7 +48,7 @@
         %  references    :
         %    vallado       2022, 214, 221
         %
-        % [x,y,s,nut] = iau06xys (jdtt, ttt, ddx, ddy, interp);
+        % [x, y, s, pn] = iau06xys (iau06arr, fArgs, opt1, ttt, ddx, ddy)
         % ----------------------------------------------------------------------------
 
 function [x, y, s, pn] = iau06xys (iau06arr, fArgs, opt1, ttt, ddx, ddy)
@@ -94,7 +94,7 @@ function [x, y, s, pn] = iau06xys (iau06arr, fArgs, opt1, ttt, ddx, ddy)
         nut2(1,2) =  sin(s);
         nut2(2,1) = -sin(s);
 
-        pn = nut1*nut2;
+        pn = nut1 * nut2;
 
         %       the matrix appears to be orthogonal now, so the extra processing is not needed.
         %        if (x ~= 0.0) && (y ~= 0.0)

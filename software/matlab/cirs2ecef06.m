@@ -1,28 +1,30 @@
     % ----------------------------------------------------------------------------
     %
-    %                           function ecef2cirs06
+    %                           function cirs2ecef06
     %
-    %  this function transforms a vector from the earth fixed (itrf) frame, to
-    %    the cirs. Sidereal time and polar motion are taken into account. 
+    %  this function trsnforms a vector from the cirs
+    %    (gcrf), to an earth fixed (itrf) frame.  the results take into account
+    %    the effects of  sidereal time, and polar motion.
     %
     %  author        : david vallado                  719-573-2600   2 may 2020
     %
     %  revisions
     %
     %  inputs          description                    range / units
-    %    recef       - position vector earth fixed    km
-    %    vecef       - velocity vector earth fixed    km/s
-    %    aecef       - acceleration vector earth fixedkm/s2
+    %    rcirs       - position vector cirs            km
+    %    vcirs       - velocity vector cirs            km/s
+    %    acirs       - acceleration vector cirs        km/s2
     %    ttt         - julian centuries of tt         centuries
     %    jdut1       - julian date of ut1             days from 4713 bc
     %    lod         - excess length of day           sec
     %    xp          - polar motion coefficient       arc sec
     %    yp          - polar motion coefficient       arc sec
     %    option      - which approach to use          a-2000a, b-2000b, c-2000xys
+    %
     %  outputs       :
-    %    rcirs       - position vector cirs            km
-    %    vcirs       - velocity vector cirs            km/s
-    %    acirs       - acceleration vector cirs        km/s2
+    %    recef       - position vector earth fixed    km
+    %    vecef       - velocity vector earth fixed    km/s
+    %    aecef       - acceleration vector earth fixedkm/s2
     %
     %  locals        :
     %    pm          - transformation matrix for itrf-pef
@@ -30,52 +32,47 @@
     %
     %  coupling      :
     %   iau00pm      - rotation for polar motion      itrf-pef
-    %   iau00era     - rotation for earth rotyation   pef-ire
-    %   iau00xys     - rotation for prec/nut          ire-gcrf
-
+    %   iau00era     - rotation for earth rotation    pef-ire
     %
     %  references    :
     %    vallado       2004, 205-219
     %
-    % [rcirs,vcirs,acirs] = ecef2cirs06(recef, vecef, aecef, iau06arr, fArgs, ttt, jdut1, lod, xp, yp,  ddx, ddy, opt1 )
+    % [recef,vecef,aecef] = cirs2ecef06(rcirs, vcirs, acirs, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 );
     % ----------------------------------------------------------------------------
 
-function [rcirs, vcirs, acirs] = ecef2cirs06(recef, vecef, aecef, iau06arr, fArgs, ttt, jdut1, lod, xp, yp,  ddx, ddy, opt1 )
-    constastro;
-    sethelp;
-     
-    % ---- ceo based, iau2006
+function [recef,vecef,aecef] = cirs2ecef06(rcirs, vcirs, acirs, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 );
+constastro;
+    %      sethelp;
+
+    % ---- ceo based, iau2000
     if opt1 == 'c'
         [st]  = iau06era (jdut1 );
-    end
+    end;
 
     % ---- class equinox based, 2000a
     if opt1 == 'a'
         [gst,st] = iau00gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
             lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
-    end
+    end;
 
     % ---- class equinox based, 2000b
     if opt1 == 'b'
-        [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
+        [gst,st] = iau00gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
             lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
-    end
+    end;
 
-    [pm] = polarm(xp, yp, ttt, '06');
+    [pm] = polarm(xp,yp,ttt,'06');
 
     % ---- setup parameters for velocity transformations
     thetasa= earthrot * (1.0  - lod/86400.0 );
     omegaearth = [0; 0; thetasa;];
 
-    % ---- perform transformations
-    rpef = pm*recef';
-    rcirs = st*rpef;
+    rpef  = st'*rcirs;
+    recef = pm'*rpef;
 
-    vpef = pm*vecef';
-    vcirs = st*(vpef + cross(omegaearth,rpef));
+    vpef  = st'*vcirs - cross( omegaearth,rpef );
+    vecef = pm'*vpef;
 
-    temp = cross(omegaearth,rpef);
-    acirs = st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
-
-
+    temp  = cross(omegaearth,rpef);
+    aecef = pm'*(st'*acirs - cross(omegaearth,temp) - 2.0*cross(omegaearth,vpef));
 

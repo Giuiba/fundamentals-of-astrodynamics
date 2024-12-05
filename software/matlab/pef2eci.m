@@ -46,16 +46,47 @@
 %  references    :
 %    vallado       2001, 219-220, eq 3-68
 %
-% [reci,veci,aeci] = pef2eci  ( rpef,vpef,apef,ttt,jdut1,lod,eqeterms,ddpsi,ddeps );
+% [reci, veci, aeci] = pef2eci(rpef, vpef, apef, ttt, jdut1, lod, opt1, iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy )
 % ----------------------------------------------------------------------------
 
-function [reci,veci,aeci] = pef2eci  ( rpef,vpef,apef,ttt,jdut1,lod,eqeterms,ddpsi,ddeps );
+function [reci, veci, aeci] = pef2eci(rpef, vpef, apef, ttt, jdut1, lod, opt1, iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy )
 constastro;
-        [prec,psia,wa,ea,xa] = precess ( ttt, '80' );
+        pnb = zeros(3,3);
+        st = zeros(3,3);
+ 
+       [prec, psia, wa, ea, xa] = precess ( ttt, opt1 );
 
-        [deltapsi,trueeps,meaneps,omega,nut] = nutation(ttt,ddpsi,ddeps);
+          if opt1 == '80'
+            [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
+            [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
+        else
+            % ---- ceo based, iau2006
+            if opt1 == '06c'
+               [x, y, s, pnb] = iau06xys (iau06arr, fArgs, 's', ttt, ddx, ddy);
+                [st]  = iau06era (jdut1 );
+            end
 
-        [st,stdot] = sidereal(jdut1,deltapsi,meaneps,omega,lod,eqeterms );
+            % ---- class equinox based, 2000a
+            if opt1 == '06a'
+                [ deltapsi, pnb, prec, nut, l, l1, f, d, omega, ...
+                    lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate ...
+                    ] = iau06pna (ttt);
+                [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
+                    lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
+            end
+
+            % ---- class equinox based, 2000b
+            if opt1 == '06b'
+                [ deltapsi, pnb, prec, nut, l, l1, f, d, omega, ...
+                    lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate ...
+                    ] = iau06pnb (ttt);
+                [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
+                    lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
+            end
+            prec = eye(3);
+            nut = pnb;
+        end
+
 
         thetasa= earthrot * (1.0  - lod/86400.0 );
         omegaearth = [0; 0; thetasa;];

@@ -90,20 +90,20 @@ function [recef, vecef, aecef] = eci2ecef06(reci, veci, aeci, iau06arr, fArgs, t
     %        if iauhelp == 'y'
     rtirs  = pnb'*reci;
     vtirs  = pnb'*veci;
-    if (opt1 == 'a') || (opt1 == 'b')
+    if (option == 'a') || (option == 'b')
         rmod20  = prec'*reci;
         vmod20  = prec'*veci;
-        fprintf(1,'eci           IAU-2006 %c   %14.7f %14.7f %14.7f \n',opt1, reci );
-        fprintf(1,'MOD           IAU-2006 %c   %14.7f %14.7f %14.7f',opt1, rmod20 );
+        fprintf(1,'eci           IAU-2006 %c   %14.7f %14.7f %14.7f \n',option, reci );
+        fprintf(1,'MOD           IAU-2006 %c   %14.7f %14.7f %14.7f',option, rmod20 );
         fprintf(1,' v %14.9f %14.9f %14.9f',vmod20 );
         fprintf(1,' a %14.9f %14.9f %14.9f\n',aeci );
-        fprintf(1,'ERS           IAU-2006 %c   %14.7f %14.7f %14.7f',opt1, rtirs );
+        fprintf(1,'ERS           IAU-2006 %c   %14.7f %14.7f %14.7f',option, rtirs );
     end
-    if opt1 == 'c'
+    if option == 'c'
         fprintf(1,'CIRS          IAU-2006 CIO %14.7f %14.7f %14.7f',rtirs );
     end
     fprintf(1,' v %14.9f %14.9f %14.9f\n',vtirs );
-    fprintf(1,'TIRS          IAU-2006 %c   %14.7f %14.7f %14.7f',opt1, rpef );
+    fprintf(1,'TIRS          IAU-2006 %c   %14.7f %14.7f %14.7f',option, rpef );
     fprintf(1,' v %14.9f %14.9f %14.9f\n',vpef );
     %          end
 

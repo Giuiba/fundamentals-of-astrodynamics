@@ -48,23 +48,26 @@
 % [rpef,vpef,apef] = eci2pef  ( reci,veci,aeci,opt, ttt,jdut1,lod,eqeterms,ddpsi,ddeps );
 % ----------------------------------------------------------------------------
 
-    function [rpef,vpef,apef] = eci2pef  ( reci,veci,aeci,opt, ttt,jdut1,lod,eqeterms,ddpsi,ddeps, ddx, ddy )
+function [rpef, vpef, apef] = eci2pef(reci, veci, aeci, ttt, jdut1, lod, opt1, iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy )
         constastro;
+        pnb = zeros(3,3);
+        st = zeros(3,3);
+        
+        [prec, psia, wa, ea, xa] = precess ( ttt, opt1 );
 
-        [prec,psia,wa,ea,xa] = precess ( ttt, opt );
+        if opt1 == '80'
+            [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-        if opt == '80'
-            [deltapsi,trueeps,meaneps,omega,nut] = nutation(ttt,ddpsi,ddeps);
-            [st,stdot] = sidereal(jdut1,deltapsi,meaneps,omega,lod,eqeterms);
+            [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
         else
             % ---- ceo based, iau2006
-            if opt == '6c'
-                [x,y,s,pnb] = iau06xys (ttt, ddx, ddy);
+            if opt1 == '06c'
+               [x, y, s, pnb] = iau06xys (iau06arr, fArgs, 's', ttt, ddx, ddy);
                 [st]  = iau06era (jdut1 );
             end
 
             % ---- class equinox based, 2000a
-            if opt == '6a'
+            if opt1 == '06a'
                 [ deltapsi, pnb, prec, nut, l, l1, f, d, omega, ...
                     lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate ...
                     ] = iau06pna (ttt);
@@ -73,7 +76,7 @@
             end
 
             % ---- class equinox based, 2000b
-            if opt == '6b'
+            if opt1 == '06b'
                 [ deltapsi, pnb, prec, nut, l, l1, f, d, omega, ...
                     lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate ...
                     ] = iau06pnb (ttt);
@@ -82,7 +85,6 @@
             end
             prec = eye(3);
             nut = pnb;
-            st = st;
         end
 
         thetasa= earthrot * (1.0  - lod/86400.0 );

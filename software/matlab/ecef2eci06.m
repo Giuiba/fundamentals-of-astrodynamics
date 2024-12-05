@@ -53,7 +53,7 @@
     
     % ---- ceo based, iau2006
     if (strcmp(opt1, 'c'))
-        [x, y, s, pn] = iau06xys (iau06arr, fArgs, 's', ttt, ddx, ddy);
+        [x, y, s, pnb] = iau06xys (iau06arr, fArgs, 's', ttt, ddx, ddy);
 
         [st]  = iau06era (jdut1 );
     end
@@ -83,14 +83,14 @@
     omegaearth = [0; 0; thetasa;];
 
     % ---- perform transformations
-    rpef = pm*recef;
+    rpef = pm*recef';
     reci = pnb*st*rpef;
 
-    vpef = pm*vecef;
+    vpef = pm*vecef';
     veci = pnb*st*(vpef + cross(omegaearth,rpef));
 
     temp = cross(omegaearth,rpef);
-    aeci = pnb*st*( pm*aecef + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
+    aeci = pnb*st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
 
 
 

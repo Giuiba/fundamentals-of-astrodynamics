@@ -1431,9 +1431,9 @@ function testtod2ecef()
     [recii, vecii, aecii] = pef2ecef(rpef, vpef, apef, '80', ttt, xp, yp);
     fprintf(1,'ITRF  rev     IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    [rtemp, vtemp, atemp] = ecef2pef06(recef, vecef, aecef, '06', ttt, xp, yp);
+    [rtemp, vtemp, atemp] = ecef2pef(recef, vecef, aecef, '06', ttt, xp, yp);
     fprintf(1,'TIRS          IAU-2006 CIO %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtemp(1), rtemp(2), rtemp(3), vtemp(1), vtemp(2), vtemp(3));
-    [recefi, vecefi, aecefi] = pef2ecef06(rtemp, vtemp, atemp, '06', ttt, xp, yp);
+    [recefi, vecefi, aecefi] = pef2ecef(rtemp, vtemp, atemp, '06', ttt, xp, yp);
     fprintf(1,'ITRF rev      IAU-2006 CIO %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % TOD
@@ -1444,9 +1444,9 @@ function testtod2ecef()
     [recefi,vecefi,aecefi] = tod2ecef ( rtod, vtod, atod, iau80arr, fArgs, jdut1, ttt, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'ITRFi         IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
-    [rtemp,vtemp,atemp] = ecef2tod06(recef, vecef, aecef,iau06arr, fArgs06, ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
-    fprintf(1,'CIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtemp(1), rtemp(2), rtemp(3), vtemp(1), vtemp(2), vtemp(3));
-    [recefi,vecefi,aecefi] = tod2ecef06  ( rtod,vtod,atod, iau06arr, fArgs06, ttt,jdut1,lod,xp,yp,eqeterms,ddx,ddy );
+    [rcirs, vcirs, acirs] = ecef2cirs06(recef, vecef, aecef, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp, ddx, ddy, 'c' );
+    fprintf(1,'CIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rcirs(1), rcirs(2), rcirs(3), vcirs(1), vcirs(2), vcirs(3));
+    [recefi,vecefi,aecefi] = cirs2ecef06(rcirs, vcirs, acirs, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp, ddx, ddy,'c' );
     fprintf(1,'ITRF rev      IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % MOD
@@ -1483,14 +1483,14 @@ function testtod2ecef()
     fprintf(1,'GCRF wco STARTIAU-76/FK5   ' + reci(1), reci(2), reci(3)  + veci(1), veci(2), veci(3));
 
     % PEF
-    [rpef, vpef, apef] = eci2pef(reci, veci, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
+    [rpef, vpef, apef] = eci2pef(reci, veci, aeci, ttt, jdut1, lod, '80', iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy );
     fprintf(1,'PEF           IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
-    [recii, vecii, aecii] = pef2eci(rpef, vpef, apef, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
+    [recii, vecii, aecii] = pef2eci(rpef, vpef, apef, ttt, jdut1, lod, '80', iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy );
     fprintf(1,'ECI rev       IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    [rpef, vpef, apef] = eci2pefiau06(reci, veci, aeci, iau06arr,    jdtt, jdftt, jdut1, jdxysstart, lod, ddx, ddy);
+    [rpef, vpef, apef] = eci2pef(reci, veci, aeci, ttt, jdut1, lod, '06c', iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy );
     fprintf(1,'TIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
-    [recii vecii, aecii] = pef2eciiau06(rpef, vpef, qpef, iau06arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddx, ddy);
+    [recii, vecii, aecii] = pef2eci(rpef, vpef, apef, ttt, jdut1, lod, '06c', iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy );
     fprintf(1,'ECI rev       IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
     % TOD
@@ -1499,9 +1499,9 @@ function testtod2ecef()
     [recii, vecii, aecii] = tod2eci(rtod, vtod, amod, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
     fprintf(1,'ECI rev       IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    [rtod, vtod, atod] = eci2todiau06(reci, veci, aeci, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
+    [rtod, vtod, atod] = eci2cirs06(reci, veci, aeci, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
     fprintf(1,'CIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtod(1), rtod(2), rtod(3), vtod(1), vtod(2), vtod(3));
-    [recii vecii, aecii] = tod2eciiau06(rtod, vtod, amod, iau80arr,  jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
+    [recii vecii, aecii] = cirs2eci06(rtod, vtod, amod, iau80arr,  jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
     fprintf(1,'ECI rev       IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
     % MOD
