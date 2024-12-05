@@ -61,15 +61,11 @@ def gibbs(
     q = np.cross(r3, r1)
     w = np.cross(r1, r2)
 
-    # Unit vectors
-    pn = unit(p)
-    r1n = unit(r1)
-
     # Co-planarity angle
-    copa = np.arcsin(np.dot(pn, r1n))
+    copa = np.arcsin(np.dot(unit(p), unit(r1)))
 
     # Check for coplanarity
-    if abs(np.dot(r1n, pn)) > np.sin(tol_angle):
+    if abs(copa) > np.sin(tol_angle):
         warnings.warn(
             "Vectors are not coplanar - results might be inaccurate.", UserWarning
         )
@@ -158,9 +154,7 @@ def hgibbs(
 
     # Calculate coplanarity
     p = np.cross(r2, r3)
-    pn = p / np.linalg.norm(p)
-    r1n = r1 / magr1
-    copa = np.arcsin(np.dot(pn, r1n))
+    copa = np.arcsin(np.dot(unit(p), unit(r1)))
 
     # Check for coplanarity
     if abs(copa) > np.sin(tol_angle):
