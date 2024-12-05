@@ -140,7 +140,7 @@ def test_eci2ecef(rva_ecef, rva_eci, t_inputs, orbit_effects_inputs):
         ),
     ],
 )
-def test_eci2ecefiau06(
+def test_eci2ecef06(
     rva_eci,
     t_inputs,
     orbit_effects_inputs,
@@ -154,7 +154,7 @@ def test_eci2ecefiau06(
     xp, yp, *_ = orbit_effects_inputs
 
     # Call the function with test inputs
-    recef_out, vecef_out, aecef_out = fc.eci2ecefiau06(
+    recef_out, vecef_out, aecef_out = fc.eci2ecef06(
         *rva_eci, *t_inputs, xp, yp, opt, *eop_corrections
     )
 
@@ -202,7 +202,7 @@ def test_ecef2eci(rva_ecef, rva_eci, t_inputs, orbit_effects_inputs):
         ),
     ],
 )
-def test_ecef2eciiau06(
+def test_ecef2eci06(
     rva_ecef,
     t_inputs,
     orbit_effects_inputs,
@@ -216,7 +216,7 @@ def test_ecef2eciiau06(
     xp, yp, *_ = orbit_effects_inputs
 
     # Call the function with test inputs
-    reci_out, veci_out, aeci_out = fc.ecef2eciiau06(
+    reci_out, veci_out, aeci_out = fc.ecef2eci06(
         *rva_ecef, *t_inputs, xp, yp, opt, *eop_corrections
     )
 

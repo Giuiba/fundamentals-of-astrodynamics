@@ -255,6 +255,7 @@ def rv2coe(
         """Adjust angle by subtracting it from 2pi"""
         return 2 * np.pi - ang
 
+    # Initialize variables
     p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper = (np.nan,) * 11
     orbit_type = None
 
@@ -338,8 +339,9 @@ def rv2coe(
         if incl > np.pi / 2:
             truelon = adjust_angle(truelon)
 
-    # Find mean anomaly for all orbits
-    e, m = newtonnu(ecc, nu)
+    # Find mean anomaly for eccentric orbits
+    if orbit_type in [OrbitType.EPH_INCLINED, OrbitType.EPH_EQUATORIAL]:
+        _, m = newtonnu(ecc, nu)
 
     return p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper, orbit_type
 

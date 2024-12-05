@@ -194,9 +194,9 @@ function [p,a,ecc,incl,raan,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v);
             end
 
             % ------------ find mean anomaly for all orbits -----------
-           % if ( typeorbit(1:1) == 'e' )
+            if ( typeorbit(1:1) == 'e' )
                 [e,m] = newtonnu(ecc, nu);
-           % end
+            end
 
          else
            p    = undefined;
