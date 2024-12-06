@@ -6,7 +6,6 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
-
 import numpy as np
 from numpy.typing import ArrayLike
 from typing import Tuple
@@ -355,3 +354,171 @@ def anglesg(
         rhoold2 = rhomat[1, 0] / c2
 
     return r2, v2
+
+
+def doubler(
+    cc1: float,
+    cc2: float,
+    magrsite1: float,
+    magrsite2: float,
+    magr1in: float,
+    magr2in: float,
+    los1: ArrayLike,
+    los2: ArrayLike,
+    los3: ArrayLike,
+    rsite1: ArrayLike,
+    rsite2: ArrayLike,
+    rsite3: ArrayLike,
+    t1: float,
+    t3: float,
+    n12: int,
+    n13: int,
+    n23: int,
+) -> tuple[np.ndarray, np.ndarray, float, float, float, float, float, float, float]:
+    """Perform the iterative work for the double-r angles-only routine.
+
+    References:
+        Vallado: 2022, p. 449-450
+
+    Args:
+        cc1 (float): Coefficient for the first sighting
+        cc2 (float):  Coefficient for the second sighting
+        magrsite1 (float): Magnitude of the first site position vector
+        magrsite2 (float): Magnitude of the second site position vector
+        magr1in (float): Magnitude of the first sighting position vector
+        magr2in (float): Magnitude of the second sighting position vector
+        los1 (array_like): Line-of-sight unit vector for the first sighting
+        los2 (array_like): Line-of-sight unit vector for the second sighting
+        los3 (array_like): Line-of-sight unit vector for the third sighting
+        rsite1 (array_like): ECI site position vector of the first sighting
+        rsite2 (array_like): ECI site position vector of the second sighting
+        rsite3 (array_like): ECI site position vector of the third sighting
+        t1 (float): Time of the first sighting
+        t3 (float): Time of the third sighting
+        n12 (int): Number of days between the first and second sightings
+        n13 (int): Number of days between the first and third sightings
+        n23 (int): Number of days between the second and third sightings
+
+        Returns:
+            tuple: (r2, r3, f1, f2, q1, magr1, magr2, a, deltae32)
+                r2 (np.ndarray): ECI position vector at t2 in km
+                r3 (np.ndarray): ECI position vector at t3 in km
+                f1 (float): Value of f1 coefficient
+                f2 (float): Value of f2 coefficient
+                q1 (float): Quality estimate of the solution
+                magr1 (float): Magnitude of the first sighting position vector
+                magr2 (float): Magnitude of the second sighting position vector
+                a (float): Semi-major axis of the orbit in km
+                deltae32 (float): Eccentric anomaly difference between obs 3 and 2 in
+                                  radians
+
+    """
+    # Define default range value for when the square root is negative
+    # Use this because hyperbolic likely at shorter times, lower alt
+    default_range = 300.0
+
+    # Compute rho1 and rho2
+    tempsq1 = cc1**2 - 4.0 * (magrsite1**2 - magr1in**2)
+    tempsq1 = default_range if tempsq1 < 0.0 else tempsq1
+    rho1 = (-cc1 + np.sqrt(tempsq1)) * 0.5
+    tempsq2 = cc2**2 - 4.0 * (magrsite2**2 - magr2in**2)
+    tempsq2 = default_range if tempsq2 < 0.0 else tempsq2
+    rho2 = (-cc2 + np.sqrt(tempsq2)) * 0.5
+
+    # Compute r1 and r2
+    r1 = rho1 * los1 + rsite1
+    r2 = rho2 * los2 + rsite2
+    magr1 = np.linalg.norm(r1)
+    magr2 = np.linalg.norm(r2)
+
+    # Compute the cross product and determine rho3
+    w = np.cross(r1, r2) / (magr1 * magr2)
+    rho3 = -np.dot(rsite3, w) / np.dot(los3, w)
+    r3 = rho3 * los3 + rsite3
+    magr3 = np.linalg.norm(r3)
+
+    # Delta true anomaly between obs 2 and 1
+    cosdv21 = np.dot(r2, r1) / (magr2 * magr1)
+    sindv21 = np.linalg.norm(np.cross(r2, r1)) / (magr2 * magr1)
+    dv21 = np.arctan2(sindv21, cosdv21) + const.TWOPI * n12
+
+    # Delta true anomaly between obs 3 and 1
+    cosdv31 = np.dot(r3, r1) / (magr3 * magr1)
+    sindv31 = np.sqrt(1.0 - cosdv31**2)
+    dv31 = np.arctan2(sindv31, cosdv31) + const.TWOPI * n13
+
+    # Delta true anomaly between obs 3 and 2
+    cosdv32 = np.dot(r3, r2) / (magr3 * magr2)
+    sindv32 = np.linalg.norm(np.cross(r3, r2)) / (magr3 * magr2)
+
+    # Compute the semi-parameter
+    if dv31 > np.pi:
+        p = (sindv21 - sindv31 + sindv32) / (
+            -sindv31 / magr2 + sindv21 / magr3 + sindv32 / magr1
+        )
+    else:
+        c1 = (magr1 * sindv31) / (magr2 * sindv32)
+        c3 = (magr1 * sindv21) / (magr3 * sindv32)
+        p = (c3 * magr3 - c1 * magr2 + magr1) / (-c1 + c3 + 1)
+
+    # Compute the cosines of the eccentric anomalies
+    ecosv1 = p / magr1 - 1
+    ecosv2 = p / magr2 - 1
+    ecosv3 = p / magr3 - 1
+
+    # Compute the sines of the eccentric anomalies
+    if dv21 != np.pi:
+        esinv2 = (-cosdv21 * ecosv2 + ecosv1) / sindv21
+    else:
+        esinv2 = (cosdv32 * ecosv2 - ecosv3) / sindv32
+
+    # Eccentricity and semi-major axis
+    e = np.sqrt(ecosv2**2 + esinv2**2)
+    a = p / (1 - e**2)
+
+    # Compute the delta mean and eccentric anomalies
+    deltam12 = 0.0
+    if e < 1.0:
+        # Non-hyperbolic case
+        n = np.sqrt(const.MU / a**3)
+        s = magr2 / p * np.sqrt(1 - e**2) * esinv2
+        c = magr2 / p * (e**2 + ecosv2)
+
+        # Delta eccentric anomaly between obs 3 and 2
+        sinde32 = magr3 / np.sqrt(a * p) * sindv32 - magr3 / p * (1 - cosdv32) * s
+        cosde32 = 1 - magr2 * magr3 / (a * p) * (1 - cosdv32)
+        deltae32 = np.arctan2(sinde32, cosde32) + const.TWOPI * n23
+
+        # Delta eccentric anomaly between obs 1 and 2
+        sinde21 = magr1 / np.sqrt(a * p) * sindv21 + magr1 / p * (1 - cosdv21) * s
+        cosde21 = 1 - magr2 * magr1 / (a * p) * (1 - cosdv21)
+        deltae21 = np.arctan2(sinde21, cosde21) + const.TWOPI * n12
+
+        # Delta mean anomalies
+        deltam32 = deltae32 + 2 * s * (np.sin(deltae32 / 2)) ** 2 - c * np.sin(deltae32)
+        deltam12 = (
+            -deltae21 + 2 * s * (np.sin(deltae21 / 2)) ** 2 + c * np.sin(deltae21)
+        )
+    else:
+        # Hyperbolic case
+        if a > 0.0:
+            a = -a
+            p = -p
+        n = np.sqrt(const.MU / -(a**3))
+        s = magr2 / p * np.sqrt(e**2 - 1) * esinv2
+        c = magr2 / p * (e**2 + ecosv2)
+
+        # Delta eccentric anomaly between obs 3 and 2
+        sindh32 = magr3 / np.sqrt(-a * p) * sindv32 - magr3 / p * (1 - cosdv32) * s
+        deltah32 = np.log(sindh32 + np.sqrt(sindh32**2 + 1))
+        deltam32 = (
+            -deltah32 + 2 * s * (np.sinh(deltah32 / 2)) ** 2 + c * np.sinh(deltah32)
+        )
+        deltae32 = deltah32  # fix to match MATLAB
+
+    # Calculate the f coefficients and quality estimate
+    f1 = t1 - deltam12 / n
+    f2 = t3 - deltam32 / n
+    q1 = np.sqrt(f1**2 + f2**2)
+
+    return r2, r3, f1, f2, q1, magr1, magr2, a, deltae32
