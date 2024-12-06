@@ -522,3 +522,134 @@ def doubler(
     q1 = np.sqrt(f1**2 + f2**2)
 
     return r2, r3, f1, f2, q1, magr1, magr2, a, deltae32
+
+
+def anglesdr(
+    decl1: float,
+    decl2: float,
+    decl3: float,
+    rtasc1: float,
+    rtasc2: float,
+    rtasc3: float,
+    jd1: float,
+    jdf1: float,
+    jd2: float,
+    jdf2: float,
+    jd3: float,
+    jdf3: float,
+    rsite1: np.ndarray,
+    rsite2: np.ndarray,
+    rsite3: np.ndarray,
+    rng1: float,
+    rng2: float,
+    pctchg: float = 0.005,
+    tol: float = 1e-8,
+    max_iterations: int = 15,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Solve orbit determination problem using the double-r technique.
+
+    Args:
+        decl1 (float): Declination of first sighting in radians
+        decl2 (float): Declination of second sighting in radians
+        decl3 (float): Declination of third sighting in radians
+        rtasc1 (float): Right ascension of first sighting in radians
+        rtasc2 (float): Right ascension of second sighting in radians
+        rtasc3 (float): Right ascension of third sighting in radians
+        jd1 (float): Julian date of first sighting (days from 4713 BC)
+        jdf1 (float): Julian date fraction of first sighting (days from 4713 BC)
+        jd2 (float): Julian date of second sighting (days from 4713 BC)
+        jdf2 (float): Julian date fraction of second sighting (days from 4713 BC)
+        jd3 (float): Julian date of third sighting (days from 4713 BC)
+        jdf3 (float): Julian date fraction of third sighting (days from 4713 BC)
+        rsite1 (np.ndarray): ECI site position vector of first sighting in km
+        rsite2 (np.ndarray): ECI site position vector of second sighting in km
+        rsite3 (np.ndarray): ECI site position vector of third sighting in km
+        rng1 (float): Range to first sighting in km
+        rng2 (float): Range to second sighting in km
+        pctchg (float, optional): Percentage change for iterative method (default 0.005)
+        tol (float, optional): Tolerance for convergence (default 1e-8)
+        max_iterations (int, optional): Maximum number of iterations (default 15)
+
+    Returns:
+        tuple: (r2, v2)
+            r2 (np.ndarray): ECI position vector in km
+            v2 (np.ndarray): ECI velocity vector in km/s
+    """
+    # Time differences in seconds
+    tau12 = (jd1 - jd2) * 86400 + (jdf1 - jdf2) * 86400
+    tau13 = (jd3 - jd1) * 86400 + (jdf3 - jdf1) * 86400
+    tau32 = (jd3 - jd2) * 86400 + (jdf3 - jdf2) * 86400
+
+    # Period in seconds (assumed 1 day for Earth)
+    period = 86400.0
+    n12 = np.floor(abs(tau12 / period))
+    n13 = np.floor(abs(tau13 / period))
+    n23 = np.floor(abs((tau12 + tau32) / period))
+
+    # Line-of-sight unit vectors
+    los1 = np.array(
+        [np.cos(decl1) * np.cos(rtasc1), np.cos(decl1) * np.sin(rtasc1), np.sin(decl1)]
+    )
+    los2 = np.array(
+        [np.cos(decl2) * np.cos(rtasc2), np.cos(decl2) * np.sin(rtasc2), np.sin(decl2)]
+    )
+    los3 = np.array(
+        [np.cos(decl3) * np.cos(rtasc3), np.cos(decl3) * np.sin(rtasc3), np.sin(decl3)]
+    )
+
+    # Iterative variables
+    magr1in = rng1
+    magr2in = rng2
+    magr1old, magr2old = np.inf, np.inf
+    ktr = 0
+    oldqr, newqr = np.inf, 0.0
+
+    r2, v2 = np.zeros(3), np.zeros(3)
+    while (
+        (abs(magr1in - magr1old) > tol or abs(magr2in - magr2old) > tol)
+        and ktr < max_iterations
+        and newqr < oldqr
+    ):
+        ktr += 1
+        oldqr = newqr
+        magr1old, magr2old = magr1in, magr2in
+
+        # Call doubler to compute intermediate values
+        r2, r3, f1, f2, q1, magr1, magr2, a, deltae32 = doubler(
+            2.0 * np.dot(los1, rsite1),
+            2.0 * np.dot(los2, rsite2),
+            np.linalg.norm(rsite1),
+            np.linalg.norm(rsite2),
+            magr1in,
+            magr2in,
+            los1,
+            los2,
+            los3,
+            rsite1,
+            rsite2,
+            rsite3,
+            tau12,
+            tau32,
+            n12,
+            n13,
+            n23,
+        )
+
+        # Recalculate f and g series
+        f = 1.0 - a / magr2 * (1.0 - np.cos(deltae32))
+        g = tau32 - np.sqrt(a**3 / const.MU) * (deltae32 - np.sin(deltae32))
+        v2 = (r3 - f * r2) / g
+
+        # Update magnitudes using pctchg
+        deltar1 = pctchg * magr1old
+        deltar2 = pctchg * magr2old
+        magr1in += deltar1
+        magr2in += deltar2
+
+        # Calculate quality metric
+        newqr = np.sqrt(q1**2)
+
+        # Reduce percentage change for next iteration
+        pctchg *= 0.5
+
+    return r2, v2
