@@ -39,10 +39,10 @@
         %
         %  references    :
         %    vallado       2013,
-        %  [rsun, rsmag, rmoon, rmmag] = findxysparam( jdtdb, jdtdbF, 'l', xysarr, jdxysstart)
+        %  [x, y, s] = findxysparam( jdtdb, jdtdbF, interp, xysarr, jdxysstart)
         % --------------------------------------------------------------------------- */
 
-        function [rsun, rsmag, rmoon, rmmag] = findxysparam( jdtdb, jdtdbF, interp, xysarr, jdxysstart)
+        function [x, y, s] = findxysparam( jdtdb, jdtdbF, interp, xysarr)
 
         % the ephemerides are centered on jdtdb, but it turns out to be 0.5, or 0000 hrs.
         % check if any whole days in jdF
@@ -53,7 +53,7 @@
         end
 
         % ---- read ya for day of interest
-        jdxysstarto = floor(jdtdb + jdtdbF - jdxysstart);
+        jdxysstarto = floor(jdtdb + jdtdbF - xysarr.jdxysstart);
         recnum = floor(jdxysstarto);
 
         % check for out of bound values
@@ -70,7 +70,7 @@
                 x = xysarr(recnum).x + (xysarr(recnum + 1).x - xysarr(recnum).x) * fixf;
                 y = xysarr.y(recnum) + (xysarr.y(recnum + 1) - xysarr.y(recnum)) * fixf;
                 s = xysarr.s(recnum) + (xysarr.s(recnum + 1) - xysarr.s(recnum)) * fixf;
-              end
+            end
 
             % ---- do spline interpolations
             if (interp == 's')

@@ -35,16 +35,17 @@
 % [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName);
 % -----------------------------------------------------------------------------
 
-function [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName)
+function [eoparr] = readeop(eopFileName)
 
-    eoparr = struct('xp',zeros(25000), 'xperr',zeros(25000), ...
-        'yp',zeros(25000), 'yperr',zeros(25000), ...
-        'dut1',zeros(25000), 'dut1err',zeros(25000), 'lod',zeros(25000), ...
+    eoparr = struct('xp',zeros(25000), ... % 'xperr',zeros(25000), ...
+        'yp',zeros(25000), ...  % 'yperr',zeros(25000), ...
+        'dut1',zeros(25000), ... % 'dut1err',zeros(25000), ...
+        'lod',zeros(25000), ...
         'ddpsi',zeros(25000), 'ddeps',zeros(25000), ...
         'dx',zeros(25000), 'dy',zeros(25000), ...
-        'mjd',zeros(25000), 'dat',zeros(25000));
+        'mjd',zeros(25000), 'dat',zeros(25000) ...
+        'mjdeopstart', zeros(1), 'updDate', [] );
     
-    updDate = '';
     infile = fopen(eopFileName, 'r');
     
     while (~feof(infile))
@@ -53,7 +54,7 @@ function [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName)
             longstr = fgets(infile);
     
             if (contains(longstr, 'UPDATED'))
-                updDate = longstr(8:end);
+                eoparr.updDate = longstr(8:end);
             end
     
             if (contains(longstr, 'NUM_OBSERVED_POINTS'))
@@ -82,7 +83,7 @@ function [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName)
     
                     % ---- find epoch date
                     if (ktr == 1)
-                        mjdeopstart = eoparr(ktr).mjd;
+                         eoparr.mjdeopstart = eoparr(ktr).mjd;
                     end
                 end  % for through observed
                 

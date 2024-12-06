@@ -1,4 +1,3 @@
-%
 % ----------------------------------------------------------------------------
 %
 %                           function ecef2eci
@@ -35,50 +34,50 @@
 %    trueeps     - true obliquity of the ecliptic rad
 %    meaneps     - mean obliquity of the ecliptic rad
 %    omega       -                                rad
-%    prec        - matrix for mod - eci 
-%    nut         - matrix for tod - mod 
-%    st          - matrix for pef - tod 
+%    prec        - matrix for mod - eci
+%    nut         - matrix for tod - mod
+%    st          - matrix for pef - tod
 %    stdot       - matrix for pef - tod rate
-%    pm          - matrix for ecef - pef 
+%    pm          - matrix for ecef - pef
 %
 %  coupling      :
-%   precess      - rotation for precession       
-%   nutation     - rotation for nutation          
-%   sidereal     - rotation for sidereal time     
-%   polarm       - rotation for polar motion      
+%   precess      - rotation for precession
+%   nutation     - rotation for nutation
+%   sidereal     - rotation for sidereal time
+%   polarm       - rotation for polar motion
 %
 %  references    :
 %    vallado       2013, 223-229
 %
-% [reci, veci, aeci] = ecef2eci(recef,vecef,aecef,iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+% [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 % ----------------------------------------------------------------------------
 
-function [reci, veci, aeci] = ecef2eci(recef,vecef,aecef,iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
-   constastro;
-        % ---- find matrices
-        [prec,psia,wa,ea,xa] = precess ( ttt, '80' );
+function [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+    constastro;
+    % ---- find matrices
+    [prec,psia,wa,ea,xa] = precess ( ttt, '80' );
 
-        [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
+    [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-        [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
+    [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
 
-        [pm] = polarm(xp, yp, ttt, '80');
+    [pm] = polarm(xp, yp, ttt, '80');
 
-        % ---- perform transformations
-        thetasa= earthrot * (1.0  - lod/86400.0 );
-        omegaearth = [0; 0; thetasa;];
+    % ---- perform transformations
+    thetasa= earthrot * (1.0  - lod/86400.0 );
+    omegaearth = [0; 0; thetasa;];
 
-        rpef = pm*recef';
-        reci = prec*nut*st*rpef;
- %prec*nut*st*pm
-        vpef = pm*vecef';
-        veci = prec*nut*st*(vpef + cross(omegaearth,rpef));
+    rpef = pm*recef';
+    reci = prec*nut*st*rpef;
+    %prec*nut*st*pm
+    vpef = pm*vecef';
+    veci = prec*nut*st*(vpef + cross(omegaearth,rpef));
 
-        % veci1 = prec*nut * (stdot*recef + st*pm*vecef')  % alt approach using sidereal rate
-        
-        temp = cross(omegaearth,rpef);
-        % two additional terms not needed if satellite is not on surface
-        % of the Earth
-        aeci = prec*nut*st*( pm*aecef' ) ... 
-                + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef);
+    % veci1 = prec*nut * (stdot*recef + st*pm*vecef')  % alt approach using sidereal rate
+
+    temp = cross(omegaearth,rpef);
+    % two additional terms not needed if satellite is not on surface
+    % of the Earth
+    aeci = prec*nut*st*( pm*aecef' ) ...
+        + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef);
 

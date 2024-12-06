@@ -1,56 +1,58 @@
-    % ----------------------------------------------------------------------------
-    %
-    %                           function eci2ecef06
-    %
-    %  this function trsnforms a vector from the mean equator mean equniox frame
-    %    (gcrf), to an earth fixed (itrf) frame.  the results take into account
-    %    the effects of precession, nutation, sidereal time, and polar motion.
-    %
-    %  author        : david vallado                  719-573-2600   16 jul 2004
-    %
-    %  revisions
-    %
-    %  inputs          description                    range / units
-    %    reci        - position vector eci            km
-    %    veci        - velocity vector eci            km/s
-    %    aeci        - acceleration vector eci        km/s2
-    %    ttt         - julian centuries of tt         centuries
-    %    jdut1       - julian date of ut1             days from 4713 bc
-    %    lod         - excess length of day           sec
-    %    xp          - polar motion coefficient       rad
-    %    yp          - polar motion coefficient       rad
-    %    option      - which approach to use          a-2000a, b-2000b, c-2000xys
-    %    ddx         - eop correction for x           rad
-    %    ddy         - eop correction for y           rad
-    %
-    %  outputs       :
-    %    recef       - position vector earth fixed    km
-    %    vecef       - velocity vector earth fixed    km/s
-    %    aecef       - acceleration vector earth fixedkm/s2
-    %
-    %  locals        :
-    %    pm          - transformation matrix for itrf-pef
-    %    st          - transformation matrix for pef-ire
-    %    nut         - transformation matrix for ire-gcrf
-    %
-    %  coupling      :
-    %   iau00pm      - rotation for polar motion      itrf-pef
-    %   iau00era     - rotation for earth rotation    pef-ire
-    %   iau00xys     - rotation for prec/nut          ire-gcrf
-    %
-    %  references    :
-    %    vallado       2004, 205-219
-    %
-    % [recef, vecef, aecef] = eci2ecef06(reci, veci, aeci, iau06arr, fArgs, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
-    % ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+%
+%                           function eci2ecef06
+%
+%  this function trsnforms a vector from the mean equator mean equniox frame
+%    (gcrf), to an earth fixed (itrf) frame.  the results take into account
+%    the effects of precession, nutation, sidereal time, and polar motion.
+%
+%  author        : david vallado                  719-573-2600   16 jul 2004
+%
+%  revisions
+%
+%  inputs          description                    range / units
+%    reci        - position vector eci            km
+%    veci        - velocity vector eci            km/s
+%    aeci        - acceleration vector eci        km/s2
+%    ttt         - julian centuries of tt         centuries
+%    jdut1       - julian date of ut1             days from 4713 bc
+%    lod         - excess length of day           sec
+%    xp          - polar motion coefficient       rad
+%    yp          - polar motion coefficient       rad
+%    option      - which approach to use          a-2000a, b-2000b, c-2000xys
+%    ddx         - eop correction for x           rad
+%    ddy         - eop correction for y           rad
+%
+%  outputs       :
+%    recef       - position vector earth fixed    km
+%    vecef       - velocity vector earth fixed    km/s
+%    aecef       - acceleration vector earth fixedkm/s2
+%
+%  locals        :
+%    pm          - transformation matrix for itrf-pef
+%    st          - transformation matrix for pef-ire
+%    nut         - transformation matrix for ire-gcrf
+%
+%  coupling      :
+%   iau00pm      - rotation for polar motion      itrf-pef
+%   iau00era     - rotation for earth rotation    pef-ire
+%   iau00xys     - rotation for prec/nut          ire-gcrf
+%
+%  references    :
+%    vallado       2004, 205-219
+%
+% [recef, vecef, aecef] = eci2ecef06(reci, veci, aeci, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
+% ----------------------------------------------------------------------------
 
-function [recef, vecef, aecef] = eci2ecef06(reci, veci, aeci, iau06arr, fArgs, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
+function [recef, vecef, aecef] = eci2ecef06(reci, veci, aeci, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
     constastro;
     %      sethelp;
+    pnb = eye(3);
+    st = eye(3);
 
     % ---- ceo based, iau2000
-    if opt1 == 'c'
-        [x, y, s, pnb] = iau06xys (iau06arr, fArgs, 's', ttt, ddx, ddy);
+    if not(contains(opt1, 'a')) || not(contains(opt1, 'b'))
+        [x, y, s, pnb] = iau06xys (iau06arr, fArgs06, xysarr, ttt, ddx, ddy, opt1);
         [st]  = iau06era (jdut1 );
     end
 
@@ -86,25 +88,5 @@ function [recef, vecef, aecef] = eci2ecef06(reci, veci, aeci, iau06arr, fArgs, t
 
     temp  = cross(omegaearth,rpef);
     aecef = pm'*(st'*pnb'*aeci - cross(omegaearth,temp) - 2.0*cross(omegaearth,vpef));
-
-    %        if iauhelp == 'y'
-    rtirs  = pnb'*reci;
-    vtirs  = pnb'*veci;
-    if (opt1 == 'a') || (opt1 == 'b')
-        rmod20  = prec'*reci;
-        vmod20  = prec'*veci;
-        fprintf(1,'eci           IAU-2006 %c   %14.7f %14.7f %14.7f \n',opt1, reci );
-        fprintf(1,'MOD           IAU-2006 %c   %14.7f %14.7f %14.7f',opt1, rmod20 );
-        fprintf(1,' v %14.9f %14.9f %14.9f',vmod20 );
-        fprintf(1,' a %14.9f %14.9f %14.9f\n',aeci );
-        fprintf(1,'ERS           IAU-2006 %c   %14.7f %14.7f %14.7f',opt1, rtirs );
-    end
-    if opt1 == 'c'
-        fprintf(1,'CIRS          IAU-2006 CIO %14.7f %14.7f %14.7f',rtirs );
-    end
-    fprintf(1,' v %14.9f %14.9f %14.9f\n',vtirs );
-    fprintf(1,'TIRS          IAU-2006 %c   %14.7f %14.7f %14.7f',opt1, rpef );
-    fprintf(1,' v %14.9f %14.9f %14.9f\n',vpef );
-    %          end
 
 

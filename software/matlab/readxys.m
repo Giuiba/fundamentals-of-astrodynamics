@@ -24,9 +24,10 @@
         %   [jdxysstart, jdfxysstart, xys06arr] = readxys(infilename)
         % ------------------------------------------------------------------------- */%
 
-    function [jdxysstart, jdfxysstart, xys06arr] = readxys(infilename)
+    function [xys06arr] = readxys(infilename)
         % 2435839.500000 0.0000000000 -0.004178909517 0.000027601169 0.000000078058
-        xys06arr = struct('x',zeros(52000), 'y',zeros(52000), 'z',zeros(52000), 'mjd',zeros(52000));
+        xys06arr = struct('x',zeros(52000), 'y',zeros(52000), 'z',zeros(52000), ...
+            'mjd',zeros(52000), 'jdxysstart', zeros(1), 'jdfxysstart', zeros(1));
 
         xys06 = load(append(infilename, 'xysdata.dat'));
 
@@ -38,7 +39,7 @@
         xys06arr.mjd = xys06(:,1) + xys06(:,2) - 2400000.5;
 
         % ---- find epoch date
-        jdxysstart = xys06(1,1);
-        jdfxysstart = xys06(1,2);
+        xys06arr.jdxysstart = xys06(1,1);
+        xys06arr.jdfxysstart = xys06(1,2);
 
     end  % initXYS

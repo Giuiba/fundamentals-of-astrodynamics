@@ -923,8 +923,8 @@ function testiau80in()
     minute = 0;
     second = 0.0;
 
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau80arr] = iau80in(nutLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
 
     eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt';
     [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName);
@@ -1008,10 +1008,10 @@ end
 
 function testnutation()
     opt = '80';
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau80arr] = iau80in(nutLoc);
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau06arr] = iau06in(nutLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau06arr] = iau06in(fileLoc);
 
     ttt = 0.042623631889;
     ddpsi = -0.052195;
@@ -1041,9 +1041,9 @@ end
 
 function testnutationqmod()
     opt = '80';
-    string nutLoc;
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau80arr] = iau80in(nutLoc);
+    string fileLoc;
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
     ttt = 0.042623631889;
     % ttt = 0.04262362174880504;
 
@@ -1061,10 +1061,10 @@ function testsidereal()
     %ttt = 0.04262362174880504;
     lod = 0.001556;
 
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau80arr] = iau80in(nutLoc);
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau06arr] = iau06in(nutLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau06arr] = iau06in(fileLoc);
 
     ddpsi = -0.052195;
     ddeps = -0.003875;
@@ -1252,19 +1252,19 @@ function testeci_ecef()
 
     fprintf(1,'ITRF          IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recef(1), recef(2), recef(3), vecef(1), vecef(2), vecef(3));
 
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau80arr] = iau80in(nutLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
 
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau06arr] = iau06in(nutLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau06arr] = iau06in(fileLoc);
 
     % test creating xys file
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
     % done, works in c#. :-)
-    %createXYS(nutLoc, iau06arr, fArgs);
+    %createXYS(fileLoc, iau06arr, fArgs);
 
     % now read it in
-   % [jdxysstart, jdfxysstart, xys06arr] = initxys(nutLoc);
+   % [jdxysstart, jdfxysstart, xys06arr] = initxys(fileLoc);
 
     % now test it for interpolation
     %jdtt = jd + jdFrac + (dat + 32.184) / 86400.0;
@@ -1317,8 +1317,8 @@ function testeci_ecef()
     second = 0.0;
     interp = 'x';  % full series
 
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau06arr] = iau06in(nutLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau06arr] = iau06in(fileLoc);
 
     % read interpolated one
     %EOPSPWLibr.initEOPArrayP(ref EOPSPWLibr.eopdataP);
@@ -1326,8 +1326,8 @@ function testeci_ecef()
     % read existing data - this does not find x, y, s!
     %getCurrEOPFileName(this.EOPSPWLoc.Text, out eopFileName);
     eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt';
-    [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName);
-    jdeopstart = mjdeopstart + 2400000.5;
+    [eoparr] = readeop(eopFileName);
+    jdeopstart = eoparr.mjdeopstart + 2400000.5;
 
     % now find table of CIO values
 
@@ -1404,11 +1404,11 @@ function testtod2ecef()
     reci = [ 0.0, 0.0, 0.0 ];
     veci = [ 0.0, 0.0, 0.0 ];
 
-    string nutLoc;
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau80arr] = iau80in(nutLoc);
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau06arr] = iau06in(nutLoc);
+    string fileLoc;
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau06arr] = iau06in(fileLoc);
     jdtt = jd;
     jdftt = jdFrac + (dat + 32.184) / 86400.0;
     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
@@ -1417,8 +1417,8 @@ function testtod2ecef()
     [fArgs06] = fundarg(ttt, '06');
 
     % now read it in
-    double jdfxysstart;
-    %[jdxysstart, jdfxysstart, xys06arr] = initxys(infilename);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [xysarr] = readxys(fileLoc);
 
     jdut1 = jd + jdFrac + dut1 / 86400.0;
 
@@ -1427,14 +1427,13 @@ function testtod2ecef()
     % PEF
     [rpef, vpef, apef] = ecef2pef ( recef, vecef, aecef, '80', ttt, xp, yp );
     fprintf(1,'PEF           IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
-
     [recii, vecii, aecii] = pef2ecef(rpef, vpef, apef, '80', ttt, xp, yp);
     fprintf(1,'ITRF  rev     IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    [rtemp, vtemp, atemp] = ecef2pef(recef, vecef, aecef, '06', ttt, xp, yp);
-    fprintf(1,'TIRS          IAU-2006 CIO %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtemp(1), rtemp(2), rtemp(3), vtemp(1), vtemp(2), vtemp(3));
-    [recefi, vecefi, aecefi] = pef2ecef(rtemp, vtemp, atemp, '06', ttt, xp, yp);
-    fprintf(1,'ITRF rev      IAU-2006 CIO %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
+    [rtirs, vtirs, atirs] = ecef2tirs(recef, vecef, aecef, ttt, xp, yp );
+    fprintf(1,'TIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtirs(1), rtirs(2), rtirs(3), vtirs(1), vtirs(2), vtirs(3));
+    [recefi, vecefi, aecefi] = tirs2ecef(rtirs, vtirs, atirs, ttt, xp, yp );
+    fprintf(1,'ECI rev       IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % TOD
     [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, 0.0, 0.0);
@@ -1444,9 +1443,9 @@ function testtod2ecef()
     [recefi,vecefi,aecefi] = tod2ecef ( rtod, vtod, atod, iau80arr, fArgs, jdut1, ttt, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'ITRFi         IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
-    [rcirs, vcirs, acirs] = ecef2cirs06(recef, vecef, aecef, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp, ddx, ddy, 'c' );
+    [rcirs, vcirs, acirs] = ecef2cirs(recef, vecef, aecef, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp, ddx, ddy, '06s' );
     fprintf(1,'CIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rcirs(1), rcirs(2), rcirs(3), vcirs(1), vcirs(2), vcirs(3));
-    [recefi,vecefi,aecefi] = cirs2ecef06(rcirs, vcirs, acirs, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp, ddx, ddy,'c' );
+    [recefi,vecefi,aecefi] = cirs2ecef(rcirs, vcirs, acirs, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp, ddx, ddy, '06s' );
     fprintf(1,'ITRF rev      IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % MOD
@@ -1459,18 +1458,18 @@ function testtod2ecef()
 
 
     % J2000
-    [recii, vecii, aecii] = ecef2eci(recef,vecef,aecef,iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, 0.0, 0.0 );
+    [recii, vecii, aecii] = ecef2eci(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, 0.0, 0.0 );
     fprintf(1,'J2000 wo corr IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
     % GCRF
-    [reci, veci, aeci] = ecef2eci(recef,vecef,aecef,iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'GCRF w corr   IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
     [recefi, vecefi, aecefi] = eci2ecef(reci, veci, aeci, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'ITRF rev      IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
-    [recii vecii, aecii] = ecef2eci06(recef, vecef, aecef,   iau06arr, fArgs06,   ttt, jdut1, lod, xp, yp,ddx, ddy, 'c');
+    [recii vecii, aecii] = ecef2eci06(recef, vecef, aecef,   iau06arr, fArgs06, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, '06s');
     fprintf(1,'GCRF          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
-    [recefi,vecefi,aecefi] = eci2ecef06  ( recii,vecii,aecii,iau06arr, fArgs06,ttt,jdut1,lod,xp,yp, ddx, ddy, 'c' );    
+    [recefi,vecefi,aecefi] = eci2ecef06  ( recii,vecii,aecii,iau06arr, fArgs06, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, '06s' );    
     fprintf(1,'ITRF rev      IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
 
     % sofa
@@ -1480,34 +1479,34 @@ function testtod2ecef()
 
 
     % now reverses from eci
-    fprintf(1,'GCRF wco STARTIAU-76/FK5   ' + reci(1), reci(2), reci(3)  + veci(1), veci(2), veci(3));
+    fprintf(1,'GCRF wco STARTIAU-76/FK5   \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
 
     % PEF
-    [rpef, vpef, apef] = eci2pef(reci, veci, aeci, ttt, jdut1, lod, '80', iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy );
+    [rpef, vpef, apef] = eci2pef(reci, veci, aeci, iau80arr, fArgs, ttt, jdut1, lod, eqeterms, ddpsi, ddeps);
     fprintf(1,'PEF           IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
-    [recii, vecii, aecii] = pef2eci(rpef, vpef, apef, ttt, jdut1, lod, '80', iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy );
+    [recii, vecii, aecii] = pef2eci(rpef, vpef, apef, iau80arr, fArgs, ttt, jdut1, lod, eqeterms, ddpsi, ddeps);
     fprintf(1,'ECI rev       IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    [rpef, vpef, apef] = eci2pef(reci, veci, aeci, ttt, jdut1, lod, '06c', iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy );
-    fprintf(1,'TIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rpef(1), rpef(2), rpef(3), vpef(1), vpef(2), vpef(3));
-    [recii, vecii, aecii] = pef2eci(rpef, vpef, apef, ttt, jdut1, lod, '06c', iau80arr, fArgs, eqeterms, ddpsi, ddeps, iau06arr, fArgs06, ddx, ddy );
+    [rtirs, vtirs, atirs] = eci2tirs(reci, veci, aeci, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, ddx, ddy, '06s' );
+    fprintf(1,'TIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtirs(1), rtirs(2), rtirs(3), vtirs(1), vtirs(2), vtirs(3));
+    [recii, vecii, aecii] = tirs2eci(rtirs, vtirs, atirs, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, ddx, ddy, '06s' );
     fprintf(1,'ECI rev       IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
     % TOD
-    [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
+    [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, fArgs, ttt, ddpsi, ddeps);
     fprintf(1,'TOD           IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtod(1), rtod(2), rtod(3), vtod(1), vtod(2), vtod(3));
-    [recii, vecii, aecii] = tod2eci(rtod, vtod, amod, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
+    [recii, vecii, aecii] = tod2eci(rtod, vtod, atod, iau80arr, fArgs, ttt, ddpsi, ddeps);
     fprintf(1,'ECI rev       IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
-    [rtod, vtod, atod] = eci2cirs06(reci, veci, aeci, iau80arr, jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
-    fprintf(1,'CIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rtod(1), rtod(2), rtod(3), vtod(1), vtod(2), vtod(3));
-    [recii vecii, aecii] = cirs2eci06(rtod, vtod, amod, iau80arr,  jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps);
+    [rcirs, vcirs, acirs] = eci2cirs( reci, veci, aeci, iau06arr, fArgs06, xysarr, ttt, ddx, ddy, '06s' );
+    fprintf(1,'CIRS          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rcirs(1), rcirs(2), rcirs(3), vcirs(1), vcirs(2), vcirs(3));
+    [recii vecii, aecii] = cirs2eci(rtod, vtod, atod, iau06arr,  fArgs06, xysarr, ttt, ddx, ddy, '06s');
     fprintf(1,'ECI rev       IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 
     % MOD
-    [rmod, vmod, amod] = eci2mod(reci, veci, aeci,  '80', iau80arr, ttt);
+    [rmod, vmod, amod] = eci2mod(reci, veci, aeci, ttt);
     fprintf(1,'MOD           IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', rmod(1), rmod(2), rmod(3), vmod(1), vmod(2), vmod(3));
-    [recii vecii, aecii] = eci2mod(rmod, vmod, amod,  '80', iau80arr, ttt);
+    [recii vecii, aecii] = mod2eci(rmod, vmod, amod, ttt);
     fprintf(1,'ECI rev       IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
 end
 
@@ -1536,8 +1535,8 @@ function testteme_ecef()
     ddx = -0.000205 * conv;    % ' to rad
     ddy = -0.000136 * conv;
 
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau80arr] = iau80in(nutLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
 
     % note you have to use tdb for time of ineterst AND j2000 (when dat = 32)
     ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
@@ -1578,8 +1577,8 @@ function testteme_eci()
     ddx = -0.000205 * conv;    % ' to rad
     ddy = -0.000136 * conv;
 
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau80arr] = iau80in(nutLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
 
     % note you have to use tdb for time of ineterst AND j2000 (when dat = 32)
     ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
@@ -1601,8 +1600,8 @@ function testqmod2ecef()
 
     [fArgs] = fundarg(ttt, opt);
 
-    nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [iau80arr] = iau80in(nutLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
 
     [recef, vecef] = qmod2ecef(rqmod, vqmod, ttt, jdutc, iau80arr, opt);
 end
@@ -2763,15 +2762,15 @@ function testrv2coe()
                             this.opsStatus.Text = 'Test Angles ';
                             Refresh();
     
-                            string nutLoc;
+                            string fileLoc;
                             string ans;
                             Int32 ktrActObs;
                             string EOPupdate;
                             Int32 mjdeopstart;
-                            nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                            [iau80arr] = iau80in(nutLoc);
-                            nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                            [iau06arr] = iau06in(nutLoc);
+                            fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                            [iau80arr] = iau80in(fileLoc);
+                            fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                            [iau06arr] = iau06in(fileLoc);
     
                             eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2020-02-12.txt';
                             [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName);
@@ -6100,10 +6099,10 @@ function testrv2coe()
            rr = trtasc = tdecl = rtasc = decl = drr = dtrtasc = dtdecl = drtasc = ddecl = 0.0;
            rho = az = el = drho = daz = del = 0.0;
 
-           nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-           [iau80arr] = iau80in(nutLoc);
-           nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-           [iau06arr] = iau06in(nutLoc);
+           fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+           [iau80arr] = iau80in(fileLoc);
+           fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+           [iau06arr] = iau06in(fileLoc);
 
            % now read it in
            double jdxysstart, jdfxysstart;
@@ -7761,10 +7760,10 @@ function testrv2coe()
                                            mass = 1000.0;   % kg
 
                                            % ------------------------------- establish time parameters -------------------------------
-                                           nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                                           [iau80arr] = iau80in(nutLoc);
-                                           nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                                           [iau06arr] = iau06in(nutLoc);
+                                           fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                                           [iau80arr] = iau80in(fileLoc);
+                                           fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                                           [iau06arr] = iau06in(fileLoc);
                                            % now read it in
                                            double jdxysstart, jdfxysstart;
                                            AstroLib.xysdataClass[] xysarr = xysarr;
@@ -8956,10 +8955,10 @@ function testrv2coe()
                                                                                        % StringBuilder strbuild = new StringBuilder();
                                                                                        % strbuild.Clear();
 
-                                                                                       nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                                                                                       [iau80arr] = iau80in(nutLoc);
-                                                                                       nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                                                                                       [iau06arr] = iau06in(nutLoc);
+                                                                                       fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                                                                                       [iau80arr] = iau80in(fileLoc);
+                                                                                       fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                                                                                       [iau06arr] = iau06in(fileLoc);
                                                                                        % now read it in
                                                                                        double jdxysstart, jdfxysstart;
                                                                                        AstroLib.xysdataClass[] xysarr = xysarr;
@@ -9092,10 +9091,10 @@ function testrv2coe()
                                                                                    % StringBuilder strbuild = new StringBuilder();
                                                                                    % strbuild.Clear();
 
-                                                                                   nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                                                                                   [iau80arr] = iau80in(nutLoc);
-                                                                                   nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                                                                                   [iau06arr] = iau06in(nutLoc);
+                                                                                   fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                                                                                   [iau80arr] = iau80in(fileLoc);
+                                                                                   fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                                                                                   [iau06arr] = iau06in(fileLoc);
                                                                                    % now read it in
                                                                                    double jdxysstart, jdfxysstart;
                                                                                    AstroLib.xysdataClass[] xysarr = xysarr;
@@ -9262,10 +9261,10 @@ function testrv2coe()
   %StringBuilder strbuild = new StringBuilder();
   %strbuild.Clear();
 
-  nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-  [iau80arr] = iau80in(nutLoc);
-  nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-  [iau06arr] = iau06in(nutLoc);
+  fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+  [iau80arr] = iau80in(fileLoc);
+  fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+  [iau06arr] = iau06in(fileLoc);
   % now read it in
   double jdxysstart, jdfxysstart;
   AstroLib.xysdataClass[] xysarr = xysarr;
@@ -9426,10 +9425,10 @@ function testrv2coe()
           % StringBuilder strbuild = new StringBuilder();
           % strbuild.Clear();
 
-          nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-          [iau80arr] = iau80in(nutLoc);
-          nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-          [iau06arr] = iau06in(nutLoc);
+          fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+          [iau80arr] = iau80in(fileLoc);
+          fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+          [iau06arr] = iau06in(fileLoc);
           % now read it in
           double jdxysstart, jdfxysstart;
           AstroLib.xysdataClass[] xysarr = xysarr;
@@ -9593,10 +9592,10 @@ else  % truea or truen
         % StringBuilder strbuild = new StringBuilder();
         % strbuild.Clear();
 
-        nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-        [iau80arr] = iau80in(nutLoc);
-        nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-        [iau06arr] = iau06in(nutLoc);
+        fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+        [iau80arr] = iau80in(fileLoc);
+        fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+        [iau06arr] = iau06in(fileLoc);
         % now read it in
         double jdxysstart, jdfxysstart;
         AstroLib.xysdataClass[] xysarr = xysarr;
@@ -9757,10 +9756,10 @@ else  % truea or truen
                 % StringBuilder strbuild = new StringBuilder();
                 % strbuild.Clear();
 
-                nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                [iau80arr] = iau80in(nutLoc);
-                nutLoc = 'D:\Codes\LIBRARY\DataLib\';
-                [iau06arr] = iau06in(nutLoc);
+                fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                [iau80arr] = iau80in(fileLoc);
+                fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+                [iau06arr] = iau06in(fileLoc);
                 % now read it in
                 double jdxysstart, jdfxysstart;
                 AstroLib.xysdataClass[] xysarr = xysarr;

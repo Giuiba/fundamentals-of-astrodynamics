@@ -1,11 +1,11 @@
 % ----------------------------------------------------------------------------
 %
-%                           function ecef2eci06
+%                           function ecef2cirs
 %
 %  this function transforms a vector from the earth fixed (itrf) frame, to
-%    the eci mean equator mean equinox (gcrf).
+%    the cirs. Sidereal time and polar motion are taken into account.
 %
-%  author        : david vallado                  719-573-2600   16 jul 2004
+%  author        : david vallado                  719-573-2600   2 may 2020
 %
 %  revisions
 %
@@ -19,18 +19,14 @@
 %    xp          - polar motion coefficient       arc sec
 %    yp          - polar motion coefficient       arc sec
 %    option      - which approach to use          a-2000a, b-2000b, c-2000xys
-%    ddx         - eop correction for x           rad
-%    ddy         - eop correction for y           rad
-%
 %  outputs       :
-%    reci        - position vector eci            km
-%    veci        - velocity vector eci            km/s
-%    aeci        - acceleration vector eci        km/s2
+%    rcirs       - position vector cirs            km
+%    vcirs       - velocity vector cirs            km/s
+%    acirs       - acceleration vector cirs        km/s2
 %
 %  locals        :
 %    pm          - transformation matrix for itrf-pef
 %    st          - transformation matrix for pef-ire
-%    nut         - transformation matrix for ire-gcrf
 %
 %  coupling      :
 %   iau00pm      - rotation for polar motion      itrf-pef
@@ -41,36 +37,26 @@
 %  references    :
 %    vallado       2004, 205-219
 %
-% [reci, veci, aeci] = ecef2eci06( recef, vecef, aecef, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
+% [rcirs,vcirs,acirs] = ecef2cirs(recef, vecef, aecef, iau06arr, fArgs, ttt, jdut1, lod, xp, yp,  ddx, ddy, opt1 )
 % ----------------------------------------------------------------------------
 
-function [reci, veci, aeci] = ecef2eci06( recef, vecef, aecef, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
-
-    sethelp;
+function [rcirs, vcirs, acirs] = ecef2cirs(recef, vecef, aecef, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp,  ddx, ddy, opt1 )
     constastro;
-    pnb = eye(3);
-    st = eye(3);
+    sethelp;
 
     % ---- ceo based, iau2006
-    if not(contains(opt1, 'a')) || not(contains(opt1, 'b'))
-        [x, y, s, pnb] = iau06xys (iau06arr, fArgs06, xysarr, ttt, ddx, ddy, opt1);
+    if contains(opt1, 'c')
         [st]  = iau06era (jdut1 );
     end
 
     % ---- class equinox based, 2000a
-    if (strcmp(opt1, 'a'))
-        [ deltapsi, pnb, prec, nut, l, l1, f, d, omega, ...
-            lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate ...
-            ] = iau06pna (ttt);
-        [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
+    if opt1 == '06a'
+        [gst,st] = iau00gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
             lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
     end
 
     % ---- class equinox based, 2000b
-    if strcmp(opt1, 'b')
-        [ deltapsi, pnb, prec, nut, l, l1, f, d, omega, ...
-            lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate ...
-            ] = iau06pnb (ttt);
+    if opt1 == '06b'
         [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
             lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
     end
@@ -83,13 +69,13 @@ function [reci, veci, aeci] = ecef2eci06( recef, vecef, aecef, iau06arr, fArgs06
 
     % ---- perform transformations
     rpef = pm*recef';
-    reci = pnb*st*rpef;
+    rcirs = st*rpef;
 
     vpef = pm*vecef';
-    veci = pnb*st*(vpef + cross(omegaearth,rpef));
+    vcirs = st*(vpef + cross(omegaearth,rpef));
 
     temp = cross(omegaearth,rpef);
-    aeci = pnb*st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
+    acirs = st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
 
 
 
