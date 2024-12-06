@@ -74,7 +74,6 @@ def test_angles_gauss(obs_data, site_data):
 
 def test_doubler(site_data):
     # Input data
-    cc1, cc2 = 10375.65370145235, 12614.54728166916
     magr1in, magr2in = 12742.21211926773, 12997.05636165308
     los1 = [0.9472633016838, 0.015540847420216, 0.320079239165193]
     los2 = [0.574225360422271, 0.574741691745486, 0.583041356352574]
@@ -84,30 +83,18 @@ def test_doubler(site_data):
 
     # Calculate outputs
     r2, r3, f1, f2, q1, magr1, magr2, a, deltae32 = angles.doubler(
-        cc1,
-        cc2,
-        magr1in,
-        magr2in,
-        los1,
-        los2,
-        los3,
-        *site_data,
-        tau12,
-        tau32,
-        n12,
-        n13,
-        n23,
+        magr1in, magr2in, los1, los2, los3, *site_data, tau12, tau32, n12, n13, n23
     )
 
     # Expected results
-    r2_expected = [7779.700336327065, 6715.1463255419, 7956.541595700008]
-    r3_expected = [6027.317401487586, 8179.902519996911, 8322.191143955773]
+    r2_expected = [7779.7001681972015, 6715.146157260857, 7956.541424988871]
+    r3_expected = [6027.317367172274, 8179.902435544924, 8322.19107527224]
     assert np.allclose(r2, r2_expected, rtol=DEFAULT_TOL)
     assert np.allclose(r3, r3_expected, rtol=DEFAULT_TOL)
-    assert np.isclose(f1, 2167.2109422617746, rtol=DEFAULT_TOL)
-    assert np.isclose(f2, -36502.69492587425, rtol=DEFAULT_TOL)
-    assert np.isclose(q1, 36566.97335191559, rtol=DEFAULT_TOL)
-    assert np.isclose(magr1, 12742.212708431698, rtol=DEFAULT_TOL)
-    assert np.isclose(magr2, 12997.056653742446, rtol=DEFAULT_TOL)
-    assert np.isclose(a, 13404.1612620032, rtol=DEFAULT_TOL)
-    assert np.isclose(deltae32, 14.87548393329232, rtol=DEFAULT_TOL)
+    assert np.isclose(f1, 2167.210768046813, rtol=DEFAULT_TOL)
+    assert np.isclose(f2, -36502.697364923726, rtol=DEFAULT_TOL)
+    assert np.isclose(q1, 36566.97577635246, rtol=DEFAULT_TOL)
+    assert np.isclose(magr1, 12742.21211926773, rtol=DEFAULT_TOL)
+    assert np.isclose(magr2, 12997.056361653078, rtol=DEFAULT_TOL)
+    assert np.isclose(a, 13404.16181471951, rtol=DEFAULT_TOL)
+    assert np.isclose(deltae32, 14.875483923982381, rtol=DEFAULT_TOL)

@@ -357,8 +357,6 @@ def anglesg(
 
 
 def doubler(
-    cc1: float,
-    cc2: float,
     magr1in: float,
     magr2in: float,
     los1: ArrayLike,
@@ -379,8 +377,6 @@ def doubler(
         Vallado: 2022, p. 449-450
 
     Args:
-        cc1 (float): Coefficient for the first sighting
-        cc2 (float):  Coefficient for the second sighting
         magr1in (float): Magnitude of the first sighting position vector
         magr2in (float): Magnitude of the second sighting position vector
         los1 (array_like): Line-of-sight unit vector for the first sighting
@@ -412,6 +408,10 @@ def doubler(
     # Define default range value for when the square root is negative
     # Use this because hyperbolic likely at shorter times, lower alt
     default_range = 300.0
+
+    # Range coefficients
+    cc1 = 2.0 * np.dot(los1, rsite1)
+    cc2 = 2.0 * np.dot(los2, rsite2)
 
     # Magnitude of the site position vectors
     magrsite1 = np.linalg.norm(rsite1)
@@ -618,8 +618,6 @@ def anglesdr(
         r2, r3, f1, f2, q1, magr1, magr2, a, deltae32 = doubler(
             2.0 * np.dot(los1, rsite1),
             2.0 * np.dot(los2, rsite2),
-            np.linalg.norm(rsite1),
-            np.linalg.norm(rsite2),
             magr1in,
             magr2in,
             los1,
