@@ -14,6 +14,48 @@ from .utils import gibbs, hgibbs
 from ... import constants as const
 
 
+def calculate_time_intervals(
+    jd1: float, jdf1: float, jd2: float, jdf2: float, jd3: float, jdf3: float
+) -> Tuple[float, float, float]:
+    """Calculate time intervals between three Julian dates.
+
+    Args:
+        jd1 (float): Julian date of first sighting (days from 4713 BC)
+        jdf1 (float): Julian date fraction of first sighting (days from 4713 BC)
+        jd2 (float): Julian date of second sighting (days from 4713 BC)
+        jdf2 (float): Julian date fraction of second sighting (days from 4713 BC)
+        jd3 (float): Julian date of third sighting (days from 4713 BC)
+        jdf3 (float): Julian date fraction of third sighting (days from 4713 BC)
+
+    Returns:
+        tuple: (tau12, tau13, tau32)
+            tau12 (float): Time interval between t1 and t2 in seconds
+            tau13 (float): Time interval between t1 and t3 in seconds
+            tau32 (float): Time interval between t3 and t2 in seconds
+    """
+    tau12 = ((jd1 - jd2) + (jdf1 - jdf2)) * const.DAY2SEC
+    tau13 = ((jd1 - jd3) + (jdf1 - jdf3)) * const.DAY2SEC
+    tau32 = ((jd3 - jd2) + (jdf3 - jdf2)) * const.DAY2SEC
+
+    return tau12, tau13, tau32
+
+
+def calculate_los_vectors(decl: list[float], rtasc: list[float]) -> list[np.ndarray]:
+    """Calculate line-of-sight unit vectors from declination and right ascension.
+
+    Args:
+        decl (list[float]): List of declinations in radians
+        rtasc (list[float]): List of right ascensions in radians
+
+    Returns:
+        list[np.ndarray]: List of line-of-sight unit vectors
+    """
+    return [
+        np.array([np.cos(dec) * np.cos(ra), np.cos(dec) * np.sin(ra), np.sin(dec)])
+        for dec, ra in zip(decl, rtasc)
+    ]
+
+
 def anglesl(
     decl1: float,
     decl2: float,
@@ -62,19 +104,11 @@ def anglesl(
             v2 (np.ndarray): ECI velocity vector in km/s
     """
     # Convert Julian dates to time intervals
-    tau12 = ((jd1 - jd2) + (jdf1 - jdf2)) * const.DAY2SEC
-    tau13 = ((jd1 - jd3) + (jdf1 - jdf3)) * const.DAY2SEC
-    tau32 = ((jd3 - jd2) + (jdf3 - jdf2)) * const.DAY2SEC
+    tau12, tau13, tau32 = calculate_time_intervals(jd1, jdf1, jd2, jdf2, jd3, jdf3)
 
     # Line-of-sight unit vectors
-    los1 = np.array(
-        [np.cos(decl1) * np.cos(rtasc1), np.cos(decl1) * np.sin(rtasc1), np.sin(decl1)]
-    )
-    los2 = np.array(
-        [np.cos(decl2) * np.cos(rtasc2), np.cos(decl2) * np.sin(rtasc2), np.sin(decl2)]
-    )
-    los3 = np.array(
-        [np.cos(decl3) * np.cos(rtasc3), np.cos(decl3) * np.sin(rtasc3), np.sin(decl3)]
+    los1, los2, los3 = calculate_los_vectors(
+        [decl1, decl2, decl3], [rtasc1, rtasc2, rtasc3]
     )
 
     # Check denominators for zero to avoid division errors
@@ -252,18 +286,11 @@ def anglesg(
             v2 (np.ndarray): ECI velocity vector in km/s
     """
     # Time intervals in seconds
-    tau12 = ((jd1 - jd2) + (jdf1 - jdf2)) * const.DAY2SEC
-    tau32 = ((jd3 - jd2) + (jdf3 - jdf2)) * const.DAY2SEC
+    tau12, tau13, tau32 = calculate_time_intervals(jd1, jdf1, jd2, jdf2, jd3, jdf3)
 
     # Line-of-sight unit vectors
-    los1 = np.array(
-        [np.cos(decl1) * np.cos(rtasc1), np.cos(decl1) * np.sin(rtasc1), np.sin(decl1)]
-    )
-    los2 = np.array(
-        [np.cos(decl2) * np.cos(rtasc2), np.cos(decl2) * np.sin(rtasc2), np.sin(decl2)]
-    )
-    los3 = np.array(
-        [np.cos(decl3) * np.cos(rtasc3), np.cos(decl3) * np.sin(rtasc3), np.sin(decl3)]
+    los1, los2, los3 = calculate_los_vectors(
+        [decl1, decl2, decl3], [rtasc1, rtasc2, rtasc3]
     )
 
     # Construct l-matrix and determinant
@@ -602,9 +629,7 @@ def anglesdr(
         return f1, f2, q
 
     # Time differences in seconds
-    tau12 = ((jd1 - jd2) + (jdf1 - jdf2)) * const.DAY2SEC
-    tau13 = ((jd3 - jd1) + (jdf3 - jdf1)) * const.DAY2SEC
-    tau32 = ((jd3 - jd2) + (jdf3 - jdf2)) * const.DAY2SEC
+    tau12, tau13, tau32 = calculate_time_intervals(jd1, jdf1, jd2, jdf2, jd3, jdf3)
 
     # Period in seconds (assumed 1 day for Earth)
     n12 = np.floor(abs(tau12 / const.DAY2SEC))
@@ -612,14 +637,8 @@ def anglesdr(
     n23 = np.floor(abs((tau12 + tau32) / const.DAY2SEC))
 
     # Line-of-sight unit vectors
-    los1 = np.array(
-        [np.cos(decl1) * np.cos(rtasc1), np.cos(decl1) * np.sin(rtasc1), np.sin(decl1)]
-    )
-    los2 = np.array(
-        [np.cos(decl2) * np.cos(rtasc2), np.cos(decl2) * np.sin(rtasc2), np.sin(decl2)]
-    )
-    los3 = np.array(
-        [np.cos(decl3) * np.cos(rtasc3), np.cos(decl3) * np.sin(rtasc3), np.sin(decl3)]
+    los1, los2, los3 = calculate_los_vectors(
+        [decl1, decl2, decl3], [rtasc1, rtasc2, rtasc3]
     )
 
     # Iterative variables (make sure newqr is < oldqr to start)
