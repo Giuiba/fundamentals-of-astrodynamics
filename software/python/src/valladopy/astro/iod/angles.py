@@ -543,7 +543,7 @@ def anglesdr(
     rng1: float,
     rng2: float,
     pctchg: float = 0.005,
-    tol: float = 1e-8,
+    tol_km: float = 0.1,
     max_iterations: int = 15,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Solve orbit determination problem using the double-r technique.
@@ -567,7 +567,7 @@ def anglesdr(
         rng1 (float): Range to first sighting in km
         rng2 (float): Range to second sighting in km
         pctchg (float, optional): Percentage change for iterative method (default 0.005)
-        tol (float, optional): Tolerance for convergence (default 1e-8)
+        tol_km (float, optional): Position tolerance for convergence in km (default 0.1)
         max_iterations (int, optional): Maximum number of iterations (default 15)
 
     Returns:
@@ -575,48 +575,16 @@ def anglesdr(
             r2 (np.ndarray): ECI position vector in km
             v2 (np.ndarray): ECI velocity vector in km/s
     """
-    # Time differences in seconds
-    tau12 = (jd1 - jd2) * 86400 + (jdf1 - jdf2) * 86400
-    tau13 = (jd3 - jd1) * 86400 + (jdf3 - jdf1) * 86400
-    tau32 = (jd3 - jd2) * 86400 + (jdf3 - jdf2) * 86400
 
-    # Period in seconds (assumed 1 day for Earth)
-    period = 86400.0
-    n12 = np.floor(abs(tau12 / period))
-    n13 = np.floor(abs(tau13 / period))
-    n23 = np.floor(abs((tau12 + tau32) / period))
-
-    # Line-of-sight unit vectors
-    los1 = np.array(
-        [np.cos(decl1) * np.cos(rtasc1), np.cos(decl1) * np.sin(rtasc1), np.sin(decl1)]
-    )
-    los2 = np.array(
-        [np.cos(decl2) * np.cos(rtasc2), np.cos(decl2) * np.sin(rtasc2), np.sin(decl2)]
-    )
-    los3 = np.array(
-        [np.cos(decl3) * np.cos(rtasc3), np.cos(decl3) * np.sin(rtasc3), np.sin(decl3)]
-    )
-
-    # Iterative variables
-    magr1in = rng1
-    magr2in = rng2
-    magr1old, magr2old = np.inf, np.inf
-    ktr = 0
-    oldqr, newqr = np.inf, 0.0
-
-    # Main loop to get three values of the double-r for processing
-    r2, v2 = np.zeros(3), np.zeros(3)
-    while (
-        (abs(magr1in - magr1old) > tol or abs(magr2in - magr2old) > tol)
-        and ktr < max_iterations
-        and newqr < oldqr
-    ):
-        ktr += 1
-        oldqr = newqr
-        magr1old, magr2old = magr1in, magr2in
+    def calculate_fcoeffs(magr1in, magr2in, deltar1=None, deltar2=None):
+        """Helper function to calculate partial derivatives and updated deltas."""
+        if deltar1:
+            magr1in += deltar1
+        if deltar2:
+            magr2in += deltar2
 
         # Call doubler to compute intermediate values
-        r2, r3, f1, f2, q1, magr1, magr2, a, deltae32 = doubler(
+        _, _, f1, f2, q, *_ = doubler(
             magr1in,
             magr2in,
             los1,
@@ -631,22 +599,97 @@ def anglesdr(
             n13,
             n23,
         )
+        return f1, f2, q
 
-        # Recalculate f and g series
-        f = 1.0 - a / magr2 * (1.0 - np.cos(deltae32))
-        g = tau32 - np.sqrt(a**3 / const.MU) * (deltae32 - np.sin(deltae32))
-        v2 = (r3 - f * r2) / g
+    # Time differences in seconds
+    tau12 = ((jd1 - jd2) + (jdf1 - jdf2)) * const.DAY2SEC
+    tau13 = ((jd3 - jd1) + (jdf3 - jdf1)) * const.DAY2SEC
+    tau32 = ((jd3 - jd2) + (jdf3 - jdf2)) * const.DAY2SEC
 
-        # Update magnitudes using the percentage change
-        deltar1 = pctchg * magr1old
-        deltar2 = pctchg * magr2old
+    # Period in seconds (assumed 1 day for Earth)
+    n12 = np.floor(abs(tau12 / const.DAY2SEC))
+    n13 = np.floor(abs(tau13 / const.DAY2SEC))
+    n23 = np.floor(abs((tau12 + tau32) / const.DAY2SEC))
+
+    # Line-of-sight unit vectors
+    los1 = np.array(
+        [np.cos(decl1) * np.cos(rtasc1), np.cos(decl1) * np.sin(rtasc1), np.sin(decl1)]
+    )
+    los2 = np.array(
+        [np.cos(decl2) * np.cos(rtasc2), np.cos(decl2) * np.sin(rtasc2), np.sin(decl2)]
+    )
+    los3 = np.array(
+        [np.cos(decl3) * np.cos(rtasc3), np.cos(decl3) * np.sin(rtasc3), np.sin(decl3)]
+    )
+
+    # Iterative variables (make sure newqr is < oldqr to start)
+    magr1in, magr2in = rng1, rng2
+    magr1old, magr2old, oldqr, newqr = np.inf, np.inf, np.inf, 1e10
+
+    # Main loop to get three values of the double-r for processing
+    ktr = 0
+    while (
+        (abs(magr1in - magr1old) > tol_km or abs(magr2in - magr2old) > tol_km)
+        and ktr < max_iterations
+        and newqr < oldqr
+    ):
+        ktr += 1
+        magr1o, magr2o, oldqr = magr1in, magr2in, newqr
+
+        # Compute nominal values
+        f1, f2, q1 = calculate_fcoeffs(magr1in, magr2in)
+
+        # Compute perturbations
+        # Re-calculate f1 and f2 with r1 = r1 + delta r1
+        deltar1, deltar2 = pctchg * magr1o, pctchg * magr2o
+        f1delr1, f2delr1, q2 = calculate_fcoeffs(magr1o, magr2o, deltar1=deltar1)
+        pf1pr1, pf2pr1 = (f1delr1 - f1) / deltar1, (f2delr1 - f2) / deltar1
+
+        # Re-calculate f1 and f2 with r2 = r2 + delta r2
+        f1delr2, f2delr2, q3 = calculate_fcoeffs(magr1o, magr2o, deltar2=deltar2)
+        pf1pr2, pf2pr2 = (f1delr2 - f1) / deltar2, (f2delr2 - f2) / deltar2
+
+        # Compute delta updates
+        magr1in, magr2in = magr1o, magr2o
+        delta = pf1pr1 * pf2pr2 - pf2pr1 * pf1pr2
+        delta1 = pf2pr2 * f1 - pf1pr2 * f2
+        delta2 = pf1pr1 * f2 - pf2pr1 * f1
+        deltar1 = -delta1 / delta if abs(delta) > const.SMALL else -delta1
+        deltar2 = -delta2 / delta if abs(delta) > const.SMALL else -delta2
+
+        # Limit corrections to avoid overshooting
+        chkamt = 0.15
+        deltar1 = np.clip(deltar1, -chkamt * magr1in, chkamt * magr1in)
+        deltar2 = np.clip(deltar2, -chkamt * magr2in, chkamt * magr2in)
+
+        # Update magnitudes and quality metric
+        magr1old, magr2old = magr1in, magr2in
         magr1in += deltar1
         magr2in += deltar2
-
-        # Calculate quality metric
-        newqr = np.sqrt(q1**2)
+        newqr = np.sqrt(q1**2 + q2**2 + q3**2)
 
         # Reduce percentage change for next iteration
         pctchg *= 0.5
+
+    # Final calculation for updated r2 and v2
+    r2, r3, _, _, _, _, magr2, a, deltae32 = doubler(
+        magr1in,
+        magr2in,
+        los1,
+        los2,
+        los3,
+        rsite1,
+        rsite2,
+        rsite3,
+        tau12,
+        tau32,
+        n12,
+        n13,
+        n23,
+    )
+
+    f = 1.0 - a / magr2 * (1.0 - np.cos(deltae32))
+    g = tau32 - np.sqrt(a**3 / const.MU) * (deltae32 - np.sin(deltae32))
+    v2 = (r3 - f * r2) / g
 
     return r2, v2

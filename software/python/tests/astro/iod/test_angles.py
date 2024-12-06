@@ -35,6 +35,12 @@ def site_data():
     return rseci1, rseci2, rseci3
 
 
+@pytest.fixture
+def range_data():
+    range1, range2 = 12742.21211926773, 12997.05636165308
+    return range1, range2
+
+
 @pytest.mark.parametrize(
     "diffsites, reci_expected, veci_expected",
     [
@@ -72,9 +78,8 @@ def test_angles_gauss(obs_data, site_data):
     assert np.allclose(veci, veci_expected, rtol=DEFAULT_TOL)
 
 
-def test_doubler(site_data):
+def test_doubler(site_data, range_data):
     # Input data
-    magr1in, magr2in = 12742.21211926773, 12997.05636165308
     los1 = [0.9472633016838, 0.015540847420216, 0.320079239165193]
     los2 = [0.574225360422271, 0.574741691745486, 0.583041356352574]
     los3 = [0.300651905274714, 0.739921912374617, 0.601767393136729]
@@ -83,7 +88,7 @@ def test_doubler(site_data):
 
     # Calculate outputs
     r2, r3, f1, f2, q1, magr1, magr2, a, deltae32 = angles.doubler(
-        magr1in, magr2in, los1, los2, los3, *site_data, tau12, tau32, n12, n13, n23
+        *range_data, los1, los2, los3, *site_data, tau12, tau32, n12, n13, n23
     )
 
     # Expected results
@@ -98,3 +103,16 @@ def test_doubler(site_data):
     assert np.isclose(magr2, 12997.056361653078, rtol=DEFAULT_TOL)
     assert np.isclose(a, 13404.16181471951, rtol=DEFAULT_TOL)
     assert np.isclose(deltae32, 14.875483923982381, rtol=DEFAULT_TOL)
+
+
+def test_angles_doubler(obs_data, site_data, range_data):
+    # Expected results
+    reci_expected = [6356.3974225567745, 5290.563607834945, 6511.386925528436]
+    veci_expected = [-4.172963733537418, 4.77645053907524, 1.7201932997557194]
+
+    # Calculate position and velocity vectors
+    reci, veci = angles.anglesdr(*obs_data, *site_data, *range_data)
+
+    # Expected results
+    assert np.allclose(reci, reci_expected, rtol=DEFAULT_TOL)
+    assert np.allclose(veci, veci_expected, rtol=DEFAULT_TOL)
