@@ -537,9 +537,9 @@ def anglesdr(
     jdf2: float,
     jd3: float,
     jdf3: float,
-    rsite1: np.ndarray,
-    rsite2: np.ndarray,
-    rsite3: np.ndarray,
+    rsite1: ArrayLike,
+    rsite2: ArrayLike,
+    rsite3: ArrayLike,
     rng1: float,
     rng2: float,
     pctchg: float = 0.005,
@@ -561,9 +561,9 @@ def anglesdr(
         jdf2 (float): Julian date fraction of second sighting (days from 4713 BC)
         jd3 (float): Julian date of third sighting (days from 4713 BC)
         jdf3 (float): Julian date fraction of third sighting (days from 4713 BC)
-        rsite1 (np.ndarray): ECI site position vector of first sighting in km
-        rsite2 (np.ndarray): ECI site position vector of second sighting in km
-        rsite3 (np.ndarray): ECI site position vector of third sighting in km
+        rsite1 (array_like): ECI site position vector of first sighting in km
+        rsite2 (array_like): ECI site position vector of second sighting in km
+        rsite3 (array_like): ECI site position vector of third sighting in km
         rng1 (float): Range to first sighting in km
         rng2 (float): Range to second sighting in km
         pctchg (float, optional): Percentage change for iterative method (default 0.005)
@@ -604,6 +604,7 @@ def anglesdr(
     ktr = 0
     oldqr, newqr = np.inf, 0.0
 
+    # Main loop to get three values of the double-r for processing
     r2, v2 = np.zeros(3), np.zeros(3)
     while (
         (abs(magr1in - magr1old) > tol or abs(magr2in - magr2old) > tol)
@@ -616,8 +617,6 @@ def anglesdr(
 
         # Call doubler to compute intermediate values
         r2, r3, f1, f2, q1, magr1, magr2, a, deltae32 = doubler(
-            2.0 * np.dot(los1, rsite1),
-            2.0 * np.dot(los2, rsite2),
             magr1in,
             magr2in,
             los1,
@@ -638,7 +637,7 @@ def anglesdr(
         g = tau32 - np.sqrt(a**3 / const.MU) * (deltae32 - np.sin(deltae32))
         v2 = (r3 - f * r2) / g
 
-        # Update magnitudes using pctchg
+        # Update magnitudes using the percentage change
         deltar1 = pctchg * magr1old
         deltar2 = pctchg * magr2old
         magr1in += deltar1
