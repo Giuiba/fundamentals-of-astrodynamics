@@ -26,9 +26,9 @@
 %    aecef       - acceleration vector earth fixedkm/s2
 %
 %  locals        :
-%    st          - matrix for pef - tod 
+%    st          - matrix for pef - tod
 %    stdot       - matrix for pef - tod rate
-%    pm          - matrix for ecef - pef 
+%    pm          - matrix for ecef - pef
 %
 %  coupling      :
 %   sidereal     - rotation for sidereal time     tod - pef
@@ -37,29 +37,32 @@
 %  references    :
 %    vallado       2013, 223-229
 %
-% [recef, vecef, aecef] = tod2ecef  ( rtod, vtod, atod, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+% [recef, vecef, aecef] = tod2ecef  ( rtod, vtod, atod, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 % ----------------------------------------------------------------------------
 
-function [recef, vecef, aecef] = tod2ecef  ( rtod, vtod, atod, iau80arr, fArgs, jdut1, ttt, lod, xp, yp, eqeterms, ddpsi, ddeps )
-constastro;
-        [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
+function [recef, vecef, aecef] = tod2ecef  ( rtod, vtod, atod, iau80arr, jdut1, ttt, lod, xp, yp, eqeterms, ddpsi, ddeps )
+    constastro;
 
-        [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
+    [fArgs] = fundarg(ttt, '80');
 
-        [pm] = polarm(xp, yp, ttt, '80');
+    [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-        thetasa= earthrot * (1.0  - lod/86400.0 );
-        omegaearth = [0; 0; thetasa;];
+    [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
 
-        rpef  = st'*rtod;
-        recef = pm'*rpef;
+    [pm] = polarm(xp, yp, ttt, '80');
 
-        vpef  = st'*vtod - cross( omegaearth,rpef );
-        vecef = pm'*vpef;
+    thetasa= earthrot * (1.0  - lod/86400.0 );
+    omegaearth = [0; 0; thetasa;];
 
-        temp  = cross(omegaearth,rpef);
+    rpef  = st'*rtod;
+    recef = pm'*rpef;
 
-       % two additional terms not needed if satellite is not on surface
-       % of the Earth
-       aecef = pm'*(st'*atod)- cross(omegaearth,temp) - 2.0*cross(omegaearth,vpef);
+    vpef  = st'*vtod - cross( omegaearth,rpef );
+    vecef = pm'*vpef;
+
+    temp  = cross(omegaearth,rpef);
+
+    % two additional terms not needed if satellite is not on surface
+    % of the Earth
+    aecef = pm'*(st'*atod)- cross(omegaearth,temp) - 2.0*cross(omegaearth,vpef);
 

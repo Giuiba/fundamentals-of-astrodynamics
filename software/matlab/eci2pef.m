@@ -45,13 +45,15 @@
 %  references    :
 %    vallado       2001, 219, eq 3-65 to 3-66
 %
-% [rpef, vpef, apef] = eci2pef(reci, veci, aeci, iau80arr, fArgs, ttt, jdut1, lod, eqeterms, ddpsi, ddeps)
+% [rpef, vpef, apef] = eci2pef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, eqeterms, ddpsi, ddeps)
 % ----------------------------------------------------------------------------
 
-function [rpef, vpef, apef] = eci2pef(reci, veci, aeci, iau80arr, fArgs, ttt, jdut1, lod, eqeterms, ddpsi, ddeps)
+function [rpef, vpef, apef] = eci2pef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, eqeterms, ddpsi, ddeps)
     constastro;
     pnb = zeros(3,3);
     st = zeros(3,3);
+
+    [fArgs] = fundarg(ttt, '80');
 
     [prec, psia, wa, ea, xa] = precess ( ttt, '80' );
 

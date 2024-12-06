@@ -51,11 +51,14 @@
 %  references    :
 %    vallado       2013, 223-229
 %
-% [recef,vecef,aecef] = eci2ecef  ( reci,veci,aeci,iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+% [recef,vecef,aecef] = eci2ecef  ( reci,veci,aeci,iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
 % ----------------------------------------------------------------------------
 
-function [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+function [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
     constastro;
+
+    [fArgs] = fundarg(ttt, '80');
+
     [prec,psia,wa,ea,xa] = precess ( ttt, '80' );
 
     [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);

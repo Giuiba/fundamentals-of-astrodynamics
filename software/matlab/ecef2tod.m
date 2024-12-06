@@ -32,41 +32,44 @@
 %    trueeps     - true obliquity of the ecliptic rad
 %    meaneps     - mean obliquity of the ecliptic rad
 %    omega       -                                rad
-%    prec        - matrix for mod - eci 
-%    nut         - matrix for tod - mod 
-%    st          - matrix for pef - tod 
+%    prec        - matrix for mod - eci
+%    nut         - matrix for tod - mod
+%    st          - matrix for pef - tod
 %    stdot       - matrix for pef - tod rate
-%    pm          - matrix for ecef - pef 
+%    pm          - matrix for ecef - pef
 %
 %  coupling      :
-%   sidereal     - rotation for sidereal time     
-%   polarm       - rotation for polar motion      
+%   sidereal     - rotation for sidereal time
+%   polarm       - rotation for polar motion
 %
 %  references    :
 %    vallado       2013, 223-231
 %
-%  [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+%  [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps)
 % ----------------------------------------------------------------------------
 
-function [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps)
-constastro;
-        % ---- find matrices - note nut is only needed for st argument inputs
-        [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
+function [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps)
+    constastro;
+    
+    [fArgs] = fundarg(ttt, '80');
 
-        [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms);
+    % ---- find matrices - note nut is only needed for st argument inputs
+    [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-        [pm] = polarm(xp, yp, ttt, '80');
+    [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms);
 
-        % ---- perform transformations
-        thetasa= earthrot * (1.0  - lod/86400.0 );
-        omegaearth = [0; 0; thetasa;];
+    [pm] = polarm(xp, yp, ttt, '80');
 
-        rpef = pm*recef';
-        rtod = st*rpef;
+    % ---- perform transformations
+    thetasa= earthrot * (1.0  - lod/86400.0 );
+    omegaearth = [0; 0; thetasa;];
 
-        vpef = pm*vecef';
-        vtod = st*(vpef + cross(omegaearth,rpef));
+    rpef = pm*recef';
+    rtod = st*rpef;
 
-        temp = cross(omegaearth,rpef);
-        atod = st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
+    vpef = pm*vecef';
+    vtod = st*(vpef + cross(omegaearth,rpef));
+
+    temp = cross(omegaearth,rpef);
+    atod = st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
 

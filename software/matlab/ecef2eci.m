@@ -49,11 +49,14 @@
 %  references    :
 %    vallado       2013, 223-229
 %
-% [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+% [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 % ----------------------------------------------------------------------------
 
-function [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+function [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
     constastro;
+
+    [fArgs] = fundarg(ttt, '80');
+
     % ---- find matrices
     [prec,psia,wa,ea,xa] = precess ( ttt, '80' );
 

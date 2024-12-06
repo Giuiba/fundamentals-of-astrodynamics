@@ -40,6 +40,7 @@ using System.Configuration;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Net;
+using static AstroLibMethods.AstroLib;
 
 namespace AstroLibMethods
 {
@@ -106,7 +107,7 @@ namespace AstroLibMethods
             public double x;
             public double y;
             public double s;
-            public double jdtt, jdftt, mjd;
+            public double jdxysstart, jdfxysstart, mjd;
         };
         // use a class for all the xys data so it can be processed quickly
         public xysdataClass[] xysarr = new xysdataClass[xyssize];
@@ -535,18 +536,6 @@ namespace AstroLibMethods
             fArgs[12] = lonnep;
             fArgs[13] = precrate;
 
-            if (printopt == 'y')
-            {
-                Console.WriteLine("fundamental parameters");
-                Console.WriteLine("delaunay " + (l / deg2rad).ToString() + " " + (l1 / deg2rad).ToString()
-                    + " " + (f / deg2rad).ToString() + " " + (d / deg2rad).ToString()
-                    + " " + (omega / deg2rad).ToString());
-                Console.WriteLine("plan lon " + (lonmer / deg2rad).ToString() + " " + (lonven / deg2rad).ToString()
-                    + " " + (lonear / deg2rad).ToString() + " " + (lonmar / deg2rad).ToString()
-                    + " " + (lonjup / deg2rad).ToString() + " " + (lonsat / deg2rad).ToString()
-                    + " " + (lonurn / deg2rad).ToString() + " " + (lonnep / deg2rad).ToString()
-                    + " " + (precrate / deg2rad).ToString());
-            }
         }  //  fundarg 
 
 
@@ -846,19 +835,19 @@ namespace AstroLibMethods
         public double[,] iau06xys
         (
         double jdtt, double ttt, double ddx, double ddy, char interp,
-        EOPSPWLib.iau06Class iau06arr, double[] fArgs, double jdxysstart,
-        out double x, out double y, out double s
+        EOPSPWLib.iau06Class iau06arr, double[] fArgs06, out double x, out double y, out double s
         )
         {
             double[,] nut1 = new double[3, 3];
             double[,] nut2 = new double[3, 3];
             double a;
+            fArgs06 = new double[14];
 
             // ---------------- find xys
             if (!interp.Equals("x"))
-                iau06xysS(ttt, iau06arr, fArgs, out x, out y, out s);
+                iau06xysS(ttt, iau06arr, fArgs06, out x, out y, out s);
             else
-                findxysparam(jdtt, 0.0, interp, xysarr, jdxysstart, out x, out y, out s);
+                findxysparam(jdtt, 0.0, interp, xysarr, out x, out y, out s);
 
             // add corrections if available
             x = x + ddx;
@@ -932,9 +921,11 @@ namespace AstroLibMethods
         public void createXYS
             (
                string outLoc,
-               EOPSPWLib.iau06Class iau06arr, double[] fArgs
+               EOPSPWLib.iau06Class iau06arr, double[] fArgs06
             )
         {
+            fArgs06 = new double[14];
+
             Int32 i;
             double dt, jdtt, jdftt, ttt, x, y, s;
             StringBuilder strbuild = new StringBuilder();
@@ -950,7 +941,10 @@ namespace AstroLibMethods
             {
                 jdtt = jdtt + dt;
                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
-                iau06xysS(ttt, iau06arr, fArgs, out x, out y, out s);
+
+                fundarg(ttt, EOpt.e06cio, out fArgs06);
+
+                iau06xysS(ttt, iau06arr, fArgs06, out x, out y, out s);
 
                 strbuild.AppendLine(jdtt.ToString("0.000000").PadLeft(8) + " "
                     + jdftt.ToString("0.0000000000").PadLeft(8) + " "
@@ -1014,19 +1008,19 @@ namespace AstroLibMethods
                 //string[] linedata = line.Split('|');
                 string[] linedata = Regex.Split(fileData[i], pattern);
 
-                xysarr[i].jdtt = Convert.ToDouble(linedata[1]);
-                xysarr[i].jdftt = Convert.ToDouble(linedata[2]);
+                //xysarr[i].jdtt = Convert.ToDouble(linedata[1]);
+                //xysarr[i].jdftt = Convert.ToDouble(linedata[2]);
                 xysarr[i].x = Convert.ToDouble(linedata[3]);
                 xysarr[i].y = Convert.ToDouble(linedata[4]);
                 xysarr[i].s = Convert.ToDouble(linedata[5]);
 
-                xysarr[i].mjd = xysarr[i].jdtt + xysarr[i].jdftt - 2400000.5;
+                xysarr[i].mjd = Convert.ToDouble(linedata[1]) + Convert.ToDouble(linedata[2]) - 2400000.5;
 
                 // ---- find epoch date
                 if (i == 0)
                 {
-                    jdxysstart = xysarr[i].jdtt;
-                    jdfxysstart = xysarr[i].jdftt;
+                    xysarr[0].jdxysstart = Convert.ToDouble(linedata[1]);
+                    xysarr[0].jdfxysstart = Convert.ToDouble(linedata[2]);
                     xysarr[i].mjd = jdxysstart + jdfxysstart;
                 }
             }
@@ -1071,7 +1065,6 @@ namespace AstroLibMethods
             (
             double jdtt, double jdftt, char interp,
             xysdataClass[] xysarr,
-            double jdxysstart,
             out double x, out double y, out double s
         )
         {
@@ -1088,7 +1081,7 @@ namespace AstroLibMethods
                 mfme = 1440.0 + mfme;
 
             // ---- read data for day of interest
-            jdxysstarto = Math.Floor(jdtt + jdftt - jdxysstart);
+            jdxysstarto = Math.Floor(jdtt + jdftt - xysarr[0].jdxysstart - xysarr[0].jdfxysstart);
             recnum = Convert.ToInt32(jdxysstarto);
 
             // check for out of bound values
@@ -1189,7 +1182,6 @@ namespace AstroLibMethods
          *
         *  coupling      :
          *    iau06in     - initialize the arrays
-         *    fundarg     - find the fundamental arguments
          *
          *  references    : 
          *    vallado       2013, 212-214
@@ -1198,10 +1190,12 @@ namespace AstroLibMethods
         public double[,] iau06pn  // may not be needed now
             (
             double ttt, double ddx, double ddy, EOpt opt,
-            EOPSPWLib.iau06Class iau06arr, double[] fArgs,
+            EOPSPWLib.iau06Class iau06arr, double[] fArgs06,
             double x, double y, double s
             )
         {
+            fArgs06 = new double[14];
+
             double ttt2, ttt3, ttt4, ttt5;
             double[,] nut1 = new double[3, 3];
             double[,] nut2 = new double[3, 3];
@@ -1213,7 +1207,6 @@ namespace AstroLibMethods
             ttt5 = ttt3 * ttt2;
 
             // ---------------- find x
-
             // add corrections if available
             x = x + ddx;
             y = y + ddy;
@@ -1450,7 +1443,6 @@ namespace AstroLibMethods
         *    deltaeps    - change in obliquity                               rad
         *
         *  coupling      :
-        *    fundarg     - find fundamental arguments
         *    fmod      - modulus division
         *
         *  references    :
@@ -1460,10 +1452,12 @@ namespace AstroLibMethods
         public double[,] nutation
             (
             double ttt, double ddpsi, double ddeps,
-            EOPSPWLib.iau80Class iau80arr, EOpt opt, double[] fArgs,
+            EOPSPWLib.iau80Class iau80arr, double[] fArgs,
             out double deltapsi, out double deltaeps, out double trueeps, out double meaneps
             )
         {
+            fArgs = new double[14];
+
             double[,] nut = new double[3, 3];
             double deg2rad, cospsi, sinpsi, coseps, sineps, costrueeps, sintrueeps;
             int i;
@@ -1568,8 +1562,6 @@ namespace AstroLibMethods
         *    deltaeps    - change in obliquity rad
         *
         *  coupling      :
-        *    iau06in     - initialize the arrays
-        *    fundarg     - find the fundamental arguments
         *    precess     - find the precession quantities
         *
         *  references    :
@@ -1582,6 +1574,8 @@ namespace AstroLibMethods
             EOPSPWLib.iau06Class iau06arr, EOpt opt, double[] fArgs
             )
         {
+            fArgs = new double[14];
+
             double[,] pnb = new double[3, 3];
             double[,] prec = new double[3, 3];
             double[,] nut = new double[3, 3];
@@ -1817,7 +1811,6 @@ namespace AstroLibMethods
         *    deltaeps    - change in obliquity                            rad
         *
         *  coupling      :
-        *    fundarg     - find fundamental arguments
         *
         *  references    :
         *    vallado       2013, 213, 224
@@ -1826,10 +1819,12 @@ namespace AstroLibMethods
         public double[,] nutationqmod
             (
             double ttt,
-            EOPSPWLib.iau80Class iau80arr, EOpt opt, double[] fArgs,
+            EOPSPWLib.iau80Class iau80arr, double[] fArgs,
             out double deltapsi, out double deltaeps, out double meaneps
             )
         {
+            fArgs = new double[14];
+
             double[,] nut = new double[3, 3];
             double[,] n1 = new double[3, 3];
             double[,] n2 = new double[3, 3];
@@ -1927,6 +1922,8 @@ namespace AstroLibMethods
             double lod, int eqeterms, EOpt opt
             )
         {
+            fArgs = new double[14];
+
             double gmst, ast, sinast, cosast;
             double era, tut1d;
             //double omegaearth;
@@ -2219,10 +2216,9 @@ namespace AstroLibMethods
             ref double[] reci, ref double[] veci,
             Enum direct,
             ref double[] recef, ref double[] vecef,
-            EOpt opt,
-            EOPSPWLib.iau80Class iau80arr, EOPSPWLib.iau06Class iau06arr,
-            double jdtt, double jdftt, double jdut1, double jdxysstart, double lod,
-            double xp, double yp, double ddpsi, double ddeps, double ddx, double ddy
+            EOPSPWLib.iau80Class iau80arr, 
+            double jdtt, double jdftt, double jdut1, double lod,
+            double xp, double yp, double ddpsi, double ddeps
             )
         {
             double[] fArgs = new double[14];
@@ -2259,90 +2255,16 @@ namespace AstroLibMethods
 
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
-            fundarg(ttt, opt, out fArgs);
+            fundarg(ttt, EOpt.e80, out fArgs);
 
             //Console.WriteLine( "ttt " + ttt.ToString() + " jdut1 " + jdut1.ToString());
             // IAU-76/FK5 approach
-            if (opt.Equals(EOpt.e80) || opt.Equals(EOpt.e96))
-            {
-                prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs,
+                prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
+                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
                     out deltapsi, out deltaeps, out trueeps, out meaneps);
-                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, opt);
-                //Console.WriteLine( String.Format("psia {0}  {1}  {2} {3} ", psia, wa, epsa, chia));
-                //Console.WriteLine( String.Format("dpsi {0}  {1}  {2} {3} {4} ", deltapsi, meaneps, trueeps, 
-                //    meaneps, fArgs[4]));
-                pn = MathTimeLibr.matmult(prec, nut, 3, 3, 3);
-            }
-            else
-            // IAU-2006/2000 CIO series approach
-            if (opt.Equals(EOpt.e06cio))
-            {
-                prec[0, 0] = 1.0;
-                prec[1, 1] = 1.0;
-                prec[2, 2] = 1.0;
-                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, 'x', iau06arr, fArgs, jdxysstart, out x, out y, out s);
+                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, EOpt.e80);
 
-                st = sidereal(jdut1, 0.0, 0.0, fArgs, lod, 2, opt);
-                if (printopt == 'y')
-                    Console.WriteLine(String.Format("xys cl {0}  {1}  {2} ", x, y, s));
-            }
-            else
-            // IAU2006nut or IAU-2000a pna approach  EOpt.e00a
-            // this is incorrect, but sofa and iers are so confusing, just use the series approach
-            {
-                prec = new double[3, 3];
-                prec[0, 0] = 1.0;
-                prec[1, 1] = 1.0;
-                prec[2, 2] = 1.0;
-                // only needed for s
-                // probably just need the abbreivated form
-                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs, jdxysstart, out x, out y, out s);
-                //double conv = 180.0 / Math.PI * 3600.0;
-                //Console.WriteLine( "xys " + (x * conv).ToString() + " " + (y * conv).ToString() + " "
-                //   + (s*conv).ToString());
-
-                // x and y come from the pnb matrix
-                // sofa does 687 terms and the adds corretion
-                // "probably" should do 1320 terms as in TN-36?
-                // this is actually pnb coming back
-                nut = precnutbias00a(ttt, ddx, ddy, iau06arr, opt, fArgs);
-                if (printopt == 'y')
-                {
-                    Console.WriteLine(String.Format("xys eq {0}  {1}  {2} ", x, y, s));
-                    Console.WriteLine(String.Format("pn = {0}  {1}  {2}", pn[0, 0], pn[0, 1], pn[0, 2]));
-                    Console.WriteLine(String.Format("pn = {0}  {1}  {2}", pn[1, 0], pn[1, 1], pn[1, 2]));
-                    Console.WriteLine(String.Format("pn = {0}  {1}  {2}", pn[2, 0], pn[2, 1], pn[2, 2]));
-                }
-
-                x = pn[2, 0];
-                y = pn[1, 2]; // transposed from sofa
-                if (printopt == 'y')
-                    Console.WriteLine(String.Format("x  {0} y  {1} ", x, y));
-                // seems like a lot of math where you could find a and then the matrix direct?
-                double e, d;
-                if (x != 0.0 && y != 0.0)
-                    e = Math.Atan2(y, x);
-                else
-                    e = 0.0;
-                d = Math.Atan(Math.Sqrt((x * x + y * y) / (1.0 - x * x - y * y)));
-                if (printopt == 'y')
-                    Console.WriteLine(String.Format("e {0} d {1} ", e, fArgs[3]));
-
-                a1 = MathTimeLibr.rot3mat(-e);
-                a2 = MathTimeLibr.rot2mat(-fArgs[3]);
-                a3 = MathTimeLibr.rot3mat(e + s);
-                temp = MathTimeLibr.matmult(a2, a3, 3, 3, 3);
-                pn = MathTimeLibr.matmult(a1, temp, 3, 3, 3);
-
-                st = gstime00(jdut1, deltapsi, ttt, iau06arr, fArgs, out gst);
-                //sofa seems to use this??
-                st = sidereal(jdut1, 0.0, 0.0, fArgs, lod, 2, opt);
-                if (printopt == 'y')
-                    Console.WriteLine(String.Format("gst  {0} ", gst));
-            }
-
-            pm = polarm(xp, yp, ttt, opt);
+            pm = polarm(xp, yp, ttt, EOpt.e80);
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
@@ -2386,26 +2308,6 @@ namespace AstroLibMethods
                 tempvec1[2] = vpef[2] + crossr[2];
                 veci = MathTimeLibr.matvecmult(trans, tempvec1, 3);
 
-                //Console.WriteLine( String.Format("pm = {0}  {1}  {2}", pm[0, 0], pm[0, 1], pm[0, 2]));
-                //Console.WriteLine( String.Format("pm = {0}  {1}  {2}", pm[1, 0], pm[1, 1], pm[1, 2]));
-                //Console.WriteLine( String.Format("pm = {0}  {1}  {2}", pm[2, 0], pm[2, 1], pm[2, 2]));
-                if (printopt == 'y')
-                    Console.WriteLine(String.Format("rpefi = {0}  {1}  {2}  {3}  {4}  {5}", rpef[0], rpef[1],
-                    rpef[2], vpef[0], vpef[1], vpef[2]));
-                //Console.WriteLine( String.Format("st = {0}  {1}  {2}", st[0, 0], st[0, 1], st[0, 2]));
-                //Console.WriteLine( String.Format("st = {0}  {1}  {2}", st[1, 0], st[1, 1], st[1, 2]));
-                //Console.WriteLine( String.Format("st = {0}  {1}  {2}", st[2, 0], st[2, 1], st[2, 2]));
-                //Console.WriteLine( String.Format("pn = {0}  {1}  {2}", pn[0, 0], pn[0, 1], pn[0, 2]));
-                //Console.WriteLine( String.Format("pn = {0}  {1}  {2}", pn[1, 0], pn[1, 1], pn[1, 2]));
-                //Console.WriteLine( String.Format("pn = {0}  {1}  {2}", pn[2, 0], pn[2, 1], pn[2, 2]));
-                rtod = MathTimeLibr.matvecmult(st, rpef, 3);
-                vtod = MathTimeLibr.matvecmult(st, tempvec1, 3);
-                if (printopt == 'y')
-                    Console.WriteLine(String.Format("rtodi = {0}  {1}  {2}  {3}  {4}  {5}", rtod[0], rtod[1],
-                    rtod[2], vtod[0], vtod[1], vtod[2]));
-                //Console.WriteLine( String.Format("prec = {0}  {1}  {2}", prec[0, 0], prec[0, 1], prec[0, 2]));
-                //Console.WriteLine( String.Format("prec = {0}  {1}  {2}", prec[1, 0], prec[1, 1], prec[1, 2]));
-                //Console.WriteLine( String.Format("prec = {0}  {1}  {2}", prec[2, 0], prec[2, 1], prec[2, 2]));
             }
         }//  eci_ecef 
 
@@ -2464,9 +2366,8 @@ namespace AstroLibMethods
         ref double[] reci, ref double[] veci,
         Enum direct,
         ref double[] rpef, ref double[] vpef,
-        EOpt opt,
-        EOPSPWLib.iau80Class iau80arr, EOPSPWLib.iau06Class iau06arr,
-        double jdtt, double jdftt, double jdut1, double jdxysstart,
+        EOPSPWLib.iau80Class iau80arr, 
+        double jdtt, double jdftt, double jdut1, 
         double lod, double ddpsi, double ddeps, double ddx, double ddy
         )
         {
@@ -2494,39 +2395,13 @@ namespace AstroLibMethods
 
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
-            fundarg(ttt, opt, out fArgs);
+            fundarg(ttt, EOpt.e80, out fArgs);
 
-            // IAU-76/FK5 approach
-            if (opt.Equals(EOpt.e80) || opt.Equals(EOpt.e96))
-            {
-                prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs,
+                prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
+                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
                     out deltapsi, out deltaeps, out trueeps, out meaneps);
-                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, opt);
-            }
-            else
-            // IAU-2006/2000 CIO approach
-            if (opt.Equals(EOpt.e06cio))
-            {
-                prec[0, 0] = 1.0;
-                prec[1, 1] = 1.0;
-                prec[2, 2] = 1.0;
-                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs, jdxysstart, out x, out y, out s);
-                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, opt);
-            }
-            else
-            // iau2006nut or iau-2006/2000 Nut or iau2000a approach
-            // these are wrong, use the series approach
-            {
-                prec[0, 0] = 1.0;
-                prec[1, 1] = 1.0;
-                prec[2, 2] = 1.0;
-                // prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
-                // this is prec*nut
-                nut = precnutbias00a(ttt, ddx, ddy, iau06arr, opt, fArgs);
-                st = gstime00(jdut1, deltapsi, ttt, iau06arr, fArgs, out gst);
-            }
-
+                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, EOpt.e80);
+ 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
             omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
@@ -2573,16 +2448,11 @@ namespace AstroLibMethods
          *
          *  author        : david vallado           davallado@gmail.com    4 jun 2002
          *
-         *  revisions
-         *    vallado     - add terms for ast calculation                 30 sep 2002
-         *    vallado     - consolidate with iau 2000                     14 feb 2005
-         *
          *  inputs          description                                  range / units
          *    reci        - position vector eci                           km
          *    veci        - velocity vector eci                           km/s
         *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
          *    iau80arr    - iau76/fk5 eop constants
-         *    iau06arr    - iau2006 eop constants
          *    ttt         - julian centuries of tt                        centuries
          *    jdut1       - julian date of ut1                            days from 4713 bc
          *    lod         - excess length of day                          sec
@@ -2615,10 +2485,9 @@ namespace AstroLibMethods
             ref double[] reci, ref double[] veci,
             Enum direct,
             ref double[] rtod, ref double[] vtod,
-            EOpt opt,
-            EOPSPWLib.iau80Class iau80arr, EOPSPWLib.iau06Class iau06arr,
-            double jdtt, double jdftt, double jdut1, double jdxysstart,
-            double lod, double ddpsi, double ddeps, double ddx, double ddy
+            EOPSPWLib.iau80Class iau80arr, 
+            double jdtt, double jdftt, double jdut1, 
+            double lod, double ddpsi, double ddeps
             )
         {
             double[] fArgs = new double[14];
@@ -2637,36 +2506,11 @@ namespace AstroLibMethods
             char interp = 's';
 
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
+            fundarg(ttt, EOpt.e80, out fArgs);
 
-            fundarg(ttt, opt, out fArgs);
-
-            // IAU-76/FK5 approach
-            if (opt.Equals(EOpt.e80) || opt.Equals(EOpt.e96))
-            {
-                prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs,
+            prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
+                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
                     out deltapsi, out deltaeps, out trueeps, out meaneps);
-            }
-            else
-            // IAU-2006/2000 CIO approach
-            if (opt.Equals(EOpt.e06cio))
-            {
-                prec[0, 0] = 1.0;
-                prec[1, 1] = 1.0;
-                prec[2, 2] = 1.0;
-                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs, jdxysstart, out x, out y, out s);
-            }
-            else
-            // iau-2006/2000 Nut or iau2000a approach
-            // these are wrong, use series approach
-            {
-                prec[0, 0] = 1.0;
-                prec[1, 1] = 1.0;
-                prec[2, 2] = 1.0;
-                // prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
-                // this is prec*nut
-                nut = precnutbias00a(ttt, ddx, ddy, iau06arr, EOpt.e00a, fArgs);
-            }
 
             if (direct.Equals(MathTimeLib.Edirection.eto))
             {
@@ -2728,8 +2572,7 @@ namespace AstroLibMethods
             ref double[] reci, ref double[] veci,
             Enum direct,
             ref double[] rmod, ref double[] vmod,
-            EOpt opt,
-            EOPSPWLib.iau80Class iau80arr, EOPSPWLib.iau06Class iau06arr,
+            EOPSPWLib.iau80Class iau80arr,
             double ttt
             )
         {
@@ -2738,28 +2581,8 @@ namespace AstroLibMethods
             double[,] precp = new double[3, 3];
 
             // IAU-76/FK5 approach
-            if (opt.Equals(EOpt.e80) || opt.Equals(EOpt.e96))
-            {
-                prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
-            }
-            else
-            // IAU-2006/2000 CIO approach
-            if (opt.Equals(EOpt.e06cio))
-            {
-                prec[0, 0] = 1.0;
-                prec[1, 1] = 1.0;
-                prec[2, 2] = 1.0;
-            }
-            else
-            // iau-2006/2000 Nut or iau2000a approach
-            {
-                prec[0, 0] = 1.0;
-                prec[1, 1] = 1.0;
-                prec[2, 2] = 1.0;
-                // prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
-                // this is prec*nut
-            }
-
+                prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
+        
             if (direct.Equals(MathTimeLib.Edirection.eto))
             {
                 // ---- perform transformations
@@ -2775,6 +2598,477 @@ namespace AstroLibMethods
                 veci = MathTimeLibr.matvecmult(prec, vmod, 3);
             }
         }  //  eci_mod 
+
+
+        /* ----------------------------------------------------------------------------
+        *
+        *                           function eci_ecef06
+        *
+        *  this function transforms between the earth fixed (itrf) frame, and
+        *    the eci mean equator mean equinox (gcrf).
+        *
+        *  author        : david vallado           davallado@gmail.com    4 jun 2002
+        *
+        *  inputs          description                                  range / units
+        *    recef       - position vector earth fixed                   km
+        *    vecef       - velocity vector earth fixed                   km/s
+        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        *    iau80arr    - iau76/fk5 eop constants
+        *    iau06arr    - iau2006 eop constants
+        *    jdtt        - julian date of tt                             days from 4713 bc
+        *    ttt         - julian centuries of tt                        centuries
+        *    jdut1       - julian date of ut1                            days from 4713 bc
+        *    lod         - excess length of day                          sec
+        *    xp          - polar motion coefficient                      rad
+        *    yp          - polar motion coefficient                      rad
+        *    ddpsi       - delta psi correction to gcrf                  rad
+        *    ddeps       - delta eps correction to gcrf                  rad
+        *
+        *  outputs       :
+        *    reci        - position vector eci                           km
+        *    veci        - velocity vector eci                           km/s
+        *
+        *  locals        :
+        *    eqeterms    - terms for ast calculation                     0,2
+        *    deltapsi    - nutation angle                                rad
+        *    trueeps     - true obliquity of the ecliptic                rad
+        *    meaneps     - mean obliquity of the ecliptic                rad
+        *    prec        - matrix for mod - eci 
+        *    nut         - matrix for tod - mod 
+        *    st          - matrix for pef - tod 
+        *    stdot       - matrix for pef - tod rate
+        *    pm          - matrix for ecef - pef 
+        *
+        *  coupling      :
+        *   precess      - rotation for precession       
+        *   nutation     - rotation for nutation          
+        *   sidereal     - rotation for sidereal time     
+        *   polarm       - rotation for polar motion      
+        *
+        *  references    :
+        *    vallado       2013, 223-231
+        * ---------------------------------------------------------------------------- */
+
+        public void eci_ecef06
+            (
+            ref double[] reci, ref double[] veci,
+            Enum direct,
+            ref double[] recef, ref double[] vecef,
+            EOpt opt,
+            EOPSPWLib.iau06Class iau06arr,
+            double jdtt, double jdftt, double jdut1, double lod,
+            double xp, double yp, double ddx, double ddy
+            )
+        {
+            double[] fArgs06 = new double[14];
+            double psia, wa, epsa, chia, x, y, s, gst, ttt;
+            double meaneps, deltapsi, deltaeps, trueeps;
+            double[] omegaearth = new double[3];
+            double[] rpef = new double[3];
+            double[] vpef = new double[3];
+            double[] rtod = new double[3];
+            double[] vtod = new double[3];
+            double[] crossr = new double[3];
+            double[] tempvec1 = new double[3];
+            double[,] a1 = new double[3, 3];
+            double[,] a2 = new double[3, 3];
+            double[,] a3 = new double[3, 3];
+            double[,] tm = new double[3, 3];
+            double[,] pn = new double[3, 3];
+            double[,] prec = new double[3, 3];
+            double[,] nut = new double[3, 3];
+            double[,] st = new double[3, 3];
+            double[,] pm = new double[3, 3];
+            double[,] precp = new double[3, 3];
+            double[,] pnp = new double[3, 3];
+            double[,] nutp = new double[3, 3];
+            double[,] stp = new double[3, 3];
+            double[,] pmp = new double[3, 3];
+            double[,] temp = new double[3, 3];
+            double[,] trans = new double[3, 3];
+
+            int eqeterms = 2;
+            char interp = 's';
+            deltapsi = 0.0;
+            meaneps = 0.0;
+
+            ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
+
+            fundarg(ttt, opt, out fArgs06);
+
+            // IAU-2006/2000 CIO series approach
+            if (opt.Equals(EOpt.e06cio))
+            {
+                prec[0, 0] = 1.0;
+                prec[1, 1] = 1.0;
+                prec[2, 2] = 1.0;
+                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, 'x', iau06arr, fArgs06, out x, out y, out s);
+
+                st = sidereal(jdut1, 0.0, 0.0, fArgs06, lod, 2, opt);
+                if (printopt == 'y')
+                    Console.WriteLine(String.Format("xys cl {0}  {1}  {2} ", x, y, s));
+            }
+            else
+            // IAU2006nut or IAU-2000a pna approach  EOpt.e00a
+            // this is incorrect, but sofa and iers are so confusing, just use the series approach
+            {
+                prec = new double[3, 3];
+                prec[0, 0] = 1.0;
+                prec[1, 1] = 1.0;
+                prec[2, 2] = 1.0;
+                // only needed for s
+                // probably just need the abbreivated form
+                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs06, out x, out y, out s);
+                //double conv = 180.0 / Math.PI * 3600.0;
+                //Console.WriteLine( "xys " + (x * conv).ToString() + " " + (y * conv).ToString() + " "
+                //   + (s*conv).ToString());
+
+                // x and y come from the pnb matrix
+                // sofa does 687 terms and the adds corretion
+                // "probably" should do 1320 terms as in TN-36?
+                // this is actually pnb coming back
+                nut = precnutbias00a(ttt, ddx, ddy, iau06arr, opt, fArgs06);
+                if (printopt == 'y')
+                {
+                    Console.WriteLine(String.Format("xys eq {0}  {1}  {2} ", x, y, s));
+                    Console.WriteLine(String.Format("pn = {0}  {1}  {2}", pn[0, 0], pn[0, 1], pn[0, 2]));
+                    Console.WriteLine(String.Format("pn = {0}  {1}  {2}", pn[1, 0], pn[1, 1], pn[1, 2]));
+                    Console.WriteLine(String.Format("pn = {0}  {1}  {2}", pn[2, 0], pn[2, 1], pn[2, 2]));
+                }
+
+                x = pn[2, 0];
+                y = pn[1, 2]; // transposed from sofa
+                if (printopt == 'y')
+                    Console.WriteLine(String.Format("x  {0} y  {1} ", x, y));
+                // seems like a lot of math where you could find a and then the matrix direct?
+                double e, d;
+                if (x != 0.0 && y != 0.0)
+                    e = Math.Atan2(y, x);
+                else
+                    e = 0.0;
+                d = Math.Atan(Math.Sqrt((x * x + y * y) / (1.0 - x * x - y * y)));
+                if (printopt == 'y')
+                    Console.WriteLine(String.Format("e {0} d {1} ", e, fArgs06[3]));
+
+                a1 = MathTimeLibr.rot3mat(-e);
+                a2 = MathTimeLibr.rot2mat(-fArgs06[3]);
+                a3 = MathTimeLibr.rot3mat(e + s);
+                temp = MathTimeLibr.matmult(a2, a3, 3, 3, 3);
+                pn = MathTimeLibr.matmult(a1, temp, 3, 3, 3);
+
+                st = gstime00(jdut1, deltapsi, ttt, iau06arr, fArgs06, out gst);
+                //sofa seems to use this??
+                st = sidereal(jdut1, 0.0, 0.0, fArgs06, lod, 2, opt);
+                if (printopt == 'y')
+                    Console.WriteLine(String.Format("gst  {0} ", gst));
+            }
+
+            pm = polarm(xp, yp, ttt, EOpt.e06cio);
+
+            omegaearth[0] = 0.0;
+            omegaearth[1] = 0.0;
+            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+
+            if (direct.Equals(MathTimeLib.Edirection.eto))
+            {
+                // ---- perform transformations
+                pmp = MathTimeLibr.mattrans(pm, 3);
+                stp = MathTimeLibr.mattrans(st, 3);
+                nutp = MathTimeLibr.mattrans(nut, 3);
+                precp = MathTimeLibr.mattrans(prec, 3);
+                //pnp = MathTimeLibr.mattrans(pn, 3);
+
+                temp = MathTimeLibr.matmult(stp, nutp, 3, 3, 3);
+                //trans = MathTimeLibr.matmult(stp, pnp, 3, 3, 3);
+                trans = MathTimeLibr.matmult(temp, precp, 3, 3, 3);
+                rpef = MathTimeLibr.matvecmult(trans, reci, 3);
+                recef = MathTimeLibr.matvecmult(pmp, rpef, 3);
+
+                tempvec1 = MathTimeLibr.matvecmult(trans, veci, 3);
+                MathTimeLibr.cross(omegaearth, rpef, out crossr);
+                vpef[0] = tempvec1[0] - crossr[0];
+                vpef[1] = tempvec1[1] - crossr[1];
+                vpef[2] = tempvec1[2] - crossr[2];
+                vecef = MathTimeLibr.matvecmult(pmp, vpef, 3);
+            }
+            else
+            {
+                // ---- perform transformations
+                rpef = MathTimeLibr.matvecmult(pm, recef, 3);
+                temp = MathTimeLibr.matmult(prec, nut, 3, 3, 3);
+                //trans = MathTimeLibr.matmult(pn, st, 3, 3, 3);
+                trans = MathTimeLibr.matmult(temp, st, 3, 3, 3);
+                reci = MathTimeLibr.matvecmult(trans, rpef, 3);
+
+                vpef = MathTimeLibr.matvecmult(pm, vecef, 3);
+                MathTimeLibr.cross(omegaearth, rpef, out crossr);
+                tempvec1[0] = vpef[0] + crossr[0];
+                tempvec1[1] = vpef[1] + crossr[1];
+                tempvec1[2] = vpef[2] + crossr[2];
+                veci = MathTimeLibr.matvecmult(trans, tempvec1, 3);
+            }
+        }  //  eci_ecef06
+
+        /* ----------------------------------------------------------------------------
+         *
+         *                           function eci_tirs
+         *
+         *  this function transforms between the eci mean equator mean equinox (gcrf), and
+         *    the pseudo earth fixed frame (pef).
+         *
+         *  author        : david vallado           davallado@gmail.com    4 jun 2002
+         *
+         *  revisions
+         *    vallado     - add terms for ast calculation                 30 sep 2002
+         *    vallado     - consolidate with iau 2000                     14 feb 2005
+         *
+         *  inputs          description                                  range / units
+         *    reci        - position vector eci                           km
+         *    veci        - velocity vector eci                           km/s
+        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+         *    iau80arr    - iau76/fk5 eop constants
+         *    iau06arr    - iau2006 eop constants
+         *    ttt         - julian centuries of tt                        centuries
+         *    jdut1       - julian date of ut1                            days from 4713 bc
+         *    lod         - excess length of day                          sec
+         *    ddpsi       - delta psi correction to gcrf                  rad
+         *    ddeps       - delta eps correction to gcrf                  rad
+         *    ddx         - delta x correction to gcrf                    rad
+         *    ddy         - delta y correction to gcrf                    rad
+         *
+         *  outputs       :
+         *    rpef       - position vector pef                            km
+         *    vpef       - velocity vector pef                            km/s
+         *
+         *  locals        :
+         *    eqeterms    - terms for ast calculation                     0,2
+         *    deltapsi    - nutation angle                                rad
+         *    trueeps     - true obliquity of the ecliptic                rad
+         *    meaneps     - mean obliquity of the ecliptic                rad
+         *    prec        - matrix for mod - eci 
+         *    nut         - matrix for tod - mod 
+         *    st          - matrix for pef - tod 
+         *    stdot       - matrix for pef - tod rate
+         *
+         *  coupling      :
+         *   precess      - rotation for precession       
+         *   nutation     - rotation for nutation          
+         *   sidereal     - rotation for sidereal time     
+         *
+         *  references    :
+         *    vallado       2013, 223-231
+         * ---------------------------------------------------------------------------- */
+
+        public void eci_tirs
+        (
+        ref double[] reci, ref double[] veci,
+        Enum direct,
+        ref double[] rpef, ref double[] vpef,
+        EOpt opt,
+        EOPSPWLib.iau06Class iau06arr, 
+        double jdtt, double jdftt, double jdut1,
+        double lod, double ddx, double ddy
+        )
+        {
+            double[] fArgs06 = new double[14];
+            double psia, wa, epsa, chia, x, y, s, gst, ttt;
+            double meaneps, deltapsi, deltaeps, trueeps;
+            double[] omegaearth = new double[3];
+            double[] crossr = new double[3];
+            double[] tempvec1 = new double[3];
+            double[,] tm = new double[3, 3];
+            double[,] prec = new double[3, 3];
+            double[,] nut = new double[3, 3];
+            double[,] st = new double[3, 3];
+            double[,] precp = new double[3, 3];
+            double[,] nutp = new double[3, 3];
+            double[,] stp = new double[3, 3];
+            double[,] temp = new double[3, 3];
+            double[,] trans = new double[3, 3];
+
+            int eqeterms = 2;
+
+            deltapsi = 0.0;
+            meaneps = 0.0;
+            char interp = 's';
+
+            ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
+
+            fundarg(ttt, EOpt.e06cio, out fArgs06);
+
+            // IAU-2006/2000 CIO approach
+            if (opt.Equals(EOpt.e06cio))
+            {
+                prec[0, 0] = 1.0;
+                prec[1, 1] = 1.0;
+                prec[2, 2] = 1.0;
+                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs06, out x, out y, out s);
+                st = sidereal(jdut1, deltapsi, meaneps, fArgs06, lod, 2, opt);
+            }
+            else
+            // iau2006nut or iau-2006/2000 Nut or iau2000a approach
+            // these are wrong, use the series approach
+            {
+                prec[0, 0] = 1.0;
+                prec[1, 1] = 1.0;
+                prec[2, 2] = 1.0;
+                // prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
+                // this is prec*nut
+                nut = precnutbias00a(ttt, ddx, ddy, iau06arr, opt, fArgs06);
+                st = gstime00(jdut1, deltapsi, ttt, iau06arr, fArgs06, out gst);
+            }
+
+            omegaearth[0] = 0.0;
+            omegaearth[1] = 0.0;
+            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+
+            if (direct.Equals(MathTimeLib.Edirection.eto))
+            {
+                // ---- perform transformations
+                stp = MathTimeLibr.mattrans(st, 3);
+                nutp = MathTimeLibr.mattrans(nut, 3);
+                precp = MathTimeLibr.mattrans(prec, 3);
+
+                temp = MathTimeLibr.matmult(stp, nutp, 3, 3, 3);
+                trans = MathTimeLibr.matmult(temp, precp, 3, 3, 3);
+                rpef = MathTimeLibr.matvecmult(trans, reci, 3);
+
+                tempvec1 = MathTimeLibr.matvecmult(trans, veci, 3);
+                MathTimeLibr.cross(omegaearth, rpef, out crossr);
+                vpef[0] = tempvec1[0] - crossr[0];
+                vpef[1] = tempvec1[1] - crossr[1];
+                vpef[2] = tempvec1[2] - crossr[2];
+            }
+            else
+            {
+                // ---- perform transformations
+                temp = MathTimeLibr.matmult(prec, nut, 3, 3, 3);
+                trans = MathTimeLibr.matmult(temp, st, 3, 3, 3);
+                reci = MathTimeLibr.matvecmult(trans, rpef, 3);
+
+                MathTimeLibr.cross(omegaearth, rpef, out crossr);
+                tempvec1[0] = vpef[0] + crossr[0];
+                tempvec1[1] = vpef[1] + crossr[1];
+                tempvec1[2] = vpef[2] + crossr[2];
+                veci = MathTimeLibr.matvecmult(trans, tempvec1, 3);
+            }
+        }  //  eci_tirs
+
+
+        /* ----------------------------------------------------------------------------
+         *
+         *                           function eci_cirs
+         *
+         *  this function transforms between the eci mean equator mean equinox (gcrf), and
+         *    the true of date frame (tod).
+         *
+         *  author        : david vallado           davallado@gmail.com    4 jun 2002
+         *
+         *  revisions
+         *    vallado     - add terms for ast calculation                 30 sep 2002
+         *    vallado     - consolidate with iau 2000                     14 feb 2005
+         *
+         *  inputs          description                                  range / units
+         *    reci        - position vector eci                           km
+         *    veci        - velocity vector eci                           km/s
+        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+         *    iau80arr    - iau76/fk5 eop constants
+         *    iau06arr    - iau2006 eop constants
+         *    ttt         - julian centuries of tt                        centuries
+         *    jdut1       - julian date of ut1                            days from 4713 bc
+         *    lod         - excess length of day                          sec
+         *    ddpsi       - delta psi correction to eci                  rad
+         *    ddeps       - delta eps correction to eci                  rad
+         *    ddx         - delta x correction to eci                    rad
+         *    ddy         - delta y correction to eci                    rad
+         *
+         *  outputs       :
+         *    rtod       - position vector tod                            km
+         *    vtod       - velocity vector tod                            km/s
+         *
+         *  locals        :
+         *    deltapsi    - nutation angle                                rad
+         *    trueeps     - true obliquity of the ecliptic                rad
+         *    meaneps     - mean obliquity of the ecliptic                rad
+         *    prec        - matrix for mod - eci 
+         *    nut         - matrix for tod - mod 
+         *
+         *  coupling      :
+         *   precess      - rotation for precession       
+         *   nutation     - rotation for nutation          
+         *
+         *  references    :
+         *    vallado       2013, 223-231
+         * ---------------------------------------------------------------------------- */
+
+        public void eci_cirs
+            (
+            ref double[] reci, ref double[] veci,
+            Enum direct,
+            ref double[] rtod, ref double[] vtod,
+            EOpt opt,
+            EOPSPWLib.iau06Class iau06arr, 
+            double jdtt, double jdftt, double jdut1, 
+            double lod, double ddpsi, double ddeps, double ddx, double ddy
+            )
+        {
+            double[] fArgs06 = new double[14];
+            double psia, wa, epsa, chia, x, y, s, ttt;
+            double meaneps, deltapsi, deltaeps, trueeps;
+            double[,] tm = new double[3, 3];
+            double[,] prec = new double[3, 3];
+            double[,] nut = new double[3, 3];
+            double[,] precp = new double[3, 3];
+            double[,] nutp = new double[3, 3];
+            double[,] temp = new double[3, 3];
+            double[,] trans = new double[3, 3];
+
+            deltapsi = 0.0;
+            meaneps = 0.0;
+            char interp = 's';
+
+            ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
+
+            fundarg(ttt, opt, out fArgs06);
+
+            // IAU-2006/2000 CIO approach
+            if (opt.Equals(EOpt.e06cio))
+            {
+                prec[0, 0] = 1.0;
+                prec[1, 1] = 1.0;
+                prec[2, 2] = 1.0;
+                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs06, out x, out y, out s);
+            }
+            else
+            // iau-2006/2000 Nut or iau2000a approach
+            // these are wrong, use series approach
+            {
+                prec[0, 0] = 1.0;
+                prec[1, 1] = 1.0;
+                prec[2, 2] = 1.0;
+                // prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
+                // this is prec*nut
+                nut = precnutbias00a(ttt, ddx, ddy, iau06arr, EOpt.e00a, fArgs06);
+            }
+
+            if (direct.Equals(MathTimeLib.Edirection.eto))
+            {
+                // ---- perform transformations
+                nutp = MathTimeLibr.mattrans(nut, 3);
+                precp = MathTimeLibr.mattrans(prec, 3);
+
+                trans = MathTimeLibr.matmult(nutp, precp, 3, 3, 3);
+                rtod = MathTimeLibr.matvecmult(trans, reci, 3);
+                vtod = MathTimeLibr.matvecmult(trans, veci, 3);
+            }
+            else
+            {
+                // ---- perform transformations
+                trans = MathTimeLibr.matmult(prec, nut, 3, 3, 3);
+                reci = MathTimeLibr.matvecmult(trans, rtod, 3);
+                veci = MathTimeLibr.matvecmult(trans, vtod, 3);
+            }
+        }  //  eci_cirs 
 
 
 
@@ -2834,9 +3128,9 @@ namespace AstroLibMethods
             Enum direct,
             ref double[] rmod, ref double[] vmod,
             EOpt opt,
-            EOPSPWLib.iau80Class iau80arr, EOPSPWLib.iau06Class iau06arr,
-            double jdtt, double jdftt, double jdut1, double jdxysstart,
-            double lod, double xp, double yp, double ddpsi, double ddeps, double ddx, double ddy
+            EOPSPWLib.iau80Class iau80arr, 
+            double jdtt, double jdftt, double jdut1, 
+            double lod, double xp, double yp, double ddpsi, double ddeps
             )
         {
             double[] fArgs = new double[14];
@@ -2868,26 +3162,12 @@ namespace AstroLibMethods
             // IAU-76/FK5 approach
             if (opt.Equals(EOpt.e80) || opt.Equals(EOpt.e96))
             {
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs,
+                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
                     out deltapsi, out deltaeps, out trueeps, out meaneps);
                 st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, opt);
             }
-            else
-            // IAU-2006/2000 CIO approach
-            if (opt.Equals(EOpt.e06cio))
-            {
-                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs, jdxysstart, out x, out y, out s);
-                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, opt);
-            }
-            else
-            // iau-2006/2000 Nut or iau2000a approach
-            {
-                // this is prec*nut
-                nut = precnutbias00a(ttt, ddx, ddy, iau06arr, opt, fArgs);
-                st = gstime00(jdut1, deltapsi, ttt, iau06arr, fArgs, out gst);
-            }
-
-            pm = polarm(xp, yp, ttt, opt);
+ 
+            pm = polarm(xp, yp, ttt, EOpt.e80);
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
@@ -2984,9 +3264,9 @@ namespace AstroLibMethods
             Enum direct,
             ref double[] rtod, ref double[] vtod,
             EOpt opt,
-            EOPSPWLib.iau80Class iau80arr, EOPSPWLib.iau06Class iau06arr,
+            EOPSPWLib.iau80Class iau80arr,
             double ttt, double jdut1,
-            double lod, double xp, double yp, double ddpsi, double ddeps, double ddx, double ddy
+            double lod, double xp, double yp, double ddpsi, double ddeps
             )
         {
             double[] fArgs = new double[14];
@@ -3010,25 +3290,11 @@ namespace AstroLibMethods
             fundarg(ttt, opt, out fArgs);
 
             // IAU-76/FK5 approach
-            if (opt.Equals(EOpt.e80) || opt.Equals(EOpt.e96))
-            {
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs,
+                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
                     out deltapsi, out deltaeps, out trueeps, out meaneps);
                 st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, opt);
-            }
-            else
-            // IAU-2006/2000 CIO approach
-            if (opt.Equals(EOpt.e06cio))
-            {
-                st = sidereal(jdut1, 0.0, 0.0, fArgs, lod, 2, opt);
-            }
-            else
-            // iau-2006/2000 Nut or iau2000apna approach
-            {
-                st = gstime00(jdut1, deltapsi, ttt, iau06arr, fArgs, out gst);
-            }
 
-            pm = polarm(xp, yp, ttt, opt);
+            pm = polarm(xp, yp, ttt, EOpt.e80);
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
@@ -3114,7 +3380,6 @@ namespace AstroLibMethods
             ref double[] recef, ref double[] vecef,
             Enum direct,
             ref double[] rpef, ref double[] vpef,
-            EOpt opt,
             double ttt, double xp, double yp
             )
         {
@@ -3122,7 +3387,7 @@ namespace AstroLibMethods
             double[,] pm = new double[3, 3];
             double[,] pmp = new double[3, 3];
 
-            pm = polarm(xp, yp, ttt, opt);
+            pm = polarm(xp, yp, ttt, EOpt.e80);
 
             if (direct.Equals(MathTimeLib.Edirection.efrom))
             {
@@ -3139,6 +3404,80 @@ namespace AstroLibMethods
                 vpef = MathTimeLibr.matvecmult(pm, vecef, 3);
             }
         }  //  ecef_pef
+
+
+        /* ----------------------------------------------------------------------------
+        *
+        *                           function ecef_tirs
+        *
+        *  this function transforms a vector from earth fixed (itrf) frame to
+        *  pseudo earth fixed (pef). 
+        *
+        *  author        : david vallado           davallado@gmail.com    4 jun 2002
+        *
+        *  revisions
+        *    vallado     - add terms for ast calculation                 30 sep 2002
+        *    vallado     - consolidate with iau 2000                     14 feb 2005
+        *
+        *  inputs          description                                   range / units
+        *    recef       - position vector earth fixed                   km
+        *    vecef       - velocity vector earth fixed                   km/s
+        *    direct      - direction of transfer                         eto, efrom
+        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        *    ttt         - julian centuries of tt                        centuries
+        *    lod         - excess length of day                          sec
+        *    xp          - polar motion coefficient                      rad
+        *    yp          - polar motion coefficient                      rad
+        *
+        *  outputs       :
+        *    rpef        - position vector pef                           km
+        *    vpef        - velocity vector pef                           km/s
+        *
+        *  locals        :
+        *    deltapsi    - nutation angle                                rad
+        *    trueeps     - true obliquity of the ecliptic                rad
+        *    meaneps     - mean obliquity of the ecliptic                rad
+        *    nut         - matrix for tod - mod 
+        *    st          - matrix for pef - tod 
+        *    stdot       - matrix for pef - tod rate
+        *    pm          - matrix for ecef - pef 
+        *
+        *  coupling      :
+        *   polarm       - rotation for polar motion      
+        *
+        *  references    :
+        *    vallado       2013, 228-236
+        * ---------------------------------------------------------------------------- */
+
+        public void ecef_tirs
+            (
+            ref double[] recef, ref double[] vecef,
+            Enum direct,
+            ref double[] rpef, ref double[] vpef,
+            double ttt, double xp, double yp
+            )
+        {
+            double[,] tm = new double[3, 3];
+            double[,] pm = new double[3, 3];
+            double[,] pmp = new double[3, 3];
+
+            pm = polarm(xp, yp, ttt, EOpt.e06cio);
+
+            if (direct.Equals(MathTimeLib.Edirection.efrom))
+            {
+                // ---- perform transformations
+                pmp = MathTimeLibr.mattrans(pm, 3);
+
+                recef = MathTimeLibr.matvecmult(pmp, rpef, 3);
+                vecef = MathTimeLibr.matvecmult(pmp, vpef, 3);
+            }
+            else
+            {
+                // ---- perform transformations
+                rpef = MathTimeLibr.matvecmult(pm, recef, 3);
+                vpef = MathTimeLibr.matvecmult(pm, vecef, 3);
+            }
+        }  //  ecef_tirs
 
 
         /* ----------------------------------------------------------------------------
@@ -3349,7 +3688,7 @@ namespace AstroLibMethods
             fundarg(ttt, opt, out fArgs);
 
             prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
-            nut = nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
+            nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
 
             // ------------------------find eqeg----------------------
             // rotate teme through just geometric terms
@@ -3444,7 +3783,7 @@ namespace AstroLibMethods
 
             fundarg(ttt, opt, out fArgs);
 
-            nut = nutationqmod(ttt, iau80arr, opt, fArgs, out deltapsi, out deltaeps, out meaneps);
+            nut = nutationqmod(ttt, iau80arr, fArgs, out deltapsi, out deltaeps, out meaneps);
 
             //  assumption that utc = ut1 and therefore a new gmst
             ed = jdutc - 2451544.5;  // elapsed days from 1 jan 2000 0 hr 
@@ -3576,7 +3915,7 @@ namespace AstroLibMethods
 
             prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
 
-            nut = nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, opt, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
+            nut = nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
 
             st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, opt);
 
@@ -3593,7 +3932,7 @@ namespace AstroLibMethods
             tempvec1[2] = v1pef[2] + crossr[2];
             v1eci = MathTimeLibr.matvecmult(trans, tempvec1, 3);
             if (printopt == 'y')
-                 Console.WriteLine(String.Format("r1eci = {0}  {1}  {2}  {3}  {4}  {5}", r1eci[0], r1eci[1], r1eci[2], v1eci[0], v1eci[1], v1eci[2]));
+                Console.WriteLine(String.Format("r1eci = {0}  {1}  {2}  {3}  {4}  {5}", r1eci[0], r1eci[1], r1eci[2], v1eci[0], v1eci[1], v1eci[2]));
 
             rot2rsw = rv2rsw(r1eci, v1eci, out rrsw, out vrsw);
             rot2rswt = MathTimeLibr.mattrans(rot2rsw, 3);
@@ -4305,8 +4644,8 @@ namespace AstroLibMethods
 
             // -------- convert r to ecef for lat/lon calculation
             eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                EOpt.e80, EOPSPWLibr.iau80arr, EOPSPWLibr.iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                EOPSPWLibr.iau80arr, 
+                jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             // ----------------- find longitude value  ----------------- uses ecef
             temp = Math.Sqrt(recef[0] * recef[0] + recef[1] * recef[1]);
@@ -4925,7 +5264,6 @@ namespace AstroLibMethods
             (
             double rtasc, double decl, double rr, double latgd, double lon, double alt,
             double ttt, double jdut1, double lod, double xp, double yp, double ddpsi, double ddeps,
-            EOpt opt,
             out double az, out double el
             )
         {
@@ -4971,14 +5309,14 @@ namespace AstroLibMethods
             double halfpi = Math.PI * 0.5;
             double small = 0.00000001;
             // -------------------- convert eci to ecef --------------------
-            fundarg(ttt, opt, out fArgs);
+            fundarg(ttt, EOpt.e80, out fArgs);
 
             // a = [0;0;0];
             // [recef,vecef,aecef] = eci2ecef(reci,veci,a,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps);
-            prec = precess(ttt, opt, out psia, out wa, out ea, out xa);
-            nut = nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, opt, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
-            st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, opt);  // stdot calc, not returned, use terms = 2 since well past 1997
-            pm = polarm(xp, yp, ttt, opt);
+            prec = precess(ttt, EOpt.e80, out psia, out wa, out ea, out xa);
+            nut = nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr,  fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
+            st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, EOpt.e80);  // stdot calc, not returned, use terms = 2 since well past 1997
+            pm = polarm(xp, yp, ttt, EOpt.e80);
             prect = MathTimeLibr.mattrans(prec, 3);
             nutt = MathTimeLibr.mattrans(nut, 3);
             stt = MathTimeLibr.mattrans(st, 3);
@@ -5489,13 +5827,13 @@ namespace AstroLibMethods
          *
          *  author        : david vallado           davallado@gmail.com    1 mar 2001
          *
-         *  inputs          description                    range / units
-         *    ecc         - eccentricity                   0.0 to
+         *  inputs          description                        range / units
+         *    ecc         - eccentricity                         0.0 to
          *    m           - mean anomaly                         0.0 to 2pi rad
          *
          *  outputs       :
-         *    eccanom          - eccentric anomaly              0.0 to 2pi rad
-         *    nu          - true anomaly                   0.0 to 2pi rad
+         *    eccanom     - eccentric anomaly                    0.0 to 2pi rad
+         *    nu          - true anomaly                         0.0 to 2pi rad
          *
          *  locals        :
          *    e1          - eccentric anomaly, next value  rad
@@ -5638,7 +5976,7 @@ namespace AstroLibMethods
         *    m           - mean anomaly                   0.0 to 2pi rad
         *
         *  outputs       :
-        *    eccanom          - eccentric anomaly              0.0 to 2pi rad
+        *    eccanom     - eccentric anomaly              0.0 to 2pi rad
         *    nu          - true anomaly                   0.0 to 2pi rad
         *
         *  locals        :
@@ -5779,16 +6117,16 @@ namespace AstroLibMethods
         *  revisions
         *    vallado     - fix small                                     24 sep 2002
         *
-        *  inputs          description                    range / units
-        *    ecc         - eccentricity                   0.0  to
+        *  inputs          description                           range / units
+        *    ecc         - eccentricity                             0.0  to
         *    nu          - true anomaly                             0.0 to 2pi rad
         *
         *  outputs       :
-        *    eccanom          - eccentric anomaly              0.0  to 2pi rad       153.02 ø
-        *    m           - mean anomaly                   0.0  to 2pi rad       151.7425 ø
+        *    eccanom     - eccentric anomaly                        0.0  to 2pi rad       153.02 ø
+        *    m           - mean anomaly                             0.0  to 2pi rad       151.7425 ø
         *
         *  locals        :
-        *    e1          - eccentric anomaly, next value  rad
+        *    e1          - eccentric anomaly, next value            rad
         *    sine        - sine of e
         *    cose        - cosine of e
         *    ktr         - index
@@ -6436,9 +6774,9 @@ namespace AstroLibMethods
                     period = twopi * Math.Sqrt(Math.Abs(a * a * a) / gravConst.mu);
                     // ------- next not needed for 2body multi-rev ----------
                     //if (Math.Abs(dtsec) > Math.Abs(period))
-                        // including the truncation will produce vertical lines that are parallel
-                        // (plotting chi vs time)
-                        //                    dtseco = rem( dtsec,period );
+                    // including the truncation will produce vertical lines that are parallel
+                    // (plotting chi vs time)
+                    //                    dtseco = rem( dtsec,period );
                     // mulrev = Convert.ToInt16(dtsec / period);
                     if (Math.Abs(alpha - 1.0) > small)
                         xold = Math.Sqrt(gravConst.mu) * dtsec * alpha;
@@ -9417,11 +9755,11 @@ namespace AstroLibMethods
             int kk = 1;
             double bigr2x; //, bigr2nx;
             bigr2c = 20000.0 / gravConst.re; // er guess ~GPS altitude
-           // bigr2nx = bigr2c;
+                                             // bigr2nx = bigr2c;
             while (Math.Abs(bigr2 - bigr2c) > 8.0e-5 && kk < 15)  // do in er, 0.5 km
             {
                 bigr2 = bigr2c;
-            //    bigr2x = bigr2nx;
+                //    bigr2x = bigr2nx;
                 deriv = Math.Pow(bigr2, 8) + poly[3] * Math.Pow(bigr2, 6)
                     + poly[6] * Math.Pow(bigr2, 3) + poly[9];
                 deriv1 = 8.0 * Math.Pow(bigr2, 7) + 6.0 * poly[3] * Math.Pow(bigr2, 5)
@@ -9448,7 +9786,7 @@ namespace AstroLibMethods
 
             // now back to normal units
             bigr2 = bigr2c * gravConst.re;  // km
-        //    bigr2nx = bigr2nx * gravConst.re;
+                                            //    bigr2nx = bigr2nx * gravConst.re;
 
             a1 = tau32 / (tau32 - tau12);
             a1u = (tau32 * ((tau32 - tau12) * (tau32 - tau12) - tau32 * tau32)) /
@@ -9461,14 +9799,14 @@ namespace AstroLibMethods
 
             if (show == 'y' || show == 'a')
             {
-        //        errstr = errstr + "Poly--------- " + poly[1] + " " + poly[3] + " " + poly[6] + " " + poly[9]
-        //        + " tau " + tau12.ToString() + " " + tau32.ToString() + " sec ";
+                //        errstr = errstr + "Poly--------- " + poly[1] + " " + poly[3] + " " + poly[6] + " " + poly[9]
+                //        + " tau " + tau12.ToString() + " " + tau32.ToString() + " sec ";
 
                 //if (poly[3] < 0.0 && poly[6] > 0.0)
                 //    chk3roots = "3 root poss ";
                 //else
                 //    chk3roots = "1 root poss ";
-       //         errstr = errstr + chk3roots + " root pick " + bigr2.ToString(); // + "\n";  // + " " + bigr2nx.ToString()
+                //         errstr = errstr + chk3roots + " root pick " + bigr2.ToString(); // + "\n";  // + " " + bigr2nx.ToString()
             }
 
             // ------------- solve matrix with u2 better known -------------- 
@@ -9804,10 +10142,10 @@ namespace AstroLibMethods
             double tem = 1.0 / (magr1 * magr2);
             for (int i = 0; i < 3; i++)
             {
-             //   if (dm == 'S')  // short way will be direct motion?
-                    w[i] = temp[i] * tem;
-              //  else
-              //      w[i] = -temp[i] * tem;  // retrograde motion
+                //   if (dm == 'S')  // short way will be direct motion?
+                w[i] = temp[i] * tem;
+                //  else
+                //      w[i] = -temp[i] * tem;  // retrograde motion
             }
 
             // extra tests
@@ -9863,8 +10201,8 @@ namespace AstroLibMethods
             MathTimeLibr.cross(r2, r1, out temp);
             //if looking at nij  dm
             sindv21 = MathTimeLibr.mag(temp) / (magr2 * magr1);
-           // else
-           //     sindv21 = -MathTimeLibr.mag(temp) / (magr2 * magr1);
+            // else
+            //     sindv21 = -MathTimeLibr.mag(temp) / (magr2 * magr1);
             dv21 = Math.Atan2(sindv21, cosdv21) + twopi * n12;
 
             cosdv31 = MathTimeLibr.dot(r3, r1) / (magr3 * magr1);
@@ -10152,9 +10490,9 @@ namespace AstroLibMethods
             while ((Math.Abs(magr1in - magr1old) > tol || Math.Abs(magr2in - magr2old) > tol)
                 && ktr <= 15
                 && newqr < oldqr)
-                {
+            {
                 oldqr = newqr;
-                    ktr = ktr + 1;
+                ktr = ktr + 1;
                 magr1o = magr1in;
                 magr2o = magr2in;
 
@@ -10699,8 +11037,8 @@ namespace AstroLibMethods
             bool lgmean = false; // true if to use geometric("g") means
             bool lminly = false;  // true if "minimization" run, i.e.solve for minimum
                                   // (derivative = 0) instead of function = 0 
-            //bool lfixax = true;  // true if keep axes(use g = / 0 !) after iteration 1
-            //bool lfxax2 = true;  // true if keep axes(use g = / 0 !) even in iter. 1 
+                                  //bool lfixax = true;  // true if keep axes(use g = / 0 !) after iteration 1
+                                  //bool lfxax2 = true;  // true if keep axes(use g = / 0 !) even in iter. 1 
             bool lmodfy = false;  // true for inter-iteration modding(?)
             //int npolar;  // special polar starters
             double hn = 0.5;      // 'halley'/'modified newton-raphson' control
@@ -11238,7 +11576,7 @@ namespace AstroLibMethods
                         // goto 9;
                         nfail = 0;
                         // unknown next line? int conversion?
-                       //alpha = alpha;
+                        //alpha = alpha;
                         errstr = errstr + "critsq return alpha " + alpha.ToString() + "\n";
                         //q = e;
                         //ei = eideg;
@@ -11772,7 +12110,7 @@ namespace AstroLibMethods
             }
 
             /* ----------- calculate transfer orbit between r2's ------------- */
- //           if (error.Equals("ok"))
+            //           if (error.Equals("ok"))
             {
                 //        lambertuniv(rint, r1tgt, dm, de, nrev, dtsec, tbi, altpad, out v1t, out v2t, out hitearth, out error);
                 //                if (error.Equals("ok"))
@@ -12375,8 +12713,8 @@ namespace AstroLibMethods
         *      
         *  author        : david vallado             davallado@gmail.com        5 aug 2024
         *
-        *  inputs        description                                     range / units
-        *    fname       - filename for gravity field            
+        *  inputs        description                                          range / units
+        *    fname       - filename for gravity field      
         *    normalized  - normalized or unnormalized                           'y', 'n'                        
         *    startKtr    - first line of ata in the gravity file                0, 1, ...
         *
@@ -12490,13 +12828,13 @@ namespace AstroLibMethods
         *      
         *  author        : david vallado             davallado@gmail.com        5 aug 2024
         *
-        *  inputs        description                                   range / units
+        *  inputs        description                                          range / units
         *    latgc       - geocentric lat of satellite, not nadir point         -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                         1..~170
+        *    order       - size of gravity field                                1..~170
         *    normalized  - normalized or unnormalized                           'y', 'n'                        
         *
         *  outputs       :
-        *    LegArrGU     - array of un normalized Legendre polynomials, gtds
+        *    LegArrGU    - array of un normalized Legendre polynomials, gtds
         *    LegArrGN    - array of normalized Legendre polynomials, gtds
         *
         *  locals :
@@ -12580,37 +12918,37 @@ namespace AstroLibMethods
 
 
         /* ----------------------------------------------------------------------------
-        *
+         *
          *                           function LegPolyMont
-        *
+         *
          *   this function finds the unnormalized and normalized Legendre polynomials for the 
          *   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
          *   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 
          *   greater as they start at 1. note that some recursions at high degree tesseral terms 
-        *   experience error for resonant orbits. these are valid for normalized and 
+         *   experience error for resonant orbits. these are valid for normalized and 
          *   unnormalized expressions. for satellite operations, orders up to about 120 are valid. 
          *   this is the montenbruck formulation. 
-        *      
+         *      
          *  author        : david vallado             davallado@gmail.com       5 aug 2024
-        *
-        *  inputs        description                                   range / units
+         *
+         *  inputs        description                                           range / units
          *    latgc       - geocentric lat of satellite, not nadir point          -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                         1..~170
+         *    order       - size of gravity field                                 1..~170
          *    normalized  - normalized or unnormalized                            'y', 'n'                        
-        *
-        *  outputs       :
+         *
+         *  outputs       :
          *    LegArrMU    - array of unnormalized Legendre polynomials, montenbruck
          *    LegArrMN    - array of normalized Legendre polynomials, montenbruck
-        *
-        *  locals :
-        *    L,m         - degree and order indices
-        *
-        *  coupling      :
-        *   none
-        *
-        *  references :
+         *
+         *  locals :
+         *    L,m         - degree and order indices
+         *
+         *  coupling      :
+         *   none
+         *
+         *  references :
          *    vallado       2022, 600
-          ----------------------------------------------------------------------------*/
+           ----------------------------------------------------------------------------*/
 
         public void LegPolyMont
            (
@@ -12666,18 +13004,18 @@ namespace AstroLibMethods
                 legarrMN[1, 0] = Math.Sin(latgc);
                 legarrMN[1, 1] = Math.Cos(latgc);
                 for (L = 1; L <= orderlim; L++)
-            {
-                for (m = 0; m <= L; m++)
                 {
+                    for (m = 0; m <= L; m++)
+                    {
                         // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
-                    if (m == 0)
+                        if (m == 0)
                             conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
-                    else
+                        else
                             conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
 
                         legarrMN[L, m] = conv * legarrMU[L, m];
-                }   // for m
-            }   // for L
+                    } // for m
+                } // for L
             }
         } // LegPolyMont
 
@@ -12685,136 +13023,75 @@ namespace AstroLibMethods
 
 
         /* ----------------------------------------------------------------------------
-         *
+        *
         *                           function LegPolyGottN
-         *
-        *   this function finds the legendre functions and associated legendre functions for the 
-        *   gravity field using the normalized Gottlieb approach. the arrays are indexed from 0 to 
-        *   coincide with the usual nomenclature (eq 8-21 in my text). fortran and matlab 
-        *   implementations will have indices of 1 greater as they start at 1. note that this 
-        *   formulation is able to handle degree and order terms larger then 170 due to the formulation. 
-         *      
-        *  author        : david vallado             davallado@gmail.com           2 aug 2024
-         *
-         *  inputs        description                                   range / units
-        *    latgc       - geocentric lat of satellite, not nadir point            -pi/2 to pi/2 rad          
-         *    order       - size of gravity field                         1..~170
-        *    normalized  - normalized or unnormalized                              'y', 'n'                        
-         *
-         *  outputs       :
-        *    LAGottN     - array of normalized Legendre polynomials, gottlieb 
-         *
-         *  locals :
-         *    L,m         - degree and order indices
-         *
-         *  coupling      :
-         *   none
-         *
-         *  references :
+        *
+        *   this function finds the portions of the legendre functions and associated legendre 
+        *   functions for the gravity field using the constant portion from the normalized Gottlieb 
+        *   approach. the arrays are indexed from 0 to coincide with the usual nomenclature 
+        *   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 
+        *   greater as they start at 1. note that this formulation is able to handle degree 
+        *   and order terms larger than 170 due to the formulation. note these will not match 
+        *   hand calculations because they do not have the latgc term which is added later in 
+        *   the recursions. these functions can be found one time.
+        *      
+        *  author        : david vallado             davallado@gmail.com           3 sep 2024
+        *
+        *  inputs        description                                             range / units
+        *    order       - size of gravity field                                   1..~170
+        *
+        *  outputs       :
+        *    LegArrNorm  - array of normalized Legendre polynomials, constant portion
+        *
+        *  locals :
+        *    L,m         - degree and order indices
+        *
+        *  coupling      :
+        *   none
+        *
+        *  references :
         *    eckman, brown, adamo 2016 paper and code in matlab
         *    vallado       2022, 600, Eq 8-56
-           ----------------------------------------------------------------------------*/
+          ----------------------------------------------------------------------------*/
 
         public void LegPolyGottN
            (
-               double latgc,
                Int32 order,
-               out double[,] LegGottN
+               out double[] norm1,
+               out double[] norm2,
+               out double[] norm11,
+               out double[] normn10,
+               out double[,] norm1m,
+               out double[,] norm2m,
+               out double[,] normn1
            )
         {
             Int32 L, m;
-            LegGottN = new double[order + 2, order + 2];
-            double[] norm1 = new double[order + 2];
-            double[] norm10 = new double[order + 2];
-            double[] normn10 = new double[order + 2];
-            double[] norm11 = new double[order + 2];
-            double[] norm2 = new double[order + 2];
-            double[] ctil = new double[order + 2];
-            double[] stil = new double[order + 2];
-            double[,] g = new double[3, 3];
-            double[,] normn1 = new double[order + 2, order + 2];
-            double[,] norm1m = new double[order + 2, order + 2];
-            double[,] norm2m = new double[order + 2, order + 2];
-            double ep;
-            double n2m1;
-            Int32 lim, nm1, np1, mm1, mp1;
-            char fastapp = 'n';
+            norm1 = new double[order + 2];
+            norm2 = new double[order + 2];
+            norm11 = new double[order + 2];
+            normn10 = new double[order + 2];
+            norm1m = new double[order + 2, order + 2];
+            norm2m = new double[order + 2, order + 2];
+            normn1 = new double[order + 2, order + 2];
 
             // -------------------- perform recursions ---------------------- }
             for (L = 2; L < order + 1; L++) // L = 2:order + 1  
             {
-                norm1[L] = Math.Sqrt((2.0 * L + 1) / (2 * L - 1.0));    // eq 3-1 
-                norm2[L] = Math.Sqrt((2.0 * L + 1) / (2 * L - 3.0));    // eq 3-2 
-                norm11[L] = Math.Sqrt((2.0 * L + 1) / (2 * L)) / (2.0 * L - 1); // eq 3-3 
-                normn10[L] = Math.Sqrt((L + 1) * L / 2.0);
+                norm1[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 1.0));    // eq 3-1 
+                norm2[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 3.0));    // eq 3-2 
+                norm11[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L)) / (2.0 * L - 1.0); // eq 3-3 
+                normn10[L] = Math.Sqrt((L + 1.0) * L / 2.0);  // eq 3-13
 
                 for (m = 1; m < L; m++) // m = 1:L 
-            {
-                    norm1m[L, m] = Math.Sqrt((L - m) * (2.0 * L + 1.0) / ((L + m) * (2.0 * L - 1)));    // eq 3-4 
-                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1) / ((L + m) * (L + m - 1) * (2.0 * L - 3.0)));   // eq 3-5 
+                {
+                    norm1m[L, m] = Math.Sqrt((L - m) * (2.0 * L + 1.0) / ((L + m) * (2.0 * L - 1.0)));    // eq 3-4 
+                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1.0) / 
+                        ((L + m) * (L + m - 1.0) * (2.0 * L - 3.0)));   // eq 3-5 
                     normn1[L, m] = Math.Sqrt((L + m + 1.0) * (L - m));    // part of eq 3-9 
                 }
             }
 
-            LegGottN[0, 0] = 1.0;
-            LegGottN[0, 1] = 0.0;
-            LegGottN[0, 2] = 0.0;
-            if (fastapp == 'y')
-                LegGottN[1, 1] = Math.Sqrt(3.0);
-            else
-                // add ep here to match hand calcs. leave out if doing acceleration calcs for speed
-                LegGottN[1, 1] = Math.Sqrt(3.0) * Math.Cos(latgc);
-            LegGottN[1, 2] = 0.0;
-            LegGottN[1, 3] = 0.0;
-
-            // ---------------sectoral
-            for (L = 2; L < order; L++)   // L = 2:nax 
-                {
-                if (fastapp == 'y')
-                    LegGottN[L, L] = norm11[L] * LegGottN[L - 1, L - 1] * (2.0 * L - 1.0);   // eq 3-15 
-                    else
-                    // dav add ep to this to make it match hand calcs!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    LegGottN[L, L] = norm11[L] * LegGottN[L - 1, L - 1] * (2.0 * L - 1.0) * Math.Cos(latgc);   // eq 3-15 
-                LegGottN[L, L + 1] = 0.0;
-                LegGottN[L, L + 2] = 0.0;
-            }
-
-            //magr = MathTimeLibr.mag(recef);
-            //double[] runit = MathTimeLibr.norm(recef);
-            //ep = runit[2];
-            ep = 0.509196268627347;   // ------------------ placeholder!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            LegGottN[1, 0] = Math.Sqrt(3) * ep;
-            LegGottN[1, 1] = Math.Sqrt(3) * Math.Cos(latgc);  // extra/????????????????????????????????
-
-            for (L = 2; L < order; L++)   //  L = 2:nax
-            {
-                //reorn = reorn * reor;
-                n2m1 = L + L - 1.0;
-                nm1 = L - 1;
-                np1 = L + 1;
-
-                // --------------- tesserals(L, m = L - 1) initial value
-                LegGottN[L, L - 1] = normn1[L, L - 1] * ep * LegGottN[L, L];
-
-                // --------------- zonals(L, m = 1)
-                LegGottN[L, 0] = (n2m1 * ep * norm1[L] * LegGottN[L - 1, 0] - nm1 * norm2[L] * LegGottN[nm1, 0]) / L;   // eq 3-17  
-
-                // --------------- tesseral(L, m = 2) initial value
-                LegGottN[L, 1] = (n2m1 * ep * norm1m[L, 1] * LegGottN[L, 1] - L * norm2m[L, 1] * LegGottN[nm1, 1]) / (nm1);
-
-                //    sumhn = normn10[L] * legarrGotN[L, 1] * gravData.cNor[L, 1];
-                //    sumgmn = legarrGotN[L, 0] * gravData.cNor[L, 1] * np1;
-                if (order > 0)
-                {
-                    for (m = 2; m < L - 2; m++)   // m = 2:L-2
-                    {
-                        // ---------------tesseral(L, m)
-                        LegGottN[L, m] = (n2m1 * ep * norm1m[L, m] * LegGottN[L - 1, m] -
-                                   (nm1 + m) * norm2m[L, m] * LegGottN[nm1, m]) / (L - m); // eq 3-18 
-                    }
-                }
-            }
         } // LegPolyGottN
 
 
@@ -13034,12 +13311,12 @@ namespace AstroLibMethods
          *      
          *  author        : david vallado             davallado@gmail.com           5 aug 2024
          *
-         *  inputs        description                                   range / units
+         *  inputs        description                                             range / units
         *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-         *    order       - size of gravity field                         1..~170
+         *    order       - size of gravity field                                   1..~170
          *
          *  outputs       :
-         *    LegArrFN     - array of normalized Legendre polynomials, fukushima
+         *    LegArrFN    - array of normalized Legendre polynomials, fukushima
          *
          *  locals :
          *    L,m         - degree and order indices
@@ -13245,13 +13522,13 @@ namespace AstroLibMethods
         *
         *   this function finds the accumulated trigonometric terms for satellite 
         *   operations, orders up to about 120 are valid. this is the GTDS approach. 
-        *   
-        *  author        : david vallado             davallado@gmail.com  10 oct 2019
+        *      
+        *  author        : david vallado             davallado@gmail.com          10 oct 2019
         *
-        *  inputs        description                                   range / units
-        *    lon         - longitude of satellite                        0 - 2pi rad
+        *  inputs        description                                            range / units
+        *    lon         - longitude of satellite                                  0 - 2pi rad
         *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                         1..2160..
+        *    order       - size of gravity field                                   1..2160..
         *
         *  outputs       :
         *    trigArr     - array of trigonometric terms
@@ -13304,14 +13581,14 @@ namespace AstroLibMethods
         *   terms for satellite operations, orders up to about 120 are valid. this is the 
         *   montenbruck approach. 
         *   
-        *  author        : david vallado             davallado@gmail.com  10 oct 2019
+        *  author        : david vallado             davallado@gmail.com       10 oct 2019
         *
-        *  inputs        description                                   range / units
-        *    recef       - satellite position vector, earth fixed        km
+        *  inputs        description                                           range / units
+        *    recef       - satellite position vector, earth fixed                km
         *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                         1..2160..
+        *    order       - size of gravity field                                 1..2160..
         *    normalized  - normalized or unnormalized                              'y', 'n'                        
-        *
+  *
         *  outputs       :
         *    VArr        - array of trig terms
         *    WArr        - array of trig terms
@@ -13656,7 +13933,7 @@ namespace AstroLibMethods
 
             // correction term for method of formulating VArr and WArr
             temp = gravConst.mu / (gravConst.re * gravConst.re);
-           // temp = 1.0;
+            // temp = 1.0;
             // reverse order of summations to get it more accurate??
             for (m = 0; m <= order; m++)
             {
@@ -14023,10 +14300,11 @@ namespace AstroLibMethods
         *
         *                           function FullGeopGott
         *
-        *   this function finds the acceleration for the gravity field using the normalized Gottlieb approach.  
-        *   the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21 in my text). Fortran 
-        *   and MATLAB implementations will have indices of 1 greater as they start at 1. note that this formulation
-        *   is able to handle degree and order terms larger then 170 due to the formulation. 
+        *   this function finds the acceleration for the gravity field using the normalized 
+        *   Gottlieb approach. the arrays are indexed from 0 to coincide with the usual nomenclature 
+        *   (eq 8-21 in my text). Fortran and MATLAB implementations will have indices of 1 greater 
+        *   as they start at 1. note that this formulation is able to handle degree and order terms 
+        *   larger then 170 due to the formulation. 
         *      
         *  author        : david vallado             davallado@gmail.com   2 aug 2024
         *
@@ -14035,6 +14313,7 @@ namespace AstroLibMethods
         *    order       - size of gravity field                                  1.. 170 .. 2000
         *    gravData    - structure containing the gravity field coefficients, 
         *                  radius of the Earth, and gravitational parameter
+        *    normxx      - constant normalization parameters pre-calculated              
         *    recef       - earth fixed position vector for satellite              km
         *
         *  outputs       :
@@ -14058,6 +14337,8 @@ namespace AstroLibMethods
                Int32 order,
                gravityConst gravData,
                double[] recef,
+               double[] norm1, double[] norm2, double[] norm11, double[] normn10, 
+               double[,] norm1m, double[,] norm2m, double[,] normn1,
                out double[,] LegGottN,
                out double[] accel
            )
@@ -14066,17 +14347,9 @@ namespace AstroLibMethods
             LegGottN = new double[order + 2, order + 2];
             accel = new double[3];
 
-            double[] norm1 = new double[order + 2];
-            double[] norm10 = new double[order + 2];
-            double[] normn10 = new double[order + 2];
-            double[] norm11 = new double[order + 2];
-            double[] norm2 = new double[order + 2];
             double[] ctil = new double[order + 2];
             double[] stil = new double[order + 2];
             double[,] g = new double[3, 3];
-            double[,] normn1 = new double[order + 2, order + 2];
-            double[,] norm1m = new double[order + 2, order + 2];
-            double[,] norm2m = new double[order + 2, order + 2];
             double reorn, sumhn, sumgmn, magr, ep, mxpnm, bnmtil, anmtm1, bnmtm1, anmt1, sumj, sumjn,
                 sumkn, sumk, sumh, sumgm, lambda, reor, muor2;
             double n2m1;
@@ -14095,20 +14368,7 @@ namespace AstroLibMethods
 
             // note this whole section can be calculated ahead of time (without latgc) for speed...
             // -------------------- perform recursions ---------------------- }
-            for (L = 2; L < order + 1; L++) // L = 2:order + 1  
-            {
-                norm1[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 1.0));    // eq 3-1 
-                norm2[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 3.0));    // eq 3-2 
-                norm11[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L)) / (2.0 * L - 1.0); // eq 3-3 
-                normn10[L] = Math.Sqrt((L + 1.0) * L / 2.0);  // eq 3-13
-
-                for (m = 1; m < L; m++) // m = 1:L 
-                {
-                    norm1m[L, m] = Math.Sqrt((L - m) * (2.0 * L + 1.0) / ((L + m) * (2.0 * L - 1.0)));    // eq 3-4 
-                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1.0) / ((L + m) * (L + m - 1.0) * (2.0 * L - 3.0)));   // eq 3-5 
-                    normn1[L, m] = Math.Sqrt((L + m + 1.0) * (L - m));    // part of eq 3-9 
-                }
-            }
+            //LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
 
             LegGottN[0, 0] = 1.0;
             LegGottN[0, 1] = 0.0;
@@ -16699,9 +16959,7 @@ namespace AstroLibMethods
                 reci = new double[] { rx * 0.001, ry * 0.001, rz * 0.001 };
                 veci = new double[] { vx * 0.001, vy * 0.001, vz * 0.001 };
                 eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                    EOpt.e80,
-                    EOPSPWLibr.iau80arr, EOPSPWLibr.iau06arr,
-                    jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                    EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 recef[0] = recef[0] * 1000.0;  // in m
                 recef[1] = recef[1] * 1000.0;
@@ -16892,11 +17150,8 @@ namespace AstroLibMethods
         public void covfl2ct
             (
             double[,] flcov, double[] flstate, string anomflt, double jdtt, double jdftt, double jdut1, 
-            double jdxysstart, double lod,
-            double xp, double yp, Int16 terms, double ddpsi, double ddeps, double ddx, double ddy, 
-            EOPSPWLib.iau80Class iau80arr, EOPSPWLib.iau06Class iau06arr,
-            EOpt opt,
-            out double[,] cartcov, out double[,] tm
+            double lod, double xp, double yp, Int16 terms, double ddpsi, double ddeps, double ddx, double ddy, 
+            EOPSPWLib.iau80Class iau80arr, EOpt opt, out double[,] cartcov, out double[,] tm
             )
         {
             double small, lon, latgc, fpa, cfpa, sfpa, az, decl, magr, magv, caz, saz, craf, sraf, cdf, sdf,
@@ -16952,9 +17207,7 @@ namespace AstroLibMethods
                 vecef[2] = magv * 0.001 * (Math.Sin(lon) * sfpa + Math.Cos(latgc) * caz * cfpa);
                 double[] aecef = new double[] { 0, 0, 0 };
                 eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                    EOpt.e80,
-                    EOPSPWLibr.iau80arr, EOPSPWLibr.iau06arr,
-                    jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                   EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 reci[0] = reci[0] * 1000.0;  // in m
                 reci[1] = reci[1] * 1000.0;
@@ -17374,7 +17627,7 @@ namespace AstroLibMethods
 
             prec = precess(ttt, opt, out psia, out wa, out epsa, out chia);
 
-            nut = nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
+            nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
 
             st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, opt);
 

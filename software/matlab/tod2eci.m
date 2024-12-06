@@ -39,10 +39,12 @@
 %  references    :
 %    vallado       2001, 219-220, eq 3-68
 %
-% [reci, veci, aeci] = tod2eci(rtod, vtod, atod, iau80arr, fArgs, ttt, ddpsi, ddeps)
+% [reci, veci, aeci] = tod2eci(rtod, vtod, atod, iau80arr, ttt, ddpsi, ddeps)
 % ----------------------------------------------------------------------------
 
-function [reci, veci, aeci] = tod2eci(rtod, vtod, atod, iau80arr, fArgs, ttt, ddpsi, ddeps)
+function [reci, veci, aeci] = tod2eci(rtod, vtod, atod, iau80arr, ttt, ddpsi, ddeps)
+
+    [fArgs] = fundarg(ttt, '80');
 
     [prec,psia,wa,ea,xa] = precess ( ttt, '80' );
 

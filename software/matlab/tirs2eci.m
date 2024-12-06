@@ -45,13 +45,15 @@
 %  references    :
 %    vallado       2001, 219-220, eq 3-68
 %
-% [reci, veci, aeci] = tirs2eci(rtirs, vtirs, atirs, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, ddx, ddy, opt1 )
+% [reci, veci, aeci] = tirs2eci(rtirs, vtirs, atirs, iau06arr, xysarr, ttt, jdut1, lod, ddx, ddy, opt1 )
 % ----------------------------------------------------------------------------
 
-function [reci, veci, aeci] = tirs2eci(rtirs, vtirs, atirs, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, ddx, ddy, opt1 )
+function [reci, veci, aeci] = tirs2eci(rtirs, vtirs, atirs, iau06arr, xysarr, ttt, jdut1, lod, ddx, ddy, opt1 )
     constastro;
     pnb = zeros(3,3);
     st = zeros(3,3);
+
+    [fArgs06] = fundarg(ttt, '06');
 
     [prec, psia, wa, ea, xa] = precess ( ttt, '06' );
 

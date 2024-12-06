@@ -55,7 +55,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 
 using MathTimeMethods;  // Edirection
-
+using System.Linq.Expressions;
 
 namespace EOPSPWMethods
 {
@@ -368,7 +368,7 @@ namespace EOPSPWMethods
                 for (j = 0; j < 4; j++)
                     iau06arr.aapl0[i-2, j] = Convert.ToDouble(linedata[j + 15]) * convrtmu;  // rad
                 // integers
-                for (j = 0; j < 13; j++)
+                for (j = 0; j < 14; j++)   // 13 ??
                     iau06arr.aapl0i[i-2, j] = Convert.ToInt32(linedata[j + 1]);
             }
 
@@ -503,7 +503,7 @@ namespace EOPSPWMethods
                 // set new record as they are needed
                 eopdata[ktr] = new EOPdataClass();
 
-                // replace mutliple spaces with just one
+                // replace multiple spaces with just one
                 string line3 = Regex.Replace(EOParray[ktr + i + 2].ToString(), @"\s+", " ");
                 linedata = line3.Split(' ');
                 // do all at once?
@@ -531,7 +531,7 @@ namespace EOPSPWMethods
                     mjdeopstart = eopdata[ktr].mjd;
             }
 
-            ktrActualObs = Convert.ToInt32(ktr);  // skip end proccessed as they can have errors (do later)
+            ktrActualObs = Convert.ToInt32(ktr);  // skip end processed as they can have errors (do later)
 
             // ---- process predicted records
             i = i + ktr;  // start from end of last read
@@ -546,7 +546,7 @@ namespace EOPSPWMethods
             // ---- process observed records only
             for (ktr = 0; ktr < numrecsobs; ktr++)
             {
-                // replace mutliple spaces with just one
+                // replace multiple spaces with just one
                 string line3 = Regex.Replace(EOParray[ktr + i + 2].ToString(), @"\s+", " ");
                 linedata = line3.Split(' ');
                 Int32 ktr1 = ktrActualObs + ktr;
@@ -745,14 +745,20 @@ namespace EOPSPWMethods
         *    jday        - julian date
         *  -------------------------------------------------------------------------- */
 
-        public void readspw (ref SPWdataClass[] spwdata, string inFile, out Int32 mjdspwstart, out Int32 ktrActualObs)
+        public void readspw (ref SPWdataClass[] spwdata, string inFile, out Int32 mjdspwstart, out Int32 ktrActualObs, out string errstr)
         {
             double jd, jdFrac;
-            long numrecsobs, i, ktr;
+            Int32 oldjd;
+            Int32 numrecsobs, i, ktr;
 
             //        initSPWArray(ref spwdata);
-
+            oldjd = 0;
             mjdspwstart = 0;
+            errstr = "ok\n";
+            string line3 = "";
+            DateTime now = DateTime.UtcNow;
+            MathTimeLibr.jday(now.Year, now.Month, now.Day, 0, 0, 0.0, out jd, out jdFrac);
+            Int32 nowmjd = Convert.ToInt32(jd + jdFrac - 2400000.5);
 
             // read the whole file at once into lines of an array
             string[] SPWarray = File.ReadAllLines(inFile);
@@ -782,107 +788,215 @@ namespace EOPSPWMethods
                 // set new record as they are needed
                 spwdata[ktr] = new SPWdataClass();
 
-                // replace mutliple spaces with just one
-                string line3 = Regex.Replace(SPWarray[ktr + i + 2].ToString(), @"\s+", " ");
-                linedata = line3.Split(' ');
-
-                spwdata[ktr].yr = Convert.ToInt32(linedata[0]);  // starts at 0
-                spwdata[ktr].mon = Convert.ToInt32(linedata[1]);
-                spwdata[ktr].day = Convert.ToInt32(linedata[2]);
-                spwdata[ktr].brsn = Convert.ToInt32(linedata[3]);
-                spwdata[ktr].nd = Convert.ToInt32(linedata[4]);
-                spwdata[ktr].kparr[ 0] = Convert.ToInt32(linedata[5]);
-                spwdata[ktr].kparr[ 1] = Convert.ToInt32(linedata[6]);
-                spwdata[ktr].kparr[ 2] = Convert.ToInt32(linedata[7]);
-                spwdata[ktr].kparr[ 3] = Convert.ToInt32(linedata[8]);
-                spwdata[ktr].kparr[ 4] = Convert.ToInt32(linedata[9]);
-                spwdata[ktr].kparr[ 5] = Convert.ToInt32(linedata[10]);
-                spwdata[ktr].kparr[ 6] = Convert.ToInt32(linedata[11]);
-                spwdata[ktr].kparr[ 7] = Convert.ToInt32(linedata[12]);
-                spwdata[ktr].sumkp = Convert.ToInt32(linedata[13]);
-                spwdata[ktr].aparr[ 0] = Convert.ToInt32(linedata[14]);
-                spwdata[ktr].aparr[ 1] = Convert.ToInt32(linedata[15]);
-                spwdata[ktr].aparr[ 2] = Convert.ToInt32(linedata[16]);
-                spwdata[ktr].aparr[ 3] = Convert.ToInt32(linedata[17]);
-                spwdata[ktr].aparr[ 4] = Convert.ToInt32(linedata[18]);
-                spwdata[ktr].aparr[ 5] = Convert.ToInt32(linedata[19]);
-                spwdata[ktr].aparr[ 6] = Convert.ToInt32(linedata[20]);
-                spwdata[ktr].aparr[ 7] = Convert.ToInt32(linedata[21]);
-                spwdata[ktr].avgap = Convert.ToInt32(linedata[22]);
-                spwdata[ktr].cp = Convert.ToDouble(linedata[23]);
-                spwdata[ktr].c9 = Convert.ToInt32(linedata[24]);
-                spwdata[ktr].isn = Convert.ToInt32(linedata[25]);
-                spwdata[ktr].adjf10 = Convert.ToDouble(linedata[26]);
-                spwdata[ktr].q = Convert.ToInt32(linedata[27]);
-                spwdata[ktr].adjctrf81 = Convert.ToDouble(linedata[28]);
-                spwdata[ktr].adjlstf81 = Convert.ToDouble(linedata[29]);
-                spwdata[ktr].obsf10 = Convert.ToDouble(linedata[30]);
-                spwdata[ktr].obsctrf81 = Convert.ToDouble(linedata[31]);
-                spwdata[ktr].obslstf81 = Convert.ToDouble(linedata[32]);
-                //spwdata[ktr].adjf30 = Convert.ToDouble(linedata[33]);
-                //spwdata[ktr].obsf30 = Convert.ToDouble(linedata[34]);
-                //spwdata[ktr].adjlstf30f81 = Convert.ToDouble(linedata[35]);
-                //spwdata[ktr].obslstf30f81 = Convert.ToDouble(linedata[36]);
-                MathTimeLibr.jday(spwdata[ktr].yr, spwdata[ktr].mon, spwdata[ktr].day, 0, 0, 0.0, out jd, out jdFrac);
-                spwdata[ktr].mjd = Convert.ToInt32(jd + jdFrac - 2400000.5);
-
-                // ---- find epoch date
-                if (ktr == 0)
+                // replace multiple spaces with just one
+                try
                 {
+                    line3 = Regex.Replace(SPWarray[ktr + i + 2].ToString(), @"\s+", " ");
+                    linedata = line3.Split(' ');
+                    if (line3.Contains("-1"))
+                        errstr = errstr + "Error " + line3 + "\n";
+
+                    spwdata[ktr].yr = Convert.ToInt32(linedata[0]);  // starts at 0
+                    spwdata[ktr].mon = Convert.ToInt32(linedata[1]);
+                    spwdata[ktr].day = Convert.ToInt32(linedata[2]);
+                    spwdata[ktr].brsn = Convert.ToInt32(linedata[3]);
+                    spwdata[ktr].nd = Convert.ToInt32(linedata[4]);
+                    spwdata[ktr].kparr[0] = Convert.ToInt32(linedata[5]);
+                    spwdata[ktr].kparr[1] = Convert.ToInt32(linedata[6]);
+                    spwdata[ktr].kparr[2] = Convert.ToInt32(linedata[7]);
+                    spwdata[ktr].kparr[3] = Convert.ToInt32(linedata[8]);
+                    spwdata[ktr].kparr[4] = Convert.ToInt32(linedata[9]);
+                    spwdata[ktr].kparr[5] = Convert.ToInt32(linedata[10]);
+                    spwdata[ktr].kparr[6] = Convert.ToInt32(linedata[11]);
+                    spwdata[ktr].kparr[7] = Convert.ToInt32(linedata[12]);
+                    spwdata[ktr].sumkp = Convert.ToInt32(linedata[13]);
+                    spwdata[ktr].aparr[0] = Convert.ToInt32(linedata[14]);
+                    spwdata[ktr].aparr[1] = Convert.ToInt32(linedata[15]);
+                    spwdata[ktr].aparr[2] = Convert.ToInt32(linedata[16]);
+                    spwdata[ktr].aparr[3] = Convert.ToInt32(linedata[17]);
+                    spwdata[ktr].aparr[4] = Convert.ToInt32(linedata[18]);
+                    spwdata[ktr].aparr[5] = Convert.ToInt32(linedata[19]);
+                    spwdata[ktr].aparr[6] = Convert.ToInt32(linedata[20]);
+                    spwdata[ktr].aparr[7] = Convert.ToInt32(linedata[21]);
+                    spwdata[ktr].avgap = Convert.ToInt32(linedata[22]);
+                    spwdata[ktr].cp = Convert.ToDouble(linedata[23]);
+                    spwdata[ktr].c9 = Convert.ToInt32(linedata[24]);
+                    spwdata[ktr].isn = Convert.ToInt32(linedata[25]);
+                    spwdata[ktr].adjf10 = Convert.ToDouble(linedata[26]);
+                    spwdata[ktr].q = Convert.ToInt32(linedata[27]);
+                    spwdata[ktr].adjctrf81 = Convert.ToDouble(linedata[28]);
+                    spwdata[ktr].adjlstf81 = Convert.ToDouble(linedata[29]);
+                    spwdata[ktr].obsf10 = Convert.ToDouble(linedata[30]);
+                    spwdata[ktr].obsctrf81 = Convert.ToDouble(linedata[31]);
+                    spwdata[ktr].obslstf81 = Convert.ToDouble(linedata[32]);
+                    //spwdata[ktr].adjf30 = Convert.ToDouble(linedata[33]);
+                    //spwdata[ktr].obsf30 = Convert.ToDouble(linedata[34]);
+                    //spwdata[ktr].adjlstf30f81 = Convert.ToDouble(linedata[35]);
+                    //spwdata[ktr].obslstf30f81 = Convert.ToDouble(linedata[36]);
                     MathTimeLibr.jday(spwdata[ktr].yr, spwdata[ktr].mon, spwdata[ktr].day, 0, 0, 0.0, out jd, out jdFrac);
-                    mjdspwstart = Convert.ToInt32(jd + jdFrac - 2400000.5);
+                    if (ktr > 0)
+                        oldjd = spwdata[ktr - 1].mjd;
+                    spwdata[ktr].mjd = Convert.ToInt32(jd + jdFrac - 2400000.5);
+
+                    // ---- find epoch date
+                    if (ktr == 0)
+                    {
+                        MathTimeLibr.jday(spwdata[ktr].yr, spwdata[ktr].mon, spwdata[ktr].day, 0, 0, 0.0, out jd, out jdFrac);
+                        mjdspwstart = Convert.ToInt32(jd + jdFrac - 2400000.5);
+                    }
+
+                    // find last 3 days data
+                    if (spwdata[ktr].mjd >= nowmjd - 3)
+                    {
+                        errstr = errstr + spwdata[ktr].yr + " " + spwdata[ktr].mon + " " + spwdata[ktr].day
+                            + spwdata[ktr].aparr[0] + " " + spwdata[ktr].aparr[1] + " " + spwdata[ktr].aparr[2] + " " + spwdata[ktr].aparr[3]
+                            + spwdata[ktr].aparr[4] + " " + spwdata[ktr].aparr[5] + " " + spwdata[ktr].aparr[6] + " " + spwdata[ktr].aparr[7]
+                            + spwdata[ktr].adjf10 + " " + spwdata[ktr].obsf10;
+                    }
+
+                    if (ktr > 0 && spwdata[ktr].mjd != oldjd + 1)
+                        errstr = errstr + "Error day before missing " + line3 + "\n";
                 }
-            }
+                catch
+                {
+                    errstr = errstr + "Error # act obs wrong " + numrecsobs + "\n";
+                } // catch if num of recs doesn't match
+
+            }  // for through observed obs
 
             ktrActualObs = Convert.ToInt32(ktr);  // skip end proccessed as they can have errors (do later)
             numbspw = ktrActualObs;
 
-            // ---- process predicted records
+            try
+            {
+                Int32 numpredObs = Convert.ToInt32(SPWarray[ktrActualObs + i + 4].ToString().Split(' ')[1]);
+
+                // ---- check file for 45 day predicted values
+                ktr = ktrActualObs - 1;
+                for (int ktr1 = ktrActualObs + 6 + i; ktr1 < ktrActualObs + 4 + numpredObs + i; ktr1++)  // use  - 15 if old format of spw files
+                {
+                    ktr = ktr + 1;
+                    // set new record as they are needed
+                    spwdata[ktr] = new SPWdataClass();
+
+                    // replace multiple spaces with just one
+                    try
+                    {
+                        line3 = Regex.Replace(SPWarray[ktr1].ToString(), @"\s+", " ");
+                        linedata = line3.Split(' ');
+                        if (line3.Contains("-1"))
+                            errstr = errstr + "Error " + line3 + "\n";
+
+                        spwdata[ktr].yr = Convert.ToInt32(linedata[0]);  // starts at 0
+                        spwdata[ktr].mon = Convert.ToInt32(linedata[1]);
+                        spwdata[ktr].day = Convert.ToInt32(linedata[2]);
+                        spwdata[ktr].brsn = Convert.ToInt32(linedata[3]);
+                        spwdata[ktr].nd = Convert.ToInt32(linedata[4]);
+                        spwdata[ktr].kparr[0] = Convert.ToInt32(linedata[5]);
+                        spwdata[ktr].kparr[1] = Convert.ToInt32(linedata[6]);
+                        spwdata[ktr].kparr[2] = Convert.ToInt32(linedata[7]);
+                        spwdata[ktr].kparr[3] = Convert.ToInt32(linedata[8]);
+                        spwdata[ktr].kparr[4] = Convert.ToInt32(linedata[9]);
+                        spwdata[ktr].kparr[5] = Convert.ToInt32(linedata[10]);
+                        spwdata[ktr].kparr[6] = Convert.ToInt32(linedata[11]);
+                        spwdata[ktr].kparr[7] = Convert.ToInt32(linedata[12]);
+                        spwdata[ktr].sumkp = Convert.ToInt32(linedata[13]);
+                        spwdata[ktr].aparr[0] = Convert.ToInt32(linedata[14]);
+                        spwdata[ktr].aparr[1] = Convert.ToInt32(linedata[15]);
+                        spwdata[ktr].aparr[2] = Convert.ToInt32(linedata[16]);
+                        spwdata[ktr].aparr[3] = Convert.ToInt32(linedata[17]);
+                        spwdata[ktr].aparr[4] = Convert.ToInt32(linedata[18]);
+                        spwdata[ktr].aparr[5] = Convert.ToInt32(linedata[19]);
+                        spwdata[ktr].aparr[6] = Convert.ToInt32(linedata[20]);
+                        spwdata[ktr].aparr[7] = Convert.ToInt32(linedata[21]);
+                        spwdata[ktr].avgap = Convert.ToInt32(linedata[22]);
+                        spwdata[ktr].cp = Convert.ToDouble(linedata[23]);
+                        spwdata[ktr].c9 = Convert.ToInt32(linedata[24]);
+                        spwdata[ktr].isn = Convert.ToInt32(linedata[25]);
+                        spwdata[ktr].adjf10 = Convert.ToDouble(linedata[26]);
+                        spwdata[ktr].q = Convert.ToInt32(linedata[27]);
+                        spwdata[ktr].adjctrf81 = Convert.ToDouble(linedata[28]);
+                        spwdata[ktr].adjlstf81 = Convert.ToDouble(linedata[29]);
+                        spwdata[ktr].obsf10 = Convert.ToDouble(linedata[30]);
+                        spwdata[ktr].obsctrf81 = Convert.ToDouble(linedata[31]);
+                        spwdata[ktr].obslstf81 = Convert.ToDouble(linedata[32]);
+                        //spwdata[ktr].adjf30 = Convert.ToDouble(linedata[33]);
+                        //spwdata[ktr].obsf30 = Convert.ToDouble(linedata[34]);
+                        //spwdata[ktr].adjlstf30f81 = Convert.ToDouble(linedata[35]);
+                        //spwdata[ktr].obslstf30f81 = Convert.ToDouble(linedata[36]);
+                        MathTimeLibr.jday(spwdata[ktr].yr, spwdata[ktr].mon, spwdata[ktr].day, 0, 0, 0.0, out jd, out jdFrac);
+                        oldjd = spwdata[ktr - 1].mjd;
+                        spwdata[ktr].mjd = Convert.ToInt32(jd + jdFrac - 2400000.5);
+
+                        if (spwdata[ktr].mjd != oldjd + 1 && ktr < ktrActualObs + 3 + numpredObs)
+                            errstr = errstr + "Error day before missing " + line3 + "\n";
+
+                        // find next 3 days data
+                        if (spwdata[ktr].mjd <= nowmjd + 3)
+                        {
+                            errstr = errstr + spwdata[ktr].yr + " " + spwdata[ktr].mon + " " + spwdata[ktr].day
+                                + spwdata[ktr].aparr[0] + " " + spwdata[ktr].aparr[1] + " " + spwdata[ktr].aparr[2] + " " + spwdata[ktr].aparr[3]
+                                + spwdata[ktr].aparr[4] + " " + spwdata[ktr].aparr[5] + " " + spwdata[ktr].aparr[6] + " " + spwdata[ktr].aparr[7]
+                                + spwdata[ktr].adjf10 + " " + spwdata[ktr].obsf10;
+                        }
+                    }
+                    catch
+                    {
+                        errstr = errstr + "Error # act obs wrong " + numpredObs + "\n";
+                    }
+
+                }  // for
+
+            }
+            catch
+            {
+                errstr = errstr + "Error # act obs wrong " + numrecsobs + "\n";
+            }
 
         }   // readspw
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function findspwparam
-        *
-        *  this routine finds the atmospheric parameters for a given time.
-        *    ap/kp 3 hourly data is valid at 0000, 0300 hrs, etc
-        *    apavg and kpsum are valid at 1200 hrs
-        *    f107 and f107bar values are valid at 1700/2000 hrs depending on the date
-        *    ap arrays go 0-7, but msisarr goes 1-8 to match msis code and fortran source
-        *
-        *  author        : david vallado                      719-573-2600    2 dec 2005
-        *
-        *  inputs          description                                     range / units
-        *    jd          - julian date of epoch (0 hrs utc)              days from 4713 bc
-        *    mfme        - minutes from midnight epoch                       mins
-        *    interp      - interpolation                                 l - linear, s - spline
-        *    fluxtype    - flux type                                     a-adjusted, o-observed
-        *    f81type     - flux 81-day avg type                          l-last, c-centered
-        *    inputtype   - input type                                    a-actual, c - constant
-        *    spwarr      - array of space weather data
-        *    jdspwstart  - julian date of the start of the spwarr data (set in initspw)
-        *
-        *  outputs       :
-        *    f107        - f10.7 value (current day)
-        *    f107bar     - f10.7 81-day avg value
-        *    ap          - planetary effect array
-        *    avgap       - daily average ap planetary value
-        *    aparr       - last 8 values of 3-hourly ap
-        *    kp          - planetary effect array
-        *    sumkp       - daily kp sum of planetary values
-        *    kparr       - last 8 values of 3-hourly kp
-        *
-        *  locals        :
-        *    fluxtime    - minutes from midnight where f107 is valid (1020 or 1200)
-        *
-        *  coupling      :
-        *    none        -
-        *  -------------------------------------------------------------------------- */
+            /* -----------------------------------------------------------------------------
+            *
+            *                           function findspwparam
+            *
+            *  this routine finds the atmospheric parameters for a given time.
+            *    ap/kp 3 hourly data is valid at 0000, 0300 hrs, etc
+            *    apavg and kpsum are valid at 1200 hrs
+            *    f107 and f107bar values are valid at 1700/2000 hrs depending on the date
+            *    ap arrays go 0-7, but msisarr goes 1-8 to match msis code and fortran source
+            *
+            *  author        : david vallado                      719-573-2600    2 dec 2005
+            *
+            *  inputs          description                                     range / units
+            *    jd          - julian date of epoch (0 hrs utc)              days from 4713 bc
+            *    mfme        - minutes from midnight epoch                       mins
+            *    interp      - interpolation                                 l - linear, s - spline
+            *    fluxtype    - flux type                                     a-adjusted, o-observed
+            *    f81type     - flux 81-day avg type                          l-last, c-centered
+            *    inputtype   - input type                                    a-actual, c - constant
+            *    spwarr      - array of space weather data
+            *    jdspwstart  - julian date of the start of the spwarr data (set in initspw)
+            *
+            *  outputs       :
+            *    f107        - f10.7 value (current day)
+            *    f107bar     - f10.7 81-day avg value
+            *    ap          - planetary effect array
+            *    avgap       - daily average ap planetary value
+            *    aparr       - last 8 values of 3-hourly ap
+            *    kp          - planetary effect array
+            *    sumkp       - daily kp sum of planetary values
+            *    kparr       - last 8 values of 3-hourly kp
+            *
+            *  locals        :
+            *    fluxtime    - minutes from midnight where f107 is valid (1020 or 1200)
+            *
+            *  coupling      :
+            *    none        -
+            *  -------------------------------------------------------------------------- */
 
-        public void findspwparam (double jd, double jdFrac, char interp, char fluxtype, char f81type, char inputtype,
+            public void findspwparam (double jd, double jdFrac, char interp, char fluxtype, char f81type, char inputtype,
                                   SPWdataClass[] spwdata, double jdspwstart, out double f107, out double f107bar,
                                   out double ap, out double avgap, double[] aparr, out double kp, out double sumkp, 
                                   double[] kparr)

@@ -33,10 +33,10 @@
 %    trueeps     - true obliquity of the ecliptic rad
 %    meaneps     - mean obliquity of the ecliptic rad
 %    omega       -                                rad
-%    nut         - matrix for tod - mod 
-%    st          - matrix for pef - tod 
+%    nut         - matrix for tod - mod
+%    st          - matrix for pef - tod
 %    stdot       - matrix for pef - tod rate
-%    pm          - matrix for ecef - pef 
+%    pm          - matrix for ecef - pef
 %
 %  coupling      :
 %   nutation     - rotation for nutation          mod - tod
@@ -46,30 +46,32 @@
 %  references    :
 %    vallado       2013, 223-229
 %
-% [recef, vecef, aecef] = mod2ecef( rmod, vmod, amod, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+% [recef, vecef, aecef] = mod2ecef( rmod, vmod, amod, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
 % ----------------------------------------------------------------------------
 
-function [recef, vecef, aecef] = mod2ecef( rmod, vmod, amod, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
-constastro;
+function [recef, vecef, aecef] = mod2ecef( rmod, vmod, amod, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    constastro;
 
-        [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
+    [fArgs] = fundarg(ttt, '80');
 
-        [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
+    [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-        [pm] = polarm(xp,yp,ttt,'80');
+    [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
 
-        thetasa= earthrot * (1.0  - lod/86400.0 );
-        omegaearth = [0; 0; thetasa;];
+    [pm] = polarm(xp,yp,ttt,'80');
 
-        rpef  = st'*nut'*rmod;
-        recef = pm'*rpef;
+    thetasa= earthrot * (1.0  - lod/86400.0 );
+    omegaearth = [0; 0; thetasa;];
 
-        vpef  = st'*nut'*vmod - cross( omegaearth,rpef );
-        vecef = pm'*vpef;
+    rpef  = st'*nut'*rmod;
+    recef = pm'*rpef;
 
-        temp  = cross(omegaearth,rpef);
+    vpef  = st'*nut'*vmod - cross( omegaearth,rpef );
+    vecef = pm'*vpef;
 
-       % two additional terms not needed if satellite is not on surface
-       % of the Earth
-       aecef = pm'*(st'*nut'*amod)- cross(omegaearth,temp) - 2.0*cross(omegaearth,vpef);
+    temp  = cross(omegaearth,rpef);
+
+    % two additional terms not needed if satellite is not on surface
+    % of the Earth
+    aecef = pm'*(st'*nut'*amod)- cross(omegaearth,temp) - 2.0*cross(omegaearth,vpef);
 

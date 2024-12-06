@@ -34,12 +34,14 @@
 %  references    :
 %    vallado       2004, 205-219
 %
-% [rcirs, vcirs, acirs, pnb] = eci2cirs( reci, veci, aeci, iau06arr, fArgs06, ttt, ddx, ddy, opt1 )
+% [rcirs, vcirs, acirs, pnb] = eci2cirs( reci, veci, aeci, iau06arr, ttt, ddx, ddy, opt1 )
 % ----------------------------------------------------------------------------
 
-function [rcirs, vcirs, acirs] = eci2cirs( reci, veci, aeci, iau06arr, fArgs06, xysarr, ttt, ddx, ddy, opt1 )
+function [rcirs, vcirs, acirs] = eci2cirs( reci, veci, aeci, iau06arr, xysarr, ttt, ddx, ddy, opt1 )
 
     %      sethelp;
+
+    [fArgs06] = fundarg(ttt, '06');
 
     % ---- ceo based, iau2000
     if not(contains(opt1, 'a')) || not(contains(opt1, 'b'))

@@ -37,15 +37,18 @@
 %  references    :
 %    vallado       2004, 205-219
 %
-% [rcirs,vcirs,acirs] = ecef2cirs(recef, vecef, aecef, iau06arr, fArgs, ttt, jdut1, lod, xp, yp,  ddx, ddy, opt1 )
+% [rcirs,vcirs,acirs] = ecef2cirs(recef, vecef, aecef, iau06arr, ttt, jdut1, lod, xp, yp,  ddx, ddy, opt1 )
 % ----------------------------------------------------------------------------
 
-function [rcirs, vcirs, acirs] = ecef2cirs(recef, vecef, aecef, iau06arr, fArgs06, ttt, jdut1, lod, xp, yp,  ddx, ddy, opt1 )
+function [rcirs, vcirs, acirs] = ecef2cirs(recef, vecef, aecef, iau06arr, ttt, jdut1, lod, xp, yp,  ddx, ddy, opt1 )
     constastro;
     sethelp;
+    st = zeros(3, 3);
+    
+    [fArgs06] = fundarg(ttt, '06');
 
     % ---- ceo based, iau2006
-    if contains(opt1, 'c')
+    if contains(opt1, '06')
         [st]  = iau06era (jdut1 );
     end
 

@@ -41,12 +41,14 @@
 %  references    :
 %    vallado       2001, 216-219, eq 3-654
 %
-% [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, fArgs, ttt, ddpsi, ddeps, ddx, ddy )
+% [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, ttt, ddpsi, ddeps, ddx, ddy )
 % ----------------------------------------------------------------------------
 
-function [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, fArgs, ttt, ddpsi, ddeps)
+function [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, ttt, ddpsi, ddeps)
 
     showit = 'n';
+
+    [fArgs] = fundarg(ttt, '80');
 
     [prec,psia,wa,ea,xa] = precess ( ttt, '80' );
 

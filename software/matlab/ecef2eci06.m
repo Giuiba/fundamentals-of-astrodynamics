@@ -41,15 +41,17 @@
 %  references    :
 %    vallado       2004, 205-219
 %
-% [reci, veci, aeci] = ecef2eci06( recef, vecef, aecef, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
+% [reci, veci, aeci] = ecef2eci06( recef, vecef, aecef, iau06arr, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
 % ----------------------------------------------------------------------------
 
-function [reci, veci, aeci] = ecef2eci06( recef, vecef, aecef, iau06arr, fArgs06, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
+function [reci, veci, aeci] = ecef2eci06( recef, vecef, aecef, iau06arr, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, opt1 )
 
     sethelp;
     constastro;
     pnb = eye(3);
     st = eye(3);
+
+    [fArgs06] = fundarg(ttt, '06');
 
     % ---- ceo based, iau2006
     if not(contains(opt1, 'a')) || not(contains(opt1, 'b'))

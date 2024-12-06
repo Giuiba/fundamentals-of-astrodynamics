@@ -33,45 +33,48 @@
 %    trueeps     - true obliquity of the ecliptic rad
 %    meaneps     - mean obliquity of the ecliptic rad
 %    omega       -                                rad
-%    nut         - matrix for tod - mod 
-%    st          - matrix for pef - tod 
+%    nut         - matrix for tod - mod
+%    st          - matrix for pef - tod
 %    stdot       - matrix for pef - tod rate
-%    pm          - matrix for ecef - pef 
+%    pm          - matrix for ecef - pef
 %
 %  coupling      :
-%   nutation     - rotation for nutation          
-%   sidereal     - rotation for sidereal time     
-%   polarm       - rotation for polar motion      
+%   nutation     - rotation for nutation
+%   sidereal     - rotation for sidereal time
+%   polarm       - rotation for polar motion
 %
 %  references    :
 %    vallado       2004, 219-228
 %
-%  [rmod, vmod, amod] = ecef2mod( recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+%  [rmod, vmod, amod] = ecef2mod( recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 % ----------------------------------------------------------------------------
 
-function [rmod, vmod, amod] = ecef2mod( recef, vecef, aecef, iau80arr, fArgs, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
-constastro;
-        % ---- find matrices
-        [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
+function [rmod, vmod, amod] = ecef2mod( recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+    constastro;
 
-        [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
+    [fArgs] = fundarg(ttt, '80');
 
-        [pm] = polarm(xp,yp,ttt,'80');
+    % ---- find matrices
+    [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-        % ---- perform transformations
-        thetasa= earthrot * (1.0  - lod/86400.0 );
-        omegaearth = [0; 0; thetasa;];
+    [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
 
-%trueeps-meaneps
-%deltapsi
-%nut
-        rpef = pm*recef';
-        rmod = nut*st*rpef;
+    [pm] = polarm(xp,yp,ttt,'80');
 
-        vpef = pm*vecef';
-        vmod = nut*st*(vpef + cross(omegaearth,rpef));
+    % ---- perform transformations
+    thetasa= earthrot * (1.0  - lod/86400.0 );
+    omegaearth = [0; 0; thetasa;];
 
-        temp = cross(omegaearth,rpef);
-        amod = nut*st*( pm*aecef' + cross(omegaearth,temp) ...
-               + 2.0*cross(omegaearth,vpef) );
+    %trueeps-meaneps
+    %deltapsi
+    %nut
+    rpef = pm*recef';
+    rmod = nut*st*rpef;
+
+    vpef = pm*vecef';
+    vmod = nut*st*(vpef + cross(omegaearth,rpef));
+
+    temp = cross(omegaearth,rpef);
+    amod = nut*st*( pm*aecef' + cross(omegaearth,temp) ...
+        + 2.0*cross(omegaearth,vpef) );
 
