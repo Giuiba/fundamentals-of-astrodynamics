@@ -31,7 +31,7 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
 
     Returns:
         tuple: (rsun, rtasc, decl)
-            rsun (np.ndarray): Inertial sun position vector in AU
+            rsun (np.ndarray): Inertial sun position vector in km
             rtasc (float): Right ascension of the sun in radians
             decl (float): Declination of the sun in radians
     """
@@ -85,4 +85,4 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
     # Declination (radians)
     decl = np.arcsin(np.sin(obliquity) * np.sin(eclplong))
 
-    return rsun, rtasc, decl
+    return rsun * const.AU2KM, rtasc, decl
