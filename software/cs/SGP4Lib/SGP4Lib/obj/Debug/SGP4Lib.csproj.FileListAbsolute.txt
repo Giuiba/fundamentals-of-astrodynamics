@@ -1,0 +1,6 @@
+D:\Codes\LIBRARY\repo\software\cs\SGP4Lib\SGP4Lib\bin\Debug\SGP4Lib.dll
+D:\Codes\LIBRARY\repo\software\cs\SGP4Lib\SGP4Lib\bin\Debug\SGP4Lib.pdb
+D:\Codes\LIBRARY\repo\software\cs\SGP4Lib\SGP4Lib\obj\Debug\SGP4Lib.csproj.AssemblyReference.cache
+D:\Codes\LIBRARY\repo\software\cs\SGP4Lib\SGP4Lib\obj\Debug\SGP4Lib.csproj.CoreCompileInputs.cache
+D:\Codes\LIBRARY\repo\software\cs\SGP4Lib\SGP4Lib\obj\Debug\SGP4Lib.dll
+D:\Codes\LIBRARY\repo\software\cs\SGP4Lib\SGP4Lib\obj\Debug\SGP4Lib.pdb

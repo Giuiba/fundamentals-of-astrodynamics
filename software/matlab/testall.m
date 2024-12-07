@@ -1019,13 +1019,13 @@ function testnutation()
 
     [fArgs] = fundarg(ttt, opt);
 
-    [deltapsi, deltaeps, trueeps, meaneps, nut] = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs);
+    [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs)
 
     fprintf(1,'nut = %11.7f  %11.7f  %11.7f \n', nut(1, 1), nut(1, 2), nut(1, 3));
     fprintf(1,'nut = %11.7f  %11.7f  %11.7f \n', nut(2, 1), nut(2, 2), nut(2, 3));
     fprintf(1,'nut = %11.7f  %11.7f  %11.7f \n', nut(3, 1), nut(3, 2), nut(3, 3));
 
-    [fArgs] = undarg(ttt, '06');
+    [fArgs] = fundarg(ttt, '06');
     nut00 = precnutbias00a(ttt, ddpsi, ddeps, EOPSPWLibr.iau06arr, '06', fArgs);
     fprintf(1,'nut06 c= %11.7f  %11.7f  %11.7f \n', nut(1, 1), nut(1, 2), nut(1, 3));
     fprintf(1,'nut06 c= %11.7f  %11.7f  %11.7f \n', nut(2, 1), nut(2, 2), nut(2, 3));
@@ -1264,45 +1264,44 @@ function testeci_ecef()
     %createXYS(fileLoc, iau06arr, fArgs);
 
     % now read it in
-   % [jdxysstart, jdfxysstart, xys06arr] = initxys(fileLoc);
+    [xys06arr] = readxys(fileLoc);
 
     % now test it for interpolation
     %jdtt = jd + jdFrac + (dat + 32.184) / 86400.0;
-    [fArgs] = fundarg(ttt, '06');
-    [x, y, s] = iau06xysS(ttt, iau06arr, fArgs);
-    fprintf(1,'iau06xys     x   ' + x, ' y ' + y, ' s ' + s);
-    fprintf(1,'iau06xys     x   ' + (x / conv), ' y ' + (y / conv), ' s ' + (s / conv));
+    [fArgs06] = fundarg(ttt, '06');
+    [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt );
+    fprintf(1,'iau06xys     x   %11.9f  y  %11.9f  s %11.9f \n',x, y, s);
+    fprintf(1,'iau06xys     x   %11.9f  y  %11.9f  s %11.9f \n',x/conv, y/conv, s/conv);
     x = x + ddx;
     y = y + ddy;
-    fprintf(1,'iau06xys     x   ' + x, ' y ' + y, ' s ' + s);
-    fprintf(1,'iau06xys     x   ' + (x / conv), ' y ' + (y / conv), ' s ' + (s / conv));
-    [x, y, s] = findxysparam(jdtt + jdftt, 0.0, 'n', xysarr, jdxysstart);
-    fprintf(1,'findxysparam n x   %11.7f  y  %11.7f  s  %11.7f  \n', x, y, s);
-    [x, y, s] = findxysparam(jdtt + jdftt, 0.0, 'l', xysarr, jdxysstart);
-    fprintf(1,'findxysparam l x   %11.7f  y  %11.7f  s  %11.7f  \n', x, y, s);
-    [x, y, s] = findxysparam(jdtt + jdftt, 0.0, 's', xysarr, jdxysstart);
-    fprintf(1,'findxysparam s x   %11.7f  y  %11.7f  s  %11.7f  \n', x, y, s);
+    fprintf(1,'iau06xys     x   %11.9f  y  %11.9f  s %11.9f \n',x, y, s);
+    fprintf(1,'iau06xys     x   %11.9f  y  %11.9f  s %11.9f \n',x/conv, y/conv, s/conv);
+    [x, y, s] = findxysparam(jdtt + jdftt, 0.0, 'n', xys06arr);
+    fprintf(1,'findxysparam n x   %11.9f  y  %11.9f  s  %11.9f  \n', x, y, s);
+    [x, y, s] = findxysparam(jdtt + jdftt, 0.0, 'l', xys06arr);
+    fprintf(1,'findxysparam l x   %11.9f  y  %11.9f  s  %11.9f  \n', x, y, s);
+    [x, y, s] = findxysparam(jdtt + jdftt, 0.0, 's', xys06arr);
+    fprintf(1,'findxysparam s x   %11.9f  y  %11.9f  s  %11.9f  \n', x, y, s);
 
-    [reci,veci,aeci] = ecef2eci  ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,eqeterms,ddpsi,ddeps );
-    fprintf(1,'GCRF          IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
+    [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    fprintf(1,'GCRF          IAU-76/FK5  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
 
-    Console.WriteLine(' checking book test');
-    [reci,veci,aeci] = ecef2eci  ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,eqeterms,ddpsi,ddeps );
-    fprintf(1,'GCRF          IAU-2006 CIO  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
+    [reci veci, aeci] = ecef2eci06(recef, vecef, aecef,   iau06arr, xysarr, ttt, jdut1, lod, xp, yp, ddx, ddy, '06s');
+    fprintf(1,'GCRF          IAU-2006 CIO  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f  %11.7f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
 
 
     % try backwards
-    [recef,vecef,aecef] = eci2ecef  ( reci,veci,aeci,ttt,jdut1,lod,xp,yp,eqeterms,ddpsi,ddeps );
+    [recef,vecef,aecef] = eci2ecef  ( reci,veci,aeci,iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(1,'ITRF rev       IAU-76/FK5  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', recef(1), recef(2), recef(3), vecef(1), vecef(2), vecef(3));
     recef = [ -1033.4793830, 7901.2952754, 6380.3565958 ];
     vecef = [ -3.225636520, -2.872451450, 5.531924446 ];
 
 
     % these are not correct
-    [reci,veci,aeci] = ecef2eciiau06 ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,option, ddx, ddy );
+    [reci,veci,aeci] = ecef2eci06 ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,option, ddx, ddy );
     % ----------------------------------------------------------------------------    fprintf(1,'GCRF          IAU-2006 06  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
 
-    [reci,veci,aeci] = ecef2eciiau06 ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,option, ddx, ddy );
+    [reci,veci,aeci] = ecef2eci06 ( recef,vecef,aecef,ttt,jdut1,lod,xp,yp,option, ddx, ddy );
     fprintf(1,'GCRF          IAU-2006 06a  %11.7f  %11.7f  %11.7f %11.7f  %11.7f  %11.7f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
     fprintf(1,'00a case is wrong \n');
 
@@ -1415,7 +1414,7 @@ function testtod2ecef()
 
     % now read it in
     fileLoc = 'D:\Codes\LIBRARY\DataLib\';
-    [xysarr] = readxys(fileLoc);
+    %[xysarr] = readxys(fileLoc);
 
     jdut1 = jd + jdFrac + dut1 / 86400.0;
 

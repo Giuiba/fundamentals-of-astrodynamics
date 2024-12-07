@@ -59,15 +59,15 @@
         % check for out of bound values
         if ((recnum >= 1) && (recnum <= 51830))  % xyssize
             % ---- set non-interpolated values
-            x = xysarr(recnum).x;
-            y = xysarr(recnum).y;
-            s = xysarr(recnum).s;
+            x = xysarr.x(recnum);
+            y = xysarr.y(recnum);
+            s = xysarr.s(recnum);
 
             % ---- do linear interpolation
             if (interp == 'l')
                 fixf = mfme / 1440.0;
 
-                x = xysarr(recnum).x + (xysarr(recnum + 1).x - xysarr(recnum).x) * fixf;
+                x = xysarr.x(recnum) + (xysarr.x(recnum + 1) - xysarr.x(recnum)) * fixf;
                 y = xysarr.y(recnum) + (xysarr.y(recnum + 1) - xysarr.y(recnum)) * fixf;
                 s = xysarr.s(recnum) + (xysarr.s(recnum + 1) - xysarr.s(recnum)) * fixf;
             end
@@ -79,18 +79,18 @@
                 off2 = 2;
                 fixf = mfme / 1440.0; % get back to days for this since each step is in days
                 % setup so the interval is in between points 2 and 3
-                x = cubicinterp(xysarr(recnum - off1).x, xysarr(recnum).x, xysarr(recnum + off1).x,...
-                    xysarr(recnum + off2).x,...
-                    xysarr(recnum - off1).mjd, xysarr(recnum).mjd, xysarr(recnum + off1).mjd, xysarr(recnum + off2.mjd),...
-                    xysarr(recnum).mjd + fixf);
+                x = cubicinterp(xysarr.x(recnum - off1), xysarr.x(recnum), xysarr.x(recnum + off1),...
+                    xysarr.x(recnum + off2),...
+                    xysarr.mjd(recnum - off1), xysarr.mjd(recnum), xysarr.mjd(recnum + off1), xysarr.mjd(recnum + off2),...
+                    xysarr.mjd(recnum) + fixf);
                 y = cubicinterp(xysarr.y(recnum - off1), xysarr.y(recnum), xysarr.y(recnum + off1),...
                     xysarr.y(recnum + off2),...
-                    xysarr(recnum - off1).mjd, xysarr(recnum).mjd, xysarr(recnum + off1).mjd, xysarr(recnum + off2.mjd),...
-                    xysarr(recnum).mjd + fixf);
+                    xysarr.mjd(recnum - off1), xysarr.mjd(recnum), xysarr.mjd(recnum + off1), xysarr.mjd(recnum + off2),...
+                    xysarr.mjd(recnum) + fixf);
                 s = cubicinterp(xysarr.s(recnum - off1), xysarr.s(recnum), xysarr.s(recnum + off1),...
                     xysarr.s(recnum + off2),...
-                    xysarr(recnum - off1).mjd, xysarr(recnum).mjd, xysarr(recnum + off1).mjd, xysarr(recnum + off2.mjd),...
-                    xysarr(recnum).mjd + fixf);
+                    xysarr.mjd(recnum - off1), xysarr.mjd(recnum), xysarr.mjd(recnum + off1), xysarr.mjd(recnum + off2),...
+                    xysarr.mjd(recnum) + fixf);
             end
         
         % set default values

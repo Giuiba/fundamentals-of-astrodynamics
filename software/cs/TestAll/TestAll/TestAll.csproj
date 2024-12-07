@@ -49,12 +49,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EOPSPWLib">
-      <HintPath>..\..\libraries\EOPSPWLib\EOPSPWLib\bin\Debug\EOPSPWLib.dll</HintPath>
-    </Reference>
-    <Reference Include="SGP4Lib">
-      <HintPath>..\..\libraries\SGP4Lib\SGP4Lib\bin\Debug\SGP4Lib.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -121,25 +115,29 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libraries\AstroLambertk\AstroLambertk\AstroLambertk.csproj">
-      <Project>{a1c2b4ad-c50a-4a99-a56a-57d9d06c3597}</Project>
-      <Name>AstroLambertk</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\libraries\Astrolib\Astrolib\Astrolib.csproj">
-      <Project>{8509fde2-2245-4977-8f2d-d13648aab613}</Project>
-      <Name>Astrolib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\libraries\MathTimeLib\MathTimeLib\MathTimeLib.csproj">
-      <Project>{106694e6-9585-487e-9904-e4ccc344dd69}</Project>
-      <Name>MathTimeLib</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\AstroLib\Astrolib\Astrolib.csproj">
+      <Project>{8509fde2-2245-4977-8f2d-d13648aab613}</Project>
+      <Name>Astrolib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\eopspwLib\EOPSPWLib\EOPSPWLib.csproj">
+      <Project>{b64e8863-15b0-4d1d-a48d-debea17469b8}</Project>
+      <Name>EOPSPWLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MathTimeLib\MathTimeLib\MathTimeLib.csproj">
+      <Project>{106694e6-9585-487e-9904-e4ccc344dd69}</Project>
+      <Name>MathTimeLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\SGP4Lib\SGP4Lib\SGP4Lib.csproj">
+      <Project>{d4340452-9b56-44b6-8788-ef5250461a88}</Project>
+      <Name>SGP4Lib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

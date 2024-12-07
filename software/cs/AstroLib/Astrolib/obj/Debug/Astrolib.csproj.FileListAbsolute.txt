@@ -1,0 +1,11 @@
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\bin\Debug\Astrolib.dll
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\bin\Debug\Astrolib.pdb
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\bin\Debug\EOPSPWLib.dll
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\bin\Debug\MathTimeLib.dll
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\bin\Debug\EOPSPWLib.pdb
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\bin\Debug\MathTimeLib.pdb
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\obj\Debug\Astrolib.csproj.AssemblyReference.cache
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\obj\Debug\Astrolib.csproj.CoreCompileInputs.cache
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\obj\Debug\Astrolib.csproj.CopyComplete
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\obj\Debug\Astrolib.dll
+D:\Codes\LIBRARY\repo\software\cs\AstroLib\Astrolib\obj\Debug\Astrolib.pdb

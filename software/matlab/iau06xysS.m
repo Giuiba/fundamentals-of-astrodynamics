@@ -42,7 +42,7 @@
 %  references    :
 %     vallado       2022, 214-216
 %
-% [x ,y, s] = iau06xysS (iau06arr, fArgs, ttt )
+% [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt )
 % ----------------------------------------------------------------------------
 
 function [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt )
@@ -76,7 +76,7 @@ function [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt )
     for j = 253: -1 : 1
         i = 1306 + j;
         tempval = iau06arr.ax0i(i,1)*fArgs06(1) + iau06arr.ax0i(i,2)*fArgs06(2) + iau06arr.ax0i(i,3)*fArgs06(3) + iau06arr.ax0i(i,4)*fArgs06(4) + iau06arr.ax0i(i,5)*fArgs06(5) + ...
-            iau06arr.ax0i(i,6)*fArgs06(6)  + iau06arr.ax0i(i,7)*fArgs06(7)  + iau06arr.ax0i(i,8)*fArgs06(8)  + iau06arr.ax0i(i,9)*fArgs06(9) + ...
+            iau06arr.ax0i(i,6)*fArgs06(6)  + iau06arr.ax0i(i,7)*fArgs06(7) + iau06arr.ax0i(i,8)*fArgs06(8)  + iau06arr.ax0i(i,9)*fArgs06(9) + ...
             iau06arr.ax0i(i,10)*fArgs06(10) + iau06arr.ax0i(i,11)*fArgs06(11) + iau06arr.ax0i(i,12)*fArgs06(12) + iau06arr.ax0i(i,13)*fArgs06(13) + iau06arr.ax0i(i,14)*fArgs06(14);
         xsum1 = xsum1 + iau06arr.ax0(i,1)*sin(tempval) + iau06arr.ax0(i,2)*cos(tempval);
     end
@@ -110,7 +110,7 @@ function [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt )
     x = x*convrt + xsum0 + xsum1*ttt + xsum2*ttt2 + xsum3*ttt3 + xsum4*ttt4;  % rad
 
     if iauhelp == 'y'
-        fprintf(1,'x %14.12f  %14.12f  %14.12f  %14.12f  %14.12f \n',xsum0/deg2rad,xsum1/deg2rad,xsum2/deg2rad,xsum3/deg2rad,xsum4/deg2rad );
+        fprintf(1,'x %14.12f  %14.12f  %14.12f  %14.12f  %14.12f \n',xsum0,xsum1,xsum2,xsum3,xsum4 );
     end
 
     % ---------------- now find y

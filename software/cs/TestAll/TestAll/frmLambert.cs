@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 using MathTimeMethods;     // Edirection, globals
 using EOPSPWMethods;       // EOPDataClass, SPWDataClass, iau80Class, iau00Class
 using AstroLibMethods;     // EOpt, gravityConst, astroConst, xysdataClass, jpldedataClass
-using AstroLambertkMethods;
+//using AstroLambertkMethods;
 using System.IO;
 
 namespace TestAllTool
@@ -25,7 +25,7 @@ namespace TestAllTool
 
         public AstroLib AstroLibr = new AstroLib();
 
-        public AstroLambertkLib AstroLambertkLibr = new AstroLambertkLib();
+        //public AstroLambertkLib AstroLambertkLibr = new AstroLambertkLib();
 
         public StringBuilder strbuild = new StringBuilder();
 

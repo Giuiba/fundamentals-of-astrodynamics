@@ -10,9 +10,11 @@ using System.Collections.Generic;
 using MathTimeMethods;     // Edirection, globals
 using EOPSPWMethods;       // EOPDataClass, SPWDataClass, iau80Class, iau06Class
 using AstroLibMethods;     // EOpt, gravityConst, astroConst, xysdataClass, jpldedataClass
-using AstroLambertkMethods;
+//using AstroLambertkMethods;
 using SGP4Methods; 
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
+using static AstroLibMethods.AstroLib;
 
 namespace TestAllTool
 {
@@ -24,7 +26,7 @@ namespace TestAllTool
 
         public AstroLib AstroLibr = new AstroLib();
 
-        public AstroLambertkLib AstroLambertkLibr = new AstroLambertkLib();
+        //public AstroLambertkLib AstroLambertkLibr = new AstroLambertkLib();
 
         public SGP4Lib Sgp4Libr = new SGP4Lib();
 
@@ -700,7 +702,8 @@ namespace TestAllTool
             }
 
             string spwFileName = @"D:\Codes\LIBRARY\DataLib\SpaceWeather-All-v1.2_2018-01-04.txt";
-            EOPSPWLibr.readspw(ref EOPSPWLibr.spwdata, spwFileName, out mjdspwstart, out ktrActObs);
+            string errstr;
+            EOPSPWLibr.readspw(ref EOPSPWLibr.spwdata, spwFileName, out mjdspwstart, out ktrActObs,out errstr);
             strbuild.AppendLine("SPW tests  mfme f107 f107bar ap apavg  kp sumkp aparr[]  ");
             for (i = 0; i < 90; i++)
             {
@@ -787,13 +790,11 @@ namespace TestAllTool
             double[,] nut = new double[3, 3];
             double[,] nut00 = new double[3, 3];
             AstroLib.EOpt opt = AstroLib.EOpt.e80;
-            EOPSPWLib.iau80Class iau80arr;
-            EOPSPWLib.iau06Class iau06arr;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out EOPSPWLibr.iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out EOPSPWLibr.iau06arr);
 
             double deltapsi, deltaeps, trueeps, meaneps;
             ttt = 0.042623631889;
@@ -802,14 +803,14 @@ namespace TestAllTool
 
             AstroLibr.fundarg(ttt, opt, out fArgs);
 
-            nut = AstroLibr.nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, opt, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
+            nut = AstroLibr.nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
 
             strbuild.AppendLine("nut = " + nut[0, 0].ToString(fmt).PadLeft(4) + " " + nut[0, 1].ToString(fmt).PadLeft(4) + " " + nut[0, 2].ToString(fmt).PadLeft(4) + " ");
             strbuild.AppendLine("nut = " + nut[1, 0].ToString(fmt).PadLeft(4) + " " + nut[1, 1].ToString(fmt).PadLeft(4) + " " + nut[1, 2].ToString(fmt).PadLeft(4) + " ");
             strbuild.AppendLine("nut = " + nut[2, 0].ToString(fmt).PadLeft(4) + " " + nut[2, 1].ToString(fmt).PadLeft(4) + " " + nut[2, 2].ToString(fmt).PadLeft(4) + " ");
 
-            AstroLibr.fundarg(ttt, AstroLib.EOpt.e06eq, out fArgs);
-            nut00 = AstroLibr.precnutbias00a(ttt, ddpsi, ddeps, EOPSPWLibr.iau06arr, AstroLib.EOpt.e06eq, fArgs);
+            AstroLibr.fundarg(ttt, AstroLib.EOpt.e06cio, out fArgs);
+            nut00 = AstroLibr.precnutbias00a(ttt, ddpsi, ddeps, EOPSPWLibr.iau06arr, AstroLib.EOpt.e06cio, fArgs);
             strbuild.AppendLine("nut06 c= " + nut[0, 0].ToString(fmt).PadLeft(4) + " " + nut[0, 1].ToString(fmt).PadLeft(4) + " " + nut[0, 2].ToString(fmt).PadLeft(4) + " ");
             strbuild.AppendLine("nut06 c= " + nut[1, 0].ToString(fmt).PadLeft(4) + " " + nut[1, 1].ToString(fmt).PadLeft(4) + " " + nut[1, 2].ToString(fmt).PadLeft(4) + " ");
             strbuild.AppendLine("nut06 c= " + nut[2, 0].ToString(fmt).PadLeft(4) + " " + nut[2, 1].ToString(fmt).PadLeft(4) + " " + nut[2, 2].ToString(fmt).PadLeft(4) + " ");
@@ -836,7 +837,7 @@ namespace TestAllTool
 
             AstroLibr.fundarg(ttt, opt, out fArgs);
 
-            nutq = AstroLibr.nutationqmod(ttt, EOPSPWLibr.iau80arr, opt, fArgs, out deltapsi, out deltaeps, out meaneps);
+            nutq = AstroLibr.nutationqmod(ttt, EOPSPWLibr.iau80arr, fArgs, out deltapsi, out deltaeps, out meaneps);
         }
         public void testsidereal()
         {
@@ -862,8 +863,7 @@ namespace TestAllTool
             ddeps = -0.003875;
 
             AstroLibr.fundarg(ttt, opt, out fArgs);
-            nut = AstroLibr.nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, opt, fArgs,
-                out deltapsi, out deltaeps, out trueeps, out meaneps);
+            nut = AstroLibr.nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
             st = AstroLibr.sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, opt);
             strbuild.AppendLine("st = " + st[0, 0].ToString(fmt).PadLeft(4) + " " + st[0, 1].ToString(fmt).PadLeft(4) + " " + st[0, 2].ToString(fmt).PadLeft(4) + " ");
             strbuild.AppendLine("st = " + st[1, 0].ToString(fmt).PadLeft(4) + " " + st[1, 1].ToString(fmt).PadLeft(4) + " " + st[1, 2].ToString(fmt).PadLeft(4) + " ");
@@ -871,7 +871,7 @@ namespace TestAllTool
 
 
             AstroLibr.fundarg(ttt, AstroLib.EOpt.e06eq, out fArgs);
-            nut = AstroLibr.nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, AstroLib.EOpt.e06eq, fArgs,
+            nut = AstroLibr.nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, fArgs,
                 out deltapsi, out deltaeps, out trueeps, out meaneps);
             st = AstroLibr.sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, AstroLib.EOpt.e06eq);
             strbuild.AppendLine("st00 = " + st[0, 0].ToString(fmt).PadLeft(4) + " " + st[0, 1].ToString(fmt).PadLeft(4) + " " + st[0, 2].ToString(fmt).PadLeft(4) + " ");
@@ -1049,62 +1049,54 @@ namespace TestAllTool
             strbuild.AppendLine("ITRF          IAU-76/FK5   " + recef[0].ToString(fmt).PadLeft(4) + " " + recef[1].ToString(fmt).PadLeft(4) + " " + recef[2].ToString(fmt).PadLeft(4) + " "
                 + vecef[0].ToString(fmt).PadLeft(4) + " " + vecef[1].ToString(fmt).PadLeft(4) + " " + vecef[2].ToString(fmt).PadLeft(4));
 
-            string nutLoc;
-            EOPSPWLib.iau80Class iau80arr;
-            EOPSPWLib.iau06Class iau06arr;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out EOPSPWLibr.iau80arr);
 
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out EOPSPWLibr.iau06arr);
 
             // test creating xys file
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
             // done, works. :-)
             //AstroLibr.createXYS(nutLoc, iau06arr, fArgs);
 
             // now read it in
             double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.initXYS(ref xysarr, fileLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
 
             // now test it for interpolation
             //jdtt = jd + jdFrac + (dat + 32.184) / 86400.0;
             AstroLibr.fundarg(ttt, AstroLib.EOpt.e06cio, out fArgs);
-            AstroLibr.iau06xysS(ttt, iau06arr, fArgs, out x, out y, out s);
+            AstroLibr.iau06xysS(ttt, EOPSPWLibr.iau06arr, fArgs, out x, out y, out s);
             strbuild.AppendLine("iau06xys     x   " + x.ToString() + " y " + y.ToString() + " s " + s.ToString());
             strbuild.AppendLine("iau06xys     x   " + (x / conv).ToString() + " y " + (y / conv).ToString() + " s " + (s / conv).ToString());
             x = x + ddx;
             y = y + ddy;
             strbuild.AppendLine("iau06xys     x   " + x.ToString() + " y " + y.ToString() + " s " + s.ToString());
             strbuild.AppendLine("iau06xys     x   " + (x / conv).ToString() + " y " + (y / conv).ToString() + " s " + (s / conv).ToString());
-            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 'n', xysarr, jdxysstart, out x, out y, out s);
+            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 'n', xysarr, out x, out y, out s);
             strbuild.AppendLine("findxysparam n x " + x.ToString() + "   y " + y.ToString() + "   s " + s.ToString());
-            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 'l', xysarr, jdxysstart, out x, out y, out s);
+            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 'l', xysarr, out x, out y, out s);
             strbuild.AppendLine("findxysparam l x " + x.ToString() + " y " + y.ToString() + " s " + s.ToString());
-            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 's', xysarr, jdxysstart, out x, out y, out s);
+            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 's', xysarr, out x, out y, out s);
             strbuild.AppendLine("findxysparam s x " + x.ToString() + " y " + y.ToString() + " s " + s.ToString());
 
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                 EOPSPWLibr.iau80arr,   jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("GCRF          IAU-76/FK5   " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
                 + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
-            Console.WriteLine(" checking book test");
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.eci_ecef06(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+                 AstroLib.EOpt.e06cio, EOPSPWLibr.iau06arr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("GCRF          IAU-2006 CIO " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
-                + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
-            Console.WriteLine("GCRF          IAU-2006 CIO " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
                 + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
 
             // try backwards
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1,  lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("ITRF rev       IAU-76/FK5   " + recef[0].ToString(fmt).PadLeft(4) + " " + recef[1].ToString(fmt).PadLeft(4) + " " + recef[2].ToString(fmt).PadLeft(4) + " "
                 + vecef[0].ToString(fmt).PadLeft(4) + " " + vecef[1].ToString(fmt).PadLeft(4) + " " + vecef[2].ToString(fmt).PadLeft(4));
             recef = new double[] { -1033.4793830, 7901.2952754, 6380.3565958 };
@@ -1112,20 +1104,14 @@ namespace TestAllTool
 
 
             // these are not correct
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e06eq, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.eci_ecef06(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+                 AstroLib.EOpt.e06eq, EOPSPWLibr.iau06arr, jdtt, jdftt, jdut1,  lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("GCRF          IAU-2006 06  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
                 + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
-            Console.WriteLine("GCRF          IAU-2006 06  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
-                + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e00a, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.eci_ecef06(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+                 AstroLib.EOpt.e00a, EOPSPWLibr.iau06arr,  jdtt, jdftt, jdut1,  lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("GCRF          IAU-2006 00a  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
-                + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
-            Console.WriteLine("GCRF          IAU-2006 00a  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
                 + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
             strbuild.AppendLine("00a case is wrong");
 
@@ -1145,8 +1131,8 @@ namespace TestAllTool
             char interp = 'x';  // full series
 
 
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out EOPSPWLibr.iau06arr);
 
             // read interpolated one
             //EOPSPWLibr.initEOPArrayP(ref EOPSPWLibr.eopdataP);
@@ -1181,10 +1167,10 @@ namespace TestAllTool
                 int ii;
                 for (ii = 105; ii >= 0; ii--)
                 {
-                    tempval = iau80arr.iar80[ii, 0] * fArgs[0] + iau80arr.iar80[ii, 1] * fArgs[1] + iau80arr.iar80[ii, 2] * fArgs[2] +
-                             iau80arr.iar80[ii, 3] * fArgs[3] + iau80arr.iar80[ii, 4] * fArgs[4];
-                    deltapsi = deltapsi + (iau80arr.rar80[ii, 0] + iau80arr.rar80[ii, 1] * ttt) * Math.Sin(tempval);
-                    deltaeps = deltaeps + (iau80arr.rar80[ii, 2] + iau80arr.rar80[ii, 3] * ttt) * Math.Cos(tempval);
+                    tempval = EOPSPWLibr.iau80arr.iar80[ii, 0] * fArgs[0] + EOPSPWLibr.iau80arr.iar80[ii, 1] * fArgs[1] + EOPSPWLibr.iau80arr.iar80[ii, 2] * fArgs[2] +
+                             EOPSPWLibr.iau80arr.iar80[ii, 3] * fArgs[3] + EOPSPWLibr.iau80arr.iar80[ii, 4] * fArgs[4];
+                    deltapsi = deltapsi + (EOPSPWLibr.iau80arr.rar80[ii, 0] + EOPSPWLibr.iau80arr.rar80[ii, 1] * ttt) * Math.Sin(tempval);
+                    deltaeps = deltaeps + (EOPSPWLibr.iau80arr.rar80[ii, 2] + EOPSPWLibr.iau80arr.rar80[ii, 3] * ttt) * Math.Cos(tempval);
                 }
 
                 // --------------- find nutation parameters --------------------
@@ -1195,7 +1181,7 @@ namespace TestAllTool
                 AstroLibr.fundarg(ttt, AstroLib.EOpt.e06cio, out fArgs);
                 ddx = 0.0;
                 ddy = 0.0;
-                AstroLibr.iau06xys(jdtt, jdftt, ddx, ddy, interp, iau06arr, fArgs, jdxysstart, out x, out y, out s);
+                AstroLibr.iau06xys(jdtt, ttt, ddx, ddy, interp, EOPSPWLibr.iau06arr, fArgs, out x, out y, out s);
                 x = x * convrt;
                 y = y * convrt;
                 s = s * convrt;
@@ -1257,6 +1243,7 @@ namespace TestAllTool
             veci = new double[] { 0.0, 0.0, 0.0 };
 
             string nutLoc;
+            // can do it either way... with or without  EOPSPWLibr.
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
             nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
@@ -1278,102 +1265,82 @@ namespace TestAllTool
                 + vecef[0].ToString(fmt).PadLeft(4) + " " + vecef[1].ToString(fmt).PadLeft(4) + " " + vecef[2].ToString(fmt).PadLeft(4));
 
             // PEF
-            AstroLibr.ecef_pef(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rpef, ref vpef,
-                AstroLib.EOpt.e80, ttt, xp, yp);
+            AstroLibr.ecef_pef(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rpef, ref vpef, ttt, xp, yp);
             strbuild.AppendLine("PEF           IAU-76/FK5   " + rpef[0].ToString(fmt).PadLeft(4) + " " +
                 rpef[1].ToString(fmt).PadLeft(4) + " " + rpef[2].ToString(fmt).PadLeft(4) + " "
                 + vpef[0].ToString(fmt).PadLeft(4) + " " + vpef[1].ToString(fmt).PadLeft(4) + " " + vpef[2].ToString(fmt).PadLeft(4));
-            AstroLibr.ecef_pef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,
-                AstroLib.EOpt.e80, ttt, xp, yp);
+            AstroLibr.ecef_pef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,  ttt, xp, yp);
             strbuild.AppendLine("ITRF  rev     IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.ecef_pef(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rtemp, ref vtemp,
-                AstroLib.EOpt.e06cio, ttt, xp, yp);
+            AstroLibr.ecef_tirs(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rtemp, ref vtemp, ttt, xp, yp);
             strbuild.AppendLine("TIRS          IAU-2006 CIO " + rtemp[0].ToString(fmt).PadLeft(4) + " " +
                 rtemp[1].ToString(fmt).PadLeft(4) + " " + rtemp[2].ToString(fmt).PadLeft(4) + " "
                 + vtemp[0].ToString(fmt).PadLeft(4) + " " + vtemp[1].ToString(fmt).PadLeft(4) + " " + vtemp[2].ToString(fmt).PadLeft(4));
-            AstroLibr.ecef_pef(ref recefi, ref vecefi, MathTimeLib.Edirection.efrom, ref rtemp, ref vtemp,
-                AstroLib.EOpt.e06cio, ttt, xp, yp);
+            AstroLibr.ecef_tirs(ref recefi, ref vecefi, MathTimeLib.Edirection.efrom, ref rtemp, ref vtemp, ttt, xp, yp);
             strbuild.AppendLine("ITRF rev      IAU-2006 CIO " + recefi[0].ToString(fmt).PadLeft(4) + " " + recefi[1].ToString(fmt).PadLeft(4) + " " + recefi[2].ToString(fmt).PadLeft(4) + " "
                 + vecefi[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
 
             // TOD
-            AstroLibr.ecef_tod(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rtod, ref vtod,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                ttt, jdut1, lod, xp, yp, 0.0, 0.0, ddx, ddy);
+            AstroLibr.ecef_tod(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rtod, ref vtod, iau80arr, ttt, jdut1, lod, xp, yp, 0.0, 0.0);
             strbuild.AppendLine("TOD wo corr   IAU-76/FK5   " + rtod[0].ToString(fmt).PadLeft(4) + " " + rtod[1].ToString(fmt).PadLeft(4) + " " + rtod[2].ToString(fmt).PadLeft(4) + " "
                 + vtod[0].ToString(fmt).PadLeft(4) + " " + vtod[1].ToString(fmt).PadLeft(4) + " " + vtod[2].ToString(fmt).PadLeft(4));
-            AstroLibr.ecef_tod(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rtod, ref vtod,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                ttt, jdut1, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.ecef_tod(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rtod, ref vtod, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("TOD w corr    IAU-76/FK5   " + rtod[0].ToString(fmt).PadLeft(4) + " " + rtod[1].ToString(fmt).PadLeft(4) + " " + rtod[2].ToString(fmt).PadLeft(4) + " "
                 + vtod[0].ToString(fmt).PadLeft(4) + " " + vtod[1].ToString(fmt).PadLeft(4) + " " + vtod[2].ToString(fmt).PadLeft(4));
-            AstroLibr.ecef_tod(ref recefi, ref vecefi, MathTimeLib.Edirection.efrom, ref rtod, ref vtod,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                ttt, jdut1, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.ecef_tod(ref recefi, ref vecefi, MathTimeLib.Edirection.efrom, ref rtod, ref vtod, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("ITRFi         IAU-76/FK5   " + recefi[0].ToString(fmt).PadLeft(4) + " " + recefi[1].ToString(fmt).PadLeft(4) + " " + recefi[2].ToString(fmt).PadLeft(4) + " "
                 + vecefi[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.ecef_tod(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rtemp, ref vtemp,
-                AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-                ttt, jdut1, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.ecef_cirs(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rtemp, ref vtemp,
+                AstroLib.EOpt.e06cio, iau06arr,  ttt, jdut1, lod, xp, yp,  ddx, ddy);
             strbuild.AppendLine("CIRS          IAU-2006 CIO " + rtemp[0].ToString(fmt).PadLeft(4) + " " +
                 rtemp[1].ToString(fmt).PadLeft(4) + " " + rtemp[2].ToString(fmt).PadLeft(4) + " "
                 + vtemp[0].ToString(fmt).PadLeft(4) + " " + vtemp[1].ToString(fmt).PadLeft(4) + " " + vtemp[2].ToString(fmt).PadLeft(4));
-            AstroLibr.ecef_tod(ref recefi, ref vecefi, MathTimeLib.Edirection.efrom, ref rtemp, ref vtemp,
-               AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-               ttt, jdut1, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.ecef_cirs(ref recefi, ref vecefi, MathTimeLib.Edirection.efrom, ref rtemp, ref vtemp,
+               AstroLib.EOpt.e06cio, iau06arr,  ttt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("ITRF rev      IAU-2006 CIO " + recefi[0].ToString(fmt).PadLeft(4) + " " + recefi[1].ToString(fmt).PadLeft(4) + " " + recefi[2].ToString(fmt).PadLeft(4) + " "
                 + vecefi[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
 
             // MOD
             AstroLibr.ecef_mod(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rmod, ref vmod,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, 0.0, 0.0, ddx, ddy);
+                 iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, 0.0, 0.0);
             strbuild.AppendLine("MOD wo corr   IAU-76/FK5   " + rmod[0].ToString(fmt).PadLeft(4) + " " +
                 rmod[1].ToString(fmt).PadLeft(4) + " " + rmod[2].ToString(fmt).PadLeft(4) + " "
                 + vmod[0].ToString(fmt).PadLeft(4) + " " + vmod[1].ToString(fmt).PadLeft(4) + " " + vmod[2].ToString(fmt).PadLeft(4));
             AstroLibr.ecef_mod(ref recef, ref vecef, MathTimeLib.Edirection.eto, ref rmod, ref vmod,
-              AstroLib.EOpt.e80, iau80arr, iau06arr,
-              jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+               iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("MOD  w corr   IAU-76/FK5   " + rmod[0].ToString(fmt).PadLeft(4) + " " +
                 rmod[1].ToString(fmt).PadLeft(4) + " " + rmod[2].ToString(fmt).PadLeft(4) + " "
                 + vmod[0].ToString(fmt).PadLeft(4) + " " + vmod[1].ToString(fmt).PadLeft(4) + " " + vmod[2].ToString(fmt).PadLeft(4));
             AstroLibr.ecef_mod(ref recefi, ref vecefi, MathTimeLib.Edirection.efrom, ref rmod, ref vmod,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+               iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("ITRF  rev     IAU-76/FK5   " + recefi[0].ToString(fmt).PadLeft(4) + " " + recefi[1].ToString(fmt).PadLeft(4) + " " + recefi[2].ToString(fmt).PadLeft(4) + " "
                 + vecefi[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
 
 
             // J2000
             AstroLibr.eci_ecef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, 0.0, 0.0, ddx, ddy);
+                 iau80arr,  jdtt, jdftt, jdut1, lod, xp, yp, 0.0, 0.0);
             strbuild.AppendLine("J2000 wo corr IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
 
             // GCRF
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                  iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("GCRF w corr   IAU-76/FK5   " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
                 + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recefi, ref vecefi,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                  iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("ITRF rev      IAU-76/FK5   " + recefi[0].ToString(fmt).PadLeft(4) + " " + recefi[1].ToString(fmt).PadLeft(4) + " " + recefi[2].ToString(fmt).PadLeft(4) + " "
                 + vecef[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.eci_ecef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.eci_ecef06(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+                 AstroLib.EOpt.e06cio, iau06arr,  jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("GCRF          IAU-2006 CIO " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
-            AstroLibr.eci_ecef(ref recii, ref vecii, MathTimeLib.Edirection.eto, ref recefi, ref vecefi,
-                 AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.eci_ecef06(ref recii, ref vecii, MathTimeLib.Edirection.eto, ref recefi, ref vecefi,
+                 AstroLib.EOpt.e06cio, iau06arr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("ITRF rev      IAU-2006 CIO " + recefi[0].ToString(fmt).PadLeft(4) + " " + recefi[1].ToString(fmt).PadLeft(4) + " " + recefi[2].ToString(fmt).PadLeft(4) + " "
                 + vecefi[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
 
@@ -1389,60 +1356,50 @@ namespace TestAllTool
 
             // PEF
             AstroLibr.eci_pef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rpef, ref vpef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+                 iau80arr, jdtt, jdftt, jdut1, lod, ddpsi, ddeps);
             strbuild.AppendLine("PEF           IAU-76/FK5   " + rpef[0].ToString(fmt).PadLeft(4) + " " +
                 rpef[1].ToString(fmt).PadLeft(4) + " " + rpef[2].ToString(fmt).PadLeft(4) + " "
                 + vpef[0].ToString(fmt).PadLeft(4) + " " + vpef[1].ToString(fmt).PadLeft(4) + " " + vpef[2].ToString(fmt).PadLeft(4));
             AstroLibr.eci_pef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+                 iau80arr, jdtt, jdftt, jdut1, lod, ddpsi, ddeps);
             strbuild.AppendLine("ECI rev       IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.eci_pef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rpef, ref vpef,
-                AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.eci_tirs(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rpef, ref vpef,
+                AstroLib.EOpt.e06cio,  iau06arr,  jdtt, jdftt, jdut1,  lod, ddx, ddy);
             strbuild.AppendLine("TIRS          IAU-2006 CIO  " + rpef[0].ToString(fmt).PadLeft(4) + " " +
                 rpef[1].ToString(fmt).PadLeft(4) + " " + rpef[2].ToString(fmt).PadLeft(4) + " "
                 + vpef[0].ToString(fmt).PadLeft(4) + " " + vpef[1].ToString(fmt).PadLeft(4) + " " + vpef[2].ToString(fmt).PadLeft(4));
-            AstroLibr.eci_pef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,
-                AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.eci_tirs(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,
+                AstroLib.EOpt.e06cio,  iau06arr,   jdtt, jdftt, jdut1,  lod,  ddx, ddy);
             strbuild.AppendLine("ECI rev       IAU-2006 CIO " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
 
             // TOD
             AstroLibr.eci_tod(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rtod, ref vtod,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+                 iau80arr, jdtt, jdftt, jdut1, lod, ddpsi, ddeps);
             strbuild.AppendLine("TOD           IAU-76/FK5   " + rtod[0].ToString(fmt).PadLeft(4) + " " + rtod[1].ToString(fmt).PadLeft(4) + " " + rtod[2].ToString(fmt).PadLeft(4) + " "
                 + vtod[0].ToString(fmt).PadLeft(4) + " " + vtod[1].ToString(fmt).PadLeft(4) + " " + vtod[2].ToString(fmt).PadLeft(4));
             AstroLibr.eci_tod(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rtod, ref vtod,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+                 iau80arr, jdtt, jdftt, jdut1, lod, ddpsi, ddeps);
             strbuild.AppendLine("ECI rev       IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.eci_tod(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rtod, ref vtod,
-                AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.eci_cirs(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rtod, ref vtod,
+                 EOpt.e06cio, iau06arr, jdtt, jdftt, jdut1,  lod, ddx, ddy);
             strbuild.AppendLine("CIRS          IAU-2006 CIO " + rtod[0].ToString(fmt).PadLeft(4) + " " + rtod[1].ToString(fmt).PadLeft(4) + " " + rtod[2].ToString(fmt).PadLeft(4) + " "
                 + vtod[0].ToString(fmt).PadLeft(4) + " " + vtod[1].ToString(fmt).PadLeft(4) + " " + vtod[2].ToString(fmt).PadLeft(4));
-            AstroLibr.eci_tod(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rtod, ref vtod,
-                AstroLib.EOpt.e06cio, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, ddpsi, ddeps, ddx, ddy);
+            AstroLibr.eci_cirs(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rtod, ref vtod,
+                EOpt.e06cio, iau06arr,  jdtt, jdftt, jdut1,  lod, ddx, ddy);
             strbuild.AppendLine("ECI rev       IAU-2006 CIO " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
 
             // MOD
-            AstroLibr.eci_mod(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rmod, ref vmod,
-                AstroLib.EOpt.e80, iau80arr, iau06arr, ttt);
+            AstroLibr.eci_mod(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rmod, ref vmod, iau80arr, ttt);
             strbuild.AppendLine("MOD           IAU-76/FK5   " + rmod[0].ToString(fmt).PadLeft(4) + " " +
                 rmod[1].ToString(fmt).PadLeft(4) + " " + rmod[2].ToString(fmt).PadLeft(4) + " "
                 + vmod[0].ToString(fmt).PadLeft(4) + " " + vmod[1].ToString(fmt).PadLeft(4) + " " + vmod[2].ToString(fmt).PadLeft(4));
-            AstroLibr.eci_mod(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rmod, ref vmod,
-                AstroLib.EOpt.e80, iau80arr, iau06arr, ttt);
+            AstroLibr.eci_mod(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rmod, ref vmod, iau80arr, ttt);
             strbuild.AppendLine("ECI rev       IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
         }
@@ -1678,13 +1635,13 @@ namespace TestAllTool
 
         public void testrv_tradec()
         {
-            double[] rijk = new double[3];
-            double[] vijk = new double[3];
-            double[] rsijk = new double[3];
+            double[] reci = new double[3];
+            double[] veci = new double[3];
+            double[] rseci = new double[3];
             double rho, trtasc, tdecl, drho, dtrtasc, dtdecl;
-            rijk = new double[] { 4066.716, -2847.545, 3994.302 };
-            vijk = new double[] { -1.56825429, -3.70234891, -6.47948395 };
-            rsijk = new double[] { -1605.79221660, -570.22951108, 193.05319896 };
+            reci = new double[] { 4066.716, -2847.545, 3994.302 };
+            veci = new double[] { -1.56825429, -3.70234891, -6.47948395 };
+            rseci = new double[] { -1605.79221660, -570.22951108, 193.05319896 };
             rho = 0.2634728;
             trtasc = -0.1492353;
             tdecl = 0.0519525;
@@ -1692,15 +1649,23 @@ namespace TestAllTool
             dtrtasc = 0.2045751;
             dtdecl = -0.7510033;
 
-            AstroLibr.rv_tradec(ref rijk, ref vijk, rsijk, MathTimeLib.Edirection.eto, ref rho, ref trtasc, ref tdecl, ref drho, ref dtrtasc, ref dtdecl);
-            strbuild.AppendLine("rv tradec  " + rijk[0].ToString(fmt).PadLeft(4) + " " + rijk[1].ToString(fmt).PadLeft(4) + " " + rijk[2].ToString(fmt).PadLeft(4) + " " +
-                                "  " + vijk[0].ToString(fmt).PadLeft(4) + " " + vijk[1].ToString(fmt).PadLeft(4) + " " + vijk[2].ToString(fmt).PadLeft(4));
-            strbuild.AppendLine("tradec " + rho.ToString(fmt).PadLeft(4) + " " + trtasc.ToString(fmt).PadLeft(4) + " " + tdecl.ToString(fmt).PadLeft(4) + " " +
-                                "  " + drho.ToString(fmt).PadLeft(4) + " " + dtrtasc.ToString(fmt).PadLeft(4) + " " + dtdecl.ToString(fmt).PadLeft(4));
+            AstroLibr.rv_tradec(ref reci, ref veci, rseci, MathTimeLib.Edirection.eto, ref rho, ref trtasc, ref tdecl, ref drho, ref dtrtasc, 
+                ref dtdecl);
+            strbuild.AppendLine("rv tradec  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " 
+                + reci[2].ToString(fmt).PadLeft(4) + " " +
+                "  " + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " 
+                + veci[2].ToString(fmt).PadLeft(4));
+            strbuild.AppendLine("tradec " + rho.ToString(fmt).PadLeft(4) + " " + trtasc.ToString(fmt).PadLeft(4) + " " 
+                + tdecl.ToString(fmt).PadLeft(4) + " " +
+                "  " + drho.ToString(fmt).PadLeft(4) + " " + dtrtasc.ToString(fmt).PadLeft(4) + " " 
+                + dtdecl.ToString(fmt).PadLeft(4));
 
-            AstroLibr.rv_tradec(ref rijk, ref vijk, rsijk, MathTimeLib.Edirection.efrom, ref rho, ref trtasc, ref tdecl, ref drho, ref dtrtasc, ref dtdecl);
-            strbuild.AppendLine("rv tradec  " + rijk[0].ToString(fmt).PadLeft(4) + " " + rijk[1].ToString(fmt).PadLeft(4) + " " + rijk[2].ToString(fmt).PadLeft(4) + " " +
-                                "  " + vijk[0].ToString(fmt).PadLeft(4) + " " + vijk[1].ToString(fmt).PadLeft(4) + " " + vijk[2].ToString(fmt).PadLeft(4));
+            AstroLibr.rv_tradec(ref reci, ref veci, rseci, MathTimeLib.Edirection.efrom, ref rho, ref trtasc, ref tdecl, ref drho, 
+                ref dtrtasc, ref dtdecl);
+            strbuild.AppendLine("rv tradec  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " 
+                + reci[2].ToString(fmt).PadLeft(4) + " " +
+                "  " + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " 
+                + veci[2].ToString(fmt).PadLeft(4));
         }
         public void testrvsez_razel()
         {
@@ -2458,7 +2423,7 @@ namespace TestAllTool
                     Math.Sqrt(Math.Cos(2.0 * (lona - lons)) - Math.Cos(2.0 * (lonp - lons)));
                 strbuildObs.AppendLine(jj + " " + lona * rad + " " + (lonp - lons) * rad + " " + londot * rad / 86400.0);
             } // for through all the tracks testing rtasc/decl rates
-            File.WriteAllText(@"D:\faabook\current\excel\testgeo.out", strbuildObs.ToString());
+            //File.WriteAllText(@"D:\faabook\current\excel\testgeo.out", strbuildObs.ToString());
         }
 
 
@@ -2813,8 +2778,7 @@ namespace TestAllTool
                 //  ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
                 jdut1 = jd[idx1] + jdf[idx1] + dut1 / 86400.0;
                 AstroLibr.eci_ecef(ref rseci1, ref vseci1, MathTimeLib.Edirection.efrom, ref rsecef1, ref vsecef1,
-                     AstroLib.EOpt.e80, iau80arr, iau06arr,
-                     jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                     iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 AstroLibr.site(latgd[idx2], lon[idx2], alt[idx2], out rsecef2, out vsecef2);
                 EOPSPWLibr.findeopparam(jd[idx2], jdf[idx2], 's', EOPSPWLibr.eopdata, mjdeopstart + 2400000.5,
@@ -2827,8 +2791,7 @@ namespace TestAllTool
                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                 jdut1 = jd[idx2] + jdf[idx2] + dut1 / 86400.0;
                 AstroLibr.eci_ecef(ref rseci2, ref vseci2, MathTimeLib.Edirection.efrom, ref rsecef2, ref vsecef2,
-                     AstroLib.EOpt.e80, iau80arr, iau06arr,
-                     jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                    iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
                 double gst, lst;
                 AstroLibr.lstime(lon[idx2], jdut1, out lst, out gst);
                 strbuildall.AppendLine("\nlst " + lst.ToString() + " " + (lst * rad).ToString());
@@ -2842,8 +2805,7 @@ namespace TestAllTool
                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                 jdut1 = jd[idx3] + jdf[idx3] + dut1 / 86400.0;
                 AstroLibr.eci_ecef(ref rseci3, ref vseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3,
-                     AstroLib.EOpt.e80, iau80arr, iau06arr,
-                     jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                   iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
                     && Math.Abs(lon[idx1] - lon[idx2]) < 0.001 && Math.Abs(lon[idx1] - lon[idx3]) < 0.001)
@@ -5415,7 +5377,7 @@ namespace TestAllTool
             lon = -104.883 / rad;
             alt = 0.3253;
 
-            AstroLibr.radecgeo2azel(rtasc, decl, rr, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, AstroLib.EOpt.e80, out az, out el);
+            AstroLibr.radecgeo2azel(rtasc, decl, rr, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, out az, out el);
         }
 
         public void testijk2ll()
@@ -5773,11 +5735,10 @@ namespace TestAllTool
             jdut1 = jd + jdFrac + dut1 / 86400.0;
 
             recef = new double[] { -605.79221660, -5870.22951108, 3493.05319896 };
-            recef = new double[] { -100605.79221660, -1005870.22951108, 1003493.05319896 };
+            //recef = new double[] { -100605.79221660, -1005870.22951108, 1003493.05319896 };
             vecef = new double[] { -1.56825429, -3.70234891, -6.47948395 };
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                iau80arr, jdtt, jdftt, jdut1,  lod, xp, yp, ddpsi, ddeps);
 
             lon = -104.883 / rad;
             latgd = 39.007 / rad;
@@ -5785,8 +5746,7 @@ namespace TestAllTool
             AstroLibr.site(latgd, lon, alt, out rsecef, out vsecef);
 
             AstroLibr.eci_ecef(ref rseci, ref vseci, MathTimeLib.Edirection.efrom, ref rsecef, ref vsecef,
-                AstroLib.EOpt.e80, iau80arr, iau06arr,
-                jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                 iau80arr, jdtt, jdftt, jdut1,  lod, xp, yp, ddpsi, ddeps);
 
             AstroLibr.lstime(lon, jdut1, out lst, out gst);
 
@@ -6133,519 +6093,6 @@ namespace TestAllTool
             LegArrEx[21, 20] = 13113070457687988603440625.0 * s * Math.Pow(c * c, 10);
             LegArrEx[21, 21] = 13113070457687988603440625.0 * Math.Pow(c, 21);
 
-            if (order > 21)
-            {
-                LegArrEx[22, 0] = (-88179.0 + 22309287 * Math.Pow(s, 2) - 929553625 * Math.Pow(s, 4) + 15058768725 * Math.Pow(s, 6) - 124772655150.0 * Math.Pow(s, 8) + 601681470390.0 * Math.Pow(s, 10) - 1805044411170.0 * Math.Pow(s, 12) + 3471239252250.0 * Math.Pow(s, 14) - 4281195077775.0 * Math.Pow(s, 16) + 3273855059475.0 * Math.Pow(s, 18) - 1412926920405.0 * Math.Pow(s, 20) + 263012370465.0 * Math.Pow(s, 22)) / 524288;
-                LegArrEx[22, 1] = (1.0 / 262144) * 253 * c * (88179 * s - 7348250 * Math.Pow(s, 3) + 178562475 * Math.Pow(s, 5) - 1972690200.0 * Math.Pow(s, 7) + 11890938150.0 * Math.Pow(s, 9) - 42807377340.0 * Math.Pow(s, 11) + 96042192750.0 * Math.Pow(s, 13) - 135373757400 * Math.Pow(s, 15) + 116461247175.0 * Math.Pow(s, 17) - 55846913850.0 * Math.Pow(s, 19) + 11435320455.0 * Math.Pow(s, 21));
-                LegArrEx[22, 2] = (1.0 / 262144) * 5313 * c * c * (4199 - 1049750 * Math.Pow(s, 2) + 42514875 * Math.Pow(s, 4) - 657563400.0 * Math.Pow(s, 6) + 5096116350.0 * Math.Pow(s, 8) - 22422911940.0 * Math.Pow(s, 10) + 59454690750.0 * Math.Pow(s, 12) - 96695541000.0 * Math.Pow(s, 14) + 94278152475.0 * Math.Pow(s, 16) - 50528160150 * Math.Pow(s, 18) + 11435320455 * Math.Pow(s, 20));
-                LegArrEx[22, 3] = (1.0 / 65536) * 132825 * Math.Pow(c, 3) * (-20995 * s + 1700595 * Math.Pow(s, 3) - 39453804 * Math.Pow(s, 5) + 407689308 * Math.Pow(s, 7) - 2242291194.0 * Math.Pow(s, 9) + 7134562890 * Math.Pow(s, 11) - 13537375740.0 * Math.Pow(s, 13) + 15084504396 * Math.Pow(s, 15) - 9095068827.0 * Math.Pow(s, 17) + 2287064091 * Math.Pow(s, 19));
-                LegArrEx[22, 4] = (32807775.0 * Math.Pow(c, 4) * (-85 + 20655 * Math.Pow(s, 2) - 798660 * Math.Pow(s, 4) + 11553948 * Math.Pow(s, 6) - 81702918 * Math.Pow(s, 8) + 317733570 * Math.Pow(s, 10) - 712493460.0 * Math.Pow(s, 12) + 916063020.0 * Math.Pow(s, 14) - 625976397 * Math.Pow(s, 16) + 175928007 * Math.Pow(s, 18))) / 65536;
-                LegArrEx[22, 5] = ((885809925.0 * Math.Pow(c, 5) * (765 * s - 59160 * Math.Pow(s, 3) + 1283772 * Math.Pow(s, 5) - 12104136 * Math.Pow(s, 7) + 58839550 * Math.Pow(s, 9) - 158331880 * Math.Pow(s, 11) + 237497820.0 * Math.Pow(s, 13) - 185474488 * Math.Pow(s, 15) + 58642669 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[22, 6] = ((15058768725.0 * Math.Pow(c, 6) * (45 - 10440 * Math.Pow(s, 2) + 377580 * Math.Pow(s, 4) - 4984056 * Math.Pow(s, 6) + 31150350 * Math.Pow(s, 8) - 102450040 * Math.Pow(s, 10) + 181615980 * Math.Pow(s, 12) - 163653960 * Math.Pow(s, 14) + 58642669 * Math.Pow(s, 16))) / 32768);
-                LegArrEx[22, 7] = ((436704293025.0 * Math.Pow(c, 7) * (-45 * s + 3255 * Math.Pow(s, 3) - 64449 * Math.Pow(s, 5) + 537075 * Math.Pow(s, 7) - 2207975 * Math.Pow(s, 9) + 4696965 * Math.Pow(s, 11) - 4937835 * Math.Pow(s, 13) + 2022161 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[22, 8] = (6550564395375.0 * Math.Pow(c, 8) * (-3 + 651 * Math.Pow(s, 2) - 21483 * Math.Pow(s, 4) + 250635 * Math.Pow(s, 6) - 1324785 * Math.Pow(s, 8) + 3444441 * Math.Pow(s, 10) - 4279457 * Math.Pow(s, 12) + 2022161 * Math.Pow(s, 14))) / 2048;
-                LegArrEx[22, 9] = ((1421472473796375.0 * Math.Pow(c, 9) * (3 * s - 198 * Math.Pow(s, 3) + 3465 * Math.Pow(s, 5) - 24420 * Math.Pow(s, 7) + 79365 * Math.Pow(s, 9) - 118326 * Math.Pow(s, 11) + 65231 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[22, 10] = ((1421472473796375.0 * Math.Pow(c, 10) * (3 - 594 * Math.Pow(s, 2) + 17325 * Math.Pow(s, 4) - 170940 * Math.Pow(s, 6) + 714285 * Math.Pow(s, 8) - 1301586 * Math.Pow(s, 10) + 848003 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[22, 11] = (4264417421389125.0 / 256) * Math.Pow(c, 11) * (-99 * s + 5775 * Math.Pow(s, 3) - 85470 * Math.Pow(s, 5) + 476190 * Math.Pow(s, 7) - 1084655 * Math.Pow(s, 9) + 848003 * Math.Pow(s, 11));
-                LegArrEx[22, 12] = 46908591635280375.0 / 256 * Math.Pow(c, 12) * (-9 + 1575 * Math.Pow(s, 2) - 38850 * Math.Pow(s, 4) + 303030 * Math.Pow(s, 6) - 887445 * Math.Pow(s, 8) + 848003 * Math.Pow(s, 10));
-                LegArrEx[22, 13] = (234542958176401875.0 / 128) * Math.Pow(c, 13) * (315 * s - 15540 * Math.Pow(s, 3) + 181818 * Math.Pow(s, 5) - 709956 * Math.Pow(s, 7) + 848003 * Math.Pow(s, 9));
-                LegArrEx[22, 14] = (2110886623587616875.0 / 128) * Math.Pow(c, 14) * (35 - 5180 * Math.Pow(s, 2) + 101010 * Math.Pow(s, 4) - 552188 * Math.Pow(s, 6) + 848003 * Math.Pow(s, 8));
-                LegArrEx[22, 15] = (78102805072741824375.0 / 16) * Math.Pow(c, 15) * (-35 * s + 1365 * Math.Pow(s, 3) - 11193 * Math.Pow(s, 5) + 22919 * Math.Pow(s, 7));
-                LegArrEx[22, 16] = 546719635509192770625.0 / 16 * Math.Pow(c, 16) * (-5 + 585 * Math.Pow(s, 2) - 7995 * Math.Pow(s, 4) + 22919 * Math.Pow(s, 6));
-                LegArrEx[22, 17] = (21322065784858518054375.0 / 8) * Math.Pow(c, 17) * (15 * s - 410 * Math.Pow(s, 3) + 1763 * Math.Pow(s, 5));
-                LegArrEx[22, 18] = (106610328924292590271875.0 / 8) * Math.Pow(c, 18) * (3 - 246 * Math.Pow(s, 2) + 1763 * Math.Pow(s, 4));
-                LegArrEx[22, 19] = (4371023485895996201146875.0 / 2) * Math.Pow(c, 19) * (-3 * s + 43 * Math.Pow(s, 3));
-                LegArrEx[22, 20] = 13113070457687988603440625.0 / 2 * Math.Pow(c, 20) * (-1 + 43 * Math.Pow(s, 2));
-                LegArrEx[22, 21] = 563862029680583509947946875.0 * s * Math.Pow(c, 21);
-                LegArrEx[22, 22] = 563862029680583509947946875.0 * Math.Pow(c, 22);
-
-                LegArrEx[23, 0] = (-2028117.0 * s + 185910725 * Math.Pow(s, 3) - 5019589575.0 * Math.Pow(s, 5) + 62386327575.0 * Math.Pow(s, 7) - 429772478850.0 * Math.Pow(s, 9) + 1805044411170.0 * Math.Pow(s, 11) - 4859734953150.0 * Math.Pow(s, 13) + 8562390155550 * Math.Pow(s, 15) - 9821565178425.0 * Math.Pow(s, 17) + 7064634602025.0 * Math.Pow(s, 19) - 2893136075115.0 * Math.Pow(s, 21) + 514589420475.0 * Math.Pow(s, 23)) / 524288;
-                LegArrEx[23, 1] = (1.0 / 524288) * 69 * c * (-29393 + 8083075 * Math.Pow(s, 2) - 363738375 * Math.Pow(s, 4) + 6329047725.0 * Math.Pow(s, 6) - 56057279850.0 * Math.Pow(s, 8) + 287760703230.0 * Math.Pow(s, 10) - 915602237550.0 * Math.Pow(s, 12) + 1861389164250.0 * Math.Pow(s, 14) - 2419805913525.0 * Math.Pow(s, 16) + 1945334165775.0 * Math.Pow(s, 18) - 880519675035.0 * Math.Pow(s, 20) + 171529806825.0 * Math.Pow(s, 22));
-                LegArrEx[23, 2] = (1.0 / 262144) * 18975 * c * c * (29393 * s - 2645370 * Math.Pow(s, 3) + 69044157 * Math.Pow(s, 5) - 815378616 * Math.Pow(s, 7) + 5232012786 * Math.Pow(s, 9) - 19976776092 * Math.Pow(s, 11) + 47380815090.0 * Math.Pow(s, 13) - 70394353848.0 * Math.Pow(s, 15) + 63665481789.0 * Math.Pow(s, 17) - 32018897274.0 * Math.Pow(s, 19) + 6861192273.0 * Math.Pow(s, 21));
-                LegArrEx[23, 3] = (1.0 / 262144) * 1726725 * Math.Pow(c, 3) * (323 - 87210 * Math.Pow(s, 2) + 3793635 * Math.Pow(s, 4) - 62721432 * Math.Pow(s, 6) + 517451814 * Math.Pow(s, 8) - 2414775132 * Math.Pow(s, 10) + 6768687870 * Math.Pow(s, 12) - 11603464920.0 * Math.Pow(s, 14) + 11893551543.0 * Math.Pow(s, 16) - 6685264266.0 * Math.Pow(s, 18) + 1583352063.0 * Math.Pow(s, 20));
-                LegArrEx[23, 4] = (46621575 * Math.Pow(c, 4) * (-1615 * s + 140505 * Math.Pow(s, 3) - 3484524 * Math.Pow(s, 5) + 38329764 * Math.Pow(s, 7) - 223590290 * Math.Pow(s, 9) + 752076430 * Math.Pow(s, 11) - 1504152860 * Math.Pow(s, 13) + 1762007636 * Math.Pow(s, 15) - 1114210711.0 * Math.Pow(s, 17) + 293213345 * Math.Pow(s, 19))) / 65536;
-                LegArrEx[23, 5] = ((885809925 * Math.Pow(c, 5) * (-85 + 22185 * Math.Pow(s, 2) - 916980 * Math.Pow(s, 4) + 14121492 * Math.Pow(s, 6) - 105911190 * Math.Pow(s, 8) + 435412670 * Math.Pow(s, 10) - 1029157220 * Math.Pow(s, 12) + 1391058660 * Math.Pow(s, 14) - 996925373.0 * Math.Pow(s, 16) + 293213345 * Math.Pow(s, 18))) / 65536);
-                LegArrEx[23, 6] = ((25688487825.0 * Math.Pow(c, 6) * (765 * s - 63240 * Math.Pow(s, 3) + 1460844 * Math.Pow(s, 5) - 14608440 * Math.Pow(s, 7) + 75071150 * Math.Pow(s, 9) - 212929080 * Math.Pow(s, 11) + 335772780 * Math.Pow(s, 13) - 275013896 * Math.Pow(s, 15) + 90997245 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[23, 7] = ((6550564395375.0 * Math.Pow(c, 7) * (3 - 744 * Math.Pow(s, 2) + 28644 * Math.Pow(s, 4) - 401016 * Math.Pow(s, 6) + 2649570 * Math.Pow(s, 8) - 9185176 * Math.Pow(s, 10) + 17117828 * Math.Pow(s, 12) - 16177288 * Math.Pow(s, 14) + 6066483 * Math.Pow(s, 16))) / 32768);
-                LegArrEx[23, 8] = (203067496256625.0 * Math.Pow(c, 8) * (-3 * s + 231 * Math.Pow(s, 3) - 4851 * Math.Pow(s, 5) + 42735 * Math.Pow(s, 7) - 185185 * Math.Pow(s, 9) + 414141 * Math.Pow(s, 11) - 456617 * Math.Pow(s, 13) + 195693 * Math.Pow(s, 15))) / 2048;
-                LegArrEx[23, 9] = ((203067496256625.0 * Math.Pow(c, 9) * (-3 + 693 * Math.Pow(s, 2) - 24255 * Math.Pow(s, 4) + 299145 * Math.Pow(s, 6) - 1666665 * Math.Pow(s, 8) + 4555551 * Math.Pow(s, 10) - 5936021 * Math.Pow(s, 12) + 2935395 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[23, 10] = ((4264417421389125.0 * Math.Pow(c, 10) * (33 * s - 2310 * Math.Pow(s, 3) + 42735 * Math.Pow(s, 5) - 317460 * Math.Pow(s, 7) + 1084655 * Math.Pow(s, 9) - 1696006 * Math.Pow(s, 11) + 978465 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[23, 11] = ((4264417421389125.0 * Math.Pow(c, 11) * (33 - 6930 * Math.Pow(s, 2) + 213675 * Math.Pow(s, 4) - 2222220 * Math.Pow(s, 6) + 9761895 * Math.Pow(s, 8) - 18656066 * Math.Pow(s, 10) + 12720045 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[23, 12] = 21322087106945625.0 / 256 * Math.Pow(c, 12) * (-693 * s + 42735 * Math.Pow(s, 3) - 666666 * Math.Pow(s, 5) + 3904758 * Math.Pow(s, 7) - 9328033 * Math.Pow(s, 9) + 7632027 * Math.Pow(s, 11));
-                LegArrEx[23, 13] = (2110886623587616875.0 / 256) * Math.Pow(c, 13) * (-7 + 1295 * Math.Pow(s, 2) - 33670 * Math.Pow(s, 4) + 276094 * Math.Pow(s, 6) - 848003 * Math.Pow(s, 8) + 848003 * Math.Pow(s, 10));
-                LegArrEx[23, 14] = (78102805072741824375.0 / 128) * Math.Pow(c, 14) * (35 * s - 1820 * Math.Pow(s, 3) + 22386 * Math.Pow(s, 5) - 91676 * Math.Pow(s, 7) + 114595 * Math.Pow(s, 9));
-                LegArrEx[23, 15] = (78102805072741824375.0 / 128) * Math.Pow(c, 15) * (35 - 5460 * Math.Pow(s, 2) + 111930 * Math.Pow(s, 4) - 641732 * Math.Pow(s, 6) + 1031355 * Math.Pow(s, 8));
-                LegArrEx[23, 16] = 3046009397836931150625.0 / 16 * Math.Pow(c, 16) * (-35 * s + 1435 * Math.Pow(s, 3) - 12341 * Math.Pow(s, 5) + 26445 * Math.Pow(s, 7));
-                LegArrEx[23, 17] = (106610328924292590271875.0 / 16) * Math.Pow(c, 17) * (-1 + 123 * Math.Pow(s, 2) - 1763 * Math.Pow(s, 4) + 5289 * Math.Pow(s, 6));
-                LegArrEx[23, 18] = (4371023485895996201146875.0 / 8) * Math.Pow(c, 18) * (3 * s - 86 * Math.Pow(s, 3) + 387 * Math.Pow(s, 5));
-                LegArrEx[23, 19] = (13113070457687988603440625.0 / 8) * Math.Pow(c, 19) * (1 - 86 * Math.Pow(s, 2) + 645 * Math.Pow(s, 4));
-                LegArrEx[23, 20] = 563862029680583509947946875.0 / 2 * Math.Pow(c, 20) * (-s + 15 * Math.Pow(s, 3));
-                LegArrEx[23, 21] = (563862029680583509947946875.0 / 2) * Math.Pow(c, 21) * (-1 + 45 * Math.Pow(s, 2));
-                LegArrEx[23, 22] = 25373791335626257947657609375.0 * s * Math.Pow(c, 22);
-                LegArrEx[23, 23] = 25373791335626257947657609375.0 * Math.Pow(c, 23);
-
-                LegArrEx[24, 0] = (676039 - 202811700 * Math.Pow(s, 2) + 10039179150 * Math.Pow(s, 4) - 194090796900 * Math.Pow(s, 6) + 1933976154825 * Math.Pow(s, 8) - 11345993441640 * Math.Pow(s, 10) + 42117702927300 * Math.Pow(s, 12) - 102748681866600 * Math.Pow(s, 14) + 166966608033225 * Math.Pow(s, 16) - 178970743251300 * Math.Pow(s, 18) + 121511715154830 * Math.Pow(s, 20) - 47342226683700 * Math.Pow(s, 22) + 8061900920775 * Math.Pow(s, 24)) / 4194304;
-                LegArrEx[24, 1] = (1.0 / 524288) * 75 * c * (-676039 * s + 66927861 * Math.Pow(s, 3) - 1940907969 * Math.Pow(s, 5) + 25786348731 * Math.Pow(s, 7) - 189099890694 * Math.Pow(s, 9) + 842354058546 * Math.Pow(s, 11) - 2397469243554 * Math.Pow(s, 13) + 4452442880886 * Math.Pow(s, 15) - 5369122297539 * Math.Pow(s, 17) + 4050390505161 * Math.Pow(s, 19) - 1735881645069 * Math.Pow(s, 21) + 322476036831 * Math.Pow(s, 23));
-                LegArrEx[24, 2] = (1.0 / 524288) * 22425 * c * c * (-2261 + 671517 * Math.Pow(s, 2) - 32456655 * Math.Pow(s, 4) + 603693783 * Math.Pow(s, 6) - 5691969954 * Math.Pow(s, 8) + 30989614194 * Math.Pow(s, 10) - 104237793198 * Math.Pow(s, 12) + 223366699710 * Math.Pow(s, 14) - 305267822937 * Math.Pow(s, 16) + 257382674241 * Math.Pow(s, 18) - 121918108851 * Math.Pow(s, 20) + 24805848987 * Math.Pow(s, 22));
-                LegArrEx[24, 3] = (1.0 / 262144) * 2220075 * Math.Pow(c, 3) * (6783 * s - 655690 * Math.Pow(s, 3) + 18293751 * Math.Pow(s, 5) - 229978584 * Math.Pow(s, 7) + 1565132030 * Math.Pow(s, 9) - 6317442012 * Math.Pow(s, 11) + 15793605030 * Math.Pow(s, 13) - 24668106904 * Math.Pow(s, 15) + 23398424931 * Math.Pow(s, 17) - 12314960490 * Math.Pow(s, 19) + 2756205443 * Math.Pow(s, 21));
-                LegArrEx[24, 4] = (1.0 / 262144) * 46621575 * Math.Pow(c, 4) * (323 - 93670 * Math.Pow(s, 2) + 4355655 * Math.Pow(s, 4) - 76659528 * Math.Pow(s, 6) + 670770870 * Math.Pow(s, 8) - 3309136292 * Math.Pow(s, 10) + 9776993590 * Math.Pow(s, 12) - 17620076360 * Math.Pow(s, 14) + 18941582087 * Math.Pow(s, 16) - 11142107110 * Math.Pow(s, 18) + 2756205443 * Math.Pow(s, 20));
-                LegArrEx[24, 5] = ((1352025675.0 * Math.Pow(c, 5) * (-1615 * s + 150195 * Math.Pow(s, 3) - 3965148 * Math.Pow(s, 5) + 46260060 * Math.Pow(s, 7) - 285270370 * Math.Pow(s, 9) + 1011413130 * Math.Pow(s, 11) - 2126560940 * Math.Pow(s, 13) + 2612632012 * Math.Pow(s, 15) - 1728947655 * Math.Pow(s, 17) + 475207835 * Math.Pow(s, 19))) / 65536);
-                LegArrEx[24, 6] = ((128442439125.0 * Math.Pow(c, 6) * (-17 + 4743 * Math.Pow(s, 2) - 208692 * Math.Pow(s, 4) + 3408636 * Math.Pow(s, 6) - 27025614 * Math.Pow(s, 8) + 117110994 * Math.Pow(s, 10) - 291003076 * Math.Pow(s, 12) + 412520844 * Math.Pow(s, 14) - 309390633 * Math.Pow(s, 16) + 95041567 * Math.Pow(s, 18))) / 65536);
-                LegArrEx[24, 7] = ((11945146838625.0 * Math.Pow(c, 7) * (51 * s - 4488 * Math.Pow(s, 3) + 109956 * Math.Pow(s, 5) - 1162392 * Math.Pow(s, 7) + 6296290 * Math.Pow(s, 9) - 18774392 * Math.Pow(s, 11) + 31049956 * Math.Pow(s, 13) - 26614248 * Math.Pow(s, 15) + 9197571 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[24, 8] = (203067496256625.0 * Math.Pow(c, 8) * (3 - 792 * Math.Pow(s, 2) + 32340 * Math.Pow(s, 4) - 478632 * Math.Pow(s, 6) + 3333330 * Math.Pow(s, 8) - 12148136 * Math.Pow(s, 10) + 23744084 * Math.Pow(s, 12) - 23483160 * Math.Pow(s, 14) + 9197571 * Math.Pow(s, 16))) / 32768;
-                LegArrEx[24, 9] = ((203067496256625.0 * Math.Pow(c, 9) * (-99 * s + 8085 * Math.Pow(s, 3) - 179487 * Math.Pow(s, 5) + 1666665 * Math.Pow(s, 7) - 7592585 * Math.Pow(s, 9) + 17808063 * Math.Pow(s, 11) - 20547765 * Math.Pow(s, 13) + 9197571 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[24, 10] = ((609202488769875.0 * Math.Pow(c, 10) * (-33 + 8085 * Math.Pow(s, 2) - 299145 * Math.Pow(s, 4) + 3888885 * Math.Pow(s, 6) - 22777755 * Math.Pow(s, 8) + 65296231 * Math.Pow(s, 10) - 89040315 * Math.Pow(s, 12) + 45987855 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[24, 11] = ((21322087106945625.0 * Math.Pow(c, 11) * (231 * s - 17094 * Math.Pow(s, 3) + 333333 * Math.Pow(s, 5) - 2603172 * Math.Pow(s, 7) + 9328033 * Math.Pow(s, 9) - 15264054 * Math.Pow(s, 11) + 9197571 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[24, 12] = (63966261320836875.0 * Math.Pow(c, 12) * (77 - 17094 * Math.Pow(s, 2) + 555555 * Math.Pow(s, 4) - 6074068 * Math.Pow(s, 6) + 27984099 * Math.Pow(s, 8) - 55968198 * Math.Pow(s, 10) + 39856141 * Math.Pow(s, 12))) / 1024;
-                LegArrEx[24, 13] = (7100255006612893125.0 / 256) * Math.Pow(c, 13) * (-77 * s + 5005 * Math.Pow(s, 3) - 82082 * Math.Pow(s, 5) + 504218 * Math.Pow(s, 7) - 1260545 * Math.Pow(s, 9) + 1077193 * Math.Pow(s, 11));
-                LegArrEx[24, 14] = (78102805072741824375.0 / 256) * Math.Pow(c, 14) * (-7 + 1365 * Math.Pow(s, 2) - 37310 * Math.Pow(s, 4) + 320866 * Math.Pow(s, 6) - 1031355 * Math.Pow(s, 8) + 1077193 * Math.Pow(s, 10));
-                LegArrEx[24, 15] = (1015336465945643716875.0 / 128) * Math.Pow(c, 15) * (105 * s - 5740 * Math.Pow(s, 3) + 74046 * Math.Pow(s, 5) - 317340 * Math.Pow(s, 7) + 414305 * Math.Pow(s, 9));
-                LegArrEx[24, 16] = 15230046989184655753125.0 / 128 * Math.Pow(c, 16) * (7 - 1148 * Math.Pow(s, 2) + 24682 * Math.Pow(s, 4) - 148092 * Math.Pow(s, 6) + 248583 * Math.Pow(s, 8));
-                LegArrEx[24, 17] = (624431926556570885878125.0 / 16) * Math.Pow(c, 17) * (-7 * s + 301 * Math.Pow(s, 3) - 2709 * Math.Pow(s, 5) + 6063 * Math.Pow(s, 7));
-                LegArrEx[24, 18] = (4371023485895996201146875.0 / 16) * Math.Pow(c, 18) * (-1 + 129 * Math.Pow(s, 2) - 1935 * Math.Pow(s, 4) + 6063 * Math.Pow(s, 6));
-                LegArrEx[24, 19] = (563862029680583509947946875.0 / 8) * Math.Pow(c, 19) * (s - 30 * Math.Pow(s, 3) + 141 * Math.Pow(s, 5));
-                LegArrEx[24, 20] = 563862029680583509947946875.0 / 8 * Math.Pow(c, 20) * (1 - 90 * Math.Pow(s, 2) + 705 * Math.Pow(s, 4));
-                LegArrEx[24, 21] = (8457930445208752649219203125.0 / 2) * Math.Pow(c, 21) * (-3 * s + 47 * Math.Pow(s, 3));
-                LegArrEx[24, 22] = (25373791335626257947657609375.0 / 2) * Math.Pow(c, 22) * (-1 + 47 * Math.Pow(s, 2));
-                LegArrEx[24, 23] = 1192568192774434123539907640625.0 * s * Math.Pow(c, 23);
-                LegArrEx[24, 24] = 1192568192774434123539907640625.0 * Math.Pow(c, 24);
-
-                LegArrEx[25, 0] = (16900975 * s - 1825305300.0 * Math.Pow(s, 3) + 58227239070.0 * Math.Pow(s, 5) - 859544957700.0 * Math.Pow(s, 7) + 7091245901025.0 * Math.Pow(s, 9) - 36100888223400.0 * Math.Pow(s, 11) + 119873462177700.0 * Math.Pow(s, 13) - 267146572853160.0 * Math.Pow(s, 15) + 402684172315425.0 * Math.Pow(s, 17) - 405039050516100.0 * Math.Pow(s, 19) + 260382246760350.0 * Math.Pow(s, 21) - 96742811049300.0 * Math.Pow(s, 23) + 15801325804719.0 * Math.Pow(s, 25)) / 4194304;
-                LegArrEx[25, 1] = (1.0 / 4194304) * 325 * c * (52003 - 16848972 * Math.Pow(s, 2) + 895803678 * Math.Pow(s, 4) - 18513276012 * Math.Pow(s, 6) + 196372963413.0 * Math.Pow(s, 8) - 1221876216792.0 * Math.Pow(s, 10) + 4794938487108.0 * Math.Pow(s, 12) - 12329841823992.0 * Math.Pow(s, 14) + 21063479782653.0 * Math.Pow(s, 16) - 23679206030172.0 * Math.Pow(s, 18) + 16824699021438.0 * Math.Pow(s, 20) - 6846414320412.0 * Math.Pow(s, 22) + 1215486600363.0 * Math.Pow(s, 24));
-                LegArrEx[25, 2] = (1.0 / 524288) * 8775 * c * c * (-156009 * s + 16588957 * Math.Pow(s, 3) - 514257667 * Math.Pow(s, 5) + 7273072719.0 * Math.Pow(s, 7) - 56568343370 * Math.Pow(s, 9) + 266385471506.0 * Math.Pow(s, 11) - 799156414518.0 * Math.Pow(s, 13) + 1560257761678.0 * Math.Pow(s, 15) - 1973267169181.0 * Math.Pow(s, 17) + 1557842501985.0 * Math.Pow(s, 19) - 697319977079.0 * Math.Pow(s, 21) + 135054066707.0 * Math.Pow(s, 23));
-                LegArrEx[25, 3] = (1.0 / 524288) * 1412775 * Math.Pow(c, 3) * (-969 + 309111 * Math.Pow(s, 2) - 15970735 * Math.Pow(s, 4) + 316220553 * Math.Pow(s, 6) - 3162205530 * Math.Pow(s, 8) + 18200249606.0 * Math.Pow(s, 10) - 64528157694 * Math.Pow(s, 12) + 145365629970.0 * Math.Pow(s, 14) - 208357402957 * Math.Pow(s, 16) + 183844767315.0 * Math.Pow(s, 18) - 90954779619.0 * Math.Pow(s, 20) + 19293438101.0 * Math.Pow(s, 22));
-                LegArrEx[25, 4] = (1.0 / 262144) * 450675225 * Math.Pow(c, 4) * (969 * s - 100130 * Math.Pow(s, 3) + 2973861 * Math.Pow(s, 5) - 39651480 * Math.Pow(s, 7) + 285270370 * Math.Pow(s, 9) - 1213695756 * Math.Pow(s, 11) + 3189841410 * Math.Pow(s, 13) - 5225264024 * Math.Pow(s, 15) + 5186842965 * Math.Pow(s, 17) - 2851247010 * Math.Pow(s, 19) + 665290969 * Math.Pow(s, 21));
-                LegArrEx[25, 5] = (1.0 / 262144) * 1352025675 * Math.Pow(c, 5) * (323 - 100130 * Math.Pow(s, 2) + 4956435 * Math.Pow(s, 4) - 92520120 * Math.Pow(s, 6) + 855811110 * Math.Pow(s, 8) - 4450217772 * Math.Pow(s, 10) + 13822646110 * Math.Pow(s, 12) - 26126320120.0 * Math.Pow(s, 14) + 29392110135 * Math.Pow(s, 16) - 18057897730 * Math.Pow(s, 18) + 4657036783 * Math.Pow(s, 20));
-                LegArrEx[25, 6] = ((209563979625 * Math.Pow(c, 6) * (-323 * s + 31977 * Math.Pow(s, 3) - 895356 * Math.Pow(s, 5) + 11042724 * Math.Pow(s, 7) - 71777706 * Math.Pow(s, 9) + 267535086 * Math.Pow(s, 11) - 589949164 * Math.Pow(s, 13) + 758506068 * Math.Pow(s, 15) - 524261547 * Math.Pow(s, 17) + 150226993 * Math.Pow(s, 19))) / 65536);
-                LegArrEx[25, 7] = ((3981715612875 * Math.Pow(c, 7) * (-17 + 5049 * Math.Pow(s, 2) - 235620 * Math.Pow(s, 4) + 4068372 * Math.Pow(s, 6) - 33999966 * Math.Pow(s, 8) + 154888734 * Math.Pow(s, 10) - 403649428 * Math.Pow(s, 12) + 598820580 * Math.Pow(s, 14) - 469076121 * Math.Pow(s, 16) + 150226993 * Math.Pow(s, 18))) / 65536);
-                LegArrEx[25, 8] = (11945146838625.0 * Math.Pow(c, 8) * (1683 * s - 157080 * Math.Pow(s, 3) + 4068372 * Math.Pow(s, 5) - 45333288 * Math.Pow(s, 7) + 258147890 * Math.Pow(s, 9) - 807298856 * Math.Pow(s, 11) + 1397248020 * Math.Pow(s, 13) - 1250869656 * Math.Pow(s, 15) + 450680979 * Math.Pow(s, 17))) / 32768;
-                LegArrEx[25, 9] = ((203067496256625.0 * Math.Pow(c, 9) * (99 - 27720 * Math.Pow(s, 2) + 1196580 * Math.Pow(s, 4) - 18666648 * Math.Pow(s, 6) + 136666530 * Math.Pow(s, 8) - 522369848 * Math.Pow(s, 10) + 1068483780 * Math.Pow(s, 12) - 1103708520 * Math.Pow(s, 14) + 450680979 * Math.Pow(s, 16))) / 32768);
-                LegArrEx[25, 10] = ((1421472473796375.0 * Math.Pow(c, 10) * (-495 * s + 42735 * Math.Pow(s, 3) - 999999 * Math.Pow(s, 5) + 9761895 * Math.Pow(s, 7) - 46640165 * Math.Pow(s, 9) + 114480405 * Math.Pow(s, 11) - 137963565 * Math.Pow(s, 13) + 64382997 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[25, 11] = ((63966261320836875.0 * Math.Pow(c, 11) * (-11 + 2849 * Math.Pow(s, 2) - 111111 * Math.Pow(s, 4) + 1518517 * Math.Pow(s, 6) - 9328033 * Math.Pow(s, 8) + 27984099 * Math.Pow(s, 10) - 39856141 * Math.Pow(s, 12) + 21460999 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[25, 12] = (2366751668870964375.0 * Math.Pow(c, 12) * (77 * s - 6006 * Math.Pow(s, 3) + 123123 * Math.Pow(s, 5) - 1008436 * Math.Pow(s, 7) + 3781635 * Math.Pow(s, 9) - 6463158 * Math.Pow(s, 11) + 4060189 * Math.Pow(s, 13))) / 1024;
-                LegArrEx[25, 13] = ((2366751668870964375.0 * Math.Pow(c, 13) * (77 - 18018 * Math.Pow(s, 2) + 615615 * Math.Pow(s, 4) - 7059052 * Math.Pow(s, 6) + 34034715 * Math.Pow(s, 8) - 71094738 * Math.Pow(s, 10) + 52782457 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[25, 14] = (92303315085967610625.0 / 256) * Math.Pow(c, 14) * (-231 * s + 15785 * Math.Pow(s, 3) - 271502 * Math.Pow(s, 5) + 1745370 * Math.Pow(s, 7) - 4557355 * Math.Pow(s, 9) + 4060189 * Math.Pow(s, 11));
-                LegArrEx[25, 15] = (1015336465945643716875.0 / 256) * Math.Pow(c, 15) * (-21 + 4305 * Math.Pow(s, 2) - 123410 * Math.Pow(s, 4) + 1110690 * Math.Pow(s, 6) - 3728745 * Math.Pow(s, 8) + 4060189 * Math.Pow(s, 10));
-                LegArrEx[25, 16] = 208143975518856961959375.0 / 128 * Math.Pow(c, 16) * (21 * s - 1204 * Math.Pow(s, 3) + 16254 * Math.Pow(s, 5) - 72756 * Math.Pow(s, 7) + 99029 * Math.Pow(s, 9));
-                LegArrEx[25, 17] = (4371023485895996201146875.0 / 128) * Math.Pow(c, 17) * (1 - 172 * Math.Pow(s, 2) + 3870 * Math.Pow(s, 4) - 24252 * Math.Pow(s, 6) + 42441 * Math.Pow(s, 8));
-                LegArrEx[25, 18] = (187954009893527836649315625.0 / 16) * Math.Pow(c, 18) * (-s + 45 * Math.Pow(s, 3) - 423 * Math.Pow(s, 5) + 987 * Math.Pow(s, 7));
-                LegArrEx[25, 19] = (187954009893527836649315625.0 / 16) * Math.Pow(c, 19) * (-1 + 135 * Math.Pow(s, 2) - 2115 * Math.Pow(s, 4) + 6909 * Math.Pow(s, 6));
-                LegArrEx[25, 20] = 1691586089041750529843840625.0 / 8 * Math.Pow(c, 20) * (15 * s - 470 * Math.Pow(s, 3) + 2303 * Math.Pow(s, 5));
-                LegArrEx[25, 21] = (8457930445208752649219203125.0 / 8) * Math.Pow(c, 21) * (3 - 282 * Math.Pow(s, 2) + 2303 * Math.Pow(s, 4));
-                LegArrEx[25, 22] = (397522730924811374513302546875.0 / 2) * Math.Pow(c, 22) * (-3 * s + 49 * Math.Pow(s, 3));
-                LegArrEx[25, 23] = (1192568192774434123539907640625.0 / 2) * Math.Pow(c, 23) * (-1 + 49 * Math.Pow(s, 2));
-                LegArrEx[25, 24] = 58435841445947272053455474390625.0 * s * Math.Pow(c, 24);
-                LegArrEx[25, 25] = 58435841445947272053455474390625.0 * Math.Pow(c, 25);
-
-                LegArrEx[26, 0] = (-1300075 + 456326325.0 * Math.Pow(s, 2) - 26466926850.0 * Math.Pow(s, 4) + 601681470390.0 * Math.Pow(s, 6) - 7091245901025.0 * Math.Pow(s, 8) + 49638721307175.0 * Math.Pow(s, 10) - 222622144044300.0 * Math.Pow(s, 12) + 667866432132900.0 * Math.Pow(s, 14) - 1369126185872445.0 * Math.Pow(s, 16) + 1923935489951475.0 * Math.Pow(s, 18) - 1822675727322450.0 * Math.Pow(s, 20) + 1112542327066950.0 * Math.Pow(s, 22) - 395033145117975.0 * Math.Pow(s, 24) + 61989816618513.0 * Math.Pow(s, 26)) / 8388608;
-                LegArrEx[26, 1] = (1.0 / 4194304) * 351 * c * (1300075 * s - 150808700.0 * Math.Pow(s, 3) + 5142576670.0 * Math.Pow(s, 5) - 80811919100 * Math.Pow(s, 7) + 707104292125.0 * Math.Pow(s, 9) - 3805506735800.0 * Math.Pow(s, 11) + 13319273575300.0 * Math.Pow(s, 13) - 31205155233560.0 * Math.Pow(s, 15) + 49331679229525.0 * Math.Pow(s, 17) - 51928083399500.0 * Math.Pow(s, 19) + 34865998853950.0 * Math.Pow(s, 21) - 13505406670700.0 * Math.Pow(s, 23) + 2295919134019.0 * Math.Pow(s, 25));
-                LegArrEx[26, 2] = (1.0 / 4194304) * 61425 * c * c * (7429 - 2585292 * Math.Pow(s, 2) + 146930762 * Math.Pow(s, 4) - 3232476764 * Math.Pow(s, 6) + 36365363595.0 * Math.Pow(s, 8) - 239203280536.0 * Math.Pow(s, 10) + 989431751308.0 * Math.Pow(s, 12) - 2674727591448.0 * Math.Pow(s, 14) + 4792220268011.0 * Math.Pow(s, 16) - 5637906197660.0 * Math.Pow(s, 18) + 4183919862474.0 * Math.Pow(s, 20) - 1774996305292.0 * Math.Pow(s, 22) + 327988447717.0 * Math.Pow(s, 24));
-                LegArrEx[26, 3] = (1.0 / 524288) * 1781325 * Math.Pow(c, 3) * (-22287 * s + 2533289 * Math.Pow(s, 3) - 83598537 * Math.Pow(s, 5) + 1253978055 * Math.Pow(s, 7) - 10310486230.0 * Math.Pow(s, 9) + 51177504378 * Math.Pow(s, 11) - 161405975346.0 * Math.Pow(s, 13) + 330497949518.0 * Math.Pow(s, 15) - 437423756715.0 * Math.Pow(s, 17) + 360682746765.0 * Math.Pow(s, 19) - 168318615157.0 * Math.Pow(s, 21) + 33929839419.0 * Math.Pow(s, 23));
-                LegArrEx[26, 4] = (1.0 / 524288) * 122911425 * Math.Pow(c, 4) * (-323 + 110143 * Math.Pow(s, 2) - 6057865 * Math.Pow(s, 4) + 127215165 * Math.Pow(s, 6) - 1344846030 * Math.Pow(s, 8) + 8158732582 * Math.Pow(s, 10) - 30409821442.0 * Math.Pow(s, 12) + 71847380330.0 * Math.Pow(s, 14) - 107771070495.0 * Math.Pow(s, 16) + 99318437515.0 * Math.Pow(s, 18) - 51227404613 * Math.Pow(s, 20) + 11309946473 * Math.Pow(s, 22));
-                LegArrEx[26, 5] = (1.0 / 262144) * 41912795925.0 * Math.Pow(c, 5) * (323 * s - 35530 * Math.Pow(s, 3) + 1119195 * Math.Pow(s, 5) - 15775320 * Math.Pow(s, 7) + 119629510 * Math.Pow(s, 9) - 535070172 * Math.Pow(s, 11) + 1474872910 * Math.Pow(s, 13) - 2528353560 * Math.Pow(s, 15) + 2621307735 * Math.Pow(s, 17) - 1502269930 * Math.Pow(s, 19) + 364836983 * Math.Pow(s, 21));
-                LegArrEx[26, 6] = (1.0 / 262144) * 41912795925.0 * Math.Pow(c, 6) * (323 - 106590 * Math.Pow(s, 2) + 5595975 * Math.Pow(s, 4) - 110427240 * Math.Pow(s, 6) + 1076665590 * Math.Pow(s, 8) - 5885771892 * Math.Pow(s, 10) + 19173347830 * Math.Pow(s, 12) - 37925303400 * Math.Pow(s, 14) + 44562231495 * Math.Pow(s, 16) - 28543128670 * Math.Pow(s, 18) + 7661576643 * Math.Pow(s, 20));
-                LegArrEx[26, 7] = (1.0 / 65536) * 628691938875.0 * Math.Pow(c, 7) * (-3553 * s + 373065 * Math.Pow(s, 3) - 11042724 * Math.Pow(s, 5) + 143555412 * Math.Pow(s, 7) - 980961982 * Math.Pow(s, 9) + 3834669566 * Math.Pow(s, 11) - 8849237460 * Math.Pow(s, 13) + 11883261732 * Math.Pow(s, 15) - 8562938601 * Math.Pow(s, 17) + 2553858881 * Math.Pow(s, 19));
-                LegArrEx[26, 8] = (203067496256625.0 * Math.Pow(c, 8) * (-11 + 3465 * Math.Pow(s, 2) - 170940 * Math.Pow(s, 4) + 3111108 * Math.Pow(s, 6) - 27333306 * Math.Pow(s, 8) + 130592462 * Math.Pow(s, 10) - 356161260 * Math.Pow(s, 12) + 551854260 * Math.Pow(s, 14) - 450680979 * Math.Pow(s, 16) + 150226993 * Math.Pow(s, 18))) / 65536;
-                LegArrEx[26, 9] = ((1421472473796375.0 * Math.Pow(c, 9) * (495 * s - 48840 * Math.Pow(s, 3) + 1333332 * Math.Pow(s, 5) - 15619032 * Math.Pow(s, 7) + 93280330 * Math.Pow(s, 9) - 305281080 * Math.Pow(s, 11) + 551854260 * Math.Pow(s, 13) - 515063976 * Math.Pow(s, 15) + 193148991 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[26, 10] = ((12793252264167375.0 * Math.Pow(c, 10) * (55 - 16280 * Math.Pow(s, 2) + 740740 * Math.Pow(s, 4) - 12148136 * Math.Pow(s, 6) + 93280330 * Math.Pow(s, 8) - 373121320 * Math.Pow(s, 10) + 797122820 * Math.Pow(s, 12) - 858439960 * Math.Pow(s, 14) + 364836983 * Math.Pow(s, 16))) / 32768);
-                LegArrEx[26, 11] = ((473350333774192875.0 * Math.Pow(c, 11) * (-55 * s + 5005 * Math.Pow(s, 3) - 123123 * Math.Pow(s, 5) + 1260545 * Math.Pow(s, 7) - 6302725 * Math.Pow(s, 9) + 16157895 * Math.Pow(s, 11) - 20300945 * Math.Pow(s, 13) + 9860459 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[26, 12] = (2366751668870964375.0 * Math.Pow(c, 12) * (-11 + 3003 * Math.Pow(s, 2) - 123123 * Math.Pow(s, 4) + 1764763 * Math.Pow(s, 6) - 11344905 * Math.Pow(s, 8) + 35547369 * Math.Pow(s, 10) - 52782457 * Math.Pow(s, 12) + 29581377 * Math.Pow(s, 14))) / 2048;
-                LegArrEx[26, 13] = ((7100255006612893125.0 * Math.Pow(c, 13) * (1001 * s - 82082 * Math.Pow(s, 3) + 1764763 * Math.Pow(s, 5) - 15126540 * Math.Pow(s, 7) + 59245615 * Math.Pow(s, 9) - 105564914 * Math.Pow(s, 11) + 69023213 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[26, 14] = ((92303315085967610625.0 * Math.Pow(c, 14) * (77 - 18942 * Math.Pow(s, 2) + 678755 * Math.Pow(s, 4) - 8145060 * Math.Pow(s, 6) + 41016195 * Math.Pow(s, 8) - 89324158 * Math.Pow(s, 10) + 69023213 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[26, 15] = (3784435918524672035625.0 / 256) * Math.Pow(c, 15) * (-231 * s + 16555 * Math.Pow(s, 3) - 297990 * Math.Pow(s, 5) + 2000790 * Math.Pow(s, 7) - 5446595 * Math.Pow(s, 9) + 5050479 * Math.Pow(s, 11));
-                LegArrEx[26, 16] = 874204697179199240229375.0 / 256 * Math.Pow(c, 16) * (-1 + 215 * Math.Pow(s, 2) - 6450 * Math.Pow(s, 4) + 60630 * Math.Pow(s, 6) - 212205 * Math.Pow(s, 8) + 240499 * Math.Pow(s, 10));
-                LegArrEx[26, 17] = (187954009893527836649315625.0 / 128) * Math.Pow(c, 17) * (s - 60 * Math.Pow(s, 3) + 846 * Math.Pow(s, 5) - 3948 * Math.Pow(s, 7) + 5593 * Math.Pow(s, 9));
-                LegArrEx[26, 18] = (187954009893527836649315625.0 / 128) * Math.Pow(c, 18) * (1 - 180 * Math.Pow(s, 2) + 4230 * Math.Pow(s, 4) - 27636 * Math.Pow(s, 6) + 50337 * Math.Pow(s, 8));
-                LegArrEx[26, 19] = (1691586089041750529843840625.0 / 16) * Math.Pow(c, 19) * (-5 * s + 235 * Math.Pow(s, 3) - 2303 * Math.Pow(s, 5) + 5593 * Math.Pow(s, 7));
-                LegArrEx[26, 20] = 1691586089041750529843840625.0 / 16 * Math.Pow(c, 20) * (-5 + 705 * Math.Pow(s, 2) - 11515 * Math.Pow(s, 4) + 39151 * Math.Pow(s, 6));
-                LegArrEx[26, 21] = (79504546184962274902660509375.0 / 8) * Math.Pow(c, 21) * (15 * s - 490 * Math.Pow(s, 3) + 2499 * Math.Pow(s, 5));
-                LegArrEx[26, 22] = (1192568192774434123539907640625.0 / 8) * Math.Pow(c, 22) * (1 - 98 * Math.Pow(s, 2) + 833 * Math.Pow(s, 4));
-                LegArrEx[26, 23] = (58435841445947272053455474390625.0 / 2) * Math.Pow(c, 23) * (-s + 17 * Math.Pow(s, 3));
-                LegArrEx[26, 24] = 58435841445947272053455474390625.0 / 2 * Math.Pow(c, 24) * (-1 + 51 * Math.Pow(s, 2));
-                LegArrEx[26, 25] = 2980227913743310874726229193921875.0 * s * Math.Pow(c, 25);
-                LegArrEx[26, 26] = 2980227913743310874726229193921875.0 * Math.Pow(c, 26);
-
-                LegArrEx[27, 0] = (-35102025.0 * s + 4411154475 * Math.Pow(s, 3) - 164094946470.0 * Math.Pow(s, 5) + 2836498360410.0 * Math.Pow(s, 7) - 27577067392875 * Math.Pow(s, 9) + 166966608033225 * Math.Pow(s, 11) - 667866432132900 * Math.Pow(s, 13) + 1825501581163260 * Math.Pow(s, 15) - 3463083881912655 * Math.Pow(s, 17) + 4556689318306125.0 * Math.Pow(s, 19) - 4079321865912150.0 * Math.Pow(s, 21) + 2370198870707850.0 * Math.Pow(s, 23) - 805867616040669.0 * Math.Pow(s, 25) + 121683714103007.0 * Math.Pow(s, 27)) / 8388608;
-                LegArrEx[27, 1] = (1.0 / 8388608) * 189 * c * (-185725 + 70018325 * Math.Pow(s, 2) - 4341136150 * Math.Pow(s, 4) + 105055494830 * Math.Pow(s, 6) - 1313193685375 * Math.Pow(s, 8) + 9717633271775 * Math.Pow(s, 10) - 45937902739300 * Math.Pow(s, 12) + 144881077870100 * Math.Pow(s, 14) - 311494317420715 * Math.Pow(s, 16) + 458079878559875.0 * Math.Pow(s, 18) - 453257985101350 * Math.Pow(s, 20) + 288436899609950.0 * Math.Pow(s, 22) - 106596245508025.0 * Math.Pow(s, 24) + 17383387729001.0 * Math.Pow(s, 26));
-                LegArrEx[27, 2] = (1.0 / 4194304) * 71253 * c * c * (185725 * s - 23029900 * Math.Pow(s, 3) + 835985370 * Math.Pow(s, 5) - 13933089500.0 * Math.Pow(s, 7) + 128881077875 * Math.Pow(s, 9) - 731107205400 * Math.Pow(s, 11) + 2690099589100 * Math.Pow(s, 13) - 6609958990360 * Math.Pow(s, 15) + 10935593917875 * Math.Pow(s, 17) - 12022758225500 * Math.Pow(s, 19) + 8415930757850.0 * Math.Pow(s, 21) - 3392983941900.0 * Math.Pow(s, 23) + 599427163069.0 * Math.Pow(s, 25));
-                LegArrEx[27, 3] = (1.0 / 4194304) * 1781325 * Math.Pow(c, 3) * (7429 - 2763588 * Math.Pow(s, 2) + 167197074 * Math.Pow(s, 4) - 3901265060 * Math.Pow(s, 6) + 46397188035 * Math.Pow(s, 8) - 321687170376 * Math.Pow(s, 10) + 1398851786332 * Math.Pow(s, 12) - 3965975394216 * Math.Pow(s, 14) + 7436203864155 * Math.Pow(s, 16) - 9137296251380 * Math.Pow(s, 18) + 7069381836594.0 * Math.Pow(s, 20) - 3121545226548 * Math.Pow(s, 22) + 599427163069.0 * Math.Pow(s, 24));
-                LegArrEx[27, 4] = (1.0 / 524288) * 165663225 * Math.Pow(c, 4) * (-7429 * s + 898909 * Math.Pow(s, 3) - 31461815 * Math.Pow(s, 5) + 498894495 * Math.Pow(s, 7) - 4323752290 * Math.Pow(s, 9) + 22562125586 * Math.Pow(s, 11) - 74628569246 * Math.Pow(s, 13) + 159918362670 * Math.Pow(s, 15) - 221063618985 * Math.Pow(s, 17) + 190037146145 * Math.Pow(s, 19) - 92303756699.0 * Math.Pow(s, 21) + 19336360099 * Math.Pow(s, 23));
-                LegArrEx[27, 5] = (1.0 / 524288) * 3810254175 * Math.Pow(c, 5) * (-323 + 117249 * Math.Pow(s, 2) - 6839525 * Math.Pow(s, 4) + 151837455 * Math.Pow(s, 6) - 1691903070 * Math.Pow(s, 8) + 10790581802 * Math.Pow(s, 10) - 42181365226 * Math.Pow(s, 12) + 104294584350 * Math.Pow(s, 14) - 163394848815 * Math.Pow(s, 16) + 156987207685 * Math.Pow(s, 18) - 84277343073.0 * Math.Pow(s, 20) + 19336360099 * Math.Pow(s, 22));
-                LegArrEx[27, 6] = (1.0 / 262144) * 41912795925 * Math.Pow(c, 6) * (10659 * s - 1243550 * Math.Pow(s, 3) + 41410215 * Math.Pow(s, 5) - 615237480 * Math.Pow(s, 7) + 4904809910 * Math.Pow(s, 9) - 23008017396 * Math.Pow(s, 11) + 66369280950 * Math.Pow(s, 13) - 118832617320 * Math.Pow(s, 15) + 128444079015 * Math.Pow(s, 17) - 76615766430 * Math.Pow(s, 19) + 19336360099 * Math.Pow(s, 21));
-                LegArrEx[27, 7] = (1.0 / 262144) * 2137552592175.0 * Math.Pow(c, 7) * (209 - 73150 * Math.Pow(s, 2) + 4059825 * Math.Pow(s, 4) - 84444360 * Math.Pow(s, 6) + 865554690 * Math.Pow(s, 8) - 4962513556 * Math.Pow(s, 10) + 16917659850 * Math.Pow(s, 12) - 34950769800 * Math.Pow(s, 14) + 42814693005 * Math.Pow(s, 16) - 28543128670 * Math.Pow(s, 18) + 7962030629 * Math.Pow(s, 20));
-                LegArrEx[27, 8] = (1.0 / 65536) * 74814340726125.0 * Math.Pow(c, 8) * (-1045 * s + 115995 * Math.Pow(s, 3) - 3619044 * Math.Pow(s, 5) + 49460268 * Math.Pow(s, 7) - 354465254 * Math.Pow(s, 9) + 1450085130 * Math.Pow(s, 11) - 3495076980 * Math.Pow(s, 13) + 4893107772 * Math.Pow(s, 15) - 3669830829 * Math.Pow(s, 17) + 1137432947 * Math.Pow(s, 19));
-                LegArrEx[27, 9] = ((1421472473796375.0 * Math.Pow(c, 9) * (-55 + 18315 * Math.Pow(s, 2) - 952380 * Math.Pow(s, 4) + 18222204 * Math.Pow(s, 6) - 167904594 * Math.Pow(s, 8) + 839522970 * Math.Pow(s, 10) - 2391368460 * Math.Pow(s, 12) + 3862979820 * Math.Pow(s, 14) - 3283532847 * Math.Pow(s, 16) + 1137432947 * Math.Pow(s, 18))) / 65536);
-                LegArrEx[27, 10] = ((473350333774192875.0 * Math.Pow(c, 10) * (55 * s - 5720 * Math.Pow(s, 3) + 164164 * Math.Pow(s, 5) - 2016872 * Math.Pow(s, 7) + 12605450 * Math.Pow(s, 9) - 43087720 * Math.Pow(s, 11) + 81203780 * Math.Pow(s, 13) - 78883672 * Math.Pow(s, 15) + 30741431 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[27, 11] = ((473350333774192875.0 * Math.Pow(c, 11) * (55 - 17160 * Math.Pow(s, 2) + 820820 * Math.Pow(s, 4) - 14118104 * Math.Pow(s, 6) + 113449050 * Math.Pow(s, 8) - 473964920 * Math.Pow(s, 10) + 1055649140 * Math.Pow(s, 12) - 1183255080 * Math.Pow(s, 14) + 522604327 * Math.Pow(s, 16))) / 32768);
-                LegArrEx[27, 12] = (473350333774192875.0 * Math.Pow(c, 12) * (-2145 * s + 205205 * Math.Pow(s, 3) - 5294289 * Math.Pow(s, 5) + 56724525 * Math.Pow(s, 7) - 296228075 * Math.Pow(s, 9) + 791736855 * Math.Pow(s, 11) - 1035348195 * Math.Pow(s, 13) + 522604327 * Math.Pow(s, 15))) / 2048;
-                LegArrEx[27, 13] = ((7100255006612893125.0 * Math.Pow(c, 13) * (-143 + 41041 * Math.Pow(s, 2) - 1764763 * Math.Pow(s, 4) + 26471445 * Math.Pow(s, 6) - 177736845 * Math.Pow(s, 8) + 580607027 * Math.Pow(s, 10) - 897301769 * Math.Pow(s, 12) + 522604327 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[27, 14] = ((291110455271128618125.0 * Math.Pow(c, 14) * (1001 * s - 86086 * Math.Pow(s, 3) + 1936935 * Math.Pow(s, 5) - 17340180 * Math.Pow(s, 7) + 70805735 * Math.Pow(s, 9) - 131312454 * Math.Pow(s, 11) + 89225129 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[27, 15] = ((26491051429672704249375.0 * Math.Pow(c, 15) * (11 - 2838 * Math.Pow(s, 2) + 106425 * Math.Pow(s, 4) - 1333860 * Math.Pow(s, 6) + 7002765 * Math.Pow(s, 8) - 15872934 * Math.Pow(s, 10) + 12746447 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[27, 16] = 3417345634427778848169375.0 / 256 * Math.Pow(c, 16) * (-11 * s + 825 * Math.Pow(s, 3) - 15510 * Math.Pow(s, 5) + 108570 * Math.Pow(s, 7) - 307615 * Math.Pow(s, 9) + 296429 * Math.Pow(s, 11));
-                LegArrEx[27, 17] = (37590801978705567329863125.0 / 256) * Math.Pow(c, 17) * (-1 + 225 * Math.Pow(s, 2) - 7050 * Math.Pow(s, 4) + 69090 * Math.Pow(s, 6) - 251685 * Math.Pow(s, 8) + 296429 * Math.Pow(s, 10));
-                LegArrEx[27, 18] = (187954009893527836649315625.0 / 128) * Math.Pow(c, 18) * (45 * s - 2820 * Math.Pow(s, 3) + 41454 * Math.Pow(s, 5) - 201348 * Math.Pow(s, 7) + 296429 * Math.Pow(s, 9));
-                LegArrEx[27, 19] = (1691586089041750529843840625.0 / 128) * Math.Pow(c, 19) * (5 - 940 * Math.Pow(s, 2) + 23030 * Math.Pow(s, 4) - 156604 * Math.Pow(s, 6) + 296429 * Math.Pow(s, 8));
-                LegArrEx[27, 20] = 79504546184962274902660509375.0 / 16 * Math.Pow(c, 20) * (-5 * s + 245 * Math.Pow(s, 3) - 2499 * Math.Pow(s, 5) + 6307 * Math.Pow(s, 7));
-                LegArrEx[27, 21] = (79504546184962274902660509375.0 / 16) * Math.Pow(c, 21) * (-5 + 735 * Math.Pow(s, 2) - 12495 * Math.Pow(s, 4) + 44149 * Math.Pow(s, 6));
-                LegArrEx[27, 22] = (11687168289189454410691094878125.0 / 8) * Math.Pow(c, 22) * (5 * s - 170 * Math.Pow(s, 3) + 901 * Math.Pow(s, 5));
-                LegArrEx[27, 23] = (58435841445947272053455474390625.0 / 8) * Math.Pow(c, 23) * (1 - 102 * Math.Pow(s, 2) + 901 * Math.Pow(s, 4));
-                LegArrEx[27, 24] = 993409304581103624908743064640625.0 / 2 * Math.Pow(c, 24) * (-3 * s + 53 * Math.Pow(s, 3));
-                LegArrEx[27, 25] = (2980227913743310874726229193921875.0 / 2) * Math.Pow(c, 25) * (-1 + 53 * Math.Pow(s, 2));
-                LegArrEx[27, 26] = 157952079428395476360490147277859375.0 * s * Math.Pow(c, 26);
-                LegArrEx[27, 27] = 157952079428395476360490147277859375.0 * Math.Pow(c, 27);
-
-                LegArrEx[28, 0] = (5014575 - 2035917450.0 * Math.Pow(s, 2) + 136745788725.0 * Math.Pow(s, 4) - 3610088822340.0 * Math.Pow(s, 6) + 49638721307175.0 * Math.Pow(s, 8) - 408140597414550.0 * Math.Pow(s, 10) + 2170565904431925.0 * Math.Pow(s, 12) - 7823578204985400.0 * Math.Pow(s, 14) + 19624141997505045.0 * Math.Pow(s, 16) - 34630838819126550.0 * Math.Pow(s, 18) + 42832879592077575.0 * Math.Pow(s, 20) - 36343049350853700.0 * Math.Pow(s, 22) + 20146690401016725.0 * Math.Pow(s, 24) - 6570920561562378.0 * Math.Pow(s, 26) + 956086325095055.0 * Math.Pow(s, 28)) / 33554432;
-                LegArrEx[28, 1] = (1.0 / 8388608) * 203 * c * (-5014575 * s + 673624575 * Math.Pow(s, 3) - 26675533170.0 * Math.Pow(s, 5) + 489051441450.0 * Math.Pow(s, 7) - 5026362037125.0 * Math.Pow(s, 9) + 32077328636925.0 * Math.Pow(s, 11) - 134889279396300.0 * Math.Pow(s, 13) + 386682600936060.0 * Math.Pow(s, 15) - 767678693034825 * Math.Pow(s, 17) + 1054997034287625 * Math.Pow(s, 19) - 984663898668450.0 * Math.Pow(s, 21) + 595468681803450.0 * Math.Pow(s, 23) - 210398934237219.0 * Math.Pow(s, 25) + 32968493968795.0 * Math.Pow(s, 27));
-                LegArrEx[28, 2] = (1.0 / 8388608) * 27405 * c * c * (-37145 + 14969435 * Math.Pow(s, 2) - 987982710 * Math.Pow(s, 4) + 25358222890.0 * Math.Pow(s, 6) - 335090802475 * Math.Pow(s, 8) + 2613708259305 * Math.Pow(s, 10) - 12989338015940.0 * Math.Pow(s, 12) + 42964733437340.0 * Math.Pow(s, 14) - 96670650234015 * Math.Pow(s, 16) + 148481064084925.0 * Math.Pow(s, 18) - 153169939792870.0 * Math.Pow(s, 20) + 101450219862810.0 * Math.Pow(s, 22) - 38962765599485.0 * Math.Pow(s, 24) + 6593698793759.0 * Math.Pow(s, 26));
-                LegArrEx[28, 3] = (1.0 / 4194304) * 11044215 * Math.Pow(c, 3) * (37145 * s - 4903140 * Math.Pow(s, 3) + 188770890 * Math.Pow(s, 5) - 3325963300 * Math.Pow(s, 7) + 32428142175 * Math.Pow(s, 9) - 193389647880 * Math.Pow(s, 11) + 746285692460.0 * Math.Pow(s, 13) - 1919020352040 * Math.Pow(s, 15) + 3315954284775 * Math.Pow(s, 17) - 3800742922900.0 * Math.Pow(s, 19) + 2769112700970 * Math.Pow(s, 21) - 1160181605940 * Math.Pow(s, 23) + 212699961089.0 * Math.Pow(s, 25));
-                LegArrEx[28, 4] = (1.0 / 4194304) * 55221075 * Math.Pow(c, 4) * (7429 - 2941884 * Math.Pow(s, 2) + 188770890 * Math.Pow(s, 4) - 4656348620 * Math.Pow(s, 6) + 58370655915.0 * Math.Pow(s, 8) - 425457225336 * Math.Pow(s, 10) + 1940342800396.0 * Math.Pow(s, 12) - 5757061056120 * Math.Pow(s, 14) + 11274244568235 * Math.Pow(s, 16) - 14442823107020 * Math.Pow(s, 18) + 11630273344074 * Math.Pow(s, 20) - 5336835387324 * Math.Pow(s, 22) + 1063499805445.0 * Math.Pow(s, 24));
-                LegArrEx[28, 5] = (1.0 / 524288) * 1822295475 * Math.Pow(c, 5) * (-22287 * s + 2860165 * Math.Pow(s, 3) - 105826105 * Math.Pow(s, 5) + 1768807755 * Math.Pow(s, 7) - 16115803990 * Math.Pow(s, 9) + 88197400018 * Math.Pow(s, 11) - 305298692370 * Math.Pow(s, 13) + 683287549590 * Math.Pow(s, 15) - 984737939115 * Math.Pow(s, 17) + 881081313945 * Math.Pow(s, 19) - 444736282277 * Math.Pow(s, 21) + 96681800495 * Math.Pow(s, 23));
-                LegArrEx[28, 6] = (1.0 / 524288) * 712517530725 * Math.Pow(c, 6) * (-57 + 21945 * Math.Pow(s, 2) - 1353275 * Math.Pow(s, 4) + 31666635 * Math.Pow(s, 6) - 370952010 * Math.Pow(s, 8) + 2481256778 * Math.Pow(s, 10) - 10150595910 * Math.Pow(s, 12) + 26213077350 * Math.Pow(s, 14) - 42814693005 * Math.Pow(s, 16) + 42814693005 * Math.Pow(s, 18) - 23886091887 * Math.Pow(s, 20) + 5687164735 * Math.Pow(s, 22));
-                LegArrEx[28, 7] = (1.0 / 262144) * 3562587653625 * Math.Pow(c, 7) * (4389 * s - 541310 * Math.Pow(s, 3) + 18999981 * Math.Pow(s, 5) - 296761608 * Math.Pow(s, 7) + 2481256778 * Math.Pow(s, 9) - 12180715092 * Math.Pow(s, 11) + 36698308290 * Math.Pow(s, 13) - 68503508808 * Math.Pow(s, 15) + 77066447409 * Math.Pow(s, 17) - 47772183774 * Math.Pow(s, 19) + 12511762417 * Math.Pow(s, 21));
-                LegArrEx[28, 8] = (1.0 / 262144) * 74814340726125 * Math.Pow(c, 8) * (209 - 77330 * Math.Pow(s, 2) + 4523805 * Math.Pow(s, 4) - 98920536 * Math.Pow(s, 6) + 1063395762 * Math.Pow(s, 8) - 6380374572 * Math.Pow(s, 10) + 22718000370 * Math.Pow(s, 12) - 48931077720 * Math.Pow(s, 14) + 62387124093 * Math.Pow(s, 16) - 43222451986 * Math.Pow(s, 18) + 12511762417 * Math.Pow(s, 20));
-                LegArrEx[28, 9] = (1.0 / 65536) * 2768130606866625 * Math.Pow(c, 9) * (-1045 * s + 122265 * Math.Pow(s, 3) - 4010292 * Math.Pow(s, 5) + 57480852 * Math.Pow(s, 7) - 431106390 * Math.Pow(s, 9) + 1842000030 * Math.Pow(s, 11) - 4628615460 * Math.Pow(s, 13) + 6744553956 * Math.Pow(s, 15) - 5256784701 * Math.Pow(s, 17) + 1690778705 * Math.Pow(s, 19));
-                LegArrEx[28, 10] = (1.0 / 65536) * 52594481530465875 * Math.Pow(c, 10) * (-55 + 19305 * Math.Pow(s, 2) - 1055340 * Math.Pow(s, 4) + 21177156 * Math.Pow(s, 6) - 204208290 * Math.Pow(s, 8) + 1066421070 * Math.Pow(s, 10) - 3166947420 * Math.Pow(s, 12) + 5324647860 * Math.Pow(s, 14) - 4703438943 * Math.Pow(s, 16) + 1690778705 * Math.Pow(s, 18));
-                LegArrEx[28, 11] = ((473350333774192875.0 * Math.Pow(c, 11) * (2145 * s - 234520 * Math.Pow(s, 3) + 7059052 * Math.Pow(s, 5) - 90759240 * Math.Pow(s, 7) + 592456150 * Math.Pow(s, 9) - 2111298280 * Math.Pow(s, 11) + 4141392780 * Math.Pow(s, 13) - 4180834616 * Math.Pow(s, 15) + 1690778705 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[28, 12] = (2366751668870964375.0 * Math.Pow(c, 12) * (429 - 140712 * Math.Pow(s, 2) + 7059052 * Math.Pow(s, 4) - 127062936 * Math.Pow(s, 6) + 1066421070 * Math.Pow(s, 8) - 4644856216 * Math.Pow(s, 10) + 10767621228 * Math.Pow(s, 12) - 12542503848 * Math.Pow(s, 14) + 5748647597 * Math.Pow(s, 16))) / 32768;
-                LegArrEx[28, 13] = ((97036818423709539375.0 * Math.Pow(c, 13) * (-429 * s + 43043 * Math.Pow(s, 3) - 1162161 * Math.Pow(s, 5) + 13005135 * Math.Pow(s, 7) - 70805735 * Math.Pow(s, 9) + 196968681 * Math.Pow(s, 11) - 267675387 * Math.Pow(s, 13) + 140210917 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[28, 14] = ((291110455271128618125.0 * Math.Pow(c, 14) * (-143 + 43043 * Math.Pow(s, 2) - 1936935 * Math.Pow(s, 4) + 30345315 * Math.Pow(s, 6) - 212417205 * Math.Pow(s, 8) + 722218497 * Math.Pow(s, 10) - 1159926677 * Math.Pow(s, 12) + 701054585 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[28, 15] = ((87624247036609714055625.0 * Math.Pow(c, 15) * (143 * s - 12870 * Math.Pow(s, 3) + 302445 * Math.Pow(s, 5) - 2822820 * Math.Pow(s, 7) + 11996985 * Math.Pow(s, 9) - 23121462 * Math.Pow(s, 11) + 16303595 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[28, 16] = (12530267326235189109954375.0 * Math.Pow(c, 16) * (1 - 270 * Math.Pow(s, 2) + 10575 * Math.Pow(s, 4) - 138180 * Math.Pow(s, 6) + 755055 * Math.Pow(s, 8) - 1778574 * Math.Pow(s, 10) + 1482145 * Math.Pow(s, 12))) / 1024;
-                LegArrEx[28, 17] = (187954009893527836649315625.0 / 256) * Math.Pow(c, 17) * (-9 * s + 705 * Math.Pow(s, 3) - 13818 * Math.Pow(s, 5) + 100674 * Math.Pow(s, 7) - 296429 * Math.Pow(s, 9) + 296429 * Math.Pow(s, 11));
-                LegArrEx[28, 18] = (187954009893527836649315625.0 / 256) * Math.Pow(c, 18) * (-9 + 2115 * Math.Pow(s, 2) - 69090 * Math.Pow(s, 4) + 704718 * Math.Pow(s, 6) - 2667861 * Math.Pow(s, 8) + 3260719 * Math.Pow(s, 10));
-                LegArrEx[28, 19] = (8833838464995808322517834375.0 / 128) * Math.Pow(c, 19) * (45 * s - 2940 * Math.Pow(s, 3) + 44982 * Math.Pow(s, 5) - 227052 * Math.Pow(s, 7) + 346885 * Math.Pow(s, 9));
-                LegArrEx[28, 20] = 79504546184962274902660509375.0 / 128 * Math.Pow(c, 20) * (5 - 980 * Math.Pow(s, 2) + 24990 * Math.Pow(s, 4) - 176596 * Math.Pow(s, 6) + 346885 * Math.Pow(s, 8));
-                LegArrEx[28, 21] = (556531823294735924318623565625.0 / 16) * Math.Pow(c, 21) * (-35 * s + 1785 * Math.Pow(s, 3) - 18921 * Math.Pow(s, 5) + 49555 * Math.Pow(s, 7));
-                LegArrEx[28, 22] = (19478613815315757351151824796875.0 / 16) * Math.Pow(c, 22) * (-1 + 153 * Math.Pow(s, 2) - 2703 * Math.Pow(s, 4) + 9911 * Math.Pow(s, 6));
-                LegArrEx[28, 23] = (993409304581103624908743064640625.0 / 8) * Math.Pow(c, 23) * (3 * s - 106 * Math.Pow(s, 3) + 583 * Math.Pow(s, 5));
-                LegArrEx[28, 24] = 993409304581103624908743064640625.0 / 8 * Math.Pow(c, 24) * (3 - 318 * Math.Pow(s, 2) + 2915 * Math.Pow(s, 4));
-                LegArrEx[28, 25] = (52650693142798492120163382425953125.0 / 2) * Math.Pow(c, 25) * (-3 * s + 55 * Math.Pow(s, 3));
-                LegArrEx[28, 26] = (157952079428395476360490147277859375.0 / 2) * Math.Pow(c, 26) * (-1 + 55 * Math.Pow(s, 2));
-                LegArrEx[28, 27] = 8687364368561751199826958100282265625.0 * s * Math.Pow(c, 27);
-                LegArrEx[28, 28] = 8687364368561751199826958100282265625.0 * Math.Pow(c, 28);
-
-                LegArrEx[29, 0] = (145422675.0 * s - 21037813650.0 * Math.Pow(s, 3) + 902522205585.0 * Math.Pow(s, 5) - 18050444111700.0 * Math.Pow(s, 7) + 204070298707275 * Math.Pow(s, 9) - 1447043936287950 * Math.Pow(s, 11) + 6845630929362225 * Math.Pow(s, 13) - 22427590854291480.0 * Math.Pow(s, 15) + 51946258228689825.0 * Math.Pow(s, 17) - 85665759184155150.0 * Math.Pow(s, 19) + 99943385714847675.0 * Math.Pow(s, 21) - 80586761604066900.0 * Math.Pow(s, 23) + 42710983650155457.0 * Math.Pow(s, 25) - 13385208551330770.0 * Math.Pow(s, 27) + 1879204156221315.0 * Math.Pow(s, 29)) / 33554432.0;
-                LegArrEx[29, 1] = (1.0 / 33554432) * 435 * c * (334305 - 145088370 * Math.Pow(s, 2) + 10373818455 * Math.Pow(s, 4) - 290466916740 * Math.Pow(s, 6) + 4222144111185 * Math.Pow(s, 8) - 36591915630270 * Math.Pow(s, 10) + 204582073751055.0 * Math.Pow(s, 12) - 773365201872120.0 * Math.Pow(s, 14) + 2030083654914315.0 * Math.Pow(s, 16) - 3741722814940110.0 * Math.Pow(s, 18) + 4824853103475405.0 * Math.Pow(s, 20) - 4260909234238020.0 * Math.Pow(s, 22) + 2454654232767555.0 * Math.Pow(s, 24) - 830806048013634.0 * Math.Pow(s, 26) + 125280277081421.0 * Math.Pow(s, 28));
-                LegArrEx[29, 2] = (1.0 / 8388608) * 94395 * c * c * (-334305 * s + 47805615 * Math.Pow(s, 3) - 2007835830 * Math.Pow(s, 5) + 38913770610 * Math.Pow(s, 7) - 421565848275 * Math.Pow(s, 9) + 2828323600245 * Math.Pow(s, 11) - 12473632288260 * Math.Pow(s, 13) + 37420896864780.0 * Math.Pow(s, 15) - 77593330263735.0 * Math.Pow(s, 17) + 111171730494825.0 * Math.Pow(s, 19) - 107995395337830.0 * Math.Pow(s, 21) + 67870623947490 * Math.Pow(s, 23) - 24885895447413.0 * Math.Pow(s, 25) + 4041299260691.0 * Math.Pow(s, 27));
-                LegArrEx[29, 3] = (1.0 / 8388608) * 849555.0 * Math.Pow(c, 3) * (-37145 + 15935205 * Math.Pow(s, 2) - 1115464350 * Math.Pow(s, 4) + 30266266030 * Math.Pow(s, 6) - 421565848275 * Math.Pow(s, 8) + 3456839955855 * Math.Pow(s, 10) - 18017468860820.0 * Math.Pow(s, 12) + 62368161441300 * Math.Pow(s, 14) - 146565179387055.0 * Math.Pow(s, 16) + 234695875489075.0 * Math.Pow(s, 18) - 251989255788270 * Math.Pow(s, 20) + 173447150088030 * Math.Pow(s, 22) - 69127487353925.0 * Math.Pow(s, 24) + 12123897782073 * Math.Pow(s, 26));
-                LegArrEx[29, 4] = (1.0 / 4194304) * 364459095.0 * Math.Pow(c, 4) * (37145 * s - 5200300 * Math.Pow(s, 3) + 211652210 * Math.Pow(s, 5) - 3930683900 * Math.Pow(s, 7) + 40289509975 * Math.Pow(s, 9) - 251992571480 * Math.Pow(s, 11) + 1017662307900 * Math.Pow(s, 13) - 2733150198360 * Math.Pow(s, 15) + 4923689695575.0 * Math.Pow(s, 17) - 5873875426300.0 * Math.Pow(s, 19) + 4447362822770 * Math.Pow(s, 21) - 1933636009900 * Math.Pow(s, 23) + 367390841881 * Math.Pow(s, 25));
-                LegArrEx[29, 5] = (1.0 / 4194304) * 30979023075.0 * Math.Pow(c, 5) * (437 - 183540 * Math.Pow(s, 2) + 12450130 * Math.Pow(s, 4) - 323703380 * Math.Pow(s, 6) + 4265948115 * Math.Pow(s, 8) - 32610803368 * Math.Pow(s, 10) + 155642470620 * Math.Pow(s, 12) - 482320623240 * Math.Pow(s, 14) + 984737939115 * Math.Pow(s, 16) - 1312983918820.0 * Math.Pow(s, 18) + 1098760226802 * Math.Pow(s, 20) - 523219155620 * Math.Pow(s, 22) + 108056129965 * Math.Pow(s, 24));
-                LegArrEx[29, 6] = (1.0 / 524288) * 154895115375.0 * Math.Pow(c, 6) * (-9177 * s + 1245013 * Math.Pow(s, 3) - 48555507 * Math.Pow(s, 5) + 853189623 * Math.Pow(s, 7) - 8152700842 * Math.Pow(s, 9) + 46692741186 * Math.Pow(s, 11) - 168812218134 * Math.Pow(s, 13) + 393895175646 * Math.Pow(s, 15) - 590842763469 * Math.Pow(s, 17) + 549380113401 * Math.Pow(s, 19) - 287770535591 * Math.Pow(s, 21) + 64833677979 * Math.Pow(s, 23));
-                LegArrEx[29, 7] = (1.0 / 524288) * 10687762960875.0 * Math.Pow(c, 7) * (-133 + 54131 * Math.Pow(s, 2) - 3518515 * Math.Pow(s, 4) + 86555469 * Math.Pow(s, 6) - 1063395762 * Math.Pow(s, 8) + 7443770334 * Math.Pow(s, 10) - 31805200518 * Math.Pow(s, 12) + 85629386010 * Math.Pow(s, 14) - 145569956217 * Math.Pow(s, 16) + 151278581951 * Math.Pow(s, 18) - 87582336919 * Math.Pow(s, 20) + 21611225993 * Math.Pow(s, 22));
-                LegArrEx[29, 8] = (1.0 / 262144) * 395447229552375.0 * Math.Pow(c, 8) * (1463 * s - 190190 * Math.Pow(s, 3) + 7018011 * Math.Pow(s, 5) - 114961704 * Math.Pow(s, 7) + 1005914910 * Math.Pow(s, 9) - 5157600084 * Math.Pow(s, 11) + 16200154110 * Math.Pow(s, 13) - 31474585128 * Math.Pow(s, 15) + 36797492907 * Math.Pow(s, 17) - 23670901870 * Math.Pow(s, 19) + 6424959079 * Math.Pow(s, 21));
-                LegArrEx[29, 9] = (1.0 / 262144) * 52594481530465875.0 * Math.Pow(c, 9) * (11 - 4290 * Math.Pow(s, 2) + 263835 * Math.Pow(s, 4) - 6050616 * Math.Pow(s, 6) + 68069430 * Math.Pow(s, 8) - 426568428 * Math.Pow(s, 10) + 1583473710 * Math.Pow(s, 12) - 3549765240 * Math.Pow(s, 14) + 4703438943 * Math.Pow(s, 16) - 3381557410 * Math.Pow(s, 18) + 1014467223 * Math.Pow(s, 20));
-                LegArrEx[29, 10] = (1.0 / 65536) * 157783444591397625.0 * Math.Pow(c, 10) * (-715 * s + 87945 * Math.Pow(s, 3) - 3025308 * Math.Pow(s, 5) + 45379620 * Math.Pow(s, 7) - 355473690 * Math.Pow(s, 9) + 1583473710 * Math.Pow(s, 11) - 4141392780 * Math.Pow(s, 13) + 6271251924 * Math.Pow(s, 15) - 5072336115 * Math.Pow(s, 17) + 1690778705 * Math.Pow(s, 19));
-                LegArrEx[29, 11] = (1.0 / 65536) * 788917222956988125.0 * Math.Pow(c, 11) * (-143 + 52767 * Math.Pow(s, 2) - 3025308 * Math.Pow(s, 4) + 63531468 * Math.Pow(s, 6) - 639852642 * Math.Pow(s, 8) + 3483642162 * Math.Pow(s, 10) - 10767621228 * Math.Pow(s, 12) + 18813755772 * Math.Pow(s, 14) - 17245942791 * Math.Pow(s, 16) + 6424959079 * Math.Pow(s, 18));
-                LegArrEx[29, 12] = (97036818423709539375.0 * Math.Pow(c, 12) * (429 * s - 49192 * Math.Pow(s, 3) + 1549548 * Math.Pow(s, 5) - 20808216 * Math.Pow(s, 7) + 141611470 * Math.Pow(s, 9) - 525249816 * Math.Pow(s, 11) + 1070701548 * Math.Pow(s, 13) - 1121687336 * Math.Pow(s, 15) + 470118957 * Math.Pow(s, 17))) / 32768;
-                LegArrEx[29, 13] = ((291110455271128618125.0 * Math.Pow(c, 13) * (143 - 49192 * Math.Pow(s, 2) + 2582580 * Math.Pow(s, 4) - 48552504 * Math.Pow(s, 6) + 424834410 * Math.Pow(s, 8) - 1925915992 * Math.Pow(s, 10) + 4639706708 * Math.Pow(s, 12) - 5608436680 * Math.Pow(s, 14) + 2664007423 * Math.Pow(s, 16))) / 32768);
-                LegArrEx[29, 14] = ((12517749576658530579375.0 * Math.Pow(c, 14) * (-143 * s + 15015 * Math.Pow(s, 3) - 423423 * Math.Pow(s, 5) + 4939935 * Math.Pow(s, 7) - 27992965 * Math.Pow(s, 9) + 80925117 * Math.Pow(s, 11) - 114125165 * Math.Pow(s, 13) + 61953661 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[29, 15] = ((137695245343243836373125.0 * Math.Pow(c, 15) * (-13 + 4095 * Math.Pow(s, 2) - 192465 * Math.Pow(s, 4) + 3143595 * Math.Pow(s, 6) - 22903335 * Math.Pow(s, 8) + 80925117 * Math.Pow(s, 10) - 134875195 * Math.Pow(s, 12) + 84482265 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[29, 16] = (14458000761040602819178125.0 * Math.Pow(c, 16) * (39 * s - 3666 * Math.Pow(s, 3) + 89817 * Math.Pow(s, 5) - 872508 * Math.Pow(s, 7) + 3853577 * Math.Pow(s, 9) - 7707154 * Math.Pow(s, 11) + 5632151 * Math.Pow(s, 13))) / 1024;
-                LegArrEx[29, 17] = ((187954009893527836649315625.0 * Math.Pow(c, 17) * (3 - 846 * Math.Pow(s, 2) + 34545 * Math.Pow(s, 4) - 469812 * Math.Pow(s, 6) + 2667861 * Math.Pow(s, 8) - 6521438 * Math.Pow(s, 10) + 5632151 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[29, 18] = (8833838464995808322517834375.0 / 256) * Math.Pow(c, 18) * (-9 * s + 735 * Math.Pow(s, 3) - 14994 * Math.Pow(s, 5) + 113526 * Math.Pow(s, 7) - 346885 * Math.Pow(s, 9) + 359499 * Math.Pow(s, 11));
-                LegArrEx[29, 19] = (26501515394987424967553503125.0 / 256) * Math.Pow(c, 19) * (-3 + 735 * Math.Pow(s, 2) - 24990 * Math.Pow(s, 4) + 264894 * Math.Pow(s, 6) - 1040655 * Math.Pow(s, 8) + 1318163 * Math.Pow(s, 10));
-                LegArrEx[29, 20] = 185510607764911974772874521875.0 / 128 * Math.Pow(c, 20) * (105 * s - 7140 * Math.Pow(s, 3) + 113526 * Math.Pow(s, 5) - 594660 * Math.Pow(s, 7) + 941545 * Math.Pow(s, 9));
-                LegArrEx[29, 21] = (2782659116473679621593117828125.0 / 128) * Math.Pow(c, 21) * (7 - 1428 * Math.Pow(s, 2) + 37842 * Math.Pow(s, 4) - 277508 * Math.Pow(s, 6) + 564927 * Math.Pow(s, 8));
-                LegArrEx[29, 22] = (141915614940157660701249009234375.0 / 16) * Math.Pow(c, 22) * (-7 * s + 371 * Math.Pow(s, 3) - 4081 * Math.Pow(s, 5) + 11077 * Math.Pow(s, 7));
-                LegArrEx[29, 23] = (993409304581103624908743064640625.0 / 16) * Math.Pow(c, 23) * (-1 + 159 * Math.Pow(s, 2) - 2915 * Math.Pow(s, 4) + 11077 * Math.Pow(s, 6));
-                LegArrEx[29, 24] = 52650693142798492120163382425953125.0 / 8 * Math.Pow(c, 24) * (3 * s - 110 * Math.Pow(s, 3) + 627 * Math.Pow(s, 5));
-                LegArrEx[29, 25] = (157952079428395476360490147277859375.0 / 8) * Math.Pow(c, 25) * (1 - 110 * Math.Pow(s, 2) + 1045 * Math.Pow(s, 4));
-                LegArrEx[29, 26] = (8687364368561751199826958100282265625.0 / 2) * Math.Pow(c, 26) * (-s + 19 * Math.Pow(s, 3));
-                LegArrEx[29, 27] = (8687364368561751199826958100282265625.0 / 2) * Math.Pow(c, 27) * (-1 + 57 * Math.Pow(s, 2));
-                LegArrEx[29, 28] = 495179769008019818390136611716089140625.0 * s * Math.Pow(c, 28);
-                LegArrEx[29, 29] = 495179769008019818390136611716089140625.0 * Math.Pow(c, 29);
-
-                LegArrEx[30, 0] = (-9694845 + 4508102925.0 * Math.Pow(s, 2) - 347123925225.0 * Math.Pow(s, 4) + 10529425731825.0 * Math.Pow(s, 6) - 166966608033225.0 * Math.Pow(s, 8) + 1591748329916745 * Math.Pow(s, 10) - 9888133564634325.0 * Math.Pow(s, 12) + 42051732851796525.0 * Math.Pow(s, 14) - 126155198555389575.0 * Math.Pow(s, 16) + 271274904083157975.0 * Math.Pow(s, 18) - 419762220002360235.0 * Math.Pow(s, 20) + 463373879223384675.0 * Math.Pow(s, 22) - 355924863751295475.0 * Math.Pow(s, 24) + 180700315442965395.0 * Math.Pow(s, 26) - 54496920530418135.0 * Math.Pow(s, 28) + 7391536347803839.0 * Math.Pow(s, 30)) / 67108864;
-                LegArrEx[30, 1] = (1.0 / 33554432) * 465 * c * (9694845 * s - 1493006130 * Math.Pow(s, 3) + 67931778915 * Math.Pow(s, 5) - 1436271897060.0 * Math.Pow(s, 7) + 17115573439965 * Math.Pow(s, 9) - 127588820188830.0 * Math.Pow(s, 11) + 633036838629195.0 * Math.Pow(s, 13) - 2170412018157240.0 * Math.Pow(s, 15) + 5250482014512735 * Math.Pow(s, 17) - 9027144516179790.0 * Math.Pow(s, 19) + 10961532626789745.0 * Math.Pow(s, 21) - 9185157774226980.0 * Math.Pow(s, 23) + 5051836775824839.0 * Math.Pow(s, 25) - 1640767499840546.0 * Math.Pow(s, 27) + 238436656380769.0 * Math.Pow(s, 29));
-                LegArrEx[30, 2] = (1.0 / 33554432.0) * 13485 * c * c * (334305 - 154448910 * Math.Pow(s, 2) + 11712375675 * Math.Pow(s, 4) - 346686319980 * Math.Pow(s, 6) + 5311729688265.0 * Math.Pow(s, 8) - 48395759381970.0 * Math.Pow(s, 10) + 283775134557915.0 * Math.Pow(s, 12) - 1122626905943400.0 * Math.Pow(s, 14) + 3077868767128155.0 * Math.Pow(s, 16) - 5914336062324690.0 * Math.Pow(s, 18) + 7937661557330505 * Math.Pow(s, 20) - 7284780303697260.0 * Math.Pow(s, 22) + 4355031703297275 * Math.Pow(s, 24) - 1527611120541198.0 * Math.Pow(s, 26) + 238436656380769.0 * Math.Pow(s, 28));
-                LegArrEx[30, 3] = (1.0 / 8388608) * 1038345 * Math.Pow(c, 3) * (-1002915 * s + 152108775 * Math.Pow(s, 3) - 6753629610 * Math.Pow(s, 5) + 137967004890 * Math.Pow(s, 7) - 1571290889025 * Math.Pow(s, 9) + 11056174073685 * Math.Pow(s, 11) - 51028495724700.0 * Math.Pow(s, 13) + 159889286604060 * Math.Pow(s, 15) - 345643016629365 * Math.Pow(s, 17) + 515432568657825.0 * Math.Pow(s, 19) - 520341450264090.0 * Math.Pow(s, 21) + 339353119737450.0 * Math.Pow(s, 23) - 128954185500231.0 * Math.Pow(s, 25) + 21676059670979.0 * Math.Pow(s, 27));
-                LegArrEx[30, 4] = (1.0 / 8388608) * 476600355 * Math.Pow(c, 4) * (-2185 + 994175 * Math.Pow(s, 2) - 73568950 * Math.Pow(s, 4) + 2104071970 * Math.Pow(s, 6) - 30809625275 * Math.Pow(s, 8) + 264962777365 * Math.Pow(s, 10) - 1445251512900 * Math.Pow(s, 12) + 5225140085100 * Math.Pow(s, 14) - 12801593208495 * Math.Pow(s, 16) + 21335988680825.0 * Math.Pow(s, 18) - 23806471580710.0 * Math.Pow(s, 20) + 17004622557650 * Math.Pow(s, 22) - 7023648447725.0 * Math.Pow(s, 24) + 1275062333587 * Math.Pow(s, 26));
-                LegArrEx[30, 5] = (1.0 / 4194304) * 6195804615 * Math.Pow(c, 5) * (76475 * s - 11318300 * Math.Pow(s, 3) + 485555070 * Math.Pow(s, 5) - 9479884700 * Math.Pow(s, 7) + 101908760525 * Math.Pow(s, 9) - 667039159800 * Math.Pow(s, 11) + 2813536968900 * Math.Pow(s, 13) - 7877903512920 * Math.Pow(s, 15) + 14771069086725 * Math.Pow(s, 17) - 18312670446700 * Math.Pow(s, 19) + 14388526779550 * Math.Pow(s, 21) - 6483367797900 * Math.Pow(s, 23) + 1275062333587 * Math.Pow(s, 25));
-                LegArrEx[30, 6] = (1.0 / 4194304) * 154895115375 * Math.Pow(c, 6) * (3059 - 1358196 * Math.Pow(s, 2) + 97111014 * Math.Pow(s, 4) - 2654367716 * Math.Pow(s, 6) + 36687153789 * Math.Pow(s, 8) - 293497230312 * Math.Pow(s, 10) + 1463039223828 * Math.Pow(s, 12) - 4726742107752 * Math.Pow(s, 14) + 10044326978973 * Math.Pow(s, 16) - 13917629539492 * Math.Pow(s, 18) + 12086362494822 * Math.Pow(s, 20) - 5964698374068 * Math.Pow(s, 22) + 1275062333587 * Math.Pow(s, 24));
-                LegArrEx[30, 7] = (1.0 / 524288) * 17193357806625.0 * Math.Pow(c, 7) * (-3059 * s + 437437 * Math.Pow(s, 3) - 17934917 * Math.Pow(s, 5) + 330514899 * Math.Pow(s, 7) - 3305148990 * Math.Pow(s, 9) + 19770800322 * Math.Pow(s, 11) - 74520708906 * Math.Pow(s, 13) + 180978864486 * Math.Pow(s, 15) - 282114112287 * Math.Pow(s, 17) + 272215371505 * Math.Pow(s, 19) - 147774058817 * Math.Pow(s, 21) + 34461144151 * Math.Pow(s, 23));
-                LegArrEx[30, 8] = (1.0 / 524288) * 7513497361495125.0 * Math.Pow(c, 8) * (-7 + 3003 * Math.Pow(s, 2) - 205205 * Math.Pow(s, 4) + 5294289 * Math.Pow(s, 6) - 68069430 * Math.Pow(s, 8) + 497663166 * Math.Pow(s, 10) - 2216863194 * Math.Pow(s, 12) + 6212089170 * Math.Pow(s, 14) - 10974690867 * Math.Pow(s, 16) + 11835450935 * Math.Pow(s, 18) - 7101270561 * Math.Pow(s, 20) + 1813744429 * Math.Pow(s, 22));
-                LegArrEx[30, 9] = (1.0 / 262144) * 7513497361495125.0 * Math.Pow(c, 9) * (3003 * s - 410410 * Math.Pow(s, 3) + 15882867 * Math.Pow(s, 5) - 272277720 * Math.Pow(s, 7) + 2488315830 * Math.Pow(s, 9) - 13301179164 * Math.Pow(s, 11) + 43484624190 * Math.Pow(s, 13) - 87797526936 * Math.Pow(s, 15) + 106519058415 * Math.Pow(s, 17) - 71012705610 * Math.Pow(s, 19) + 19951188719 * Math.Pow(s, 21));
-                LegArrEx[30, 10] = (1.0 / 262144) * 157783444591397625.0 * Math.Pow(c, 10) * (143 - 58630 * Math.Pow(s, 2) + 3781635 * Math.Pow(s, 4) - 90759240 * Math.Pow(s, 6) + 1066421070 * Math.Pow(s, 8) - 6967284324 * Math.Pow(s, 10) + 26919053070 * Math.Pow(s, 12) - 62712519240 * Math.Pow(s, 14) + 86229713955 * Math.Pow(s, 16) - 64249590790 * Math.Pow(s, 18) + 19951188719 * Math.Pow(s, 20));
-                LegArrEx[30, 11] = (1.0 / 65536) * 32345606141236513125.0 * Math.Pow(c, 11) * (-143 * s + 18447 * Math.Pow(s, 3) - 664092 * Math.Pow(s, 5) + 10404108 * Math.Pow(s, 7) - 84966882 * Math.Pow(s, 9) + 393937362 * Math.Pow(s, 11) - 1070701548 * Math.Pow(s, 13) + 1682531004 * Math.Pow(s, 15) - 1410356871 * Math.Pow(s, 17) + 486614359 * Math.Pow(s, 19));
-                LegArrEx[30, 12] = (1.0 / 65536) * 32345606141236513125.0 * Math.Pow(c, 12) * (-143 + 55341 * Math.Pow(s, 2) - 3320460 * Math.Pow(s, 4) + 72828756 * Math.Pow(s, 6) - 764701938 * Math.Pow(s, 8) + 4333310982 * Math.Pow(s, 10) - 13919120124 * Math.Pow(s, 12) + 25237965060 * Math.Pow(s, 14) - 23976066807 * Math.Pow(s, 16) + 9245672821 * Math.Pow(s, 18));
-                LegArrEx[30, 13] = ((12517749576658530579375.0 * Math.Pow(c, 13) * (143 * s - 17160 * Math.Pow(s, 3) + 564564 * Math.Pow(s, 5) - 7903896 * Math.Pow(s, 7) + 55985930 * Math.Pow(s, 9) - 215800312 * Math.Pow(s, 11) + 456500660 * Math.Pow(s, 13) - 495629288 * Math.Pow(s, 15) + 215015647 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[30, 14] = ((137695245343243836373125.0 * Math.Pow(c, 14) * (13 - 4680 * Math.Pow(s, 2) + 256620 * Math.Pow(s, 4) - 5029752 * Math.Pow(s, 6) + 45806670 * Math.Pow(s, 8) - 215800312 * Math.Pow(s, 10) + 539500780 * Math.Pow(s, 12) - 675858120 * Math.Pow(s, 14) + 332296909 * Math.Pow(s, 16))) / 32768);
-                LegArrEx[30, 15] = ((137695245343243836373125.0 * Math.Pow(c, 15) * (-585 * s + 64155 * Math.Pow(s, 3) - 1886157 * Math.Pow(s, 5) + 22903335 * Math.Pow(s, 7) - 134875195 * Math.Pow(s, 9) + 404625585 * Math.Pow(s, 11) - 591375855 * Math.Pow(s, 13) + 332296909 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[30, 16] = (2065428680148657545596875.0 * Math.Pow(c, 16) * (-39 + 12831 * Math.Pow(s, 2) - 628719 * Math.Pow(s, 4) + 10688223 * Math.Pow(s, 6) - 80925117 * Math.Pow(s, 8) + 296725429 * Math.Pow(s, 10) - 512525741 * Math.Pow(s, 12) + 332296909 * Math.Pow(s, 14))) / 2048;
-                LegArrEx[30, 17] = ((679526035768908332501371875.0 * Math.Pow(c, 17) * (39 * s - 3822 * Math.Pow(s, 3) + 97461 * Math.Pow(s, 5) - 983892 * Math.Pow(s, 7) + 4509505 * Math.Pow(s, 9) - 9346974 * Math.Pow(s, 11) + 7070147 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[30, 18] = ((8833838464995808322517834375.0 * Math.Pow(c, 18) * (3 - 882 * Math.Pow(s, 2) + 37485 * Math.Pow(s, 4) - 529788 * Math.Pow(s, 6) + 3121965 * Math.Pow(s, 8) - 7908978 * Math.Pow(s, 10) + 7070147 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[30, 19] = (185510607764911974772874521875.0 / 256) * Math.Pow(c, 19) * (-21 * s + 1785 * Math.Pow(s, 3) - 37842 * Math.Pow(s, 5) + 297330 * Math.Pow(s, 7) - 941545 * Math.Pow(s, 9) + 1010021 * Math.Pow(s, 11));
-                LegArrEx[30, 20] = 185510607764911974772874521875.0 / 256 * Math.Pow(c, 20) * (-21 + 5355 * Math.Pow(s, 2) - 189210 * Math.Pow(s, 4) + 2081310 * Math.Pow(s, 6) - 8473905 * Math.Pow(s, 8) + 11110231 * Math.Pow(s, 10));
-                LegArrEx[30, 21] = (15768401660017517855694334359375.0 / 128) * Math.Pow(c, 21) * (63 * s - 4452 * Math.Pow(s, 3) + 73458 * Math.Pow(s, 5) - 398772 * Math.Pow(s, 7) + 653543 * Math.Pow(s, 9));
-                LegArrEx[30, 22] = (141915614940157660701249009234375.0 / 128) * Math.Pow(c, 22) * (7 - 1484 * Math.Pow(s, 2) + 40810 * Math.Pow(s, 4) - 310156 * Math.Pow(s, 6) + 653543 * Math.Pow(s, 8));
-                LegArrEx[30, 23] = (7521527591828356017166197489421875.0 / 16) * Math.Pow(c, 23) * (-7 * s + 385 * Math.Pow(s, 3) - 4389 * Math.Pow(s, 5) + 12331 * Math.Pow(s, 7));
-                LegArrEx[30, 24] = 52650693142798492120163382425953125.0 / 16 * Math.Pow(c, 24) * (-1 + 165 * Math.Pow(s, 2) - 3135 * Math.Pow(s, 4) + 12331 * Math.Pow(s, 6));
-                LegArrEx[30, 25] = (1737472873712350239965391620056453125.0 / 8) * Math.Pow(c, 25) * (5 * s - 190 * Math.Pow(s, 3) + 1121 * Math.Pow(s, 5));
-                LegArrEx[30, 26] = (8687364368561751199826958100282265625.0 / 8) * Math.Pow(c, 26) * (1 - 114 * Math.Pow(s, 2) + 1121 * Math.Pow(s, 4));
-                LegArrEx[30, 27] = (165059923002673272796712203905363046875.0 / 2) * Math.Pow(c, 27) * (-3 * s + 59 * Math.Pow(s, 3));
-                LegArrEx[30, 28] = 495179769008019818390136611716089140625.0 / 2 * Math.Pow(c, 28) * (-1 + 59 * Math.Pow(s, 2));
-                LegArrEx[30, 29] = 29215606371473169285018060091249259296875.0 * s * Math.Pow(c, 29);
-                LegArrEx[30, 30] = 29215606371473169285018060091249259296875.0 * Math.Pow(c, 30);
-
-                LegArrEx[31, 0] = (-300540195 * s + 49589132175.0 * Math.Pow(s, 3) - 2429867476575.0 * Math.Pow(s, 5) + 55655536011075.0 * Math.Pow(s, 7) - 723521968143975.0 * Math.Pow(s, 9) + 5932880138780595.0 * Math.Pow(s, 11) - 32706903329175075.0 * Math.Pow(s, 13) + 126155198555389575.0 * Math.Pow(s, 15) - 348782019535488825.0 * Math.Pow(s, 17) + 699603700003933725 * Math.Pow(s, 19) - 1019422534291446285.0 * Math.Pow(s, 21) + 1067774591253886425.0 * Math.Pow(s, 23) - 783034700252850045.0 * Math.Pow(s, 25) + 381478443712926945.0 * Math.Pow(s, 27) - 110873045217057585.0 * Math.Pow(s, 29) + 14544636039226909.0 * Math.Pow(s, 31)) / 67108864;
-                LegArrEx[31, 1] = (1.0 / 67108864) * 31 * c * (-9694845 + 4798948275 * Math.Pow(s, 2) - 391914109125.0 * Math.Pow(s, 4) + 12567379099275.0 * Math.Pow(s, 6) - 210054764945025.0 * Math.Pow(s, 8) + 2105215533115695.0 * Math.Pow(s, 10) - 13715798170299225.0 * Math.Pow(s, 12) + 61042838010672375.0 * Math.Pow(s, 14) - 191267559100106775.0 * Math.Pow(s, 16) + 428789364518540025.0 * Math.Pow(s, 18) - 690576555487753935.0 * Math.Pow(s, 20) + 792219858027077025.0 * Math.Pow(s, 22) - 631479596978104875.0 * Math.Pow(s, 24) + 332255418717710565.0 * Math.Pow(s, 26) - 103719945525634515.0 * Math.Pow(s, 28) + 14544636039226909.0 * Math.Pow(s, 30));
-                LegArrEx[31, 2] = (1.0 / 33554432) * 5115 * c * c * (29084535 * s - 4750474050 * Math.Pow(s, 3) + 228497801805 * Math.Pow(s, 5) - 5092236725940.0 * Math.Pow(s, 7) + 63794410094415.0 * Math.Pow(s, 9) - 498756297101790.0 * Math.Pow(s, 11) + 2589696158028525.0 * Math.Pow(s, 13) - 9273578623035480.0 * Math.Pow(s, 15) + 23388510791920365.0 * Math.Pow(s, 17) - 41853124575015390.0 * Math.Pow(s, 19) + 52814657201805135.0 * Math.Pow(s, 21) - 45925788871134900.0 * Math.Pow(s, 23) + 26177699656546893.0 * Math.Pow(s, 25) - 8800480226417474.0 * Math.Pow(s, 27) + 1322239639929719.0 * Math.Pow(s, 29));
-                LegArrEx[31, 3] = (1.0 / 33554432) * 2521695 * Math.Pow(c, 3) * (58995 - 28907550 * Math.Pow(s, 2) + 2317421925 * Math.Pow(s, 4) - 72303564060 * Math.Pow(s, 6) + 1164603835395.0 * Math.Pow(s, 8) - 11128436649330.0 * Math.Pow(s, 10) + 68288133984525.0 * Math.Pow(s, 12) - 282157564595400 * Math.Pow(s, 14) + 806500372135185.0 * Math.Pow(s, 16) - 1613000744270370 * Math.Pow(s, 18) + 2249711564377095 * Math.Pow(s, 20) - 2142582442263900.0 * Math.Pow(s, 22) + 1327469556620025.0 * Math.Pow(s, 24) - 481973562095886.0 * Math.Pow(s, 26) + 77778802348807 * Math.Pow(s, 28));
-                LegArrEx[31, 4] = (1.0 / 8388608) * 17651865 * Math.Pow(c, 4) * (-2064825 * s + 331060275 * Math.Pow(s, 3) - 15493620870 * Math.Pow(s, 5) + 332743952970.0 * Math.Pow(s, 7) - 3974441660475.0 * Math.Pow(s, 9) + 29266343136225.0 * Math.Pow(s, 11) - 141078782297700.0 * Math.Pow(s, 13) + 460857355505820.0 * Math.Pow(s, 15) - 1036929049888095.0 * Math.Pow(s, 17) + 1606936831697925.0 * Math.Pow(s, 19) - 1683457633207350.0 * Math.Pow(s, 21) + 1137831048531450.0 * Math.Pow(s, 23) - 447546879089037.0 * Math.Pow(s, 25) + 77778802348807.0 * Math.Pow(s, 27));
-                LegArrEx[31, 5] = (1.0 / 8388608) * 476600355 * Math.Pow(c, 5) * (-76475 + 36784475 * Math.Pow(s, 2) - 2869189050 * Math.Pow(s, 4) + 86266950770 * Math.Pow(s, 6) - 1324813886825.0 * Math.Pow(s, 8) + 11923324981425.0 * Math.Pow(s, 10) - 67926821106300.0 * Math.Pow(s, 12) + 256031864169900.0 * Math.Pow(s, 14) - 652881253633245.0 * Math.Pow(s, 16) + 1130807400083725.0 * Math.Pow(s, 18) - 1309355936939050.0 * Math.Pow(s, 20) + 969263485786050.0 * Math.Pow(s, 22) - 414395258415775 * Math.Pow(s, 24) + 77778802348807.0 * Math.Pow(s, 26));
-                LegArrEx[31, 6] = (1.0 / 4194304) * 229244770755.0 * Math.Pow(c, 6) * (76475 * s - 11930100 * Math.Pow(s, 3) + 538047510 * Math.Pow(s, 5) - 11017163300 * Math.Pow(s, 7) + 123943087125.0 * Math.Pow(s, 9) - 847320013800.0 * Math.Pow(s, 11) + 3726035445300.0 * Math.Pow(s, 13) - 10858731869160.0 * Math.Pow(s, 15) + 21158558421525 * Math.Pow(s, 17) - 27221537150500.0 * Math.Pow(s, 19) + 22166108822550 * Math.Pow(s, 21) - 10338343245300 * Math.Pow(s, 23) + 2102129793211 * Math.Pow(s, 25));
-                LegArrEx[31, 7] = (1.0 / 4194304) * 108891266108625.0 * Math.Pow(c, 7) * (161 - 75348 * Math.Pow(s, 2) + 5663658 * Math.Pow(s, 4) - 162358196 * Math.Pow(s, 6) + 2348395335 * Math.Pow(s, 8) - 19622147688 * Math.Pow(s, 10) + 101975706924.0 * Math.Pow(s, 12) - 342907322184 * Math.Pow(s, 14) + 757253669823 * Math.Pow(s, 16) - 1088861486020 * Math.Pow(s, 18) + 979975337418 * Math.Pow(s, 20) - 500593462404 * Math.Pow(s, 22) + 110638410169 * Math.Pow(s, 24));
-                LegArrEx[31, 8] = (1.0 / 524288) * 326673798325875.0 * Math.Pow(c, 8) * (-6279 * s + 943943 * Math.Pow(s, 3) - 40589549 * Math.Pow(s, 5) + 782798445 * Math.Pow(s, 7) - 8175894870 * Math.Pow(s, 9) + 50987853462 * Math.Pow(s, 11) - 200029271274.0 * Math.Pow(s, 13) + 504835779882.0 * Math.Pow(s, 15) - 816646114515 * Math.Pow(s, 17) + 816646114515 * Math.Pow(s, 19) - 458877340537 * Math.Pow(s, 21) + 110638410169 * Math.Pow(s, 23));
-                LegArrEx[31, 9] = (1.0 / 524288) * 7513497361495125.0 * Math.Pow(c, 9) * (-273 + 123123 * Math.Pow(s, 2) - 8823815 * Math.Pow(s, 4) + 238243005 * Math.Pow(s, 6) - 3199263210 * Math.Pow(s, 8) + 24385495134 * Math.Pow(s, 10) - 113060022894 * Math.Pow(s, 12) + 329240726010 * Math.Pow(s, 14) - 603607997685 * Math.Pow(s, 16) + 674620703295 * Math.Pow(s, 18) - 418974963099 * Math.Pow(s, 20) + 110638410169 * Math.Pow(s, 22));
-                LegArrEx[31, 10] = (1.0 / 262144) * 308053391821300125.0 * Math.Pow(c, 10) * (3003 * s - 430430 * Math.Pow(s, 3) + 17432415 * Math.Pow(s, 5) - 312123240 * Math.Pow(s, 7) + 2973840870 * Math.Pow(s, 9) - 16545369204 * Math.Pow(s, 11) + 56211831270 * Math.Pow(s, 13) - 117777170280 * Math.Pow(s, 15) + 148087471455 * Math.Pow(s, 17) - 102189015390 * Math.Pow(s, 19) + 29683475899 * Math.Pow(s, 21));
-                LegArrEx[31, 11] = (1.0 / 262144) * 6469121228247302625.0 * Math.Pow(c, 11) * (143 - 61490 * Math.Pow(s, 2) + 4150575 * Math.Pow(s, 4) - 104041080 * Math.Pow(s, 6) + 1274503230 * Math.Pow(s, 8) - 8666621964 * Math.Pow(s, 10) + 34797800310 * Math.Pow(s, 12) - 84126550200 * Math.Pow(s, 14) + 119880334035 * Math.Pow(s, 16) - 92456728210 * Math.Pow(s, 18) + 29683475899 * Math.Pow(s, 20));
-                LegArrEx[31, 12] = (1.0 / 65536) * 1390861064073170064375.0 * Math.Pow(c, 12) * (-143 * s + 19305 * Math.Pow(s, 3) - 725868 * Math.Pow(s, 5) + 11855844 * Math.Pow(s, 7) - 100774674 * Math.Pow(s, 9) + 485550702 * Math.Pow(s, 11) - 1369501980 * Math.Pow(s, 13) + 2230331796 * Math.Pow(s, 15) - 1935140823 * Math.Pow(s, 17) + 690313393 * Math.Pow(s, 19));
-                LegArrEx[31, 13] = (1.0 / 65536) * 15299471704804870708125.0 * Math.Pow(c, 13) * (-13 + 5265 * Math.Pow(s, 2) - 329940 * Math.Pow(s, 4) + 7544628 * Math.Pow(s, 6) - 82452006 * Math.Pow(s, 8) + 485550702 * Math.Pow(s, 10) - 1618502340 * Math.Pow(s, 12) + 3041361540 * Math.Pow(s, 14) - 2990672181 * Math.Pow(s, 16) + 1192359497 * Math.Pow(s, 18));
-                LegArrEx[31, 14] = ((137695245343243836373125.0 * Math.Pow(c, 14) * (585 * s - 73320 * Math.Pow(s, 3) + 2514876 * Math.Pow(s, 5) - 36645336 * Math.Pow(s, 7) + 269750390 * Math.Pow(s, 9) - 1079001560 * Math.Pow(s, 11) + 2365503420 * Math.Pow(s, 13) - 2658375272 * Math.Pow(s, 15) + 1192359497 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[31, 15] = (1.0 / 32768) * 137695245343243836373125.0 * Math.Pow(c, 15) * (585 - 219960 * Math.Pow(s, 2) + 12574380 * Math.Pow(s, 4) - 256517352 * Math.Pow(s, 6) + 2427753510 * Math.Pow(s, 8) - 11869017160 * Math.Pow(s, 10) + 30751544460 * Math.Pow(s, 12) - 39875629080 * Math.Pow(s, 14) + 20270111449 * Math.Pow(s, 16));
-                LegArrEx[31, 16] = (6471676531132460309536875.0 * Math.Pow(c, 16) * (-585 * s + 66885 * Math.Pow(s, 3) - 2046681 * Math.Pow(s, 5) + 25827165 * Math.Pow(s, 7) - 157832675 * Math.Pow(s, 9) + 490716135 * Math.Pow(s, 11) - 742365435 * Math.Pow(s, 13) + 431278967 * Math.Pow(s, 15))) / 2048;
-                LegArrEx[31, 17] = ((97075147966986904643053125.0 * Math.Pow(c, 17) * (-39 + 13377 * Math.Pow(s, 2) - 682227 * Math.Pow(s, 4) + 12052677 * Math.Pow(s, 6) - 94699605 * Math.Pow(s, 8) + 359858499 * Math.Pow(s, 10) - 643383377 * Math.Pow(s, 12) + 431278967 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[31, 18] = ((4756682250382358327509603125.0 * Math.Pow(c, 18) * (273 * s - 27846 * Math.Pow(s, 3) + 737919 * Math.Pow(s, 5) - 7730580 * Math.Pow(s, 7) + 36720255 * Math.Pow(s, 9) - 78781638 * Math.Pow(s, 11) + 61611281 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[31, 19] = ((61836869254970658257624840625.0 * Math.Pow(c, 19) * (21 - 6426 * Math.Pow(s, 2) + 283815 * Math.Pow(s, 4) - 4162620 * Math.Pow(s, 6) + 25421715 * Math.Pow(s, 8) - 66661386 * Math.Pow(s, 10) + 61611281 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[31, 20] = 3153680332003503571138866871875.0 / 256 * Math.Pow(c, 20) * (-63 * s + 5565 * Math.Pow(s, 3) - 122430 * Math.Pow(s, 5) + 996930 * Math.Pow(s, 7) - 3267715 * Math.Pow(s, 9) + 3624193 * Math.Pow(s, 11));
-                LegArrEx[31, 21] = (3153680332003503571138866871875.0 / 256) * Math.Pow(c, 21) * (-63 + 16695 * Math.Pow(s, 2) - 612150 * Math.Pow(s, 4) + 6978510 * Math.Pow(s, 6) - 29409435 * Math.Pow(s, 8) + 39866123 * Math.Pow(s, 10));
-                LegArrEx[31, 22] = (835725287980928446351799721046875.0 / 128) * Math.Pow(c, 22) * (63 * s - 4620 * Math.Pow(s, 3) + 79002 * Math.Pow(s, 5) - 443916 * Math.Pow(s, 7) + 752191 * Math.Pow(s, 9));
-                LegArrEx[31, 23] = (7521527591828356017166197489421875.0 / 128) * Math.Pow(c, 23) * (7 - 1540 * Math.Pow(s, 2) + 43890 * Math.Pow(s, 4) - 345268 * Math.Pow(s, 6) + 752191 * Math.Pow(s, 8));
-                LegArrEx[31, 24] = 82736803510111916188828172383640625.0 / 16 * Math.Pow(c, 24) * (-35 * s + 1995 * Math.Pow(s, 3) - 23541 * Math.Pow(s, 5) + 68381 * Math.Pow(s, 7));
-                LegArrEx[31, 25] = (579157624570783413321797206685484375.0 / 16) * Math.Pow(c, 25) * (-5 + 855 * Math.Pow(s, 2) - 16815 * Math.Pow(s, 4) + 68381 * Math.Pow(s, 6));
-                LegArrEx[31, 26] = (33011984600534654559342440781072609375.0 / 8) * Math.Pow(c, 26) * (15 * s - 590 * Math.Pow(s, 3) + 3599 * Math.Pow(s, 5));
-                LegArrEx[31, 27] = (165059923002673272796712203905363046875.0 / 8) * Math.Pow(c, 27) * (3 - 354 * Math.Pow(s, 2) + 3599 * Math.Pow(s, 4));
-                LegArrEx[31, 28] = 9738535457157723095006020030416419765625.0 / 2 * Math.Pow(c, 28) * (-3 * s + 61 * Math.Pow(s, 3));
-                LegArrEx[31, 29] = (29215606371473169285018060091249259296875.0 / 2) * Math.Pow(c, 29) * (-1 + 61 * Math.Pow(s, 2));
-                LegArrEx[31, 30] = 1782151988659863326386101665566204817109375.0 * s * Math.Pow(c, 30);
-                LegArrEx[31, 31] = 1782151988659863326386101665566204817109375.0 * Math.Pow(c, 31);
-
-                LegArrEx[32, 0] = (300540195 - 158685222960 * Math.Pow(s, 2) + 13884957009000 * Math.Pow(s, 4) - 479493848710800 * Math.Pow(s, 6) + 8682263617727700 * Math.Pow(s, 8) - 94926082220489520 * Math.Pow(s, 10) + 680303589246841560 * Math.Pow(s, 12) - 3364138628143722000 * Math.Pow(s, 14) + 11858588664206620050.0 * Math.Pow(s, 16) - 30382789257313693200.0 * Math.Pow(s, 18) + 57087661920320991960.0 * Math.Pow(s, 20) - 78588209916286040880.0 * Math.Pow(s, 22) + 78303470025285004500.0 * Math.Pow(s, 24) - 54932895894661480080.0 * Math.Pow(s, 26) + 25722546490357359720.0 * Math.Pow(s, 28) - 7214139475456546864.0 * Math.Pow(s, 30) + 916312070471295267.0 * Math.Pow(s, 32)) / 2147483648;
-                LegArrEx[32, 1] = (1.0 / 67108864) * 33 * c * (-300540195 * s + 52594534125 * Math.Pow(s, 3) - 2724396867675 * Math.Pow(s, 5) + 65774724376725 * Math.Pow(s, 7) - 898921233148575 * Math.Pow(s, 9) + 7730722605077745 * Math.Pow(s, 11) - 44600322721602375 * Math.Pow(s, 13) + 179675585821312425.0 * Math.Pow(s, 15) - 517888453249665225.0 * Math.Pow(s, 17) + 1081205718187897575.0 * Math.Pow(s, 19) - 1637254373255959185.0 * Math.Pow(s, 21) + 1779624318756477375.0 * Math.Pow(s, 23) - 1352514482254922805.0 * Math.Pow(s, 25) + 682037217547354235.0 * Math.Pow(s, 27) - 204947144189106445.0 * Math.Pow(s, 29) + 27767032438524099.0 * Math.Pow(s, 31));
-                LegArrEx[32, 2] = (1.0 / 67108864) * 17391 * c * c * (-570285 + 299399625 * Math.Pow(s, 2) - 25848167625 * Math.Pow(s, 4) + 873668065725 * Math.Pow(s, 6) - 15351596012025 * Math.Pow(s, 8) + 161362331415285 * Math.Pow(s, 10) - 1100197714195125 * Math.Pow(s, 12) + 5114105858291625 * Math.Pow(s, 14) - 16706079137085975 * Math.Pow(s, 16) + 38980851319867275.0 * Math.Pow(s, 18) - 65241635366935755 * Math.Pow(s, 20) + 77668613532066375 * Math.Pow(s, 22) - 64161028569967875.0 * Math.Pow(s, 24) + 34943083251951735 * Math.Pow(s, 26) - 11277926340577015 * Math.Pow(s, 28) + 1633354849324947.0 * Math.Pow(s, 30));
-                LegArrEx[32, 3] = (1.0 / 33554432) * 608685 * Math.Pow(c, 3) * (8554275 * s - 1477038150 * Math.Pow(s, 3) + 74885834205 * Math.Pow(s, 5) - 1754468115660 * Math.Pow(s, 7) + 23051761630755 * Math.Pow(s, 9) - 188605322433450 * Math.Pow(s, 11) + 1022821171658325 * Math.Pow(s, 13) - 3818532374191080 * Math.Pow(s, 15) + 10023647482251585 * Math.Pow(s, 17) - 18640467247695930 * Math.Pow(s, 19) + 24410135681506575 * Math.Pow(s, 21) - 21998066938274700 * Math.Pow(s, 23) + 12978859493582073 * Math.Pow(s, 25) - 4511170536230806 * Math.Pow(s, 27) + 700009221139263 * Math.Pow(s, 29));
-                LegArrEx[32, 4] = (1.0 / 33554432) * 158866785 * Math.Pow(c, 4) * (32775 - 16977450 * Math.Pow(s, 2) + 1434594525 * Math.Pow(s, 4) - 47054700420 * Math.Pow(s, 6) + 794888332095 * Math.Pow(s, 8) - 7948883320950 * Math.Pow(s, 10) + 50945115829725 * Math.Pow(s, 12) - 219455883574200 * Math.Pow(s, 14) + 652881253633245 * Math.Pow(s, 16) - 1356968880100470 * Math.Pow(s, 18) + 1964033905408575 * Math.Pow(s, 20) - 1938526971572100 * Math.Pow(s, 22) + 1243185775247325 * Math.Pow(s, 24) - 466672814092842 * Math.Pow(s, 26) + 77778802348807 * Math.Pow(s, 28));
-                LegArrEx[32, 5] = (1.0 / 8388608) * 5878071045 * Math.Pow(c, 5) * (-229425 * s + 38772825 * Math.Pow(s, 3) - 1907622990 * Math.Pow(s, 5) + 42966936870 * Math.Pow(s, 7) - 537086710875 * Math.Pow(s, 9) + 4130685067275 * Math.Pow(s, 11) - 20759340338100 * Math.Pow(s, 13) + 70581757149540 * Math.Pow(s, 15) - 165036755687895 * Math.Pow(s, 17) + 265409987217375 * Math.Pow(s, 19) - 288159414693150 * Math.Pow(s, 21) + 201597693283350 * Math.Pow(s, 23) - 81983061935229 * Math.Pow(s, 25) + 14714908552477 * Math.Pow(s, 27));
-                LegArrEx[32, 6] = (1.0 / 8388608) * 335050049565 * Math.Pow(c, 6) * (-4025 + 2040675 * Math.Pow(s, 2) - 167335350 * Math.Pow(s, 4) + 5276641370 * Math.Pow(s, 6) - 84803164875 * Math.Pow(s, 8) + 797149749825 * Math.Pow(s, 10) - 4734586392900 * Math.Pow(s, 12) + 18574146618300 * Math.Pow(s, 14) - 49221488538495 * Math.Pow(s, 16) + 88469995739125 * Math.Pow(s, 18) - 106163994886950 * Math.Pow(s, 20) + 81346437640650 * Math.Pow(s, 22) - 35957483304925 * Math.Pow(s, 24) + 6970219840647 * Math.Pow(s, 26));
-                LegArrEx[32, 7] = (1.0 / 4194304) * 13066951933035 * Math.Pow(c, 7) * (52325 * s - 8581300 * Math.Pow(s, 3) + 405895490 * Math.Pow(s, 5) - 8697760500 * Math.Pow(s, 7) + 102198685875 * Math.Pow(s, 9) - 728397906600 * Math.Pow(s, 11) + 3333821187900 * Math.Pow(s, 13) - 10096715597640 * Math.Pow(s, 15) + 20416152862875 * Math.Pow(s, 17) - 27221537150500 * Math.Pow(s, 19) + 22943867026850 * Math.Pow(s, 21) - 11063841016900 * Math.Pow(s, 23) + 2323406613549 * Math.Pow(s, 25));
-                LegArrEx[32, 8] = (1.0 / 4194304) * 326673798325875 * Math.Pow(c, 8) * (2093 - 1029756 * Math.Pow(s, 2) + 81179098 * Math.Pow(s, 4) - 2435372940 * Math.Pow(s, 6) + 36791526915 * Math.Pow(s, 8) - 320495078904 * Math.Pow(s, 10) + 1733587017708 * Math.Pow(s, 12) - 6058029358584 * Math.Pow(s, 14) + 13882983946755 * Math.Pow(s, 16) - 20688368234380 * Math.Pow(s, 18) + 19272848302554 * Math.Pow(s, 20) - 10178733735548 * Math.Pow(s, 22) + 2323406613549 * Math.Pow(s, 24));
-                LegArrEx[32, 9] = (1.0 / 524288) * 13393625731360875.0 * Math.Pow(c, 9) * (-6279 * s + 989989 * Math.Pow(s, 3) - 44549505 * Math.Pow(s, 5) + 897354315 * Math.Pow(s, 7) - 9771191430 * Math.Pow(s, 9) + 63423915282 * Math.Pow(s, 11) - 258574423842 * Math.Pow(s, 13) + 677218729110 * Math.Pow(s, 15) - 1135337281155 * Math.Pow(s, 17) + 1175173676985 * Math.Pow(s, 19) - 682719945677 * Math.Pow(s, 21) + 170005361967 * Math.Pow(s, 23));
-                LegArrEx[32, 10] = (1.0 / 524288) * 6469121228247302625.0 * Math.Pow(c, 10) * (-13 + 6149 * Math.Pow(s, 2) - 461175 * Math.Pow(s, 4) + 13005135 * Math.Pow(s, 6) - 182071890 * Math.Pow(s, 8) + 1444436994 * Math.Pow(s, 10) - 6959560062 * Math.Pow(s, 12) + 21031637550 * Math.Pow(s, 14) - 39960111345 * Math.Pow(s, 16) + 46228364105 * Math.Pow(s, 18) - 29683475899 * Math.Pow(s, 20) + 8095493427 * Math.Pow(s, 22));
-                LegArrEx[32, 11] = (1.0 / 262144) * 278172212814634012875.0 * Math.Pow(c, 11) * (143 * s - 21450 * Math.Pow(s, 3) + 907335 * Math.Pow(s, 5) - 16936920 * Math.Pow(s, 7) + 167957790 * Math.Pow(s, 9) - 971101404 * Math.Pow(s, 11) + 3423754950 * Math.Pow(s, 13) - 7434439320 * Math.Pow(s, 15) + 9675704115 * Math.Pow(s, 17) - 6903133930 * Math.Pow(s, 19) + 2070940179 * Math.Pow(s, 21));
-                LegArrEx[32, 12] = (1.0 / 262144) * 3059894340960974141625.0 * Math.Pow(c, 12) * (13 - 5850 * Math.Pow(s, 2) + 412425 * Math.Pow(s, 4) - 10778040 * Math.Pow(s, 6) + 137420010 * Math.Pow(s, 8) - 971101404 * Math.Pow(s, 10) + 4046255850 * Math.Pow(s, 12) - 10137871800 * Math.Pow(s, 14) + 14953360905 * Math.Pow(s, 16) - 11923594970 * Math.Pow(s, 18) + 3953613069 * Math.Pow(s, 20));
-                LegArrEx[32, 13] = (1.0 / 65536) * 137695245343243836373125.0 * Math.Pow(c, 13) * (-65 * s + 9165 * Math.Pow(s, 3) - 359268 * Math.Pow(s, 5) + 6107556 * Math.Pow(s, 7) - 53950078 * Math.Pow(s, 9) + 269750390 * Math.Pow(s, 11) - 788501140 * Math.Pow(s, 13) + 1329187636 * Math.Pow(s, 15) - 1192359497 * Math.Pow(s, 17) + 439290341 * Math.Pow(s, 19));
-                LegArrEx[32, 14] = (1.0 / 65536) * 137695245343243836373125.0 * Math.Pow(c, 14) * (-65 + 27495 * Math.Pow(s, 2) - 1796340 * Math.Pow(s, 4) + 42752892 * Math.Pow(s, 6) - 485550702 * Math.Pow(s, 8) + 2967254290 * Math.Pow(s, 10) - 10250514820 * Math.Pow(s, 12) + 19937814540 * Math.Pow(s, 14) - 20270111449 * Math.Pow(s, 16) + 8346516479 * Math.Pow(s, 18));
-                LegArrEx[32, 15] = ((6471676531132460309536875.0 * Math.Pow(c, 15) * (585 * s - 76440 * Math.Pow(s, 3) + 2728908 * Math.Pow(s, 5) - 41323464 * Math.Pow(s, 7) + 315665350 * Math.Pow(s, 9) - 1308576360 * Math.Pow(s, 11) + 2969461740 * Math.Pow(s, 13) - 3450231736 * Math.Pow(s, 15) + 1598269113 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[32, 16] = (19415029593397380928610625.0 * Math.Pow(c, 16) * (195 - 76440 * Math.Pow(s, 2) + 4548180 * Math.Pow(s, 4) - 96421416 * Math.Pow(s, 6) + 946996050 * Math.Pow(s, 8) - 4798113320 * Math.Pow(s, 10) + 12867667540 * Math.Pow(s, 12) - 17251158680 * Math.Pow(s, 14) + 9056858307 * Math.Pow(s, 16))) / 32768;
-                LegArrEx[32, 17] = ((951336450076471665501920625.0 * Math.Pow(c, 17) * (-195 * s + 23205 * Math.Pow(s, 3) - 737919 * Math.Pow(s, 5) + 9663225 * Math.Pow(s, 7) - 61200425 * Math.Pow(s, 9) + 196954095 * Math.Pow(s, 11) - 308056405 * Math.Pow(s, 13) + 184833843 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[32, 18] = ((4756682250382358327509603125.0 * Math.Pow(c, 18) * (-39 + 13923 * Math.Pow(s, 2) - 737919 * Math.Pow(s, 4) + 13528515 * Math.Pow(s, 6) - 110160765 * Math.Pow(s, 8) + 433299009 * Math.Pow(s, 10) - 800946653 * Math.Pow(s, 12) + 554501529 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[32, 19] = ((242590794769500274702989759375.0 * Math.Pow(c, 19) * (273 * s - 28938 * Math.Pow(s, 3) + 795795 * Math.Pow(s, 5) - 8640060 * Math.Pow(s, 7) + 42480295 * Math.Pow(s, 9) - 94229018 * Math.Pow(s, 11) + 76108053 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[32, 20] = (3153680332003503571138866871875.0 * Math.Pow(c, 20) * (21 - 6678 * Math.Pow(s, 2) + 306075 * Math.Pow(s, 4) - 4652340 * Math.Pow(s, 6) + 29409435 * Math.Pow(s, 8) - 79732246 * Math.Pow(s, 10) + 76108053 * Math.Pow(s, 12))) / 1024;
-                LegArrEx[32, 21] = (167145057596185689270359944209375.0 / 256) * Math.Pow(c, 21) * (-63 * s + 5775 * Math.Pow(s, 3) - 131670 * Math.Pow(s, 5) + 1109790 * Math.Pow(s, 7) - 3760955 * Math.Pow(s, 9) + 4308003 * Math.Pow(s, 11));
-                LegArrEx[32, 22] = (1504305518365671203433239497884375.0 / 256) * Math.Pow(c, 22) * (-7 + 1925 * Math.Pow(s, 2) - 73150 * Math.Pow(s, 4) + 863170 * Math.Pow(s, 6) - 3760955 * Math.Pow(s, 8) + 5265337 * Math.Pow(s, 10));
-                LegArrEx[32, 23] = (82736803510111916188828172383640625.0 / 128) * Math.Pow(c, 23) * (35 * s - 2660 * Math.Pow(s, 3) + 47082 * Math.Pow(s, 5) - 273524 * Math.Pow(s, 7) + 478667 * Math.Pow(s, 9));
-                LegArrEx[32, 24] = 579157624570783413321797206685484375.0 / 128 * Math.Pow(c, 24) * (5 - 1140 * Math.Pow(s, 2) + 33630 * Math.Pow(s, 4) - 273524 * Math.Pow(s, 6) + 615429 * Math.Pow(s, 8));
-                LegArrEx[32, 25] = (33011984600534654559342440781072609375.0 / 16) * Math.Pow(c, 25) * (-5 * s + 295 * Math.Pow(s, 3) - 3599 * Math.Pow(s, 5) + 10797 * Math.Pow(s, 7));
-                LegArrEx[32, 26] = (33011984600534654559342440781072609375.0 / 16) * Math.Pow(c, 26) * (-5 + 885 * Math.Pow(s, 2) - 17995 * Math.Pow(s, 4) + 75579 * Math.Pow(s, 6));
-                LegArrEx[32, 27] = (1947707091431544619001204006083283953125.0 / 8) * Math.Pow(c, 27) * (15 * s - 610 * Math.Pow(s, 3) + 3843 * Math.Pow(s, 5));
-                LegArrEx[32, 28] = 29215606371473169285018060091249259296875.0 / 8 * Math.Pow(c, 28) * (1 - 122 * Math.Pow(s, 2) + 1281 * Math.Pow(s, 4));
-                LegArrEx[32, 29] = (1782151988659863326386101665566204817109375.0 / 2) * Math.Pow(c, 29) * (-s + 21 * Math.Pow(s, 3));
-                LegArrEx[32, 30] = (1782151988659863326386101665566204817109375.0 / 2) * Math.Pow(c, 30) * (-1 + 63 * Math.Pow(s, 2));
-                LegArrEx[32, 31] = 112275575285571389562324404930670903477890625.0 * s * Math.Pow(c, 31);
-                LegArrEx[32, 32] = 112275575285571389562324404930670903477890625.0 * Math.Pow(c, 32);
-
-                LegArrEx[33, 0] = (9917826435.0 * s - 1851327601200 * Math.Pow(s, 3) + 102748681866600.0 * Math.Pow(s, 5) - 2671465728531600.0 * Math.Pow(s, 7) + 39552534258537300 * Math.Pow(s, 9) - 371074685043731760.0 * Math.Pow(s, 11) + 2354897039700605400.0 * Math.Pow(s, 13) - 10540967701516995600.0 * Math.Pow(s, 15) + 34180637914477904850.0 * Math.Pow(s, 17) - 81553802743315702800.0 * Math.Pow(s, 19) + 144078384846524408280.0 * Math.Pow(s, 21) - 187928328060684010800.0 * Math.Pow(s, 23) + 178531911657649810260.0 * Math.Pow(s, 25) - 120038550288334345360.0 * Math.Pow(s, 27) + 54106046065924101480.0 * Math.Pow(s, 29) - 14660993127540724272.0 * Math.Pow(s, 31) + 1804857108504066435.0 * Math.Pow(s, 33)) / 2147483648;
-                LegArrEx[33, 1] = (1.0 / 2147483648) * 561 * c * (17678835 - 9900147600 * Math.Pow(s, 2) + 915763653000 * Math.Pow(s, 4) - 33333796969200 * Math.Pow(s, 6) + 634532635163700 * Math.Pow(s, 8) - 7275974216543760 * Math.Pow(s, 10) + 54569806624078200 * Math.Pow(s, 12) - 281844056190294000 * Math.Pow(s, 14) + 1035776906499330450.0 * Math.Pow(s, 16) - 2762071750664881200.0 * Math.Pow(s, 18) + 5393308523666689080.0 * Math.Pow(s, 20) - 7704726462380984400.0 * Math.Pow(s, 22) + 7955967542676016500.0 * Math.Pow(s, 24) - 5777256430989353520 * Math.Pow(s, 26) + 2796925732463099720.0 * Math.Pow(s, 28) - 810144005265173712.0 * Math.Pow(s, 30) + 106168065206121555.0 * Math.Pow(s, 32));
-                LegArrEx[33, 2] = (1.0 / 67108864) * 19635 * c * c * (-17678835 * s + 3270584475 * Math.Pow(s, 3) - 178573912335 * Math.Pow(s, 5) + 4532375965455 * Math.Pow(s, 7) - 64964055504855 * Math.Pow(s, 9) + 584676499543695 * Math.Pow(s, 11) - 3523050702378675 * Math.Pow(s, 13) + 14796812949990435 * Math.Pow(s, 15) - 44390438849971305 * Math.Pow(s, 17) + 96309080779762305 * Math.Pow(s, 19) - 151342841225340765 * Math.Pow(s, 21) + 170485018771628925 * Math.Pow(s, 23) - 134114881433681421 * Math.Pow(s, 25) + 69923143311577493 * Math.Pow(s, 27) - 21700285855317153 * Math.Pow(s, 29) + 3033373291603473.0 * Math.Pow(s, 31));
-                LegArrEx[33, 3] = (1.0 / 67108864) * 1826055 * Math.Pow(c, 3) * (-190095 + 105502725 * Math.Pow(s, 2) - 9600747975 * Math.Pow(s, 4) + 341146578045 * Math.Pow(s, 6) - 6286844081115 * Math.Pow(s, 8) + 69155284892265 * Math.Pow(s, 10) - 492469453020675 * Math.Pow(s, 12) + 2386582733869425 * Math.Pow(s, 14) - 8114381295156045 * Math.Pow(s, 16) + 19676048761456815 * Math.Pow(s, 18) - 34174189954109205 * Math.Pow(s, 20) + 42162961631693175 * Math.Pow(s, 22) - 36052387482172425 * Math.Pow(s, 24) + 20300267413038627 * Math.Pow(s, 26) - 6766755804346209 * Math.Pow(s, 28) + 1011124430534491 * Math.Pow(s, 30));
-                LegArrEx[33, 4] = (1.0 / 33554432) * 202692105.0 * Math.Pow(c, 4) * (950475 * s - 172986450 * Math.Pow(s, 3) + 9220177785 * Math.Pow(s, 5) - 226552939860 * Math.Pow(s, 7) + 3115102923075 * Math.Pow(s, 9) - 26619970433550 * Math.Pow(s, 11) + 150505217451225 * Math.Pow(s, 13) - 584820273524760 * Math.Pow(s, 15) + 1595355304982985 * Math.Pow(s, 17) - 3078755851721550 * Math.Pow(s, 19) + 4178311513050675 * Math.Pow(s, 21) - 3897555403478100 * Math.Pow(s, 23) + 2377508796121641 * Math.Pow(s, 25) - 853464696043666 * Math.Pow(s, 27) + 136638436558715 * Math.Pow(s, 29));
-                LegArrEx[33, 5] = (1.0 / 33554432) * 111683349855.0 * Math.Pow(c, 5) * (1725 - 941850 * Math.Pow(s, 2) + 83667675 * Math.Pow(s, 4) - 2878168020 * Math.Pow(s, 6) + 50881898925 * Math.Pow(s, 8) - 531433166550 * Math.Pow(s, 10) + 3550939794675 * Math.Pow(s, 12) - 15920697101400 * Math.Pow(s, 14) + 49221488538495 * Math.Pow(s, 16) - 106163994886950 * Math.Pow(s, 18) + 159245992330425 * Math.Pow(s, 20) - 162692875281300 * Math.Pow(s, 22) + 107872449914775 * Math.Pow(s, 24) - 41821319043882 * Math.Pow(s, 26) + 7191496660985 * Math.Pow(s, 28));
-                LegArrEx[33, 6] = (1.0 / 8388608) * 1451883548115.0 * Math.Pow(c, 6) * (-36225 * s + 6435975 * Math.Pow(s, 3) - 332096310 * Math.Pow(s, 5) + 7827984450 * Math.Pow(s, 7) - 102198685875 * Math.Pow(s, 9) + 819447644925 * Math.Pow(s, 11) - 4286341527300 * Math.Pow(s, 13) + 15145073396460 * Math.Pow(s, 15) - 36749075153175 * Math.Pow(s, 17) + 61248458588625 * Math.Pow(s, 19) - 68831601080550 * Math.Pow(s, 21) + 49787284576050 * Math.Pow(s, 23) - 20910659521941 * Math.Pow(s, 25) + 3872344355915 * Math.Pow(s, 27));
-                LegArrEx[33, 7] = (1.0 / 8388608) * 65334759665175.0 * Math.Pow(c, 7) * (-805 + 429065 * Math.Pow(s, 2) - 36899590 * Math.Pow(s, 4) + 1217686470 * Math.Pow(s, 6) - 20439737175 * Math.Pow(s, 8) + 200309424315 * Math.Pow(s, 10) - 1238276441220 * Math.Pow(s, 12) + 5048357798820 * Math.Pow(s, 14) - 13882983946755 * Math.Pow(s, 16) + 25860460292975 * Math.Pow(s, 18) - 32121413837590 * Math.Pow(s, 20) + 25446834338870 * Math.Pow(s, 22) - 11617033067745 * Math.Pow(s, 24) + 2323406613549 * Math.Pow(s, 26));
-                LegArrEx[33, 8] = (1.0 / 4194304) * 2678725146272175.0 * Math.Pow(c, 8) * (10465 * s - 1799980 * Math.Pow(s, 3) + 89099010 * Math.Pow(s, 5) - 1994120700 * Math.Pow(s, 7) + 24427978575 * Math.Pow(s, 9) - 181211186520 * Math.Pow(s, 11) + 861914746140 * Math.Pow(s, 13) - 2708874916440 * Math.Pow(s, 15) + 5676686405775 * Math.Pow(s, 17) - 7834491179900 * Math.Pow(s, 19) + 6827199456770 * Math.Pow(s, 21) - 3400107239340 * Math.Pow(s, 23) + 736689901857 * Math.Pow(s, 25));
-                LegArrEx[33, 9] = (1.0 / 4194304) * 93755380119526125.0 * Math.Pow(c, 9) * (299 - 154284 * Math.Pow(s, 2) + 12728430 * Math.Pow(s, 4) - 398824140 * Math.Pow(s, 6) + 6281480205 * Math.Pow(s, 8) - 56952087192 * Math.Pow(s, 10) + 320139762852 * Math.Pow(s, 12) - 1160946392760 * Math.Pow(s, 14) + 2757247682805 * Math.Pow(s, 16) - 4253009497660 * Math.Pow(s, 18) + 4096319674062 * Math.Pow(s, 20) - 2234356185852 * Math.Pow(s, 22) + 526207072755 * Math.Pow(s, 24));
-                LegArrEx[33, 10] = (1.0 / 524288) * 12094444035418870125.0 * Math.Pow(c, 10) * (-299 * s + 49335 * Math.Pow(s, 3) - 2318745 * Math.Pow(s, 5) + 48693645 * Math.Pow(s, 7) - 551861310 * Math.Pow(s, 9) + 3722555382 * Math.Pow(s, 11) - 15749272770 * Math.Pow(s, 13) + 42748026090 * Math.Pow(s, 15) - 74180398215 * Math.Pow(s, 17) + 79386040195 * Math.Pow(s, 19) - 47631624117 * Math.Pow(s, 21) + 12237373785 * Math.Pow(s, 23));
-                LegArrEx[33, 11] = (1.0 / 524288) * 278172212814634012875.0 * Math.Pow(c, 11) * (-13 + 6435 * Math.Pow(s, 2) - 504075 * Math.Pow(s, 4) + 14819805 * Math.Pow(s, 6) - 215945730 * Math.Pow(s, 8) + 1780352574 * Math.Pow(s, 10) - 8901762870 * Math.Pow(s, 12) + 27879147450 * Math.Pow(s, 14) - 54828989985 * Math.Pow(s, 16) + 65579772335 * Math.Pow(s, 18) - 43489743759 * Math.Pow(s, 20) + 12237373785 * Math.Pow(s, 22));
-                LegArrEx[33, 12] = (1.0 / 262144) * 45898415114414612124375.0 * Math.Pow(c, 12) * (39 * s - 6110 * Math.Pow(s, 3) + 269451 * Math.Pow(s, 5) - 5235048 * Math.Pow(s, 7) + 53950078 * Math.Pow(s, 9) - 323700468 * Math.Pow(s, 11) + 1182751710 * Math.Pow(s, 13) - 2658375272 * Math.Pow(s, 15) + 3577078491 * Math.Pow(s, 17) - 2635742046 * Math.Pow(s, 19) + 815824919 * Math.Pow(s, 21));
-                LegArrEx[33, 13] = (1.0 / 262144) * 137695245343243836373125.0 * Math.Pow(c, 13) * (13 - 6110 * Math.Pow(s, 2) + 449085 * Math.Pow(s, 4) - 12215112 * Math.Pow(s, 6) + 161850234 * Math.Pow(s, 8) - 1186901716 * Math.Pow(s, 10) + 5125257410 * Math.Pow(s, 12) - 13291876360 * Math.Pow(s, 14) + 20270111449 * Math.Pow(s, 16) - 16693032958 * Math.Pow(s, 18) + 5710774433 * Math.Pow(s, 20));
-                LegArrEx[33, 14] = (1.0 / 65536) * 6471676531132460309536875.0 * Math.Pow(c, 14) * (-65 * s + 9555 * Math.Pow(s, 3) - 389844 * Math.Pow(s, 5) + 6887244 * Math.Pow(s, 7) - 63133070 * Math.Pow(s, 9) + 327144090 * Math.Pow(s, 11) - 989820580 * Math.Pow(s, 13) + 1725115868 * Math.Pow(s, 15) - 1598269113 * Math.Pow(s, 17) + 607529195 * Math.Pow(s, 19));
-                LegArrEx[33, 15] = (1.0 / 65536) * 6471676531132460309536875.0 * Math.Pow(c, 15) * (-65 + 28665 * Math.Pow(s, 2) - 1949220 * Math.Pow(s, 4) + 48210708 * Math.Pow(s, 6) - 568197630 * Math.Pow(s, 8) + 3598584990 * Math.Pow(s, 10) - 12867667540 * Math.Pow(s, 12) + 25876738020 * Math.Pow(s, 14) - 27170574921 * Math.Pow(s, 16) + 11543054705 * Math.Pow(s, 18));
-                LegArrEx[33, 16] = (951336450076471665501920625.0 * Math.Pow(c, 16) * (195 * s - 26520 * Math.Pow(s, 3) + 983892 * Math.Pow(s, 5) - 15461160 * Math.Pow(s, 7) + 122400850 * Math.Pow(s, 9) - 525210920 * Math.Pow(s, 11) + 1232225620 * Math.Pow(s, 13) - 1478670744 * Math.Pow(s, 15) + 706717635 * Math.Pow(s, 17))) / 32768;
-                LegArrEx[33, 17] = ((4756682250382358327509603125.0 * Math.Pow(c, 17) * (39 - 15912 * Math.Pow(s, 2) + 983892 * Math.Pow(s, 4) - 21645624 * Math.Pow(s, 6) + 220321530 * Math.Pow(s, 8) - 1155464024 * Math.Pow(s, 10) + 3203786612 * Math.Pow(s, 12) - 4436012232 * Math.Pow(s, 14) + 2402839959 * Math.Pow(s, 16))) / 32768);
-                LegArrEx[33, 18] = ((80863598256500091567663253125.0 * Math.Pow(c, 18) * (-117 * s + 14469 * Math.Pow(s, 3) - 477477 * Math.Pow(s, 5) + 6480045 * Math.Pow(s, 7) - 42480295 * Math.Pow(s, 9) + 141343527 * Math.Pow(s, 11) - 228324159 * Math.Pow(s, 13) + 141343527 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[33, 19] = ((3153680332003503571138866871875.0 * Math.Pow(c, 19) * (-3 + 1113 * Math.Pow(s, 2) - 61215 * Math.Pow(s, 4) + 1163085 * Math.Pow(s, 6) - 9803145 * Math.Pow(s, 8) + 39866123 * Math.Pow(s, 10) - 76108053 * Math.Pow(s, 12) + 54362895 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[33, 20] = (167145057596185689270359944209375.0 * Math.Pow(c, 20) * (21 * s - 2310 * Math.Pow(s, 3) + 65835 * Math.Pow(s, 5) - 739860 * Math.Pow(s, 7) + 3760955 * Math.Pow(s, 9) - 8616006 * Math.Pow(s, 11) + 7180005 * Math.Pow(s, 13))) / 1024;
-                LegArrEx[33, 21] = ((501435172788557067811079832628125.0 * Math.Pow(c, 21) * (7 - 2310 * Math.Pow(s, 2) + 109725 * Math.Pow(s, 4) - 1726340 * Math.Pow(s, 6) + 11282865 * Math.Pow(s, 8) - 31592022 * Math.Pow(s, 10) + 31113355 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[33, 22] = (7521527591828356017166197489421875.0 / 256) * Math.Pow(c, 22) * (-77 * s + 7315 * Math.Pow(s, 3) - 172634 * Math.Pow(s, 5) + 1504382 * Math.Pow(s, 7) - 5265337 * Math.Pow(s, 9) + 6222671 * Math.Pow(s, 11));
-                LegArrEx[33, 23] = (579157624570783413321797206685484375.0 / 256) * Math.Pow(c, 23) * (-1 + 285 * Math.Pow(s, 2) - 11210 * Math.Pow(s, 4) + 136762 * Math.Pow(s, 6) - 615429 * Math.Pow(s, 8) + 888953 * Math.Pow(s, 10));
-                LegArrEx[33, 24] = 11003994866844884853114146927024203125.0 / 128 * Math.Pow(c, 24) * (15 * s - 1180 * Math.Pow(s, 3) + 21594 * Math.Pow(s, 5) - 129564 * Math.Pow(s, 7) + 233935 * Math.Pow(s, 9));
-                LegArrEx[33, 25] = (33011984600534654559342440781072609375.0 / 128) * Math.Pow(c, 25) * (5 - 1180 * Math.Pow(s, 2) + 35990 * Math.Pow(s, 4) - 302316 * Math.Pow(s, 6) + 701805 * Math.Pow(s, 8));
-                LegArrEx[33, 26] = (1947707091431544619001204006083283953125.0 / 16) * Math.Pow(c, 26) * (-5 * s + 305 * Math.Pow(s, 3) - 3843 * Math.Pow(s, 5) + 11895 * Math.Pow(s, 7));
-                LegArrEx[33, 27] = (9738535457157723095006020030416419765625.0 / 16) * Math.Pow(c, 27) * (-1 + 183 * Math.Pow(s, 2) - 3843 * Math.Pow(s, 4) + 16653 * Math.Pow(s, 6));
-                LegArrEx[33, 28] = 1782151988659863326386101665566204817109375.0 / 8 * Math.Pow(c, 28) * (s - 42 * Math.Pow(s, 3) + 273 * Math.Pow(s, 5));
-                LegArrEx[33, 29] = (1782151988659863326386101665566204817109375.0 / 8) * Math.Pow(c, 29) * (1 - 126 * Math.Pow(s, 2) + 1365 * Math.Pow(s, 4));
-                LegArrEx[33, 30] = (37425191761857129854108134976890301159296875.0 / 2) * Math.Pow(c, 30) * (-3 * s + 65 * Math.Pow(s, 3));
-                LegArrEx[33, 31] = (112275575285571389562324404930670903477890625.0 / 2) * Math.Pow(c, 31) * (-1 + 65 * Math.Pow(s, 2));
-                LegArrEx[33, 32] = 7297912393562140321551086320493608726062890625.0 * s * Math.Pow(c, 32);
-                LegArrEx[33, 33] = 7297912393562140321551086320493608726062890625.0 * Math.Pow(c, 33);
-
-                LegArrEx[34, 0] = (-583401555.0 + 347123925225.0 * Math.Pow(s, 2) - 34249560622200.0 * Math.Pow(s, 4) + 1335732864265800.0 * Math.Pow(s, 6) - 27382523717448900.0 * Math.Pow(s, 8) + 340151794623420780.0 * Math.Pow(s, 10) - 2783060137827988200.0 * Math.Pow(s, 12) + 15811451552275493400 * Math.Pow(s, 14) - 64563427171791598050.0 * Math.Pow(s, 16) + 193690281515374794150.0 * Math.Pow(s, 18) - 432235154539573224840.0 * Math.Pow(s, 20) + 720391924232622041400.0 * Math.Pow(s, 22) - 892659558288249051300.0 * Math.Pow(s, 24) + 810260214446256831180.0 * Math.Pow(s, 26) - 523025111970599647640.0 * Math.Pow(s, 28) + 227245393476881226216.0 * Math.Pow(s, 30) - 59560284580634192355.0 * Math.Pow(s, 32) + 7113260368810144185.0 * Math.Pow(s, 34)) / 4294967296;
-                LegArrEx[34, 1] = (1.0 / 2147483648) * 595 * c * (583401555 * s - 115124573520 * Math.Pow(s, 3) + 6734787550920.0 * Math.Pow(s, 5) - 184084193058480.0 * Math.Pow(s, 7) + 2858418442213620.0 * Math.Pow(s, 9) - 28064471978097360.0 * Math.Pow(s, 11) + 186017077085594040.0 * Math.Pow(s, 13) - 868079693066105520.0 * Math.Pow(s, 15) + 2929768964098106130.0 * Math.Pow(s, 17) - 7264456378816356720.0 * Math.Pow(s, 19) + 13318170027829987320.0 * Math.Pow(s, 21) - 18003217982284014480.0 * Math.Pow(s, 23) + 17703164349245947572 * Math.Pow(s, 25) - 12306473222837638768.0 * Math.Pow(s, 27) + 5728875465803728392.0 * Math.Pow(s, 29) - 1601621097966633744.0 * Math.Pow(s, 31) + 203236010537432691.0 * Math.Pow(s, 33));
-                LegArrEx[34, 2] = (1.0 / 2147483648) * 58905 * c * c * (5892945 - 3488623440 * Math.Pow(s, 2) + 340140785400 * Math.Pow(s, 4) - 13016054054640 * Math.Pow(s, 6) + 259856222019420 * Math.Pow(s, 8) - 3118274664233040.0 * Math.Pow(s, 10) + 24426484869825480.0 * Math.Pow(s, 12) - 131527226222137200.0 * Math.Pow(s, 14) + 503091640299674790 * Math.Pow(s, 16) - 1394188597954654320.0 * Math.Pow(s, 18) + 2825066369539694280.0 * Math.Pow(s, 20) - 4182565793863962960.0 * Math.Pow(s, 22) + 4470496047789380700.0 * Math.Pow(s, 24) - 3356310878955719664.0 * Math.Pow(s, 26) + 1678155439477859832.0 * Math.Pow(s, 28) - 501517717545107536.0 * Math.Pow(s, 30) + 67745336845810897.0 * Math.Pow(s, 32));
-                LegArrEx[34, 3] = (1.0 / 67108864) * 2179485 * Math.Pow(c, 3) * (-5892945 * s + 1149124275 * Math.Pow(s, 3) - 65959733385 * Math.Pow(s, 5) + 1755785283915 * Math.Pow(s, 7) - 26336779258725 * Math.Pow(s, 9) + 247565725032015.0 * Math.Pow(s, 11) - 1555220580329325.0 * Math.Pow(s, 13) + 6798535679725335.0 * Math.Pow(s, 15) - 21195434766202515 * Math.Pow(s, 17) + 47720715701684025.0 * Math.Pow(s, 19) - 77716594142742555 * Math.Pow(s, 21) + 90618163130865825 * Math.Pow(s, 23) - 73702772679770871.0 * Math.Pow(s, 25) + 39686108366030469.0 * Math.Pow(s, 27) - 12707374599960495 * Math.Pow(s, 29) + 1830955049886781 * Math.Pow(s, 31));
-                LegArrEx[34, 4] = (1.0 / 67108864) * 1283716665.0 * Math.Pow(c, 4) * (-10005 + 5852925 * Math.Pow(s, 2) - 559929825 * Math.Pow(s, 4) + 20866718145 * Math.Pow(s, 6) - 402429564225 * Math.Pow(s, 8) + 4623468548985 * Math.Pow(s, 10) - 34325751348525 * Math.Pow(s, 12) + 173137580977725 * Math.Pow(s, 14) - 611752786121295 * Math.Pow(s, 16) + 1539377925860775 * Math.Pow(s, 18) - 2770880266549395.0 * Math.Pow(s, 20) + 3538570037368275 * Math.Pow(s, 22) - 3128301047528475 * Math.Pow(s, 24) + 1819227378408867.0 * Math.Pow(s, 26) - 625660209505695.0 * Math.Pow(s, 28) + 96366055257199 * Math.Pow(s, 30));
-                LegArrEx[34, 5] = (1.0 / 33554432) * 50064949935.0 * Math.Pow(c, 5) * (150075 * s - 28714350 * Math.Pow(s, 3) + 1605132165 * Math.Pow(s, 5) - 41274827100 * Math.Pow(s, 7) + 592752378075 * Math.Pow(s, 9) - 5280884822850 * Math.Pow(s, 11) + 31075976072925 * Math.Pow(s, 13) - 125487750999240 * Math.Pow(s, 15) + 355241059814025 * Math.Pow(s, 17) - 710482119628050 * Math.Pow(s, 19) + 998058215667975 * Math.Pow(s, 21) - 962554168470300 * Math.Pow(s, 23) + 606409126136289 * Math.Pow(s, 25) - 224595972643070.0 * Math.Pow(s, 27) + 37063867406615.0 * Math.Pow(s, 29));
-                LegArrEx[34, 6] = (1.0 / 33554432) * 7259417740575.0 * Math.Pow(c, 6) * (1035 - 594090 * Math.Pow(s, 2) + 55349385 * Math.Pow(s, 4) - 1992577860 * Math.Pow(s, 6) + 36791526915 * Math.Pow(s, 8) - 400618848630 * Math.Pow(s, 10) + 2786121992745 * Math.Pow(s, 12) - 12981491482680 * Math.Pow(s, 14) + 41648951840265 * Math.Pow(s, 16) - 93097657054710 * Math.Pow(s, 18) + 144546362269155 * Math.Pow(s, 20) - 152681006033220 * Math.Pow(s, 22) + 104553297609705 * Math.Pow(s, 24) - 41821319043882 * Math.Pow(s, 26) + 7412773481323 * Math.Pow(s, 28));
-                LegArrEx[34, 7] = (1.0 / 8388608) * 297636127363575.0 * Math.Pow(c, 7) * (-7245 * s + 1349985 * Math.Pow(s, 3) - 72899190 * Math.Pow(s, 5) + 1794708630 * Math.Pow(s, 7) - 24427978575 * Math.Pow(s, 9) + 203862584835 * Math.Pow(s, 11) - 1108176102180 * Math.Pow(s, 13) + 4063312374660 * Math.Pow(s, 15) - 10218035530395 * Math.Pow(s, 17) + 17627605154775 * Math.Pow(s, 19) - 20481598370310 * Math.Pow(s, 21) + 15300482577030 * Math.Pow(s, 23) - 6630209116713 * Math.Pow(s, 25) + 1265595472421 * Math.Pow(s, 27));
-                LegArrEx[34, 8] = (1.0 / 8388608) * 18751076023905225.0 * Math.Pow(c, 8) * (-115 + 64285 * Math.Pow(s, 2) - 5785650 * Math.Pow(s, 4) + 199412070 * Math.Pow(s, 6) - 3489711225 * Math.Pow(s, 8) + 35595054495 * Math.Pow(s, 10) - 228671259180 * Math.Pow(s, 12) + 967455327300 * Math.Pow(s, 14) - 2757247682805 * Math.Pow(s, 16) + 5316261872075 * Math.Pow(s, 18) - 6827199456770 * Math.Pow(s, 20) + 5585890464630 * Math.Pow(s, 22) - 2631035363775 * Math.Pow(s, 24) + 542398059609 * Math.Pow(s, 26));
-                LegArrEx[34, 9] = (1.0 / 4194304) * 806296269027924675.0 * Math.Pow(c, 9) * (1495 * s - 269100 * Math.Pow(s, 3) + 13912470 * Math.Pow(s, 5) - 324624300 * Math.Pow(s, 7) + 4138959825 * Math.Pow(s, 9) - 31907617560 * Math.Pow(s, 11) + 157492727700 * Math.Pow(s, 13) - 512976313080 * Math.Pow(s, 15) + 1112705973225 * Math.Pow(s, 17) - 1587720803900 * Math.Pow(s, 19) + 1428948723510 * Math.Pow(s, 21) - 734242427100 * Math.Pow(s, 23) + 163980808719 * Math.Pow(s, 25));
-                LegArrEx[34, 10] = (1.0 / 4194304) * 4031481345139623375.0 * Math.Pow(c, 10) * (299 - 161460 * Math.Pow(s, 2) + 13912470 * Math.Pow(s, 4) - 454474020 * Math.Pow(s, 6) + 7450127685 * Math.Pow(s, 8) - 70196758632 * Math.Pow(s, 10) + 409481092020 * Math.Pow(s, 12) - 1538928939240 * Math.Pow(s, 14) + 3783200308965 * Math.Pow(s, 16) - 6033339054820 * Math.Pow(s, 18) + 6001584638742 * Math.Pow(s, 20) - 3377515164660 * Math.Pow(s, 22) + 819904043595 * Math.Pow(s, 24));
-                LegArrEx[34, 11] = (1.0 / 524288) * 181416660531283051875.0 * Math.Pow(c, 11) * (-897 * s + 154583 * Math.Pow(s, 3) - 7574567 * Math.Pow(s, 5) + 165558393 * Math.Pow(s, 7) - 1949909962 * Math.Pow(s, 9) + 13649369734 * Math.Pow(s, 11) - 59847236526 * Math.Pow(s, 13) + 168142235954 * Math.Pow(s, 15) - 301666952741 * Math.Pow(s, 17) + 333421368819 * Math.Pow(s, 19) - 206403704507 * Math.Pow(s, 21) + 54660269573 * Math.Pow(s, 23));
-                LegArrEx[34, 12] = (1.0 / 524288) * 4172583192219510193125.0 * Math.Pow(c, 12) * (-39 + 20163 * Math.Pow(s, 2) - 1646645 * Math.Pow(s, 4) + 50387337 * Math.Pow(s, 6) - 763008246 * Math.Pow(s, 8) + 6527959438 * Math.Pow(s, 10) - 33826698906 * Math.Pow(s, 12) + 109657979970 * Math.Pow(s, 14) - 222971225939 * Math.Pow(s, 16) + 275435043807 * Math.Pow(s, 18) - 188455556289 * Math.Pow(s, 20) + 54660269573 * Math.Pow(s, 22));
-                LegArrEx[34, 13] = (1.0 / 262144) * 2157225510377486769845625.0 * Math.Pow(c, 13) * (39 * s - 6370 * Math.Pow(s, 3) + 292383 * Math.Pow(s, 5) - 5903352 * Math.Pow(s, 7) + 63133070 * Math.Pow(s, 9) - 392572908 * Math.Pow(s, 11) + 1484730870 * Math.Pow(s, 13) - 3450231736 * Math.Pow(s, 15) + 4794807339 * Math.Pow(s, 17) - 3645175170 * Math.Pow(s, 19) + 1162984459 * Math.Pow(s, 21));
-                LegArrEx[34, 14] = (1.0 / 262144) * 6471676531132460309536875.0 * Math.Pow(c, 14) * (13 - 6370 * Math.Pow(s, 2) + 487305 * Math.Pow(s, 4) - 13774488 * Math.Pow(s, 6) + 189399210 * Math.Pow(s, 8) - 1439433996 * Math.Pow(s, 10) + 6433833770 * Math.Pow(s, 12) - 17251158680 * Math.Pow(s, 14) + 27170574921 * Math.Pow(s, 16) - 23086109410 * Math.Pow(s, 18) + 8140891213 * Math.Pow(s, 20));
-                LegArrEx[34, 15] = (1.0 / 65536) * 317112150025490555167306875.0 * Math.Pow(c, 15) * (-65 * s + 9945 * Math.Pow(s, 3) - 421668 * Math.Pow(s, 5) + 7730580 * Math.Pow(s, 7) - 73440510 * Math.Pow(s, 9) + 393908190 * Math.Pow(s, 11) - 1232225620 * Math.Pow(s, 13) + 2218006116 * Math.Pow(s, 15) - 2120152905 * Math.Pow(s, 17) + 830703185 * Math.Pow(s, 19));
-                LegArrEx[34, 16] = (1.0 / 65536) * 1585560750127452775836534375.0 * Math.Pow(c, 16) * (-13 + 5967 * Math.Pow(s, 2) - 421668 * Math.Pow(s, 4) + 10822812 * Math.Pow(s, 6) - 132192918 * Math.Pow(s, 8) + 866598018 * Math.Pow(s, 10) - 3203786612 * Math.Pow(s, 12) + 6654018348 * Math.Pow(s, 14) - 7208519877 * Math.Pow(s, 16) + 3156672103 * Math.Pow(s, 18));
-                LegArrEx[34, 17] = (1.0 / 32768) * 4756682250382358327509603125.0 * Math.Pow(c, 17) * (1989 * s - 281112 * Math.Pow(s, 3) + 10822812 * Math.Pow(s, 5) - 176257224 * Math.Pow(s, 7) + 1444330030 * Math.Pow(s, 9) - 6407573224 * Math.Pow(s, 11) + 15526042812 * Math.Pow(s, 13) - 19222719672 * Math.Pow(s, 15) + 9470016309 * Math.Pow(s, 17));
-                LegArrEx[34, 18] = ((1051226777334501190379622290625.0 * Math.Pow(c, 18) * (9 - 3816 * Math.Pow(s, 2) + 244860 * Math.Pow(s, 4) - 5582808 * Math.Pow(s, 6) + 58818870 * Math.Pow(s, 8) - 318928984 * Math.Pow(s, 10) + 913296636 * Math.Pow(s, 12) - 1304709480 * Math.Pow(s, 14) + 728462793 * Math.Pow(s, 16))) / 32768);
-                LegArrEx[34, 19] = ((55715019198728563090119981403125.0 * Math.Pow(c, 19) * (-9 * s + 1155 * Math.Pow(s, 3) - 39501 * Math.Pow(s, 5) + 554895 * Math.Pow(s, 7) - 3760955 * Math.Pow(s, 9) + 12924009 * Math.Pow(s, 11) - 21540015 * Math.Pow(s, 13) + 13744581 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[34, 20] = (501435172788557067811079832628125.0 * Math.Pow(c, 20) * (-1 + 385 * Math.Pow(s, 2) - 21945 * Math.Pow(s, 4) + 431585 * Math.Pow(s, 6) - 3760955 * Math.Pow(s, 8) + 15796011 * Math.Pow(s, 10) - 31113355 * Math.Pow(s, 12) + 22907635 * Math.Pow(s, 14))) / 2048;
-                LegArrEx[34, 21] = ((2507175863942785339055399163140625.0 * Math.Pow(c, 21) * (77 * s - 8778 * Math.Pow(s, 3) + 258951 * Math.Pow(s, 5) - 3008764 * Math.Pow(s, 7) + 15796011 * Math.Pow(s, 9) - 37336026 * Math.Pow(s, 11) + 32070689 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[34, 22] = ((17550231047599497373387794141984375.0 * Math.Pow(c, 22) * (11 - 3762 * Math.Pow(s, 2) + 184965 * Math.Pow(s, 4) - 3008764 * Math.Pow(s, 6) + 20309157 * Math.Pow(s, 8) - 58670898 * Math.Pow(s, 10) + 59559851 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[34, 23] = (1000363169713171350283104266093109375.0 / 256) * Math.Pow(c, 23) * (-33 * s + 3245 * Math.Pow(s, 3) - 79178 * Math.Pow(s, 5) + 712602 * Math.Pow(s, 7) - 2573285 * Math.Pow(s, 9) + 3134729 * Math.Pow(s, 11));
-                LegArrEx[34, 24] = 11003994866844884853114146927024203125.0 / 256 * Math.Pow(c, 24) * (-3 + 885 * Math.Pow(s, 2) - 35990 * Math.Pow(s, 4) + 453474 * Math.Pow(s, 6) - 2105415 * Math.Pow(s, 8) + 3134729 * Math.Pow(s, 10));
-                LegArrEx[34, 25] = (649235697143848206333734668694427984375.0 / 128) * Math.Pow(c, 25) * (15 * s - 1220 * Math.Pow(s, 3) + 23058 * Math.Pow(s, 5) - 142740 * Math.Pow(s, 7) + 265655 * Math.Pow(s, 9));
-                LegArrEx[34, 26] = (9738535457157723095006020030416419765625.0 / 128) * Math.Pow(c, 26) * (1 - 244 * Math.Pow(s, 2) + 7686 * Math.Pow(s, 4) - 66612 * Math.Pow(s, 6) + 159393 * Math.Pow(s, 8));
-                LegArrEx[34, 27] = (594050662886621108795367221855401605703125.0 / 16) * Math.Pow(c, 27) * (-s + 63 * Math.Pow(s, 3) - 819 * Math.Pow(s, 5) + 2613 * Math.Pow(s, 7));
-                LegArrEx[34, 28] = 594050662886621108795367221855401605703125.0 / 16 * Math.Pow(c, 28) * (-1 + 189 * Math.Pow(s, 2) - 4095 * Math.Pow(s, 4) + 18291 * Math.Pow(s, 6));
-                LegArrEx[34, 29] = (37425191761857129854108134976890301159296875.0 / 8) * Math.Pow(c, 29) * (3 * s - 130 * Math.Pow(s, 3) + 871 * Math.Pow(s, 5));
-                LegArrEx[34, 30] = (37425191761857129854108134976890301159296875.0 / 8) * Math.Pow(c, 30) * (3 - 390 * Math.Pow(s, 2) + 4355 * Math.Pow(s, 4));
-                LegArrEx[34, 31] = (2432637464520713440517028773497869575354296875.0 / 2) * Math.Pow(c, 31) * (-3 * s + 67 * Math.Pow(s, 3));
-                LegArrEx[34, 32] = 7297912393562140321551086320493608726062890625.0 / 2 * Math.Pow(c, 32) * (-1 + 67 * Math.Pow(s, 2));
-                LegArrEx[34, 33] = 488960130368663401543922783473071784646213671875.0 * s * Math.Pow(c, 33);
-                LegArrEx[34, 34] = 488960130368663401543922783473071784646213671875.0 * Math.Pow(c, 34);
-
-                LegArrEx[35, 0] = (-20419054425 * s + 4281195077775.0 * Math.Pow(s, 3) - 267146572853160.0 * Math.Pow(s, 5) + 7823578204985400.0 * Math.Pow(s, 7) - 130827613316700300.0 * Math.Pow(s, 9) + 1391530068913994100.0 * Math.Pow(s, 11) - 10061832805993495800.0 * Math.Pow(s, 13) + 51650741737433278440.0 * Math.Pow(s, 15) - 193690281515374794150.0 * Math.Pow(s, 17) + 540293943174466531050.0 * Math.Pow(s, 19) - 1132044452365548922200.0 * Math.Pow(s, 21) + 1785319116576498102600.0 * Math.Pow(s, 23) - 2106676557560267761068.0 * Math.Pow(s, 25) + 1830587891897098766740.0 * Math.Pow(s, 27) - 1136226967384406131080.0 * Math.Pow(s, 29) + 476482276645073538840.0 * Math.Pow(s, 31) - 120925426269772451145.0 * Math.Pow(s, 33) + 14023284727082855679.0 * Math.Pow(s, 35)) / 4294967296;
-                LegArrEx[35, 1] = (1.0 / 4294967296) * 315 * c * (-64822395 + 40773286455 * Math.Pow(s, 2) - 4240421791320 * Math.Pow(s, 4) + 173857293444120.0 * Math.Pow(s, 6) - 3737931809048580.0 * Math.Pow(s, 8) + 48593113517631540 * Math.Pow(s, 10) - 415250242787033160.0 * Math.Pow(s, 12) + 2459559130353965640 * Math.Pow(s, 14) - 10453126304004353970.0 * Math.Pow(s, 16) + 32589158477190044730.0 * Math.Pow(s, 18) - 75469630157703261480.0 * Math.Pow(s, 20) + 130356633908760178920.0 * Math.Pow(s, 22) - 167196552187322838180.0 * Math.Pow(s, 24) + 156907533591179894292.0 * Math.Pow(s, 26) - 104605022394119929528.0 * Math.Pow(s, 28) + 46891906590467554616.0 * Math.Pow(s, 30) - 12668377990166637739.0 * Math.Pow(s, 32) + 1558142747453650631.0 * Math.Pow(s, 34));
-                LegArrEx[35, 2] = (1.0 / 2147483648) * 198135.0 * c * c * (64822395 * s - 13483058160 * Math.Pow(s, 3) + 829208076840 * Math.Pow(s, 5) - 23770631536080 * Math.Pow(s, 7) + 386272762461300 * Math.Pow(s, 9) - 3961051600512240.0 * Math.Pow(s, 11) + 27371882213796120.0 * Math.Pow(s, 13) - 132949142181295440 * Math.Pow(s, 15) + 466299564856455330 * Math.Pow(s, 17) - 1199835137642341200 * Math.Pow(s, 19) + 2279686761520448280.0 * Math.Pow(s, 21) - 3189759342206477040.0 * Math.Pow(s, 23) + 3242921997909918324.0 * Math.Pow(s, 25) - 2328251690807120848.0 * Math.Pow(s, 27) + 1118248964796523560.0 * Math.Pow(s, 29) - 322248088780073456.0 * Math.Pow(s, 31) + 42111966147395963.0 * Math.Pow(s, 33));
-                LegArrEx[35, 3] = (1.0 / 2147483648) * 41410215.0 * Math.Pow(c, 3) * (310155 - 193536720 * Math.Pow(s, 2) + 19837513800 * Math.Pow(s, 4) - 796145553840 * Math.Pow(s, 6) + 16633755321300 * Math.Pow(s, 8) - 208476400026960 * Math.Pow(s, 10) + 1702557266886840 * Math.Pow(s, 12) - 9541804462772400 * Math.Pow(s, 14) + 37928672739520290 * Math.Pow(s, 16) - 109075921603849200 * Math.Pow(s, 18) + 229059435368083320 * Math.Pow(s, 20) - 351026147706932880 * Math.Pow(s, 22) + 387909329893530900 * Math.Pow(s, 24) - 300778926563599344 * Math.Pow(s, 26) + 155163731957412360 * Math.Pow(s, 28) - 47797563407570704 * Math.Pow(s, 30) + 6649257812746731.0 * Math.Pow(s, 32));
-                LegArrEx[35, 4] = (1.0 / 67108864) * 1614998385.0 * Math.Pow(c, 4) * (-310155 * s + 63581775 * Math.Pow(s, 3) - 3827622855 * Math.Pow(s, 5) + 106626636675 * Math.Pow(s, 7) - 1670483974575 * Math.Pow(s, 9) + 16370742950835 * Math.Pow(s, 11) - 107039473140075 * Math.Pow(s, 13) + 486265035122055 * Math.Pow(s, 15) - 1573210407747825 * Math.Pow(s, 17) + 3670824284744925 * Math.Pow(s, 19) - 6187960937141445 * Math.Pow(s, 21) + 7459794805644825 * Math.Pow(s, 23) - 6266227636741653 * Math.Pow(s, 25) + 3481237575967585 * Math.Pow(s, 27) - 1148979889605065 * Math.Pow(s, 29) + 170493790070429 * Math.Pow(s, 31));
-                LegArrEx[35, 5] = (1.0 / 67108864) * 50064949935.0 * Math.Pow(c, 5) * (-10005 + 6153075 * Math.Pow(s, 2) - 617358525 * Math.Pow(s, 4) + 24076982475 * Math.Pow(s, 6) - 484979218425 * Math.Pow(s, 8) + 5808973305135 * Math.Pow(s, 10) - 44887520994225 * Math.Pow(s, 12) + 235289533123575 * Math.Pow(s, 14) - 862728288119775 * Math.Pow(s, 16) + 2249860045488825 * Math.Pow(s, 18) - 4191844505805495 * Math.Pow(s, 20) + 5534686468704225 * Math.Pow(s, 22) - 5053409384469075 * Math.Pow(s, 24) + 3032045630681445 * Math.Pow(s, 26) - 1074852154791835 * Math.Pow(s, 28) + 170493790070429 * Math.Pow(s, 30));
-                LegArrEx[35, 6] = (1.0 / 33554432) * 10263314736675.0 * Math.Pow(c, 6) * (30015 * s - 6023010 * Math.Pow(s, 3) + 352346085 * Math.Pow(s, 5) - 9463009140 * Math.Pow(s, 7) + 141682275735 * Math.Pow(s, 9) - 1313781102270 * Math.Pow(s, 11) + 8034276740805 * Math.Pow(s, 13) - 33667445390040 * Math.Pow(s, 15) + 98774343460485 * Math.Pow(s, 17) - 204480219795390 * Math.Pow(s, 19) + 296983176369495 * Math.Pow(s, 21) - 295809329822580 * Math.Pow(s, 23) + 192276064384677 * Math.Pow(s, 25) - 73404537400418 * Math.Pow(s, 27) + 12475155371007 * Math.Pow(s, 29));
-                LegArrEx[35, 7] = (1.0 / 33554432) * 892908382090725.0 * Math.Pow(c, 7) * (345 - 207690 * Math.Pow(s, 2) + 20249775 * Math.Pow(s, 4) - 761391540 * Math.Pow(s, 6) + 14656787145 * Math.Pow(s, 8) - 166110254310 * Math.Pow(s, 10) + 1200524110695 * Math.Pow(s, 12) - 5804731963800 * Math.Pow(s, 14) + 19300733779635 * Math.Pow(s, 16) - 44656599725430 * Math.Pow(s, 18) + 71685594296085 * Math.Pow(s, 20) - 78202466504820 * Math.Pow(s, 22) + 55251742639275 * Math.Pow(s, 24) - 22780718503578 * Math.Pow(s, 26) + 4158385123669 * Math.Pow(s, 28));
-                LegArrEx[35, 8] = (1.0 / 8388608) * 268765423009308225.0 * Math.Pow(c, 8) * (-345 * s + 67275 * Math.Pow(s, 3) - 3794310 * Math.Pow(s, 5) + 97387290 * Math.Pow(s, 7) - 1379653275 * Math.Pow(s, 9) + 11965356585 * Math.Pow(s, 11) - 67496883300 * Math.Pow(s, 13) + 256488156540 * Math.Pow(s, 15) - 667623583935 * Math.Pow(s, 17) + 1190790602925 * Math.Pow(s, 19) - 1428948723510 * Math.Pow(s, 21) + 1101363640650 * Math.Pow(s, 23) - 491942426157 * Math.Pow(s, 25) + 96706630783 * Math.Pow(s, 27));
-                LegArrEx[35, 9] = (1.0 / 8388608) * 806296269027924675.0 * Math.Pow(c, 9) * (-115 + 67275 * Math.Pow(s, 2) - 6323850 * Math.Pow(s, 4) + 227237010 * Math.Pow(s, 6) - 4138959825 * Math.Pow(s, 8) + 43872974145 * Math.Pow(s, 10) - 292486494300 * Math.Pow(s, 12) + 1282440782700 * Math.Pow(s, 14) - 3783200308965 * Math.Pow(s, 16) + 7541673818525 * Math.Pow(s, 18) - 10002641064570 * Math.Pow(s, 20) + 8443787911650 * Math.Pow(s, 22) - 4099520217975 * Math.Pow(s, 24) + 870359677047 * Math.Pow(s, 26));
-                LegArrEx[35, 10] = (1.0 / 4194304) * 7256666421251322075.0 * Math.Pow(c, 10) * (7475 * s - 1405300 * Math.Pow(s, 3) + 75745670 * Math.Pow(s, 5) - 1839537700 * Math.Pow(s, 7) + 24373874525 * Math.Pow(s, 9) - 194990996200 * Math.Pow(s, 11) + 997453942100 * Math.Pow(s, 13) - 3362844719080 * Math.Pow(s, 15) + 7541673818525 * Math.Pow(s, 17) - 11114045627300 * Math.Pow(s, 19) + 10320185225350 * Math.Pow(s, 21) - 5466026957300 * Math.Pow(s, 23) + 1257186200179 * Math.Pow(s, 25));
-                LegArrEx[35, 11] = (1.0 / 4194304) * 4172583192219510193125.0 * Math.Pow(c, 11) * (13 - 7332 * Math.Pow(s, 2) + 658658 * Math.Pow(s, 4) - 22394372 * Math.Pow(s, 6) + 381504123 * Math.Pow(s, 8) - 3730262536 * Math.Pow(s, 10) + 22551132604 * Math.Pow(s, 12) - 87726383976 * Math.Pow(s, 14) + 222971225939 * Math.Pow(s, 16) - 367246725076 * Math.Pow(s, 18) + 376911112578 * Math.Pow(s, 20) - 218641078292 * Math.Pow(s, 22) + 54660269573 * Math.Pow(s, 24));
-                LegArrEx[35, 12] = (1.0 / 524288) * 196111410034316979076875.0 * Math.Pow(c, 12) * (-39 * s + 7007 * Math.Pow(s, 3) - 357357 * Math.Pow(s, 5) + 8117109 * Math.Pow(s, 7) - 99209110 * Math.Pow(s, 9) + 719716998 * Math.Pow(s, 11) - 3266407914 * Math.Pow(s, 13) + 9488137274 * Math.Pow(s, 15) - 17580960243 * Math.Pow(s, 17) + 20048463435 * Math.Pow(s, 19) - 12792829049 * Math.Pow(s, 21) + 3488953377 * Math.Pow(s, 23));
-                LegArrEx[35, 13] = (1.0 / 524288) * 588334230102950937230625.0 * Math.Pow(c, 13) * (-13 + 7007 * Math.Pow(s, 2) - 595595 * Math.Pow(s, 4) + 18939921 * Math.Pow(s, 6) - 297627330 * Math.Pow(s, 8) + 2638962326 * Math.Pow(s, 10) - 14154434294 * Math.Pow(s, 12) + 47440686370 * Math.Pow(s, 14) - 99625441377 * Math.Pow(s, 16) + 126973601755 * Math.Pow(s, 18) - 89549803343 * Math.Pow(s, 20) + 26748642557 * Math.Pow(s, 22));
-                LegArrEx[35, 14] = (1.0 / 262144) * 45301735717927222166758125.0 * Math.Pow(c, 14) * (91 * s - 15470 * Math.Pow(s, 3) + 737919 * Math.Pow(s, 5) - 15461160 * Math.Pow(s, 7) + 171361190 * Math.Pow(s, 9) - 1102942932 * Math.Pow(s, 11) + 4312789670 * Math.Pow(s, 13) - 10350695208 * Math.Pow(s, 15) + 14841070335 * Math.Pow(s, 17) - 11629844590 * Math.Pow(s, 19) + 3821234651 * Math.Pow(s, 21));
-                LegArrEx[35, 15] = (1.0 / 262144) * 317112150025490555167306875.0 * Math.Pow(c, 15) * (13 - 6630 * Math.Pow(s, 2) + 527085 * Math.Pow(s, 4) - 15461160 * Math.Pow(s, 6) + 220321530 * Math.Pow(s, 8) - 1733196036 * Math.Pow(s, 10) + 8009466530 * Math.Pow(s, 12) - 22180061160 * Math.Pow(s, 14) + 36042599385 * Math.Pow(s, 16) - 31566721030 * Math.Pow(s, 18) + 11463703953 * Math.Pow(s, 20));
-                LegArrEx[35, 16] = (1.0 / 65536) * 4756682250382358327509603125.0 * Math.Pow(c, 16) * (-221 * s + 35139 * Math.Pow(s, 3) - 1546116 * Math.Pow(s, 5) + 29376204 * Math.Pow(s, 7) - 288866006 * Math.Pow(s, 9) + 1601893306 * Math.Pow(s, 11) - 5175347604 * Math.Pow(s, 13) + 9611359836 * Math.Pow(s, 15) - 9470016309 * Math.Pow(s, 17) + 3821234651 * Math.Pow(s, 19));
-                LegArrEx[35, 17] = (1.0 / 65536) * 61836869254970658257624840625.0 * Math.Pow(c, 17) * (-17 + 8109 * Math.Pow(s, 2) - 594660 * Math.Pow(s, 4) + 15817956 * Math.Pow(s, 6) - 199984158 * Math.Pow(s, 8) + 1355448182 * Math.Pow(s, 10) - 5175347604 * Math.Pow(s, 12) + 11090030580 * Math.Pow(s, 14) - 12383867481 * Math.Pow(s, 16) + 5584881413 * Math.Pow(s, 18));
-                LegArrEx[35, 18] = ((3277354070513444887654116553125.0 * Math.Pow(c, 18) * (153 * s - 22440 * Math.Pow(s, 3) + 895356 * Math.Pow(s, 5) - 15093144 * Math.Pow(s, 7) + 127872470 * Math.Pow(s, 9) - 585888408 * Math.Pow(s, 11) + 1464721020 * Math.Pow(s, 13) - 1869263016 * Math.Pow(s, 15) + 948376089 * Math.Pow(s, 17))) / 32768);
-                LegArrEx[35, 19] = (501435172788557067811079832628125.0 * Math.Pow(c, 19) * (1 - 440 * Math.Pow(s, 2) + 29260 * Math.Pow(s, 4) - 690536 * Math.Pow(s, 6) + 7521910 * Math.Pow(s, 8) - 42122696 * Math.Pow(s, 10) + 124453420 * Math.Pow(s, 12) - 183261080 * Math.Pow(s, 14) + 105375121 * Math.Pow(s, 16)) / 32768);
-                LegArrEx[35, 20] = (501435172788557067811079832628125.0 * Math.Pow(c, 20) * (-55 * s + 7315 * Math.Pow(s, 3) - 258951 * Math.Pow(s, 5) + 3760955 * Math.Pow(s, 7) - 26326685 * Math.Pow(s, 9) + 93340065 * Math.Pow(s, 11) - 160353445 * Math.Pow(s, 13) + 105375121 * Math.Pow(s, 15))) / 2048;
-                LegArrEx[35, 21] = ((2507175863942785339055399163140625.0 * Math.Pow(c, 21) * (-11 + 4389 * Math.Pow(s, 2) - 258951 * Math.Pow(s, 4) + 5265337 * Math.Pow(s, 6) - 47388033 * Math.Pow(s, 8) + 205348143 * Math.Pow(s, 10) - 416918957 * Math.Pow(s, 12) + 316125363 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[35, 22] = ((1000363169713171350283104266093109375.0 * Math.Pow(c, 22) * (11 * s - 1298 * Math.Pow(s, 3) + 39589 * Math.Pow(s, 5) - 475068 * Math.Pow(s, 7) + 2573285 * Math.Pow(s, 9) - 6269458 * Math.Pow(s, 11) + 5546059 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[35, 23] = ((1000363169713171350283104266093109375.0 * Math.Pow(c, 23) * (11 - 3894 * Math.Pow(s, 2) + 197945 * Math.Pow(s, 4) - 3325476 * Math.Pow(s, 6) + 23159565 * Math.Pow(s, 8) - 68964038 * Math.Pow(s, 10) + 72098767 * Math.Pow(s, 12))) / 1024);
-                LegArrEx[35, 24] = 59021427013077109666703151699493453125.0 / 256 * Math.Pow(c, 24) * (-33 * s + 3355 * Math.Pow(s, 3) - 84546 * Math.Pow(s, 5) + 785070 * Math.Pow(s, 7) - 2922205 * Math.Pow(s, 9) + 3666039 * Math.Pow(s, 11));
-                LegArrEx[35, 25] = (1947707091431544619001204006083283953125.0 / 256) * Math.Pow(c, 25) * (-1 + 305 * Math.Pow(s, 2) - 12810 * Math.Pow(s, 4) + 166530 * Math.Pow(s, 6) - 796965 * Math.Pow(s, 8) + 1222013 * Math.Pow(s, 10));
-                LegArrEx[35, 26] = (594050662886621108795367221855401605703125.0 / 128) * Math.Pow(c, 26) * (s - 84 * Math.Pow(s, 3) + 1638 * Math.Pow(s, 5) - 10452 * Math.Pow(s, 7) + 20033 * Math.Pow(s, 9));
-                LegArrEx[35, 27] = (594050662886621108795367221855401605703125.0 / 128) * Math.Pow(c, 27) * (1 - 252 * Math.Pow(s, 2) + 8190 * Math.Pow(s, 4) - 73164 * Math.Pow(s, 6) + 180297 * Math.Pow(s, 8));
-                LegArrEx[35, 28] = 5346455965979589979158304996698614451328125.0 / 16 * Math.Pow(c, 28) * (-7 * s + 455 * Math.Pow(s, 3) - 6097 * Math.Pow(s, 5) + 20033 * Math.Pow(s, 7));
-                LegArrEx[35, 29] = (37425191761857129854108134976890301159296875.0 / 16) * Math.Pow(c, 29) * (-1 + 195 * Math.Pow(s, 2) - 4355 * Math.Pow(s, 4) + 20033 * Math.Pow(s, 6));
-                LegArrEx[35, 30] = (486527492904142688103405754699573915070859375.0 / 8) * Math.Pow(c, 30) * (15 * s - 670 * Math.Pow(s, 3) + 4623 * Math.Pow(s, 5));
-                LegArrEx[35, 31] = (7297912393562140321551086320493608726062890625.0 / 8) * Math.Pow(c, 31) * (1 - 134 * Math.Pow(s, 2) + 1541 * Math.Pow(s, 4));
-                LegArrEx[35, 32] = 488960130368663401543922783473071784646213671875.0 / 2 * Math.Pow(c, 32) * (-s + 23 * Math.Pow(s, 3));
-                LegArrEx[35, 33] = (488960130368663401543922783473071784646213671875.0 / 2) * Math.Pow(c, 33) * (-1 + 69 * Math.Pow(s, 2));
-                LegArrEx[35, 34] = 33738248995437774706530672059641953140588743359375.0 * s * Math.Pow(c, 34);
-                LegArrEx[35, 35] = 33738248995437774706530672059641953140588743359375.0 * Math.Pow(c, 35);
-
-                LegArrEx[36, 0] = (2268783825 - 1511010027450 * Math.Pow(s, 2) + 166966608033225.0 * Math.Pow(s, 4) - 7302006324653040.0 * Math.Pow(s, 6) + 168206931407186100.0 * Math.Pow(s, 8) - 2354897039700605400.0 * Math.Pow(s, 10) + 21800637746319240900.0 * Math.Pow(s, 12) - 140865659283908941200.0 * Math.Pow(s, 14) + 658546957152274300110.0 * Math.Pow(s, 16) - 2281241093403303131100.0 * Math.Pow(s, 18) + 5943233374919131841550.0 * Math.Pow(s, 20) - 11732097051788416102800.0 * Math.Pow(s, 22) + 17555637979668898008900.0 * Math.Pow(s, 24) - 19770349232488666680792.0 * Math.Pow(s, 26) + 16475291027073888900660.0 * Math.Pow(s, 28) - 9847300383998186469360.0 * Math.Pow(s, 30) + 3990539066902490887785.0 * Math.Pow(s, 32) - 981629930895799897530.0 * Math.Pow(s, 34) + 110628135069209194801.0 * Math.Pow(s, 36)) / 17179869184;
-                LegArrEx[36, 1] = (1.0 / 4294967296) * 333 * c * (-2268783825 * s + 501401225325.0 * Math.Pow(s, 3) - 32891920381320.0 * Math.Pow(s, 5) + 1010251840283400.0 * Math.Pow(s, 7) - 17679407204959500.0 * Math.Pow(s, 9) + 196402141858731900.0 * Math.Pow(s, 11) - 1480569992473517400.0 * Math.Pow(s, 13) + 7910473959787078680.0 * Math.Pow(s, 15) - 30827582343287880150.0 * Math.Pow(s, 17) + 89237738362149126750.0 * Math.Pow(s, 19) - 193773374729238103800.0 * Math.Pow(s, 21) + 316317801435475639800.0 * Math.Pow(s, 23) - 385907717751280280556.0 * Math.Pow(s, 25) + 346327439007559226140.0 * Math.Pow(s, 27) - 221786044684643839400.0 * Math.Pow(s, 29) + 95868806412071853160.0 * Math.Pow(s, 31) - 25056619857700597985.0 * Math.Pow(s, 33) + 2989949596465113373.0 * Math.Pow(s, 35));
-                LegArrEx[36, 2] = (1.0 / 4294967296) * 221445.0 * c * c * (-3411705 + 2261960415 * Math.Pow(s, 2) - 247307672040 * Math.Pow(s, 4) + 10634229897720 * Math.Pow(s, 6) - 239270172698700 * Math.Pow(s, 8) + 3248757233753460 * Math.Pow(s, 10) - 28943473537076280 * Math.Pow(s, 12) + 178431743453843880.0 * Math.Pow(s, 14) - 788073533587810470.0 * Math.Pow(s, 16) + 2549649667489975050.0 * Math.Pow(s, 18) - 6119159201975940120 * Math.Pow(s, 20) + 10940314936866074760.0 * Math.Pow(s, 22) - 14507808938018055660 * Math.Pow(s, 24) + 14061414816848269332.0 * Math.Pow(s, 26) - 9671872625345370440 * Math.Pow(s, 28) + 4469072178607860824 * Math.Pow(s, 30) - 1243411210983638697.0 * Math.Pow(s, 32) + 157365768235005967.0 * Math.Pow(s, 34));
-                LegArrEx[36, 3] = (1.0 / 2147483648) * 48939345.0 * Math.Pow(c, 3) * (10235115 * s - 2238078480 * Math.Pow(s, 3) + 144356061960 * Math.Pow(s, 5) - 4330681858800 * Math.Pow(s, 7) + 73501294881300 * Math.Pow(s, 9) - 785795661640080 * Math.Pow(s, 11) + 5651684181795960.0 * Math.Pow(s, 13) - 28527548727160560 * Math.Pow(s, 15) + 103831886911356450 * Math.Pow(s, 17) - 276885031763617200 * Math.Pow(s, 19) + 544540562468447160.0 * Math.Pow(s, 21) - 787754331476093520 * Math.Pow(s, 23) + 827142048049898196 * Math.Pow(s, 25) - 612697813370294960 * Math.Pow(s, 27) + 303330690855737160 * Math.Pow(s, 29) - 90020721157186512 * Math.Pow(s, 31) + 12105059095000459 * Math.Pow(s, 33));
-                LegArrEx[36, 4] = (1.0 / 2147483648) * 1614998385.0 * Math.Pow(c, 4) * (310155 - 203461680 * Math.Pow(s, 2) + 21872130600 * Math.Pow(s, 4) - 918629485200 * Math.Pow(s, 6) + 20045807694900 * Math.Pow(s, 8) - 261931887213360 * Math.Pow(s, 10) + 2226421041313560 * Math.Pow(s, 12) - 12967067603254800 * Math.Pow(s, 14) + 53489153863426050 * Math.Pow(s, 16) - 159418654651779600 * Math.Pow(s, 18) + 346525812479920920 * Math.Pow(s, 20) - 549040897695459120 * Math.Pow(s, 22) + 626622763674165300 * Math.Pow(s, 24) - 501298210939332240 * Math.Pow(s, 26) + 266563334388375080 * Math.Pow(s, 28) - 84564919874932784.0 * Math.Pow(s, 30) + 12105059095000459 * Math.Pow(s, 32));
-                LegArrEx[36, 5] = (1.0 / 67108864) * 66214933785.0 * Math.Pow(c, 5) * (-310155 * s + 66683325 * Math.Pow(s, 3) - 4201049475 * Math.Pow(s, 5) + 122230534725 * Math.Pow(s, 7) - 1996432067175 * Math.Pow(s, 9) + 20363607085185 * Math.Pow(s, 11) - 138368099424975 * Math.Pow(s, 13) + 652306754432025 * Math.Pow(s, 15) - 2187146176625025 * Math.Pow(s, 17) + 5282405678047575 * Math.Pow(s, 19) - 9206478467454345 * Math.Pow(s, 21) + 11462611530624975 * Math.Pow(s, 23) - 9934263326541645 * Math.Pow(s, 25) + 5688851648532395 * Math.Pow(s, 27) - 1933649082506085 * Math.Pow(s, 29) + 295245343780499 * Math.Pow(s, 31));
-                LegArrEx[36, 6] = (1.0 / 67108864) * 2052662947335.0 * Math.Pow(c, 6) * (-10005 + 6453225 * Math.Pow(s, 2) - 677588625 * Math.Pow(s, 4) + 27600443325 * Math.Pow(s, 6) - 579609309825 * Math.Pow(s, 8) + 7225796062485 * Math.Pow(s, 10) - 58025332016925 * Math.Pow(s, 12) + 315632300531625 * Math.Pow(s, 14) - 1199402742020175 * Math.Pow(s, 16) + 3237603480093675 * Math.Pow(s, 18) - 6236646703759395 * Math.Pow(s, 20) + 8504518232399175 * Math.Pow(s, 22) - 8011502682694875 * Math.Pow(s, 24) + 4954806274528215 * Math.Pow(s, 26) - 1808897528796015 * Math.Pow(s, 28) + 295245343780499 * Math.Pow(s, 30));
-                LegArrEx[36, 7] = (1.0 / 33554432) * 1323967601031075.0 * Math.Pow(c, 7) * (10005 * s - 2101050 * Math.Pow(s, 3) + 128374155 * Math.Pow(s, 5) - 3594476340 * Math.Pow(s, 7) + 56013922965 * Math.Pow(s, 9) - 539770530390 * Math.Pow(s, 11) + 3425466827475 * Math.Pow(s, 13) - 14876313079320 * Math.Pow(s, 15) + 45175862512935 * Math.Pow(s, 17) - 96692196957510 * Math.Pow(s, 19) + 145038295436265 * Math.Pow(s, 21) - 149051212701300 * Math.Pow(s, 23) + 99864312509871 * Math.Pow(s, 25) - 39262892097898 * Math.Pow(s, 27) + 6866170785593 * Math.Pow(s, 29));
-                LegArrEx[36, 8] = (1.0 / 33554432) * 38395060429901175.0 * Math.Pow(c, 8) * (345 - 217350 * Math.Pow(s, 2) + 22133475 * Math.Pow(s, 4) - 867632220 * Math.Pow(s, 6) + 17383631265 * Math.Pow(s, 8) - 204740546010 * Math.Pow(s, 10) + 1535554095075 * Math.Pow(s, 12) - 7694644696200 * Math.Pow(s, 14) + 26482402162755 * Math.Pow(s, 16) - 63350060075610 * Math.Pow(s, 18) + 105027731177985 * Math.Pow(s, 20) - 118213030763100 * Math.Pow(s, 22) + 86089924577475 * Math.Pow(s, 24) - 36555106435974 * Math.Pow(s, 26) + 6866170785593 * Math.Pow(s, 28));
-                LegArrEx[36, 9] = (1.0 / 8388608) * 268765423009308225.0 * Math.Pow(c, 9) * (-15525 * s + 3161925 * Math.Pow(s, 3) - 185921190 * Math.Pow(s, 5) + 4966751790 * Math.Pow(s, 7) - 73121623575 * Math.Pow(s, 9) + 658094612175 * Math.Pow(s, 11) - 3847322348100 * Math.Pow(s, 13) + 15132801235860 * Math.Pow(s, 15) - 40725038620035 * Math.Pow(s, 17) + 75019807984275 * Math.Pow(s, 19) - 92881667028150 * Math.Pow(s, 21) + 73791363923550 * Math.Pow(s, 23) - 33944027404833 * Math.Pow(s, 25) + 6866170785593 * Math.Pow(s, 27));
-                LegArrEx[36, 10] = (1.0 / 8388608) * 166903327688780407725.0 * Math.Pow(c, 10) * (-25 + 15275 * Math.Pow(s, 2) - 1496950 * Math.Pow(s, 4) + 55985930 * Math.Pow(s, 6) - 1059733675 * Math.Pow(s, 8) + 11657070425 * Math.Pow(s, 10) - 80539759300 * Math.Pow(s, 12) + 365526599900 * Math.Pow(s, 14) - 1114856129695 * Math.Pow(s, 16) + 2295292031725 * Math.Pow(s, 18) - 3140925938150 * Math.Pow(s, 20) + 2733013478650 * Math.Pow(s, 22) - 1366506739325 * Math.Pow(s, 24) + 298529164591 * Math.Pow(s, 26));
-                LegArrEx[36, 11] = (1.0 / 4194304) * 7844456401372679163075.0 * Math.Pow(c, 11) * (325 * s - 63700 * Math.Pow(s, 3) + 3573570 * Math.Pow(s, 5) - 90190100 * Math.Pow(s, 7) + 1240113875 * Math.Pow(s, 9) - 10281671400 * Math.Pow(s, 11) + 54440131900 * Math.Pow(s, 13) - 189762745480 * Math.Pow(s, 15) + 439524006075 * Math.Pow(s, 17) - 668282114500 * Math.Pow(s, 19) + 639641452450 * Math.Pow(s, 21) - 348895337700 * Math.Pow(s, 23) + 82571896589 * Math.Pow(s, 25));
-                LegArrEx[36, 12] = (1.0 / 4194304) * 196111410034316979076875.0 * Math.Pow(c, 12) * (13 - 7644 * Math.Pow(s, 2) + 714714 * Math.Pow(s, 4) - 25253228 * Math.Pow(s, 6) + 446440995 * Math.Pow(s, 8) - 4523935416 * Math.Pow(s, 10) + 28308868588 * Math.Pow(s, 12) - 113857647288 * Math.Pow(s, 14) + 298876324131 * Math.Pow(s, 16) - 507894407020 * Math.Pow(s, 18) + 537298820058 * Math.Pow(s, 20) - 320983710684 * Math.Pow(s, 22) + 82571896589 * Math.Pow(s, 24));
-                LegArrEx[36, 13] = (1.0 / 524288) * 4118339610720656560614375.0 * Math.Pow(c, 13) * (-91 * s + 17017 * Math.Pow(s, 3) - 901901 * Math.Pow(s, 5) + 21259095 * Math.Pow(s, 7) - 269281870 * Math.Pow(s, 9) + 2022062042 * Math.Pow(s, 11) - 9488137274 * Math.Pow(s, 13) + 28464411822 * Math.Pow(s, 15) - 54417257895 * Math.Pow(s, 17) + 63964145245 * Math.Pow(s, 19) - 42033581161 * Math.Pow(s, 21) + 11795985227 * Math.Pow(s, 23));
-                LegArrEx[36, 14] = (1.0 / 524288) * 4118339610720656560614375.0 * Math.Pow(c, 14) * (-91 + 51051 * Math.Pow(s, 2) - 4509505 * Math.Pow(s, 4) + 148813665 * Math.Pow(s, 6) - 2423536830 * Math.Pow(s, 8) + 22242682462 * Math.Pow(s, 10) - 123345784562 * Math.Pow(s, 12) + 426966177330 * Math.Pow(s, 14) - 925093384215 * Math.Pow(s, 16) + 1215318759655 * Math.Pow(s, 18) - 882705204381 * Math.Pow(s, 20) + 271307660221 * Math.Pow(s, 22));
-                LegArrEx[36, 15] = (1.0 / 262144) * 45301735717927222166758125.0 * Math.Pow(c, 15) * (4641 * s - 819910 * Math.Pow(s, 3) + 40585545 * Math.Pow(s, 5) - 881286120 * Math.Pow(s, 7) + 10110310210 * Math.Pow(s, 9) - 67279518852 * Math.Pow(s, 11) + 271705749210 * Math.Pow(s, 13) - 672795188520 * Math.Pow(s, 15) + 994351712445 * Math.Pow(s, 17) - 802459276710 * Math.Pow(s, 19) + 271307660221 * Math.Pow(s, 21));
-                LegArrEx[36, 16] = (1.0 / 262144) * 12367373850994131651524968125.0 * Math.Pow(c, 16) * (17 - 9010 * Math.Pow(s, 2) + 743325 * Math.Pow(s, 4) - 22597080 * Math.Pow(s, 6) + 333306930 * Math.Pow(s, 8) - 2710896364 * Math.Pow(s, 10) + 12938369010 * Math.Pow(s, 12) - 36966768600 * Math.Pow(s, 14) + 61919337405 * Math.Pow(s, 16) - 55848814130 * Math.Pow(s, 18) + 20869820017 * Math.Pow(s, 20));
-                LegArrEx[36, 17] = (1.0 / 65536) * 3277354070513444887654116553125.0 * Math.Pow(c, 17) * (-17 * s + 2805 * Math.Pow(s, 3) - 127908 * Math.Pow(s, 5) + 2515524 * Math.Pow(s, 7) - 25574494 * Math.Pow(s, 9) + 146472102 * Math.Pow(s, 11) - 488240340 * Math.Pow(s, 13) + 934631508 * Math.Pow(s, 15) - 948376089 * Math.Pow(s, 17) + 393770189 * Math.Pow(s, 19));
-                LegArrEx[36, 18] = (1.0 / 65536) * 3277354070513444887654116553125.0 * Math.Pow(c, 18) * (-17 + 8415 * Math.Pow(s, 2) - 639540 * Math.Pow(s, 4) + 17608668 * Math.Pow(s, 6) - 230170446 * Math.Pow(s, 8) + 1611193122 * Math.Pow(s, 10) - 6347124420 * Math.Pow(s, 12) + 14019472620 * Math.Pow(s, 14) - 16122393513 * Math.Pow(s, 16) + 7481633591 * Math.Pow(s, 18));
-                LegArrEx[36, 19] = (1.0 / 32768) * 29496186634621003988887048978125.0 * Math.Pow(c, 19) * (935 * s - 142120 * Math.Pow(s, 3) + 5869556 * Math.Pow(s, 5) - 102297976 * Math.Pow(s, 7) + 895107290 * Math.Pow(s, 9) - 4231416280 * Math.Pow(s, 11) + 10904034260 * Math.Pow(s, 13) - 14331016456 * Math.Pow(s, 15) + 7481633591 * Math.Pow(s, 17));
-                LegArrEx[36, 20] = (1.0 / 32768) * 501435172788557067811079832628125.0 * Math.Pow(c, 20) * (55 - 25080 * Math.Pow(s, 2) + 1726340 * Math.Pow(s, 4) - 42122696 * Math.Pow(s, 6) + 473880330 * Math.Pow(s, 8) - 2737975240 * Math.Pow(s, 10) + 8338379140 * Math.Pow(s, 12) - 12645014520 * Math.Pow(s, 14) + 7481633591 * Math.Pow(s, 16));
-                LegArrEx[36, 21] = ((9527268282982584288410516819934375.0 * Math.Pow(c, 21) * (-165 * s + 22715 * Math.Pow(s, 3) - 831369 * Math.Pow(s, 5) + 12470535 * Math.Pow(s, 7) - 90064975 * Math.Pow(s, 9) + 329146545 * Math.Pow(s, 11) - 582336195 * Math.Pow(s, 13) + 393770189 * Math.Pow(s, 15))) / 2048);
-                LegArrEx[36, 22] = ((142909024244738764326157752299015625.0 * Math.Pow(c, 22) * (-11 + 4543 * Math.Pow(s, 2) - 277123 * Math.Pow(s, 4) + 5819583 * Math.Pow(s, 6) - 54038985 * Math.Pow(s, 8) + 241374133 * Math.Pow(s, 10) - 504691369 * Math.Pow(s, 12) + 393770189 * Math.Pow(s, 14))) / 2048);
-                LegArrEx[36, 23] = ((59021427013077109666703151699493453125.0 * Math.Pow(c, 23) * (11 * s - 1342 * Math.Pow(s, 3) + 42273 * Math.Pow(s, 5) - 523380 * Math.Pow(s, 7) + 2922205 * Math.Pow(s, 9) - 7332078 * Math.Pow(s, 11) + 6674071 * Math.Pow(s, 13))) / 1024);
-                LegArrEx[36, 24] = (59021427013077109666703151699493453125.0 * Math.Pow(c, 24) * (11 - 4026 * Math.Pow(s, 2) + 211365 * Math.Pow(s, 4) - 3663660 * Math.Pow(s, 6) + 26299845 * Math.Pow(s, 8) - 80652858 * Math.Pow(s, 10) + 86762923 * Math.Pow(s, 12))) / 1024;
-                LegArrEx[36, 25] = (10800921143393111069006676761007301921875.0 / 256) * Math.Pow(c, 25) * (-11 * s + 1155 * Math.Pow(s, 3) - 30030 * Math.Pow(s, 5) + 287430 * Math.Pow(s, 7) - 1101815 * Math.Pow(s, 9) + 1422343 * Math.Pow(s, 11));
-                LegArrEx[36, 26] = (118810132577324221759073444371080321140625.0 / 256) * Math.Pow(c, 26) * (-1 + 315 * Math.Pow(s, 2) - 13650 * Math.Pow(s, 4) + 182910 * Math.Pow(s, 6) - 901485 * Math.Pow(s, 8) + 1422343 * Math.Pow(s, 10));
-                LegArrEx[36, 27] = (594050662886621108795367221855401605703125.0 / 128) * Math.Pow(c, 27) * (63 * s - 5460 * Math.Pow(s, 3) + 109746 * Math.Pow(s, 5) - 721188 * Math.Pow(s, 7) + 1422343 * Math.Pow(s, 9));
-                LegArrEx[36, 28] = 5346455965979589979158304996698614451328125.0 / 128 * Math.Pow(c, 28) * (7 - 1820 * Math.Pow(s, 2) + 60970 * Math.Pow(s, 4) - 560924 * Math.Pow(s, 6) + 1422343 * Math.Pow(s, 8));
-                LegArrEx[36, 29] = (69503927557734669729057964957081987867265625.0 / 16) * Math.Pow(c, 29) * (-35 * s + 2345 * Math.Pow(s, 3) - 32361 * Math.Pow(s, 5) + 109411 * Math.Pow(s, 7));
-                LegArrEx[36, 30] = (486527492904142688103405754699573915070859375.0 / 16) * Math.Pow(c, 30) * (-5 + 1005 * Math.Pow(s, 2) - 23115 * Math.Pow(s, 4) + 109411 * Math.Pow(s, 6));
-                LegArrEx[36, 31] = (97792026073732680308784556694614356929242734375.0 / 8) * Math.Pow(c, 31) * (5 * s - 230 * Math.Pow(s, 3) + 1633 * Math.Pow(s, 5));
-                LegArrEx[36, 32] = 488960130368663401543922783473071784646213671875.0 / 8 * Math.Pow(c, 32) * (1 - 138 * Math.Pow(s, 2) + 1633 * Math.Pow(s, 4));
-                LegArrEx[36, 33] = (11246082998479258235510224019880651046862914453125.0 / 2) * Math.Pow(c, 33) * (-3 * s + 71 * Math.Pow(s, 3));
-                LegArrEx[36, 34] = (33738248995437774706530672059641953140588743359375.0 / 2) * Math.Pow(c, 34) * (-1 + 71 * Math.Pow(s, 2));
-                LegArrEx[36, 35] = 2395415678676082004163677716234578672981800778515625.0 * s * Math.Pow(c, 35);
-                LegArrEx[36, 36] = 2395415678676082004163677716234578672981800778515625.0 * Math.Pow(c, 36);
-
-                if (order > 40)
-                {
-                    LegArrEx[50, 0] = 1.0 / 140737488355328.0 * (-15801325804719.0 + 20146690401016725.0 * Math.Pow(s, 2)
-                        - 4271098365015545700.0 * Math.Pow(s, 4) + 360195962116311020700.0 * Math.Pow(s, 6)
-                        - 16131633446209072141350.0 * Math.Pow(s, 8) + 444157640885623119625170.0 * Math.Pow(s, 10)
-                        - 8210186695158487968828900.0 * Math.Pow(s, 12) + 107995532682469341743826300.0 * Math.Pow(s, 14)
-                        - 1052956443654076082002306425.0 * Math.Pow(s, 16) + 7838675747202566388239392275.0 * Math.Pow(s, 18)
-                        - 45546831710061227855875205640.0 * Math.Pow(s, 20) + 209988639702230336218645428600.0 * Math.Pow(s, 22)
-                        - 777566629622026824693679811700.0 * Math.Pow(s, 24) + 2332699888866080474081039435100.0 * Math.Pow(s, 26)
-                        - 5702155283894863381086985285800.0 * Math.Pow(s, 28) + 11391202164838244317619747616920.0 * Math.Pow(s, 30)
-                        - 18602568051449552212241926551825.0 * Math.Pow(s, 32) + 24770264410753681822717859419275.0 * Math.Pow(s, 34)
-                        - 26736158411607148634044673658900.0 * Math.Pow(s, 36) + 23161195551449151519392896526700.0 * Math.Pow(s, 38)
-                        - 15856510800607496040199752237510.0 * Math.Pow(s, 40) + 8379456927150302785471413784050.0 * Math.Pow(s, 42)
-                        - 3295092998837116951580725082100.0 * Math.Pow(s, 44) + 907344448955148146087446037100.0 * Math.Pow(s, 46)
-                        - 156050375086257748529223875175.0 * Math.Pow(s, 48) + 12611418068195524166851562157.0 * Math.Pow(s, 50));
-
-                    double ex5001 = (-15801325804719.0 + 20146690401016725.0 * Math.Pow(s, 2) -
-                              4271098365015545700.0 * Math.Pow(s, 4) + 360195962116311020700.0 * Math.Pow(s, 6) -
-                               16131633446209072141350.0 * Math.Pow(s, 8) + 444157640885623119625170.0 * Math.Pow(s, 10) -
-                                 8210186695158487968828900.0 * Math.Pow(s, 12) +
-                                 107995532682469341743826300.0 * Math.Pow(s, 14) -
-                                 1052956443654076082002306425.0 * Math.Pow(s, 16) +
-                                 7838675747202566388239392275.0 * Math.Pow(s, 18) -
-                                 45546831710061227855875205640.0 * Math.Pow(s, 20) +
-                                 209988639702230336218645428600.0 * Math.Pow(s, 22) -
-                                 777566629622026824693679811700.0 * Math.Pow(s, 24) +
-                                 2332699888866080474081039435100.0 * Math.Pow(s, 26) -
-                                 5702155283894863381086985285800.0 * Math.Pow(s, 28) +
-                                 1391202164838244317619747616920.0 * Math.Pow(s, 30) -
-                                 18602568051449552212241926551825.0 * Math.Pow(s, 32) +
-                                 24770264410753681822717859419275.0 * Math.Pow(s, 34) -
-                                 26736158411607148634044673658900.0 * Math.Pow(s, 36) +
-                                 23161195551449151519392896526700.0 * Math.Pow(s, 38) -
-                                 15856510800607496040199752237510.0 * Math.Pow(s, 40) +
-                                 8379456927150302785471413784050.0 * Math.Pow(s, 42) -
-                                 3295092998837116951580725082100.0 * Math.Pow(s, 44) +
-                                 907344448955148146087446037100.0 * Math.Pow(s, 46) -
-                                 156050375086257748529223875175.0 * Math.Pow(s, 48) +
-                                 12611418068195524166851562157.0 * Math.Pow(s, 50)) / 140737488355328.0;
-
-                    LegArrEx[50, 21] = 1.0 / 33554432 * 14307987156536070552844545071598923765625.0 * Math.Pow(c, 21) * (3933 * s - 1339842 * Math.Pow(s, 3)
-                        + 130634595 * Math.Pow(s, 5) - 5747922180 * Math.Pow(s, 7) + 138748454845 * Math.Pow(s, 9) - 2043386334990 * Math.Pow(s, 11) + 19569353746635 * Math.Pow(s, 13)
-                        - 126734862359160 * Math.Pow(s, 15) + 567511258652415 * Math.Pow(s, 17) - 1772228141054910.0 * Math.Pow(s, 19) + 3839827638952305.0 * Math.Pow(s, 21)
-                        - 5645912575850820.0 * Math.Pow(s, 23) + 5363616947058279 * Math.Pow(s, 25) - 2964506232847026 * Math.Pow(s, 27) + 722872209487329 * Math.Pow(s, 29));
-                }
-            }
         } // LegPolyEx
 
 
@@ -7411,7 +6858,7 @@ namespace TestAllTool
 
         // GMAT Pines approach
         //------------------------------------------------------------------------------
-        public void FullGeopPines
+        public void FullGeopGMATPines
             (
             double jday,
             double[] pos,
@@ -7634,7 +7081,7 @@ namespace TestAllTool
             //    gradient[0, 2] = gradient[2, 0] = a13 + s * u * a44 + s * a34 + u * a14;
             //    gradient[1, 2] = gradient[2, 1] = a23 + t * u * a44 + u * a24 + t * a34;
             //}
-        }  // FullGeopPines
+        }  // FullGeopGMATPines
 
 
         // -----------------------------------------------------------------------------------------------\
@@ -7858,6 +7305,7 @@ namespace TestAllTool
             double[] athirdbody1 = new double[3];
             double[] athirdbody2 = new double[3];
             double[] aPertG = new double[3];
+            double[] aPertGot = new double[3];
             double[] aPertM = new double[3];
             double[] aPertM1 = new double[3];
 
@@ -7879,8 +7327,10 @@ namespace TestAllTool
             double[,] LegArrOU;  // geodyn
             double[,] LegArrON;
             double[,] LegArrGott; // Gottlieb
-            double[,] LegArrGotU; // Gottlieb
-            double[,] LegArrGotN; // Gottlieb
+            double[,] LegGottU; // Gottlieb
+            double[,] LegGottN; // Gottlieb
+            double[,] LegPineN; // Pines
+            double[,] LegLearN; // Lear
             double[,] LegArrEx;  // exact 
             double[,] LegArrF;   // Fukushima 
             // 152 is arbitrary
@@ -7900,6 +7350,17 @@ namespace TestAllTool
             strbuildplot.Clear();
 
             // ------------------ BOOK EXAMPLE ----------------------------------------------
+            //STK answers
+            //18 Feb 2020 15:08:47.238    -605.79079600    -5870.23042200    3493.05191600    -1.56825100    -3.70234800    -6.47948500    0.000748395693    0.007252325791    -0.004327586380
+            //j2x0        0.000748395693    0.007252325791    -0.004327586380
+            //j21x21      0.000748452078    0.007252229967    -0.004327507399
+            //            0.000000056385   -0.000000095824    -0.000000078981
+            //drag
+            //            0.000748730855    0.007255346798    -0.004317258342
+            //3body
+            //            0.000748731063    0.007255346392    -0.004317259450
+            //srp
+            //            0.000748730594    0.007255346775    -0.004317258523
             // ------------------------------- initial state -------------------------------
             reci = new double[] { -605.79079600, -5870.23042200, 3493.05191600 };
             veci = new double[] { -1.568251000, -3.702348000, -6.479485000 };
@@ -7912,28 +7373,31 @@ namespace TestAllTool
             mass = 1000.0;   // kg
 
             // ------------------------------- establish time parameters -------------------------------
+            // read in FK5 parameters
             EOPSPWLib.iau80Class iau80arr;
-            EOPSPWLib.iau06Class iau06arr;
             string nutLoc;
             nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
             EOPSPWLibr.iau80in(nutLoc, out iau80arr);
+            // read in ICRF parameters
             nutLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLib.iau06Class iau06arr;
             EOPSPWLibr.iau06in(nutLoc, out iau06arr);
-            // now read it in
             double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
             AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
 
+            // example date/time
+            // stkeducationalfiles ex 8-5
             year = 2020;
-            mon = 2;
+            mon = 2; 
             day = 18;
             hr = 15;
             minute = 8;
             second = 47.23847;
             MathTimeLibr.jday(year, mon, day, hr, minute, second, out jdutc, out jdFutc);  // utc
 
-            // these vaues are not consistent wih the EOP files - are they interpolated already????
-            // no. change to use actual at 0000 values, rerun probelm. 
+            // these values are not consistent wih the EOP files - are they interpolated already????
+            // no. change to use actual at 0000 values, rerun problem. 
             //2020 02 18 58897  0.030655  0.336009 -0.1990725  0.0000639 -0.108041 -0.007459  0.000315 -0.000055  37
             //2020 02 19 58898  0.030313  0.337617 - 0.1991016  0.0000235 - 0.107939 - 0.007476  0.000324 - 0.000036  37
 
@@ -7954,7 +7418,6 @@ namespace TestAllTool
             // method to do calculations in
             char normalized = 'y';
             strbuildall.AppendLine("normalized = " + normalized.ToString());
-
             strbuildall.AppendLine(year.ToString("0000") + " " + mon.ToString("00") + " " + day.ToString("00") + " " + hr.ToString("00") + ":" +
                 minute.ToString("00") + ":" + second.ToString());
             strbuildall.AppendLine("dat " + dat.ToString() + " lod " + lod.ToString());
@@ -7992,7 +7455,7 @@ namespace TestAllTool
             omegaearth[2] = AstroLibr.gravConst.earthrot * (1.0 - lod / 86400.0);
 
             prec = AstroLibr.precess(ttt, opt, out psia, out wa, out epsa, out chia);
-            nut = AstroLibr.nutation(ttt, ddpsi, ddeps, iau80arr, opt, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
+            nut = AstroLibr.nutation(ttt, ddpsi, ddeps, iau80arr, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
             st = AstroLibr.sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, opt);
             pm = AstroLibr.polarm(xp, yp, ttt, opt);
 
@@ -8016,8 +7479,7 @@ namespace TestAllTool
                                 "v  " + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                  iau80arr, jdtt, jdftt, jdut1,  lod, xp, yp, ddpsi, ddeps);
 
             // print out initial conditions
             strbuildall.AppendLine("reci  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " " +
@@ -8026,44 +7488,46 @@ namespace TestAllTool
                                 "v  " + vecef[0].ToString(fmt).PadLeft(4) + " " + vecef[1].ToString(fmt).PadLeft(4) + " " + vecef[2].ToString(fmt).PadLeft(4));
 
             AstroLibr.ecef2ll(recef, out latgc, out latgd, out lon, out hellp);
-            // or
-            latgc = 52.0 / rad;  // 52 and 34
-            lon = 5.0 / rad;
-            alt = 6880.0;
-            AstroLibr.site(latgd, lon, alt, out recef, out vecef);
-            strbuildall.AppendLine("new site loc");
-            strbuildall.AppendLine("recef  " + recef[0].ToString(fmt).PadLeft(4) + " " + recef[1].ToString(fmt).PadLeft(4) + " " + recef[2].ToString(fmt).PadLeft(4) + " " +
-                                "v  " + vecef[0].ToString(fmt).PadLeft(4) + " " + vecef[1].ToString(fmt).PadLeft(4) + " " + vecef[2].ToString(fmt).PadLeft(4));
+            //// or
+            //latgc = 52.0 / rad;  // 52 and 34
+            //lon = 5.0 / rad;
+            //alt = 6880.0;
+            //AstroLibr.site(latgd, lon, alt, out recef, out vecef);
+            //strbuildall.AppendLine("new site loc");
+            strbuildall.AppendLine("satellite lat " + latgc * rad + " lon " + lon*rad + "alt " + hellp + " km");
+            //strbuildall.AppendLine("recef  " + recef[0].ToString(fmt).PadLeft(4) + " " + recef[1].ToString(fmt).PadLeft(4) + " " + recef[2].ToString(fmt).PadLeft(4) + " " +
+            //                    "v  " + vecef[0].ToString(fmt).PadLeft(4) + " " + vecef[1].ToString(fmt).PadLeft(4) + " " + vecef[2].ToString(fmt).PadLeft(4));
 
-            // ---------------------------------------------------------------------------------------------
-            // ------------------------------------ GRAVITY FIELD --------------------------------------
+            // ----------------------------------------------------------------------------------------------
+            // --------------------------------------- GRAVITY FIELD ----------------------------------------
             this.opsStatus.Text = "Status: Reading gravity field EGM-08 test";
             Refresh();
+            int startKtr;
             // get past text in each file
             //if (fname.Contains("GEM"))    // GEM10bunnorm36.grv, GEMT3norm50.grv
-            //    startKtr = 17;
+            //startKtr = 17;
             //if (fname.Contains("EGM-96")) // EGM-96norm70.grv
-            //    startKtr = 73;
+            //startKtr = 73;
             //if (fname.Contains("EGM-08")) // EGM-08norm100.grv
-            //startKtr = 83;  // or 21 for the larger file... which has gfc in the first col too
             // fully normalized, 4415, .1363, order 100
-            //string fname = "D:/Dataorig/Gravity/EGM-08norm100.grv";  // 83
+            //startKtr = 83;  // or 21 for the larger file... which has gfc in the first col too
+            //string fname = "D:/Dataorig/Gravity/EGM-08norm100.grv";  // skip line 83
             // fully normalized, 4415, .1363, order 2190
-            //startKtr = 21;  // or 21 for the larger file... which has gfc in the first col too
-            string fname = "D:/Dataorig/Gravity/EGM2008_to2190_TideFree.txt";  
+            startKtr = 0;  // or 21 for the larger file... which has gfc in the first col too
+            string fname = "D:/Dataorig/Gravity/EGM2008_to2190_TideFree.txt";
             // fully normalized, 4415, .1363, order 360
             //string fname = "D:/Dataorig/Gravity/GGM03C-Data.txt";  
 
-            char normal = 'y';  // if file has normalized coefficients
+            normalized = 'y';  // if file has normalized coefficients
 
-            AstroLibr.initGravityField(fname, 0, normal, out order, out gravData, out convArr, out normArr);
+            AstroLibr.initGravityField(fname, normalized, startKtr, out order, out gravData);
             strbuildall.AppendLine("\nread in gravity field " + fname + " " + order.ToString() + " --------------- ");
-            strbuildall.AppendLine("\ncoefficents --------------- ");
+            strbuildall.AppendLine("\ncoefficients --------------- ");
             strbuildall.AppendLine("c  2  0  " + gravData.c[2, 0].ToString() + " s " + gravData.s[2, 0].ToString());
             strbuildall.AppendLine("c  4  0  " + gravData.c[4, 0].ToString() + " s " + gravData.s[4, 0].ToString());
             strbuildall.AppendLine("c  4  4  " + gravData.c[4, 4].ToString() + " s " + gravData.s[4, 4].ToString());
             strbuildall.AppendLine("c 21  1 " + gravData.c[21, 1].ToString() + " s " + gravData.s[21, 1].ToString());
-            strbuildall.AppendLine("\nnormalized coefficents --------------- ");
+            strbuildall.AppendLine("\nnormalized coefficients --------------- ");
             strbuildall.AppendLine("c  2  0  " + gravData.cNor[2, 0].ToString() + " s " + gravData.sNor[2, 0].ToString());
             strbuildall.AppendLine("c  4  0  " + gravData.cNor[4, 0].ToString() + " s " + gravData.sNor[4, 0].ToString());
             strbuildall.AppendLine("c  4  4  " + gravData.cNor[4, 4].ToString() + " s " + gravData.sNor[4, 4].ToString());
@@ -8076,17 +7540,26 @@ namespace TestAllTool
             Refresh();
 
             strbuildall.AppendLine("\nCalculate Legendre polynomial recursions Unn and Nor  --------------- ");
-            degree = 500;
-            order = 500;
+            degree = 21;  // do smaller for the ALFs
+            order = 21;
             // GTDS version
             // does with  unnormalized elements, then normalized from there. But unnormalized only go to about 170
-            AstroLibr.LegPolyG(latgc, order, normalized, convArr, normArr, out LegArrGU, out LegArrGN);
-            
+            AstroLibr.LegPolyGTDS(latgc, order, normalized, out LegArrGU, out LegArrGN);
+
             // Gottlieb version
-            AstroLibr.LegPolyGot(latgc, order, normalized, convArr, normArr, out LegArrGotU, out LegArrGotN);
-            
+            double[] norm1 = new double[order + 2];
+            double[] norm2 = new double[order + 2];
+            double[] norm10 = new double[order + 2];
+            double[] norm11 = new double[order + 2];
+            double[] normn10 = new double[order + 2];
+            double[,] normn1 = new double[order + 2, order + 2];
+            double[,] norm1m = new double[order + 2, order + 2];
+            double[,] norm2m = new double[order + 2, order + 2];
+
+            AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
+
             // Montenbruck version
-            AstroLibr.LegPolyM(latgc, order, normalized, convArr, out LegArrMU, out LegArrMN);
+            AstroLibr.LegPolyMont(latgc, order, normalized, out LegArrMU, out LegArrMN);
             
             // Geodyn version
             AstroLibr.geodynlegp(latgc, degree, order, out LegArrOU, out LegArrON);
@@ -8095,7 +7568,7 @@ namespace TestAllTool
             LegPolyEx(latgc, order, out LegArrEx);
             
             // Fukushima approach do as 1-d arrays for now
-            AstroLibr.LegPolyF(latgc, order, 'y', normArr, out LegArrF);
+            //AstroLibr.LegPolyFN(latgc, order, normArr, out LegArrFN);
             //double[] pmm = new double[8];
             //double[] psm = new double[8];
             //Int32[] ipsm = new Int32[8];
@@ -8103,6 +7576,10 @@ namespace TestAllTool
             //alfsx(Math.Cos(latgc), 6, normArr, out psm, out ipsm);
             //alfmx(Math.Sin(latgc), 3, 6, normArr, psm[3], ipsm[3], out pmm);
 
+            strbuildall.AppendLine("latgc = " + latgc*rad);
+            double[,] P = AstroLibr.legendre(degree, order, latgc);
+            //double P = AstroLibr.legendreS(degree, order, latgc);
+            //AstroLibr.legendreMa(degree, order, latgc);
 
             string errstr = " ";
             double dr1, dr2, dr3, sumdr1, sumdr2, sumdr3;
@@ -8112,7 +7589,7 @@ namespace TestAllTool
             strbuildall.AppendLine("\nwrite out normalized Legendre polynomials --------------- ");
 
             // order xxxxxxxxxxxxxxxxxx
-            for (int L = 0; L <= 130; L++)  
+            for (int L = 0; L < 21; L++)  
             {
                 string tempstr1 = "MN  ";  // montenbruck
                 string tempstr2 = "GN  ";  // gtds
@@ -8121,88 +7598,134 @@ namespace TestAllTool
                 string tempstr4 = "OU  ";  // geodyn\
                 string tempstr5 = "GtN ";  // gottlieb\
                 string tempstr6 = "GtU ";  // gottlieb
-                string tempstr7 = "FN  ";  // Fukushima, test ones
+                //string tempstr7 = "FN  ";  // Fukushima, test ones
                 int stopL = L;
                 for (int m = 0; m <= stopL; m++)
                 {
                     tempstr1 = tempstr1 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMN[L, m].ToString();
                     tempstr2 = tempstr2 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGN[L, m].ToString();
-                    tempstr5 = tempstr5 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGotN[L, m].ToString();
-                    tempstr7 = tempstr7 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrF[L, m].ToString();
+                    //tempstr5 = tempstr5 + " " + L.ToString() + "  " + m.ToString() + "   " + LegGottN[L, m].ToString();
+                    //tempstr7 = tempstr7 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrF[L, m].ToString();
                     tempstr3 = tempstr3 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMU[L, m].ToString();
                     tempstr3a = tempstr3a + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrEx[L, m].ToString();
-                    tempstr6 = tempstr6 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGotU[L, m].ToString();
+                 //   tempstr6 = tempstr6 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGotU[L, m].ToString();
                     tempstr4 = tempstr4 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrOU[L + 1, m + 1].ToString();
                     // check error values
-                    dr1 = 100.0 * (LegArrF[L, m] - LegArrGotN[L, m]) / LegArrF[L, m];
+                    //dr1 = 100.0 * (LegArrF[L, m] - LegGottN[L, m]) / LegArrF[L, m];
                     dr2 = 100.0 * (LegArrF[L, m] - LegArrGN[L, m]) / LegArrF[L, m];
                     dr3 = 100.0 * (LegArrF[L, m] - LegArrMN[L, m]) / LegArrF[L, m];
-                    sumdr1 = sumdr1 + dr1;
+                    //sumdr1 = sumdr1 + dr1;
                     sumdr2 = sumdr2 + dr2;
                     sumdr3 = sumdr3 + dr3;
-                    errstr = errstr + "\n" + L.ToString() + "  " + m.ToString() + "   " + dr1.ToString()
+                    errstr = errstr + "\n" + L.ToString() + "  " + m.ToString() //+ "   " + dr1.ToString()
                         + " " + dr2.ToString() + " " + dr3.ToString();
                 }
                 // normalized ones
                 strbuildall.AppendLine(tempstr2);
                 strbuildall.AppendLine(tempstr1);
-                strbuildall.AppendLine(tempstr5);
-                strbuildall.AppendLine(tempstr7 + "\n");
+                strbuildall.AppendLine(tempstr5 + "\n");
+               // strbuildall.AppendLine(tempstr7 + "\n");
                 // unnormalized ones
-                strbuild.AppendLine(tempstr3);
-                strbuild.AppendLine(tempstr3a);
-                strbuild.AppendLine(tempstr6);
-                strbuild.AppendLine(tempstr4 + "\n");
+                strbuildall.AppendLine(tempstr3);
+                strbuildall.AppendLine(tempstr3a);
+                //strbuildall.AppendLine(tempstr6);
+                strbuildall.AppendLine(tempstr4 + "\n");
             }
             strbuildplot.AppendLine(errstr);
 
-            // -------------------- now accelerations -----------------------------------------------------
+            // ---------------------------------------- now accelerations ---------------------------------
+            degree = 21;  // do larger for acceleration
+            order = 21;
             strbuildall.AppendLine("\naccelerations --------------- ");
             string straccum = "";
             this.opsStatus.Text = "Status: Calculate Accelerations --------------- ";
             Refresh();
 
-            //order = 4;
-            order = 120; // 10;
-            // GTDS acceleration for non-spherical portion
-            AstroLibr.FullGeopG(recef, order, normalized, convArr, normArr, gravData, out aPertG, 'y', out straccum);
-            strbuildall.AppendLine(straccum);
-            aeci = MathTimeLibr.matvecmult(transecef2eci, aPertG, 3);
-            straccum = straccum + "apertG eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
-                    + aeci[1].ToString() + "     " + aeci[2].ToString() + "\n";
-            strbuildall.AppendLine(straccum);
+            if (order < 100)
+            {
+                // GTDS acceleration for non-spherical portion
+                AstroLibr.FullGeopG(recef, order, normalized, convArr, normArr, gravData, out aPertG, 'y', out straccum);
+                strbuildall.AppendLine(straccum);
+                aeci = MathTimeLibr.matvecmult(transecef2eci, aPertG, 3);
+                straccum = straccum + "apertG eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
+                        + aeci[1].ToString() + "     " + aeci[2].ToString() + "\n";
+                strbuildall.AppendLine(straccum);
 
-            AstroLibr.FullGeopG(recef, order, normalized, convArr, normArr, gravData, out aPertG, 'n', out straccum);
-            strbuildall.AppendLine(straccum);
-          
-            // Montenbruck acceleration
-            AstroLibr.FullGeopM(recef, order, normalized, convArr, gravData, out aPertM, 'y', out straccum);
-            strbuildall.AppendLine(straccum);
-            aeci = MathTimeLibr.matvecmult(transecef2eci, aPertM, 3);
-            straccum = straccum + "apertM eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
-                    + aeci[1].ToString() + "     " + aeci[2].ToString() + "\n";
-            strbuildall.AppendLine(straccum);
+                AstroLibr.FullGeopG(recef, order, normalized, convArr, normArr, gravData, out aPertG, 'n', out straccum);
+                strbuildall.AppendLine(straccum);
 
-            AstroLibr.FullGeopM(recef, order, normalized, convArr, gravData, out aPertM, 'n', out straccum);
-            strbuildall.AppendLine(straccum);
+                // Montenbruck acceleration
+                AstroLibr.FullGeopM(recef, order, normalized, convArr, gravData, out aPertM, 'y', out straccum);
+                strbuildall.AppendLine(straccum);
+                aeci = MathTimeLibr.matvecmult(transecef2eci, aPertM, 3);
+                straccum = straccum + "apertM eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
+                        + aeci[1].ToString() + "     " + aeci[2].ToString() + "\n";
+                strbuildall.AppendLine(straccum);
 
-            // Montenbruck code acceleration
-            AstroLibr.FullGeopMC(recef, order, normalized, convArr, gravData, out aPertM1, 'y', out straccum);
-            strbuildall.AppendLine(straccum);
-            aeci = MathTimeLibr.matvecmult(transecef2eci, aPertM1, 3);
-            straccum = straccum + "apertM1 eci " + order + " " + order + " " + aeci[0].ToString() + "     "
-                    + aeci[1].ToString() + "     " + aeci[2].ToString() + "\n";
-            strbuildall.AppendLine(straccum);
+                AstroLibr.FullGeopM(recef, order, normalized, convArr, gravData, out aPertM, 'n', out straccum);
+                strbuildall.AppendLine(straccum);
 
-            AstroLibr.FullGeopMC(recef, order, normalized, convArr, gravData, out aPertM1, 'n', out straccum);
+                // Montenbruck code acceleration
+                AstroLibr.FullGeopMC(recef, order, normalized, convArr, gravData, out aPertM1, 'y', out straccum);
+                strbuildall.AppendLine(straccum);
+                aeci = MathTimeLibr.matvecmult(transecef2eci, aPertM1, 3);
+                straccum = straccum + "apertM1 eci " + order + " " + order + " " + aeci[0].ToString() + "     "
+                        + aeci[1].ToString() + "     " + aeci[2].ToString() + "\n";
+                strbuildall.AppendLine(straccum);
+
+                AstroLibr.FullGeopMC(recef, order, normalized, convArr, gravData, out aPertM1, 'n', out straccum);
+                strbuildall.AppendLine(straccum);
+            }
+
+            // Pines acceleration
+            strbuildall.AppendLine("Pines acceleration ");
+            //double[] G = new double[3];
+            double[] aPertPi = new double[3];
+            AstroLibr.FullGeopPines(latgc, order, gravData, recef, out LegPineN, out aPertPi);
             strbuildall.AppendLine(straccum);
+            strbuildall.AppendLine("0 " + LegPineN[0, 0].ToString());
+            strbuildall.AppendLine("1 " + LegPineN[1, 0].ToString() + " " + LegPineN[1, 1].ToString());
+            strbuildall.AppendLine("2 " + LegPineN[2, 0].ToString() + " " + LegPineN[2, 1].ToString() 
+                + " " + LegPineN[2, 2].ToString());
+            strbuildall.AppendLine("3 " + LegPineN[3, 0].ToString() + " " + LegPineN[3, 1].ToString() 
+                + " " + LegPineN[3, 2].ToString() + " " + LegPineN[3, 3].ToString());
+            strbuildall.AppendLine("acceleration " + order + " " + aPertPi[0] + " " + aPertPi[1] + " " 
+                + aPertPi[2]);
+
+            // Lear acceleration
+            strbuildall.AppendLine("Lear acceleration ");
+            //double[] G = new double[3];
+            double[] aPertLr = new double[3];
+            AstroLibr.FullGeopLear(latgc, order, gravData, recef, out LegLearN, out aPertLr);
+            strbuildall.AppendLine(straccum);
+            strbuildall.AppendLine("0 " + LegLearN[0, 0].ToString());
+            strbuildall.AppendLine("1 " + LegLearN[1, 0].ToString() + " " + LegLearN[1, 1].ToString());
+            strbuildall.AppendLine("2 " + LegLearN[2, 0].ToString() + " " + LegLearN[2, 1].ToString() 
+                + " " + LegLearN[2, 2].ToString());
+            strbuildall.AppendLine("3 " + LegLearN[3, 0].ToString() + " " + LegLearN[3, 1].ToString() 
+                + " " + LegLearN[3, 2].ToString() + " " + LegLearN[3, 3].ToString());
+            strbuildall.AppendLine("acceleration " + order + " " + aPertLr[0] + " " + aPertLr[1] + " " 
+                + aPertLr[2]);
 
             // Gottlieb acceleration
             strbuildall.AppendLine("Gottlieb acceleration ");
+            // this part can be done one time
+            AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, 
+                out norm2m, out normn1);
+
             double[] G = new double[3];
             double[] aPertGt = new double[3];
-            FullGeopGot(gravData, recef, normArr, order, out LegArrGott, out G, out straccum);
+            AstroLibr.FullGeopGott(latgc, order, gravData, recef, norm1, norm2, norm11, normn10,
+                  norm1m, norm2m, normn1, out LegGottN, out aPertGot);
             strbuildall.AppendLine(straccum);
+            strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());
+            strbuildall.AppendLine("1 " + LegGottN[1, 0].ToString() + " " + LegGottN[1, 1].ToString());
+            strbuildall.AppendLine("2 " + LegGottN[2, 0].ToString() + " " + LegGottN[2, 1].ToString() 
+                + " " + LegGottN[2, 2].ToString());
+            strbuildall.AppendLine("3 " + LegGottN[3, 0].ToString() + " " + LegGottN[3, 1].ToString() 
+                + " " + LegGottN[3, 2].ToString() + " " + LegGottN[3, 3].ToString());
+            strbuildall.AppendLine("acceleration " + order + " " + aPertGot[0] + " " + aPertGot[1] 
+                + " " + aPertGot[2]);
 
             // Fukushima acceleration
             strbuildall.AppendLine("Fukushima acceleration ");
@@ -8220,47 +7743,56 @@ namespace TestAllTool
             strbuildall.AppendLine("a 21  1 " + a[21, 1].ToString() + " b " + b[21, 1].ToString());
 
             // Pines approach
-            strbuildall.AppendLine("Pines acceleration ");
-            FullGeopPines(jdutc, recef, latgc, order, order, gravData, out aeci);
-            strbuildall.AppendLine("apertP    4 4   " + aeci[0].ToString() + "     " + aeci[1].ToString() + "     " + aeci[2].ToString());
+            //strbuildall.AppendLine("Pines acceleration ");
+            //FullGeopPines(jdutc, recef, latgc, order, order, gravData, out aeci);
+            //strbuildall.AppendLine("apertP    4 4   " + aeci[0].ToString() + "     " + aeci[1].ToString() + "     "
+            //+ aeci[2].ToString());
 
             strbuildall.AppendLine(straccum);
             strbuildall.AppendLine("\ngravity field " + fname + " " + order.ToString() + " --------------- ");
             strbuildall.AppendLine(" summary accelerations ----------------------------------------------- ");
-            strbuildall.AppendLine("apertG bf  " + order + " " + order + " " + aPertG[0].ToString() + "     " + aPertG[1].ToString() + "     " + aPertG[2].ToString());
-            strbuildall.AppendLine("apertM bf  " + order + " " + order + " " + aPertM[0].ToString() + "     " + aPertM[1].ToString() + "     " + aPertM[2].ToString());
-            strbuildall.AppendLine("apertMC bf " + order + " " + order + " " + aPertM1[0].ToString() + "     " + aPertM1[1].ToString() + "     " + aPertM1[2].ToString());
-            strbuildall.AppendLine("apertGt bf " + order + " " + order + " " + G[0].ToString() + "     " + G[1].ToString() + "     " + G[2].ToString());
+            strbuildall.AppendLine("apertG bf  " + order + " " + order + " " + aPertG[0].ToString() + "     " 
+                + aPertG[1].ToString() + "     " + aPertG[2].ToString());
+            strbuildall.AppendLine("apertM bf  " + order + " " + order + " " + aPertM[0].ToString() + "     " 
+                + aPertM[1].ToString() + "     " + aPertM[2].ToString());
+            strbuildall.AppendLine("apertMC bf " + order + " " + order + " " + aPertM1[0].ToString() + "     " 
+                + aPertM1[1].ToString() + "     " + aPertM1[2].ToString());
+            strbuildall.AppendLine("apertGt bf " + order + " " + order + " " + G[0].ToString() + "     " 
+                + G[1].ToString() + "     " + G[2].ToString());
 
             aPertG = MathTimeLibr.matvecmult(transecef2eci, aPertG, 3);
             aPertM = MathTimeLibr.matvecmult(transecef2eci, aPertM, 3);
             aPertM1 = MathTimeLibr.matvecmult(transecef2eci, aPertM1, 3);
             aPertGt = MathTimeLibr.matvecmult(transecef2eci, G, 3);
-            strbuildall.AppendLine("apertG  eci " + order + " " + order + " " + aPertG[0].ToString() + "     " + aPertG[1].ToString() + "     " + aPertG[2].ToString());
-            strbuildall.AppendLine("apertM  eci " + order + " " + order + " " + aPertM[0].ToString() + "     " + aPertM[1].ToString() + "     " + aPertM[2].ToString());
-            strbuildall.AppendLine("apertMC eci " + order + " " + order + " " + aPertM1[0].ToString() + "     " + aPertM1[1].ToString() + "     " + aPertM1[2].ToString());
-            strbuildall.AppendLine("apertGt eci " + order + " " + order + " " + aPertGt[0].ToString() + "     " + aPertGt[1].ToString() + "     " + aPertGt[2].ToString());
+            strbuildall.AppendLine("apertG  eci " + order + " " + order + " " + aPertG[0].ToString() + "     " 
+                + aPertG[1].ToString() + "     " + aPertG[2].ToString());
+            strbuildall.AppendLine("apertM  eci " + order + " " + order + " " + aPertM[0].ToString() + "     " 
+                + aPertM[1].ToString() + "     " + aPertM[2].ToString());
+            strbuildall.AppendLine("apertMC eci " + order + " " + order + " " + aPertM1[0].ToString() + "     " 
+                + aPertM1[1].ToString() + "     " + aPertM1[2].ToString());
+            strbuildall.AppendLine("apertGt eci " + order + " " + order + " " + aPertGt[0].ToString() + "     " 
+                + aPertGt[1].ToString() + "     " + aPertGt[2].ToString());
             
             strbuildall.AppendLine("STK ans 4x4         -0.0000003723020	-0.0000031362090   	-0.0000102647170\n");  // no 2-body
 
 
             // -------------------------- add in two body term since full geop is only disturbing part
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                  iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             aeci2[0] = -AstroLibr.gravConst.mu * reci[0] / (Math.Pow(MathTimeLibr.mag(reci), 3));
             aeci2[1] = -AstroLibr.gravConst.mu * reci[1] / (Math.Pow(MathTimeLibr.mag(reci), 3));
             aeci2[2] = -AstroLibr.gravConst.mu * reci[2] / (Math.Pow(MathTimeLibr.mag(reci), 3));
-            strbuildall.AppendLine("a2body      " + aeci2[0].ToString() + "     " + aeci2[1].ToString() + "     " + aeci2[2].ToString());
+            strbuildall.AppendLine("a2body      " + aeci2[0].ToString() + "     " + aeci2[1].ToString() + "     " 
+                + aeci2[2].ToString());
 
             aPertG[0] = aPertG[0] + aeci2[0];
             aPertG[1] = aPertG[1] + aeci2[1];
             aPertG[2] = aPertG[2] + aeci2[2];
 
             double[] temm = new double[3];
-            temm[0] = aPertG[0];
-            temm[1] = aPertG[1];
-            temm[2] = aPertG[2];
+            temm[0] = aPertM1[0];
+            temm[1] = aPertM1[1];
+            temm[2] = aPertM1[2];
 
             aPertM[0] = aPertM[0] + aeci2[0];
             aPertM[1] = aPertM[1] + aeci2[1];
@@ -8291,9 +7823,9 @@ namespace TestAllTool
             vrel[2] = vecef[2];
             strbuildall.AppendLine(" vrel " + vrel[0].ToString() + " " + vrel[1].ToString() + " " + vrel[2].ToString());
             //                 kg / m3        m2  /  kg     km / s  km / s
-            adrag[0] = -0.5 * density * cd * area / mass * magv * vrel[0] * 1000.0;  // simplify vel, get units to km/s2
-            adrag[1] = -0.5 * density * cd * area / mass * magv * vrel[1] * 1000.0;  // simplify vel, get units to km/s2
-            adrag[2] = -0.5 * density * cd * area / mass * magv * vrel[2] * 1000.0;  // simplify vel, get units to km/s2
+            adrag[0] = -0.5 * density * cd * area / mass * magv * magv * vrel[0] / magv * 1000.0;  // simplify vel, get units to km/s2
+            adrag[1] = -0.5 * density * cd * area / mass * magv * magv * vrel[1] / magv * 1000.0;  // simplify vel, get units to km/s2
+            adrag[2] = -0.5 * density * cd * area / mass * magv * magv * vrel[2] / magv * 1000.0;  // simplify vel, get units to km/s2
 
             strbuildall.AppendLine(" adrag ecef" + adrag[0].ToString() + " " + adrag[1].ToString() + " " + adrag[2].ToString());
 
@@ -8320,18 +7852,24 @@ namespace TestAllTool
             double musun, mumoon, rsmag, rmmag;
             musun = 1.32712428e11;    // km3 / s2
             mumoon = 4902.799;        // km3 / s2
-            AstroLibr.initjplde(ref jpldearr, @"D:\Codes\LIBRARY\DataLib\", "sunmooneph_430t.txt", out jdtdbjplstart, out jdFtdbjplstart);
+
+            // make sure to fix mfme inside findjpl if using 12 hr data!!!!!!!!!!!!!!!!!!!!!!
+            AstroLibr.initjplde(ref jpldearr, @"D:\Codes\LIBRARY\DataLib\", "sunmooneph_430t12.txt", out jdtdbjplstart, out jdFtdbjplstart);
+            //AstroLibr.initjplde(ref jpldearr, @"D:\Codes\LIBRARY\DataLib\", "sunmooneph_430t.txt", out jdtdbjplstart, out jdFtdbjplstart);
 
             // sun
             AstroLibr.findjpldeparam(jdtdb, jdFtdb, 's', jpldearr, jdtdbjplstart, out rsun, out rsmag, out rmoon, out rmmag);
             // stk value (chk that tdb is argument)
             double[] rsuns = new double[] { 126916355.384390, -69567131.339884, -30163629.424510 };
-            // JPL ans  2020  2 18  M          0.6306    
+            // 126054577.0753 18th       46117
+            // 126743428.8631 18th 1200  46118 if 12 hr
+            // 127422565.3381 19th       46118 if daily
+            // JPL ans  18 Feb 2020 15:08:47.23847 M       0.6306    
             double[] rmoonj = new double[] { 14462.2967, -357096.9762, -151599.3021 };
-            //JPL ans  2020  2 18 15:08:47.23847 S       0.6306  
+            // JPL ans  2020  2 18 15:08:47.23847 S       0.6306  
             double[] rsunj = new double[] { 126921698.4134, -69564121.8695, -30156263.9220 };
 
-            MathTimeLibr.addvec(1.0, rsuns, -1.0, rsun, out tempvec1);
+            MathTimeLibr.addvec(1.0, rsuns, -1.0, rsun, out tempvec1); // km
             strbuildall.AppendLine(" diff rsun stk-mine " + tempvec1[0].ToString() + " " + tempvec1[1].ToString() + " " +
                 tempvec1[2].ToString() + " " + MathTimeLibr.mag(tempvec1).ToString());
             MathTimeLibr.addvec(1.0, rsunj, -1.0, rsun, out tempvec1);
@@ -8407,9 +7945,11 @@ namespace TestAllTool
             athirdbody1[2] = mu3 * (rsat3[2] * q - reci[2] / Math.Pow(magrearth3, 3));
             strbuildall.AppendLine(" a3bodyM1 eci" + athirdbody1[0].ToString() + " " + athirdbody1[1].ToString() + " " + athirdbody1[2].ToString());
             strbuildall.AppendLine("ans moon        0.0000000000860	-0.0000000004210	-0.0000000006980\n");
+            // total acceleration
             a3body[0] = a3body[0] + athirdbody1[0];
             a3body[1] = a3body[1] + athirdbody1[1];
             a3body[2] = a3body[2] + athirdbody1[2];
+            strbuildall.AppendLine(" a3body S/M eci" + a3body[0].ToString() + " " + a3body[1].ToString() + " " + a3body[2].ToString());
             strbuildall.AppendLine("ans sun/moon    0.0000000002730	-0.0000000002680	-0.0000000008800\n");
 
 
@@ -8443,7 +7983,7 @@ namespace TestAllTool
             aeci2[2] = -AstroLibr.gravConst.mu * reci[2] / (Math.Pow(MathTimeLibr.mag(reci), 3));
             strbuildall.AppendLine(" aeci2body " + aeci2[0].ToString() + " " + aeci2[1].ToString() + " " + aeci2[2].ToString());
 
-            // totla acceleration
+            // total acceleration
             aeci[0] = aeci2[0] + a3body[0] + asrp[0] + aeci[0];
             aeci[1] = aeci2[1] + a3body[1] + asrp[1] + aeci[1];
             aeci[2] = aeci2[2] + a3body[2] + asrp[2] + aeci[2];
@@ -8490,7 +8030,7 @@ namespace TestAllTool
                 order = 100;
                 // normalized calcs, show
                 // GTDS version
-                AstroLibr.LegPolyG(latgc, order, 'y', convArr, normArr, out LegArrGU, out LegArrGN);
+                AstroLibr.LegPolyGTDS(latgc, order, 'y', out LegArrGU, out LegArrGN);
             }
             //  stop timer
             watch.Stop();
@@ -8505,7 +8045,7 @@ namespace TestAllTool
                 order = 100;
                 // normalized calcs, show
                 // Gottlieb version
-                AstroLibr.LegPolyGot(latgc, order, 'y', convArr, normArr, out LegArrGotU, out LegArrGotN);
+                AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
             }
             //  stop timer
             watch.Stop();
@@ -8519,7 +8059,7 @@ namespace TestAllTool
                 order = 100;
                 // normalized calcs, show
                 // Montenbruck version
-                AstroLibr.LegPolyM(latgc, order, 'y', convArr, out LegArrMU, out LegArrMN);
+                AstroLibr.LegPolyMont(latgc, order, 'y', out LegArrMU, out LegArrMN);
             }
             //  stop timer
             watch.Stop();
@@ -8534,7 +8074,7 @@ namespace TestAllTool
                 order = 100;
                 // normalized calcs, show
                 // Fukushima version
-                AstroLibr.LegPolyF(latgc, order, 'y', normArr, out LegArrF);
+                //AstroLibr.LegPolyFN(latgc, order, 'y', out LegArrF);
             }
             //  stop timer
             watch.Stop();
@@ -8601,7 +8141,7 @@ namespace TestAllTool
             //if (fname.Contains("EGM-08")) // EGM-08norm100.grv
             //    startKtr = 83;  // or 21 for the larger file... which has gfc in the first col too
             fname = "D:/Dataorig/Gravity/GEM10Bunnorm36.grv";
-            normal = 'n';
+            normalized = 'n';
             //double latgc;
             //Int32 degree, order;
             //double[,] LegArr;  // montenbruck
@@ -8629,7 +8169,7 @@ namespace TestAllTool
             this.opsStatus.Text = "Status: Reading gravity field Gottlieb test";
             Refresh();
 
-            AstroLibr.initGravityField(fname, 17, normal, out order, out gravData, out convArr, out normArr);
+            AstroLibr.initGravityField(fname, normalized, 17, out order, out gravData);
             strbuildall.AppendLine("\ncoefficents --------------- ");
             strbuildall.AppendLine("c  2  0  " + gravData.c[2, 0].ToString() + " s " + gravData.s[2, 0].ToString());
             strbuildall.AppendLine("c  4  0  " + gravData.c[4, 0].ToString() + " s " + gravData.s[4, 0].ToString());
@@ -8646,8 +8186,7 @@ namespace TestAllTool
 
             degree = 36;  // 36
             order = 36;
-            AstroLibr.LegPolyG(latgc, order, normalized, convArr, normArr, out LegArrGU, out LegArrGN);
-            AstroLibr.LegPolyM(latgc, order, normalized, convArr, out LegArrMU, out LegArrMN);
+            AstroLibr.LegPolyGTDS(latgc, order, normalized, out LegArrGU, out LegArrGN);
             // get geodyn version
             AstroLibr.geodynlegp(latgc, degree, order, out LegArrOU, out LegArrON);
             // get exact values
@@ -8667,8 +8206,8 @@ namespace TestAllTool
                 {
                     tempstr1 = tempstr1 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMN[L, m].ToString();
                     tempstr2 = tempstr2 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGN[L, m].ToString();
-                    tempstr3 = tempstr3 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMU[L, m].ToString();
-                    tempstr4 = tempstr4 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrOU[L + 1, m + 1].ToString();
+                    //tempstr3 = tempstr3 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMU[L, m].ToString();
+                    //tempstr4 = tempstr4 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrOU[L + 1, m + 1].ToString();
                     //dr1 = 100.0 * (LegArr[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
                     //dr2 = 100.0 * (LegArr1[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
                     //sumdr1 = sumdr1 + dr1;
@@ -9160,8 +8699,7 @@ namespace TestAllTool
             avec = new double[] { 0.0, 0.0, 0.0 };
 
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                  iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             strbuild.AppendLine("==================== do the sensitivity tests \n");
             strbuild.AppendLine("1.  Cartesian Covariance \n");
@@ -9319,8 +8857,7 @@ namespace TestAllTool
             avec = new double[] { 0.0, 0.0, 0.0 };
 
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  
             //vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -9492,8 +9029,7 @@ namespace TestAllTool
             avec = new double[] { 0.0, 0.0, 0.0 };
 
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  
             //vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -9659,8 +9195,7 @@ namespace TestAllTool
             avec = new double[] { 0.0, 0.0, 0.0 };
 
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                  iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  
             //vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -9829,8 +9364,7 @@ namespace TestAllTool
             avec = new double[] { 0.0, 0.0, 0.0 };
 
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                  iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  
             //vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -9996,8 +9530,7 @@ namespace TestAllTool
             avec = new double[] { 0.0, 0.0, 0.0 };
 
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                 AstroLib.EOpt.e80, iau80arr, iau06arr,
-                 jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+                  iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  
             //vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -10025,9 +9558,8 @@ namespace TestAllTool
             strbuild.AppendLine(strout);
 
             strbuild.AppendLine("  Cartesian Covariance from Flight #7 above \n");
-            AstroLibr.covfl2ct(fltcovmeana, fltstate, anomflt, jdtt, jdttfrac, jdut1, jdxysstart,
-                lod, xp, yp, 2, ddpsi, ddeps, ddx, ddy,
-                iau80arr, iau06arr, AstroLib.EOpt.e80, out cartcovmeanarev, out tmfl2ct);
+            AstroLibr.covfl2ct(fltcovmeana, fltstate, anomflt, jdtt, jdttfrac, jdut1, 
+                lod, xp, yp, 2, ddpsi, ddeps, iau80arr, out cartcovmeanarev, out tmfl2ct);
 
             printcov(cartcovmeanarev, "ct", 'm', anomflt, out strout);
             strbuild.AppendLine(strout);
