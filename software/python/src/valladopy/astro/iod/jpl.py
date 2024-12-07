@@ -81,9 +81,9 @@ def find_jplde_param(
     """
     # Compute whole-day Julian date and minutes from midnight
     jdb = np.floor(jdtdb + jdtdb_f) + 0.5
-    mfme = (jdtdb + jdtdb_f - jdb) * 1440.0
+    mfme = (jdtdb + jdtdb_f - jdb) * const.DAY2MIN
     if mfme < 0.0:
-        mfme += 1440.0
+        mfme += const.DAY2MIN
 
     # Determine record index
     jdjpldestarto = np.floor(jdtdb + jdtdb_f - jdjpldestart)
@@ -110,7 +110,7 @@ def find_jplde_param(
     )
 
     if interp == "l":  # Linear interpolation
-        fixf = mfme / 1440.0
+        fixf = mfme / const.DAY2MIN
         rsun += fixf * (
             np.array(
                 [
@@ -133,7 +133,7 @@ def find_jplde_param(
         )
 
     elif interp == "s":  # Cubic spline interpolation
-        fixf = mfme / 1440.0  # Fractional part of the day in Julian days
+        fixf = mfme / const.DAY2MIN
         idx1, idx2 = recnum - 1, recnum + 3
         mjds = jpldearr["mjd"][idx1:idx2]
 
