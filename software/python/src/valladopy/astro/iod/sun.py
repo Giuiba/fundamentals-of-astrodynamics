@@ -55,7 +55,7 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
     eclplong = np.radians(eclplong) % const.TWOPI
 
     # Obliquity of the ecliptic (radians)
-    obliquity = np.radians(23.439291 - 0.0130042 * tut1)
+    obliquity = np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * tut1)
 
     # Magnitude of the Sun vector (AU)
     magr = (

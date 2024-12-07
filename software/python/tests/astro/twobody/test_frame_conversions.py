@@ -276,11 +276,11 @@ class TestEcliptic:
     @pytest.fixture
     def ell(self):
         rr = 7000
-        ecllon = -1.2055911326998556
-        ecllat = 0.9142332870570866
-        drr = 6.746917593386582
-        decllon = -0.00018796226538078577
-        decllat = -0.0003849993357129581
+        ecllon = -1.205591131641763
+        ecllat = 0.9142332891895931
+        drr = 6.746917593386583
+        decllon = -0.0001879622667434771
+        decllat = -0.0003849993355596977
         return rr, ecllon, ecllat, drr, decllon, decllat
 
     def test_ell2rv(self, rv, ell):
