@@ -95,7 +95,7 @@ RADPDAY = 2.0 * np.pi * 1.002737909350795
 # Astronomical distances & measurements
 # fmt: off
 SPEEDOFLIGHT = 299792.458           # km/s
-AU = 149597870.7                    # km
+AU2KM = 149597870.7                 # km
 EARTH2MOON = 384400.0               # km
 MOONRADIUS = 1738.0                 # km
 SUNRADIUS = 696000.0                # km
