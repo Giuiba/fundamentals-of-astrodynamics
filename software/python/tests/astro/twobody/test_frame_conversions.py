@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import src.valladopy.astro.twobody.frame_conversions as fc
-from src.valladopy.astro.twobody.kepler import OrbitType
+from src.valladopy.astro.twobody.utils import OrbitType
 from src.valladopy.constants import ARCSEC2RAD
 from ...conftest import custom_isclose, custom_allclose
 

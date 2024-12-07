@@ -1,3 +1,6 @@
+import pytest
+from pathlib import Path
+
 import numpy as np
 from numpy.typing import ArrayLike
 
@@ -50,3 +53,13 @@ def custom_allclose(
         scale_factors = np.where(b != 0, 10 ** np.floor(np.log10(np.abs(b))), 1)
     scaled_atol = atol * scale_factors
     return np.all(np.isclose(a, b, rtol=rtol, atol=scaled_atol))
+
+
+@pytest.fixture
+def data_dir() -> Path:
+    """Fixture providing the path to the data directory at the root of the repository.
+
+    Returns:
+        Path: The path to the `datalib` directory
+    """
+    return Path(__file__).resolve().parents[3] / "datalib"

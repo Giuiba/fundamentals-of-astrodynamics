@@ -127,7 +127,7 @@ function [r2,r3,f1,f2,q1,magr1,magr2,a,deltae32] = doubler( cc1,cc2,magrsite1,ma
         deltae32 = atan2(sinde32,cosde32) + twopi * n23;
 
         sinde21 = magr1/sqrt(a*p)*sindv21+magr1/p*(1-cosdv21)*s;
-        cosde21 = 1-magr2*magr1/(a*p)*(1-cosdv21) + twopi * n12;
+        cosde21 = 1-magr2*magr1/(a*p)*(1-cosdv21);
         deltae21 = atan2(sinde21,cosde21)+ twopi * n12;
 
         deltam32 = deltae32+2*s*(sin(deltae32/2))^2-c*sin(deltae32);

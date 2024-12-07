@@ -6,11 +6,46 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
-import numpy as np
-from numpy.typing import ArrayLike
+from enum import Enum
 from typing import Tuple
 
+import numpy as np
+from numpy.typing import ArrayLike
+
 from ...constants import RE, MU, ECCEARTHSQRD, SMALL, TWOPI
+
+
+class OrbitType(Enum):
+    CIR_EQUATORIAL = 1  # circular equatorial
+    CIR_INCLINED = 2  # circular inclined
+    EPH_EQUATORIAL = 3  # elliptical, parabolic, hyperbolic equatorial
+    EPH_INCLINED = 4  # elliptical, parabolic, hyperbolic inclined
+
+
+def determine_orbit_type(ecc: float, incl: float, tol: float = SMALL) -> OrbitType:
+    """Determine the type of orbit based on eccentricity and inclination
+
+    Args:
+        ecc (float): The eccentricity of the orbit
+        incl (float): The inclination of the orbit in radians
+        tol (float, optional): Small value for tolerance
+
+    Returns:
+        OrbitType: The type of orbit categorized into one of the following:
+                   - circular equatorial
+                   - circular inclined
+                   - elliptical, parabolic, hyperbolic equatorial
+                   - elliptical, parabolic, hyperbolic inclined
+    """
+    if ecc < tol:
+        if (incl < tol) or (abs(incl - np.pi) < tol):
+            return OrbitType.CIR_EQUATORIAL
+        else:
+            return OrbitType.CIR_INCLINED
+    elif (incl < tol) or (abs(incl - np.pi) < tol):
+        return OrbitType.EPH_EQUATORIAL
+    else:
+        return OrbitType.EPH_INCLINED
 
 
 def is_equatorial(inc: float) -> bool:
