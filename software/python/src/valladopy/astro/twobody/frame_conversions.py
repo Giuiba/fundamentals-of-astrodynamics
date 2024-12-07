@@ -13,8 +13,8 @@ from typing import Tuple
 from ... import constants as const
 from ...mathtime.vector import rot1, rot2, rot3, angle, unit
 from ..time.frame_conversions import ecef2eci, eci2ecef
-from .kepler import OrbitType, determine_orbit_type, newtonnu, newtonm
-from .utils import site, is_equatorial
+from .newton import newtonnu, newtonm
+from .utils import OrbitType, determine_orbit_type, is_equatorial, site
 
 
 ###############################################################################
