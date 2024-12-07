@@ -6,9 +6,10 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
-from typing import Tuple, Dict
+from typing import Any, Tuple, Dict
 
 import numpy as np
+from scipy.interpolate import CubicSpline
 
 from ... import constants as const
 from ...mathtime.julian_date import jday
@@ -54,3 +55,94 @@ def init_jplde(filepath: str) -> Tuple[Dict[str, np.ndarray], float, float]:
     )
 
     return jpldearr, jdjpldestart, jdjpldestart_frac
+
+
+def find_jplde_param(
+    jdtdb: float,
+    jdtdb_f: float,
+    interp: str,
+    jpldearr: dict[str, Any],
+    jdjpldestart: float,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Finds the JPL DE parameters for a given time using interpolation.
+
+    Args:
+        jdtdb (float): Epoch Julian date (days from 4713 BC)
+        jdtdb_f (float): Fractional part of the epoch Julian date
+        interp (str): Interpolation method ('n' = none, 'l' = linear, 's' = spline)
+        jpldearr (dict[str, Any]): Dictionary of JPL DE data records
+        jdjpldestart (float): Julian date of the start of the JPL DE data
+
+    Returns:
+        tuple: (rsun, rmoon)
+            rsun (np.ndarray): ECI sun position vector in km
+            rmoon (np.ndarray): ECI moon position vector in km
+    """
+    # Compute whole-day Julian date and minutes from midnight
+    jdb = np.floor(jdtdb + jdtdb_f) + 0.5
+    mfme = (jdtdb + jdtdb_f - jdb) * 1440.0
+    if mfme < 0.0:
+        mfme += 1440.0
+
+    # Determine record index
+    jdjpldestarto = np.floor(jdtdb + jdtdb_f - jdjpldestart)
+    recnum = int(jdjpldestarto) - 1
+
+    # Default values if out of bounds
+    if not (0 <= recnum <= len(jpldearr["rsun1"]) - 1):
+        return np.zeros(3), np.zeros(3)
+
+    # Non-interpolated values
+    rsun = np.array(
+        [
+            jpldearr["rsun1"][recnum],
+            jpldearr["rsun2"][recnum],
+            jpldearr["rsun3"][recnum],
+        ]
+    )
+    rmoon = np.array(
+        [
+            jpldearr["rmoon1"][recnum],
+            jpldearr["rmoon2"][recnum],
+            jpldearr["rmoon3"][recnum],
+        ]
+    )
+
+    if interp == "l":  # Linear interpolation
+        fixf = mfme / 1440.0
+        rsun += fixf * (
+            np.array(
+                [
+                    jpldearr["rsun1"][recnum + 1],
+                    jpldearr["rsun2"][recnum + 1],
+                    jpldearr["rsun3"][recnum + 1],
+                ]
+            )
+            - rsun
+        )
+        rmoon += fixf * (
+            np.array(
+                [
+                    jpldearr["rmoon1"][recnum + 1],
+                    jpldearr["rmoon2"][recnum + 1],
+                    jpldearr["rmoon3"][recnum + 1],
+                ]
+            )
+            - rmoon
+        )
+
+    elif interp == "s":  # Cubic spline interpolation
+        fixf = mfme / 1440.0  # Fractional part of the day in Julian days
+        idx1, idx2 = recnum - 1, recnum + 3
+        mjds = jpldearr["mjd"][idx1:idx2]
+
+        # Interpolate each component of rsun and rmoon separately
+        rsun[0] = CubicSpline(mjds, jpldearr["rsun1"][idx1:idx2])(mjds[1] + fixf)
+        rsun[1] = CubicSpline(mjds, jpldearr["rsun2"][idx1:idx2])(mjds[1] + fixf)
+        rsun[2] = CubicSpline(mjds, jpldearr["rsun3"][idx1:idx2])(mjds[1] + fixf)
+        rmoon[0] = CubicSpline(mjds, jpldearr["rmoon1"][idx1:idx2])(mjds[1] + fixf)
+        rmoon[1] = CubicSpline(mjds, jpldearr["rmoon2"][idx1:idx2])(mjds[1] + fixf)
+        rmoon[2] = CubicSpline(mjds, jpldearr["rmoon3"][idx1:idx2])(mjds[1] + fixf)
+
+    return rsun, rmoon
