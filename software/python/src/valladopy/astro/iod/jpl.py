@@ -6,6 +6,7 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
+from enum import Enum
 from typing import Any, Tuple, Dict
 
 import numpy as np
@@ -13,6 +14,12 @@ from scipy.interpolate import CubicSpline
 
 from ... import constants as const
 from ...mathtime.julian_date import jday
+
+
+class JPLInterp(Enum):
+    NONE = "n"
+    LINEAR = "l"
+    SPLINE = "s"
 
 
 def init_jplde(filepath: str) -> Tuple[Dict[str, np.ndarray], float, float]:
@@ -60,9 +67,9 @@ def init_jplde(filepath: str) -> Tuple[Dict[str, np.ndarray], float, float]:
 def find_jplde_param(
     jdtdb: float,
     jdtdb_f: float,
-    interp: str,
     jpldearr: dict[str, Any],
     jdjpldestart: float,
+    interp: JPLInterp = JPLInterp.NONE,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Finds the JPL DE parameters for a given time using interpolation.
@@ -70,9 +77,10 @@ def find_jplde_param(
     Args:
         jdtdb (float): Epoch Julian date (days from 4713 BC)
         jdtdb_f (float): Fractional part of the epoch Julian date
-        interp (str): Interpolation method ('n' = none, 'l' = linear, 's' = spline)
         jpldearr (dict[str, Any]): Dictionary of JPL DE data records
         jdjpldestart (float): Julian date of the start of the JPL DE data
+        interp (JPLInterp, optional): Interpolation method to use
+                                      (default is JPLInterp.NONE)
 
     Returns:
         tuple: (rsun, rmoon)
@@ -109,8 +117,11 @@ def find_jplde_param(
         ]
     )
 
-    if interp == "l":  # Linear interpolation
-        fixf = mfme / const.DAY2MIN
+    # Fix for interpolation (get back to minutes)
+    fixf = mfme / const.DAY2MIN
+
+    # Linear interpolation
+    if interp == JPLInterp.LINEAR:
         rsun += fixf * (
             np.array(
                 [
@@ -132,8 +143,8 @@ def find_jplde_param(
             - rmoon
         )
 
-    elif interp == "s":  # Cubic spline interpolation
-        fixf = mfme / const.DAY2MIN
+    # Cubic spline interpolation
+    elif interp == JPLInterp.SPLINE:
         idx1, idx2 = recnum - 1, recnum + 3
         mjds = jpldearr["mjd"][idx1:idx2]
 
