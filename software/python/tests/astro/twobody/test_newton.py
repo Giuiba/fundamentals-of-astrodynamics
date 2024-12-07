@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import src.valladopy.astro.twobody.newton as newton
-from ...conftest import custom_isclose
+from ...conftest import custom_isclose, DEFAULT_TOL
 
 
 @pytest.mark.parametrize(
@@ -29,8 +29,8 @@ def test_newtonnu():
     ecc = 0.1
     nu = np.radians(45)
     e0, m = newton.newtonnu(ecc, nu)
-    assert abs(np.degrees(e0) - 41.078960346507934) < 1e-12
-    assert abs(np.degrees(m)) - 37.31406335764441 < 1e-12
+    assert np.isclose(np.degrees(e0), 41.078960346507934, rtol=DEFAULT_TOL)
+    assert np.isclose(np.degrees(m), 37.31406335764441, rtol=DEFAULT_TOL)
 
 
 @pytest.mark.parametrize(

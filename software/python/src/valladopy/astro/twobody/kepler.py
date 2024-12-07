@@ -137,7 +137,7 @@ def kepler(
 
     # Check if f and g values are consistent
     temp = f * gdot - fdot * g
-    if np.abs(temp - 1.0) > 0.00001:
+    if np.abs(temp - 1.0) > 1e-5:
         logger.warning("f and g values are inconsistent")
 
     return r, v
@@ -169,7 +169,16 @@ def pkepler(
     small = 1e-10  # Small number for floating-point comparisons
 
     # Convert position and velocity to orbital elements
-    p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper, _ = rv2coe(ro, vo)
+    output = rv2coe(ro, vo)
+    processed_output = tuple(
+        0.0 if isinstance(x, float) and np.isnan(x) else x for x in output
+    )
+    p, a, ecc, incl, raan, _, nu, m, arglat, truelon, lonper, _ = processed_output
+
+    # Check for negative semi-major axis
+    if a < 0.0:
+        logger.error("Negative semi-major axis encountered")
+        return np.zeros(3), np.zeros(3)
 
     # Mean motion
     n = np.sqrt(mu / (a**3))
@@ -220,4 +229,5 @@ def pkepler(
 
     # Convert updated orbital elements back to position and velocity
     r, v = coe2rv(p, ecc, incl, raan, nu, arglat, truelon, lonper)
-    return np.array(r), np.array(v)
+
+    return r, v
