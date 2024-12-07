@@ -57,9 +57,9 @@ def custom_allclose(
 
 @pytest.fixture
 def data_dir() -> Path:
-    """Fixture providing the path to the data directory at the root of the repository
+    """Fixture providing the path to the data directory at the root of the repository.
 
     Returns:
-        Path: The path to the `datalib` directory.
+        Path: The path to the `datalib` directory
     """
     return Path(__file__).resolve().parents[3] / "datalib"

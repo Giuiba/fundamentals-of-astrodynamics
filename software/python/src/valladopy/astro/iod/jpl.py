@@ -31,7 +31,7 @@ def init_jplde(filepath: str) -> Tuple[Dict[str, np.ndarray], float, float]:
 
     Returns:
         tuple: (jpldearr, jdjpldestart, jdjpldestart_frac)
-            jpldearr (dict[str, np.ndarray]): Dictionary of JPL DE data records.
+            jpldearr (dict[str, np.ndarray]): Dictionary of JPL DE data records
             jdjpldestart (float): Julian date of the start of the JPL DE data
             jdjpldestart_frac (float): Fractional part of the Julian date at the start
     """
