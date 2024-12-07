@@ -7,6 +7,24 @@ from ...conftest import DEFAULT_TOL, custom_allclose
 
 
 @pytest.mark.parametrize(
+    "ecc, incl, expected_orbit_type",
+    [
+        (0.0, 0.0, utils.OrbitType.CIR_EQUATORIAL),  # Circular equatorial
+        (0.0, np.pi, utils.OrbitType.CIR_EQUATORIAL),  # Circular equatorial
+        (0.0, 0.1, utils.OrbitType.CIR_INCLINED),  # Circular inclined
+        (0.1, 0.0, utils.OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
+        (0.1, np.pi, utils.OrbitType.EPH_EQUATORIAL),  # Elliptical equatorial
+        (0.1, 0.1, utils.OrbitType.EPH_INCLINED),  # Elliptical inclined
+        (1.1, 0.0, utils.OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
+        (1.1, np.pi, utils.OrbitType.EPH_EQUATORIAL),  # Hyperbolic equatorial
+        (1.1, 0.1, utils.OrbitType.EPH_INCLINED),  # Hyperbolic inclined
+    ],
+)
+def test_determine_orbit_type(ecc, incl, expected_orbit_type):
+    assert utils.determine_orbit_type(ecc, incl) == expected_orbit_type
+
+
+@pytest.mark.parametrize(
     "inc, expected",
     [(0, True), (np.pi, True), (np.pi / 2, False), (np.pi / 4, False)]  # fmt: skip
 )
