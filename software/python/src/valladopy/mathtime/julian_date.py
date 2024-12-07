@@ -36,7 +36,7 @@ class CalendarType(Enum):
 
 
 def jday(
-    year: int, month: int, day: int, hour: int, minute: int, second: float
+    year: int, month: int, day: int, hour: int = 0, minute: int = 0, second: float = 0.0
 ) -> Tuple[float, float]:
     """Calculate the Julian Date (JD) and fractional day
 
@@ -49,12 +49,13 @@ def jday(
         year (int): Year (e.g., 2024)
         month (int): Month (1 to 12)
         day (int): Day (1 to 31)
-        hour (int): Universal Time hour (0 to 23)
-        minute (int): Universal Time minute (0 to 59)
-        second (float): Universal Time second (0.0 to 59.999)
+        hour (int, optional): Universal Time hour (0 to 23) (defaults to 0)
+        minute (int, optional): Universal Time minute (0 to 59) (defaults to 0)
+        second (float, optional): Universal Time second (0.0 to 59.999)
+                                  (defaults to 0.0)
 
     Returns:
-        tuple:
+        tuple: (jd, jd_frac)
             jd (float): Julian Date
             jd_frac (float): Fractional part of the Julian Date
     """

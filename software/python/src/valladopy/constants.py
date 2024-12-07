@@ -49,6 +49,7 @@ HR2RAD = DEG2HR * np.radians(1)
 # Time
 J2000 = 2451545.0  # Julian date of the epoch J2000.0 (noon)
 J2000_UTC = 2451544.5  # Julian date of the epoch J2000.0 in UTC (midnight)
+JD_TO_MJD_OFFSET = 2400000.5  # offset between Julian and Modified Julian dates
 
 # EGM-08 (Earth) constants used here
 # fmt: off
