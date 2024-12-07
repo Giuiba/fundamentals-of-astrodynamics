@@ -43,6 +43,7 @@ def test_kepler(ro, vo, dtsec, r_expected, v_expected):
 
 
 def test_pkepler():
+    # TODO: test other orbit types
     # Input values
     ro = [-6518.1083, -2403.8479, -22.1722]
     vo = [2.604057, -7.105717, -0.263218]

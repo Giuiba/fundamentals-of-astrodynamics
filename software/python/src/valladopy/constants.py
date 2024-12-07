@@ -59,6 +59,7 @@ FLAT = 1.0 / 298.257223563
 EARTHROT = 7.292115e-5              # rad/s
 MU = 398600.4415                    # km^3/s^2
 MUM = 3.986004415e14                # m^3/s^2
+J2 = 1.826267e-3
 # fmt: on
 
 # Derived constants from the base values

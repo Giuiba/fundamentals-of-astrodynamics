@@ -12,10 +12,10 @@ import numpy as np
 from numpy.typing import ArrayLike
 from typing import Tuple
 
-from ...constants import SMALL, MU, TWOPI
+from ...constants import SMALL, RE, J2, MU, TWOPI
 from .frame_conversions import rv2coe, coe2rv
 from .newton import newtonm
-from .utils import findc2c3
+from .utils import is_equatorial, findc2c3
 
 
 logger = logging.getLogger(__name__)
@@ -161,13 +161,6 @@ def pkepler(
             r (np.ndarray): Propagated ECI position vector in km
             v (np.ndarray): Propagated ECI velocity vector in km/s
     """
-    # Constants
-    re = 6378.1363  # Earth radius [km]
-    mu = 398600.4415  # Gravitational parameter [km³/s²]
-    j2 = 0.001826267  # J2 perturbation constant
-    twopi = 2 * np.pi
-    small = 1e-10  # Small number for floating-point comparisons
-
     # Convert position and velocity to orbital elements
     output = rv2coe(ro, vo)
     processed_output = tuple(
@@ -181,10 +174,10 @@ def pkepler(
         return np.zeros(3), np.zeros(3)
 
     # Mean motion
-    n = np.sqrt(mu / (a**3))
+    n = np.sqrt(MU / (a**3))
 
     # J2 perturbation effects
-    j2op2 = (n * 1.5 * re**2 * j2) / (p**2)
+    j2op2 = (n * 1.5 * RE**2 * J2) / (p**2)
     raandot = -j2op2 * np.cos(incl)
     argpdot = j2op2 * (2.0 - 2.5 * np.sin(incl) ** 2)
     mdot = n
@@ -195,37 +188,35 @@ def pkepler(
     p = a * (1.0 - ecc**2)
 
     # Update orbital elements
-    if ecc < small:
+    if ecc < SMALL:
         # Circular orbit
-        if (incl < small) or (abs(incl - np.pi) < small):
+        if is_equatorial(incl):
             # Circular equatorial
             truelondot = raandot + argpdot + mdot
             truelon = truelon + truelondot * dtsec
-            truelon = np.mod(truelon, twopi)
+            truelon = np.mod(truelon, TWOPI)
         else:
             # Circular inclined
             raan = raan + raandot * dtsec
-            raan = np.mod(raan, twopi)
+            raan = np.mod(raan, TWOPI)
             arglatdot = argpdot + mdot
             arglat = arglat + arglatdot * dtsec
-            arglat = np.mod(arglat, twopi)
+            arglat = np.mod(arglat, TWOPI)
     else:
         # Elliptical orbit
-        if (incl < small) or (abs(incl - np.pi) < small):
+        if is_equatorial(incl):
             # Elliptical equatorial
             lonperdot = raandot + argpdot
             lonper = lonper + lonperdot * dtsec
-            lonper = np.mod(lonper, twopi)
-            m = m + mdot * dtsec + ndot * dtsec**2 + nddot * dtsec**3
-            m = np.mod(m, twopi)
-            e0, nu = newtonm(ecc, m)
+            lonper = np.mod(lonper, TWOPI)
         else:
             # Elliptical inclined
             raan = raan + raandot * dtsec
-            raan = np.mod(raan, twopi)
-            m = m + mdot * dtsec + ndot * dtsec**2 + nddot * dtsec**3
-            m = np.mod(m, twopi)
-            e0, nu = newtonm(ecc, m)
+            raan = np.mod(raan, TWOPI)
+
+        m = m + mdot * dtsec + ndot * dtsec**2 + nddot * dtsec**3
+        m = np.mod(m, TWOPI)
+        e0, nu = newtonm(ecc, m)
 
     # Convert updated orbital elements back to position and velocity
     r, v = coe2rv(p, ecc, incl, raan, nu, arglat, truelon, lonper)
