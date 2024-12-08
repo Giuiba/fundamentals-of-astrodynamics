@@ -19,19 +19,22 @@ def test_position():
 
 
 @pytest.mark.parametrize(
-    "event_type, sunriset_expected, sunset_expected",
+    "event_type, lon, sunriset_expected, sunset_expected",
     [
-        ("s", 5.972768319603184, 18.254933720588195),
-        ("c", 5.521700171944827, 18.706162691802458),
-        ("n", 4.992562953381093, 19.235701157332667),
-        ("a", 4.452701865963909, 19.776248578494837),
+        # Example 5-2
+        ("s", 0, 5.972768319603184, 18.254933720588195),
+        # Other options
+        ("c", 0, 5.521700171944827, 18.706162691802458),
+        ("n", 0, 4.992562953381093, 19.235701157332667),
+        ("a", 0, 4.452701865963909, 19.776248578494837),
+        # Non-zero longitude
+        ("s", np.radians(-74.3), 5.967174864254953, 18.258450003347587),
     ],
 )
-def test_sunriset(event_type, sunriset_expected, sunset_expected):
+def test_sunriset(event_type, lon, sunriset_expected, sunset_expected):
     # Vallado 2007, Example 5-2
     jd = 2450165.5
     latgd = np.radians(40)
-    lon = 0
     sunrise, sunset = sun.sunriset(jd, latgd, lon, event_type)
 
     # Expected values

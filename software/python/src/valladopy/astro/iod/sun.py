@@ -96,19 +96,25 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
 def sunriset(
     jd: float, latgd: float, lon: float, whichkind: str = "s"
 ) -> Tuple[float, float]:
-    """
-    Finds the universal time for sunrise and sunset given the day and site location.
+    """Finds the universal time for sunrise and sunset given the day and site location.
+
+    References:
+        Vallado: 2007, p. 283, Algorithm 30
 
     Args:
-        jd: Julian date (UTC), days from 4713 BCE.
-        latgd: Geodetic latitude of the site [radians].
-        lon: Longitude of the site (west negative) [radians].
-        whichkind: Type of event ('s', 'c', 'n', 'a').
+        jd (float): Julian date (days from 4713 BC)
+        latgd (float): Geodetic latitude of the site in radians
+        lon (float): Longitude of the site in radians (west is negative)
+        whichkind (str): Type of event to calculate:
+            - 's': sunrise/sunset
+            - 'c': civil twilight
+            - 'n': nautical twilight
+            - 'a': astronomical twilight
 
     Returns:
-        Tuple containing:
-        - utsunrise: Universal time of sunrise [hours].
-        - utsunset: Universal time of sunset [hours].
+        tuple: (sunrise, sunset)
+            sunrise (float): Universal time of sunrise in hours
+            sunset (float): Universal time of sunset in hours
     """
     # Normalize longitude to -π to π
     lon = (lon + np.pi) % const.TWOPI - np.pi
@@ -129,32 +135,39 @@ def sunriset(
     # Initialize results dictionary
     results = {"sunrise": np.nan, "sunset": np.nan}
 
-    # Loop for sunrise (opt=1) and sunset (opt=2)
-    for event, jd_offset in zip(("sunrise", "sunset"), (6.0, 18.0)):
+    # Loop for sunrise and sunset
+    initial_guess_times = {"sunrise": 6.0, "sunset": 18.0}
+    for event, jd_offset in initial_guess_times.items():
         # Initialize Julian date for the day
-        jdtemp = jd + (np.degrees(-lon) / 15.0 / 24.0) + jd_offset / 24.0
+        jdtemp = (
+            jd
+            + (np.degrees(-lon) / const.DEG2HR / const.DAY2HR)
+            + jd_offset / const.DAY2HR
+        )
 
         # Julian centuries from J2000.0
-        tut1 = (jdtemp - 2451545.0) / 36525.0
+        tut1 = (jdtemp - const.J2000) / const.CENT2DAY
 
         # Mean longitude of the Sun (degrees)
-        meanlonsun = (280.4606184 + 36000.77005361 * tut1) % 360.0
+        meanlonsun = (280.4606184 + 36000.77005361 * tut1) % np.degrees(const.TWOPI)
 
         # Mean anomaly of the Sun (radians)
-        meananomalysun = np.radians((357.5277233 + 35999.05034 * tut1) % 360.0)
+        meananomalysun = np.radians((357.5277233 + 35999.05034 * tut1)) % const.TWOPI
 
         # Ecliptic longitude of the Sun (radians)
-        lonecliptic = np.radians(
-            (
-                meanlonsun
-                + 1.914666471 * np.sin(meananomalysun)
-                + 0.019994643 * np.sin(2.0 * meananomalysun)
+        lonecliptic = (
+            np.radians(
+                (
+                    meanlonsun
+                    + 1.914666471 * np.sin(meananomalysun)
+                    + 0.019994643 * np.sin(2.0 * meananomalysun)
+                )
             )
-            % 360.0
+            % const.TWOPI
         )
 
         # Obliquity of the ecliptic (radians)
-        obliquity = np.radians(23.439291 - 0.0130042 * tut1)
+        obliquity = np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * tut1)
 
         # Right ascension and declination (radians)
         ra = np.arctan(np.cos(obliquity) * np.tan(lonecliptic))
@@ -180,8 +193,8 @@ def sunriset(
             - 4.50876723431868e-10 * tut1**3
         ) % const.TWOPI
         uttemp = (lha + ra - gst) % const.TWOPI
-        uttemp = np.degrees(uttemp) / 15.0  # convert radians to hours
-        uttemp = uttemp % 24.0
+        uttemp = np.degrees(uttemp) / const.DEG2HR
+        uttemp = uttemp % const.DAY2HR
 
         # Assign to sunrise or sunset
         results[event] = uttemp
