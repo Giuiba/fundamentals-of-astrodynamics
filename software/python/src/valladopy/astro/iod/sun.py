@@ -5,16 +5,25 @@
 # Copyright (c) 2024
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
+
 import logging
+from enum import Enum
+from typing import Tuple
 
 import numpy as np
-from typing import Tuple
 
 from ... import constants as const
 
 
 # Setup logging
 logger = logging.getLogger(__name__)
+
+
+class SunEventType(Enum):
+    SUNRISESET = "s"
+    CIVIL_TWILIGHT = "c"
+    NAUTICAL_TWILIGHT = "n"
+    ASTRONOMICAL_TWILIGHT = "a"
 
 
 def position(jd: float) -> Tuple[np.ndarray, float, float]:
@@ -94,7 +103,10 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
 
 
 def sunriset(
-    jd: float, latgd: float, lon: float, whichkind: str = "s"
+    jd: float,
+    latgd: float,
+    lon: float,
+    event_type: SunEventType = SunEventType.SUNRISESET,
 ) -> Tuple[float, float]:
     """Finds the universal time for sunrise and sunset given the day and site location.
 
@@ -105,11 +117,8 @@ def sunriset(
         jd (float): Julian date (days from 4713 BC)
         latgd (float): Geodetic latitude of the site in radians
         lon (float): Longitude of the site in radians (west is negative)
-        whichkind (str): Type of event to calculate:
-            - 's': sunrise/sunset
-            - 'c': civil twilight
-            - 'n': nautical twilight
-            - 'a': astronomical twilight
+        event_type (SunEventType): Type of event to calculate
+                                   (default is SunEventType.SUNRISESET)
 
     Returns:
         tuple: (sunrise, sunset)
@@ -120,17 +129,15 @@ def sunriset(
     lon = (lon + np.pi) % const.TWOPI - np.pi
 
     # Select the sun angle based on the kind of event
-    # fmt: off
     sunangle_map = {
-        "s": np.radians(90.0 + 50.0 / 60.0),  # sunrise/Sunset
-        "c": np.radians(96.0),                # civil twilight
-        "n": np.radians(102.0),               # nautical twilight
-        "a": np.radians(108.0)                # astronomical twilight
+        SunEventType.SUNRISESET: np.radians(90.0 + 50.0 / 60.0),
+        SunEventType.CIVIL_TWILIGHT: np.radians(96.0),
+        SunEventType.NAUTICAL_TWILIGHT: np.radians(102.0),
+        SunEventType.ASTRONOMICAL_TWILIGHT: np.radians(108.0),
     }
-    # fmt: on
-    sunangle = sunangle_map.get(whichkind.lower(), None)
+    sunangle = sunangle_map.get(event_type, None)
     if sunangle is None:
-        raise ValueError(f"Invalid 'whichkind': {whichkind}")
+        raise ValueError(f"Invalid event type: {event_type}")
 
     # Initialize results dictionary
     results = {"sunrise": np.nan, "sunset": np.nan}

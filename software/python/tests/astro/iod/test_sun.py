@@ -22,13 +22,23 @@ def test_position():
     "event_type, lon, sunriset_expected, sunset_expected",
     [
         # Example 5-2
-        ("s", 0, 5.972768319603184, 18.254933720588195),
+        (sun.SunEventType.SUNRISESET, 0, 5.972768319603184, 18.254933720588195),
         # Other options
-        ("c", 0, 5.521700171944827, 18.706162691802458),
-        ("n", 0, 4.992562953381093, 19.235701157332667),
-        ("a", 0, 4.452701865963909, 19.776248578494837),
+        (sun.SunEventType.CIVIL_TWILIGHT, 0, 5.521700171944827, 18.706162691802458),
+        (sun.SunEventType.NAUTICAL_TWILIGHT, 0, 4.992562953381093, 19.235701157332667),
+        (
+            sun.SunEventType.ASTRONOMICAL_TWILIGHT,
+            0,
+            4.452701865963909,
+            19.776248578494837,
+        ),
         # Non-zero longitude
-        ("s", np.radians(-74.3), 5.967174864254953, 18.258450003347587),
+        (
+            sun.SunEventType.SUNRISESET,
+            np.radians(-74.3),
+            5.967174864254953,
+            18.258450003347587,
+        ),
     ],
 )
 def test_sunriset(event_type, lon, sunriset_expected, sunset_expected):
@@ -40,3 +50,9 @@ def test_sunriset(event_type, lon, sunriset_expected, sunset_expected):
     # Expected values
     assert np.isclose(sunrise, sunriset_expected, rtol=DEFAULT_TOL)
     assert np.isclose(sunset, sunset_expected, rtol=DEFAULT_TOL)
+
+
+def test_invalid_event_type():
+    with pytest.raises(ValueError) as excinfo:
+        sun.sunriset(2450165.5, np.radians(40), 0, "galactic")
+    assert "Invalid event type" in str(excinfo.value)
