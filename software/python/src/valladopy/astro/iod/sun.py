@@ -126,15 +126,13 @@ def sunriset(
     if sunangle is None:
         raise ValueError(f"Invalid 'whichkind': {whichkind}")
 
-    # Initialize times
-    utsunrise, utsunset = np.nan, np.nan
+    # Initialize results dictionary
+    results = {"sunrise": np.nan, "sunset": np.nan}
 
     # Loop for sunrise (opt=1) and sunset (opt=2)
-    for opt in range(1, 3):
+    for event, jd_offset in zip(("sunrise", "sunset"), (6.0, 18.0)):
         # Initialize Julian date for the day
-        jdtemp = (
-            jd + (np.degrees(-lon) / 15.0 / 24.0) + (6.0 if opt == 1 else 18.0) / 24.0
-        )
+        jdtemp = jd + (np.degrees(-lon) / 15.0 / 24.0) + jd_offset / 24.0
 
         # Julian centuries from J2000.0
         tut1 = (jdtemp - 2451545.0) / 36525.0
@@ -168,10 +166,10 @@ def sunriset(
         )
         if abs(lha) > 1.0:
             logger.error("Local hour angle out of range; sunrise/sunset not visible.")
-            return utsunrise, utsunset
+            return results["sunrise"], results["sunset"]
 
         lha = np.arccos(lha)
-        if opt == 1:
+        if event == "sunrise":
             lha = const.TWOPI - lha
 
         # GST and UT
@@ -181,17 +179,11 @@ def sunriset(
             + 6.77071394490334e-06 * tut1**2
             - 4.50876723431868e-10 * tut1**3
         ) % const.TWOPI
-        uttemp = lha + ra - gst
-        uttemp = np.degrees(uttemp) / 15.0  # Convert radians to hours
+        uttemp = (lha + ra - gst) % const.TWOPI
+        uttemp = np.degrees(uttemp) / 15.0  # convert radians to hours
         uttemp = uttemp % 24.0
 
-        # TODO: implement logic for day before / day after check (from matlab)?
-        # This is a little unclear, so skipping for now
-
         # Assign to sunrise or sunset
-        if opt == 1:
-            utsunrise = uttemp
-        else:
-            utsunset = uttemp
+        results[event] = uttemp
 
-    return utsunrise, utsunset
+    return results["sunrise"], results["sunset"]
