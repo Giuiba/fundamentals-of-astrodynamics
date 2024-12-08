@@ -1,15 +1,20 @@
 # -----------------------------------------------------------------------------
 # Author: David Vallado
-# Date: 27 May 2002
+# Date: 1 March 2001
 #
 # Copyright (c) 2024
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
+import logging
 
 import numpy as np
 from typing import Tuple
 
 from ... import constants as const
+
+
+# Setup logging
+logger = logging.getLogger(__name__)
 
 
 def position(jd: float) -> Tuple[np.ndarray, float, float]:
@@ -86,3 +91,107 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
     decl = np.arcsin(np.sin(obliquity) * np.sin(eclplong))
 
     return rsun * const.AU2KM, rtasc, decl
+
+
+def sunriset(
+    jd: float, latgd: float, lon: float, whichkind: str = "s"
+) -> Tuple[float, float]:
+    """
+    Finds the universal time for sunrise and sunset given the day and site location.
+
+    Args:
+        jd: Julian date (UTC), days from 4713 BCE.
+        latgd: Geodetic latitude of the site [radians].
+        lon: Longitude of the site (west negative) [radians].
+        whichkind: Type of event ('s', 'c', 'n', 'a').
+
+    Returns:
+        Tuple containing:
+        - utsunrise: Universal time of sunrise [hours].
+        - utsunset: Universal time of sunset [hours].
+    """
+    # Normalize longitude to -π to π
+    lon = (lon + np.pi) % const.TWOPI - np.pi
+
+    # Select the sun angle based on the kind of event
+    # fmt: off
+    sunangle_map = {
+        "s": np.radians(90.0 + 50.0 / 60.0),  # sunrise/Sunset
+        "c": np.radians(96.0),                # civil twilight
+        "n": np.radians(102.0),               # nautical twilight
+        "a": np.radians(108.0)                # astronomical twilight
+    }
+    # fmt: on
+    sunangle = sunangle_map.get(whichkind.lower(), None)
+    if sunangle is None:
+        raise ValueError(f"Invalid 'whichkind': {whichkind}")
+
+    # Initialize times
+    utsunrise, utsunset = np.nan, np.nan
+
+    # Loop for sunrise (opt=1) and sunset (opt=2)
+    for opt in range(1, 3):
+        # Initialize Julian date for the day
+        jdtemp = (
+            jd + (np.degrees(-lon) / 15.0 / 24.0) + (6.0 if opt == 1 else 18.0) / 24.0
+        )
+
+        # Julian centuries from J2000.0
+        tut1 = (jdtemp - 2451545.0) / 36525.0
+
+        # Mean longitude of the Sun (degrees)
+        meanlonsun = (280.4606184 + 36000.77005361 * tut1) % 360.0
+
+        # Mean anomaly of the Sun (radians)
+        meananomalysun = np.radians((357.5277233 + 35999.05034 * tut1) % 360.0)
+
+        # Ecliptic longitude of the Sun (radians)
+        lonecliptic = np.radians(
+            (
+                meanlonsun
+                + 1.914666471 * np.sin(meananomalysun)
+                + 0.019994643 * np.sin(2.0 * meananomalysun)
+            )
+            % 360.0
+        )
+
+        # Obliquity of the ecliptic (radians)
+        obliquity = np.radians(23.439291 - 0.0130042 * tut1)
+
+        # Right ascension and declination (radians)
+        ra = np.arctan(np.cos(obliquity) * np.tan(lonecliptic))
+        decl = np.arcsin(np.sin(obliquity) * np.sin(lonecliptic))
+
+        # Local hour angle
+        lha = (np.cos(sunangle) - np.sin(decl) * np.sin(latgd)) / (
+            np.cos(decl) * np.cos(latgd)
+        )
+        if abs(lha) > 1.0:
+            logger.error("Local hour angle out of range; sunrise/sunset not visible.")
+            return utsunrise, utsunset
+
+        lha = np.arccos(lha)
+        if opt == 1:
+            lha = const.TWOPI - lha
+
+        # GST and UT
+        gst = (
+            1.75336855923327
+            + 628.331970688841 * tut1
+            + 6.77071394490334e-06 * tut1**2
+            - 4.50876723431868e-10 * tut1**3
+        ) % const.TWOPI
+        uttemp = lha + ra - gst
+        uttemp = np.degrees(uttemp) / 15.0  # Convert radians to hours
+        uttemp = uttemp % 24.0
+
+        # TODO: implement logic for day before / day after check (from matlab)?
+        # This is a little unclear, so skipping for now
+
+        # Assign to sunrise or sunset
+        if opt == 1:
+            utsunrise = uttemp
+        else:
+            utsunset = uttemp
+
+    return utsunrise, utsunset
