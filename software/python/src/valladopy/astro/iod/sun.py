@@ -15,7 +15,7 @@ import numpy as np
 from ... import constants as const
 
 
-# Setup logging
+# Set up logging
 logger = logging.getLogger(__name__)
 
 
