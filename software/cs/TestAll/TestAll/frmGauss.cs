@@ -208,7 +208,6 @@ namespace TestAllTool
             // note you have to use tdb for time of interst AND j2000 (when dat = 32)
             //  ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
             jdut1 = jd + jdf + dut1 / 86400.0;
-            double jdxysstart = 0.0;
 
             // -------- convert r to ecef for lat/lon calculation
             AstroLibr.eci_ecef(ref rseci, ref vseci, MathTimeLib.Edirection.eto, ref rsecef, ref vsecef,
@@ -1301,9 +1300,8 @@ namespace TestAllTool
             EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out mjdeopstart, out ktrActObs, out EOPupdate);
 
             // now read it in
-            double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, nutLoc, "xysdata.dat");
 
             if (this.cbGaussList.SelectedItem == null)
                 this.cbGaussList.SelectedIndex = 1;
@@ -2002,9 +2000,8 @@ namespace TestAllTool
             string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2022-01-15.txt";
             EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out mjdeopstart, out ktrActObs, out EOPupdate);
 
-            double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, nutLoc, "xysdata.dat");
 
             string[] fileData = File.ReadAllLines(infilename);
 

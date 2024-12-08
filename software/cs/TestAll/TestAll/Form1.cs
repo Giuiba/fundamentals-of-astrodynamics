@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using MathTimeMethods;     // Edirection, globals
 using EOPSPWMethods;       // EOPDataClass, SPWDataClass, iau80Class, iau06Class
 using AstroLibMethods;     // EOpt, gravityConst, astroConst, xysdataClass, jpldedataClass
-//using AstroLambertkMethods;
+using AstroLambertkMethods;
 using SGP4Methods; 
 using System.Data;
 using System.Diagnostics.Eventing.Reader;
@@ -26,7 +26,7 @@ namespace TestAllTool
 
         public AstroLib AstroLibr = new AstroLib();
 
-        //public AstroLambertkLib AstroLambertkLibr = new AstroLambertkLib();
+        public AstroLambertkLib AstroLambertkLibr = new AstroLambertkLib();
 
         public SGP4Lib Sgp4Libr = new SGP4Lib();
 
@@ -681,9 +681,9 @@ namespace TestAllTool
             minute = 0;
             second = 0.0;
 
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out EOPSPWLibr.iau80arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out EOPSPWLibr.iau80arr);
 
             string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt";
             EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out mjdeopstart, out ktrActObs, out EOPupdate);
@@ -829,9 +829,9 @@ namespace TestAllTool
             double[,] nutq = new double[3, 3];
             double ttt, deltapsi, deltaeps, meaneps;
             AstroLib.EOpt opt = AstroLib.EOpt.e80;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out EOPSPWLibr.iau80arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out EOPSPWLibr.iau80arr);
             ttt = 0.042623631889;
             // ttt = 0.04262362174880504;
 
@@ -853,11 +853,11 @@ namespace TestAllTool
             ttt = 0.042623631889;
             //ttt = 0.04262362174880504;
             lod = 0.001556;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
 
             ddpsi = -0.052195;
             ddeps = -0.003875;
@@ -988,6 +988,8 @@ namespace TestAllTool
         public void testeci_ecef()
         {
             double[] fArgs = new double[14];
+            double[] fArgs06 = new double[14];
+
             double[] reci = new double[3];
             double[] veci = new double[3];
             double[] recef = new double[3];
@@ -1059,12 +1061,11 @@ namespace TestAllTool
             // test creating xys file
             fileLoc = @"D:\Codes\LIBRARY\DataLib\";
             // done, works. :-)
-            //AstroLibr.createXYS(nutLoc, iau06arr, fArgs);
+            //AstroLibr.createXYS(fileLoc, iau06arr, fArgs);
 
             // now read it in
-            double jdxysstart, jdfxysstart;
-            AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, fileLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            //AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
+            AstroLibr.readXYS(ref AstroLibr.xysarr, fileLoc, "xysdata.dat");
 
             // now test it for interpolation
             //jdtt = jd + jdFrac + (dat + 32.184) / 86400.0;
@@ -1076,12 +1077,15 @@ namespace TestAllTool
             y = y + ddy;
             strbuild.AppendLine("iau06xys     x   " + x.ToString() + " y " + y.ToString() + " s " + s.ToString());
             strbuild.AppendLine("iau06xys     x   " + (x / conv).ToString() + " y " + (y / conv).ToString() + " s " + (s / conv).ToString());
-            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 'n', xysarr, out x, out y, out s);
+            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 'n', AstroLibr.xysarr, out x, out y, out s);
             strbuild.AppendLine("findxysparam n x " + x.ToString() + "   y " + y.ToString() + "   s " + s.ToString());
-            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 'l', xysarr, out x, out y, out s);
+            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 'l', AstroLibr.xysarr, out x, out y, out s);
             strbuild.AppendLine("findxysparam l x " + x.ToString() + " y " + y.ToString() + " s " + s.ToString());
-            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 's', xysarr, out x, out y, out s);
+            AstroLibr.findxysparam(jdtt + jdftt, 0.0, 's', AstroLibr.xysarr, out x, out y, out s);
             strbuild.AppendLine("findxysparam s x " + x.ToString() + " y " + y.ToString() + " s " + s.ToString());
+
+            // get more accurate vaules for now
+            AstroLibr.iau06xysS(ttt, EOPSPWLibr.iau06arr, fArgs, out x, out y, out s);
 
             AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
                  EOPSPWLibr.iau80arr,   jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
@@ -1089,7 +1093,7 @@ namespace TestAllTool
                 + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
             AstroLibr.eci_ecef06(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e06cio, EOPSPWLibr.iau06arr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
+                 AstroLib.EOpt.e06cio, EOPSPWLibr.iau06arr, AstroLibr.xysarr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("GCRF          IAU-2006 CIO " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
                 + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
@@ -1105,17 +1109,15 @@ namespace TestAllTool
 
             // these are not correct
             AstroLibr.eci_ecef06(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e06eq, EOPSPWLibr.iau06arr, jdtt, jdftt, jdut1,  lod, xp, yp, ddx, ddy);
+                 AstroLib.EOpt.e06eq, EOPSPWLibr.iau06arr, AstroLibr.xysarr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("GCRF          IAU-2006 06  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
                 + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
             AstroLibr.eci_ecef06(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e00a, EOPSPWLibr.iau06arr,  jdtt, jdftt, jdut1,  lod, xp, yp, ddx, ddy);
+                 AstroLib.EOpt.e00a, EOPSPWLibr.iau06arr, AstroLibr.xysarr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("GCRF          IAU-2006 00a  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
                 + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
             strbuild.AppendLine("00a case is wrong");
-
-
 
             // writeout data for table interpolation
             Int32 i;
@@ -1178,10 +1180,10 @@ namespace TestAllTool
                 deltaeps = (deltaeps + ddeps) % (2.0 * Math.PI);
 
                 // CIO parameters
-                AstroLibr.fundarg(ttt, AstroLib.EOpt.e06cio, out fArgs);
+                AstroLibr.fundarg(ttt, AstroLib.EOpt.e06cio, out fArgs06);
                 ddx = 0.0;
                 ddy = 0.0;
-                AstroLibr.iau06xys(jdtt, ttt, ddx, ddy, interp, EOPSPWLibr.iau06arr, fArgs, out x, out y, out s);
+                AstroLibr.iau06xys(jdtt, jdftt, ddx, ddy, interp, EOPSPWLibr.iau06arr, fArgs06, AstroLibr.xysarr, out x, out y, out s);
                 x = x * convrt;
                 y = y * convrt;
                 s = s * convrt;
@@ -1190,7 +1192,7 @@ namespace TestAllTool
 
                 strbuild.AppendLine(" " + x.ToString(fmt).PadLeft(4) + " " + y.ToString(fmt).PadLeft(4) + " " + s.ToString(fmt).PadLeft(4) + " " +
                     deltapsi.ToString(fmt).PadLeft(4) + " " + deltaeps.ToString(fmt).PadLeft(4) + " " + (jd + jdFrac - 2400000.5).ToString(fmt).PadLeft(4));
-            }
+            }  // for loop
 
         }
         public void testtod2ecef()
@@ -1204,6 +1206,10 @@ namespace TestAllTool
             double[] vmod = new double[3];
             double[] rtod = new double[3];
             double[] vtod = new double[3];
+            double[] rtirs = new double[3];
+            double[] vtirs = new double[3];
+            double[] rcirs = new double[3];
+            double[] vcirs = new double[3];
             double[] rpef = new double[3];
             double[] vpef = new double[3];
             double[] recef = new double[3];
@@ -1242,22 +1248,21 @@ namespace TestAllTool
             reci = new double[] { 0.0, 0.0, 0.0 };
             veci = new double[] { 0.0, 0.0, 0.0 };
 
-            string nutLoc;
+            string fileLoc;
             // can do it either way... with or without  EOPSPWLibr.
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
             jdtt = jd;
             jdftt = jdFrac + (dat + 32.184) / 86400.0;
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
             // now read it in
-            double jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             jdut1 = jd + jdFrac + dut1 / 86400.0;
 
@@ -1336,11 +1341,11 @@ namespace TestAllTool
                 + vecef[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
 
             AstroLibr.eci_ecef06(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-                 AstroLib.EOpt.e06cio, iau06arr,  jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
+                 AstroLib.EOpt.e06cio, iau06arr, AstroLibr.xysarr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("GCRF          IAU-2006 CIO " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
             AstroLibr.eci_ecef06(ref recii, ref vecii, MathTimeLib.Edirection.eto, ref recefi, ref vecefi,
-                 AstroLib.EOpt.e06cio, iau06arr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
+                 AstroLib.EOpt.e06cio, iau06arr, AstroLibr.xysarr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("ITRF rev      IAU-2006 CIO " + recefi[0].ToString(fmt).PadLeft(4) + " " + recefi[1].ToString(fmt).PadLeft(4) + " " + recefi[2].ToString(fmt).PadLeft(4) + " "
                 + vecefi[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
 
@@ -1365,12 +1370,12 @@ namespace TestAllTool
             strbuild.AppendLine("ECI rev       IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.eci_tirs(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rpef, ref vpef,
+            AstroLibr.eci_tirs(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rtirs, ref vtirs,
                 AstroLib.EOpt.e06cio,  iau06arr,  jdtt, jdftt, jdut1,  lod, ddx, ddy);
             strbuild.AppendLine("TIRS          IAU-2006 CIO  " + rpef[0].ToString(fmt).PadLeft(4) + " " +
-                rpef[1].ToString(fmt).PadLeft(4) + " " + rpef[2].ToString(fmt).PadLeft(4) + " "
-                + vpef[0].ToString(fmt).PadLeft(4) + " " + vpef[1].ToString(fmt).PadLeft(4) + " " + vpef[2].ToString(fmt).PadLeft(4));
-            AstroLibr.eci_tirs(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,
+                rtirs[1].ToString(fmt).PadLeft(4) + " " + rtirs[2].ToString(fmt).PadLeft(4) + " "
+                + vtirs[0].ToString(fmt).PadLeft(4) + " " + vtirs[1].ToString(fmt).PadLeft(4) + " " + vtirs[2].ToString(fmt).PadLeft(4));
+            AstroLibr.eci_tirs(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rtirs, ref vtirs,
                 AstroLib.EOpt.e06cio,  iau06arr,   jdtt, jdftt, jdut1,  lod,  ddx, ddy);
             strbuild.AppendLine("ECI rev       IAU-2006 CIO " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
@@ -1385,11 +1390,11 @@ namespace TestAllTool
             strbuild.AppendLine("ECI rev       IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.eci_cirs(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rtod, ref vtod,
+            AstroLibr.eci_cirs(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rcirs, ref vcirs,
                  EOpt.e06cio, iau06arr, jdtt, jdftt, jdut1,  lod, ddx, ddy);
             strbuild.AppendLine("CIRS          IAU-2006 CIO " + rtod[0].ToString(fmt).PadLeft(4) + " " + rtod[1].ToString(fmt).PadLeft(4) + " " + rtod[2].ToString(fmt).PadLeft(4) + " "
                 + vtod[0].ToString(fmt).PadLeft(4) + " " + vtod[1].ToString(fmt).PadLeft(4) + " " + vtod[2].ToString(fmt).PadLeft(4));
-            AstroLibr.eci_cirs(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rtod, ref vtod,
+            AstroLibr.eci_cirs(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rcirs, ref vcirs,
                 EOpt.e06cio, iau06arr,  jdtt, jdftt, jdut1,  lod, ddx, ddy);
             strbuild.AppendLine("ECI rev       IAU-2006 CIO " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
@@ -1438,8 +1443,8 @@ namespace TestAllTool
             ddx = -0.000205 * conv;    // " to rad
             ddy = -0.000136 * conv;
 
-            string nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
+            string fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
 
             // note you have to use tdb for time of ineterst AND j2000 (when dat = 32)
             ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
@@ -1494,8 +1499,8 @@ namespace TestAllTool
             ddx = -0.000205 * conv;    // " to rad
             ddy = -0.000136 * conv;
 
-            string nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
+            string fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
 
             // note you have to use tdb for time of ineterst AND j2000 (when dat = 32)
             ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
@@ -1528,8 +1533,8 @@ namespace TestAllTool
 
             AstroLibr.fundarg(ttt, opt, out fArgs);
 
-            string nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
+            string fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
 
             AstroLibr.qmod2ecef(rqmod, vqmod, ttt, jdutc, iau80arr, opt, out recef, out vecef);
         }
@@ -2487,17 +2492,17 @@ namespace TestAllTool
             this.opsStatus.Text = "Test Angles ";
             Refresh();
 
-            string nutLoc;
+            string fileLoc;
             string ans;
             Int32 ktrActObs;
             string EOPupdate;
             Int32 mjdeopstart;
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
 
             string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2020-02-12.txt";
             EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out mjdeopstart, out ktrActObs, out EOPupdate);
@@ -2505,7 +2510,7 @@ namespace TestAllTool
             // now read it in
             double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             // gooding tests cases from Gooding paper (1997 CMDA)
             double[] los1;
@@ -5699,16 +5704,16 @@ namespace TestAllTool
 
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
 
             // now read it in
             double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             xp = 0.0;
             yp = 0.0;
@@ -7375,16 +7380,15 @@ namespace TestAllTool
             // ------------------------------- establish time parameters -------------------------------
             // read in FK5 parameters
             EOPSPWLib.iau80Class iau80arr;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
             // read in ICRF parameters
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
             EOPSPWLib.iau06Class iau06arr;
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
-            double jdxysstart, jdfxysstart;
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             // example date/time
             // stkeducationalfiles ex 8-5
@@ -8650,15 +8654,14 @@ namespace TestAllTool
 
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
             // now read it in
-            double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             year = 2000;
             mon = 12;
@@ -8761,15 +8764,14 @@ namespace TestAllTool
 
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
             // now read it in
-            double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             year = 2000;
             mon = 12;
@@ -8834,9 +8836,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, terms, ddpsi, ddeps, ddx, ddy, 
-                iau80arr, iau06arr, 
-                 out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;
@@ -8933,15 +8934,14 @@ namespace TestAllTool
 
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
             // now read it in
-            double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             year = 2000;
             mon = 12;
@@ -9006,9 +9006,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, terms, ddpsi, ddeps, ddx, ddy, 
-                iau80arr, iau06arr, 
-                 out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;
@@ -9099,15 +9098,14 @@ namespace TestAllTool
 
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
             // now read it in
-            double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             year = 2000;
             mon = 12;
@@ -9172,9 +9170,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, terms, ddpsi, ddeps, ddx, ddy, 
-                iau80arr, iau06arr,
-                out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;
@@ -9268,15 +9265,14 @@ namespace TestAllTool
 
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
             // now read it in
-            double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             year = 2000;
             mon = 12;
@@ -9341,9 +9337,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, terms, ddpsi, ddeps, ddx, ddy,
-                iau80arr, iau06arr,
-                out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;
@@ -9434,15 +9429,14 @@ namespace TestAllTool
 
             EOPSPWLib.iau80Class iau80arr;
             EOPSPWLib.iau06Class iau06arr;
-            string nutLoc;
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
-            EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
+            string fileLoc;
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
+            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
+            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
             // now read it in
-            double jdxysstart, jdfxysstart;
             AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.initXYS(ref xysarr, nutLoc, "xysdata.dat", out jdxysstart, out jdfxysstart);
+            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
 
             year = 2000;
             mon = 12;
@@ -9507,9 +9501,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, terms, ddpsi, ddeps, ddx, ddy,
-                iau80arr, iau06arr,
-                 out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;
@@ -9546,9 +9539,8 @@ namespace TestAllTool
             strbuild.AppendLine(strout);
 
             strbuild.AppendLine("7.  Flight Covariance from Cartesian #1 above (" + anomflt + ") ------------------- \n");
-            AstroLibr.covct2fl(cartcov, cartstate, anomflt, jdtt, jdttfrac, jdut1, jdxysstart,
-                lod, xp, yp, 2, ddpsi, ddeps, ddx, ddy, 
-                iau80arr, iau06arr, AstroLib.EOpt.e80, out fltcovmeana, out tmct2fl);
+            AstroLibr.covct2fl(cartcov, cartstate, anomflt, jdtt, jdttfrac, jdut1, lod, xp, yp, 2, ddpsi, ddeps, 
+                iau80arr, out fltcovmeana, out tmct2fl);
 
             if (anomflt.Equals("latlon"))
                 printcov(fltcovmeana, "fl", 'm', anomflt, out strout);
