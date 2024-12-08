@@ -834,22 +834,24 @@ namespace AstroLibMethods
 
         public double[,] iau06xys
         (
-        double jdtt, double ttt, double ddx, double ddy, char interp,
-        EOPSPWLib.iau06Class iau06arr, double[] fArgs06, out double x, out double y, out double s
+        double jdtt, double jdftt, double ddx, double ddy, char interp,
+        EOPSPWLib.iau06Class iau06arr, double[] fArgs06, xysdataClass[] xysarr, out double x, out double y, out double s
         )
         {
             double[,] nut1 = new double[3, 3];
             double[,] nut2 = new double[3, 3];
-            double a;
-            fArgs06 = new double[14];
+            double a, ttt;
+
+            ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
             // ---------------- find xys
-            if (interp.Equals("x"))
+            if (interp.Equals('x'))
                 iau06xysS(ttt, iau06arr, fArgs06, out x, out y, out s);
             else
-                findxysparam(jdtt, 0.0, interp, xysarr, out x, out y, out s);
+                findxysparam(jdtt, jdftt, interp, xysarr, out x, out y, out s);
 
             // add corrections if available
+            
             x = x + ddx;
             y = y + ddy;
 
@@ -958,7 +960,7 @@ namespace AstroLibMethods
 
         /* -----------------------------------------------------------------------------
         *
-        *                           function initXYS
+        *                           function readXYS
         *
         *  this function initializes the xys iau2006 iau data. the input data files
         *  are from processing the ascii files into a text file of xys calcualtion over
@@ -982,18 +984,15 @@ namespace AstroLibMethods
         *
         *  -------------------------------------------------------------------------- */
 
-        public void initXYS
+        public void readXYS
             (
             ref xysdataClass[] xysarr,
             string xysLoc,
-            string infilename,
-            out double jdxysstart, out double jdfxysstart
+            string infilename
             )
         {
             string pattern;
             Int32 i;
-            jdxysstart = 0.0;
-            jdfxysstart = 0.0;
 
             // read the whole file at once into lines of an array, indexed from 0
             string[] fileData = File.ReadAllLines(xysLoc + infilename);
@@ -1021,12 +1020,12 @@ namespace AstroLibMethods
                 {
                     xysarr[0].jdxysstart = Convert.ToDouble(linedata[1]);
                     xysarr[0].jdfxysstart = Convert.ToDouble(linedata[2]);
-                    xysarr[i].mjd = jdxysstart + jdfxysstart;
+                    xysarr[i].mjd = xysarr[0].jdxysstart + xysarr[0].jdfxysstart;
                 }
             }
 
             xysdesize = i;  // global size of the data read in
-        }  // initXYS
+        }  // readXYS
 
 
         /* -----------------------------------------------------------------------------
@@ -2641,7 +2640,7 @@ namespace AstroLibMethods
             Enum direct,
             ref double[] recef, ref double[] vecef,
             EOpt opt,
-            EOPSPWLib.iau06Class iau06arr,
+            EOPSPWLib.iau06Class iau06arr, AstroLib.xysdataClass[] xysarr, 
             double jdtt, double jdftt, double jdut1, double lod,
             double xp, double yp, double ddx, double ddy
             )
@@ -2688,9 +2687,10 @@ namespace AstroLibMethods
                 prec[0, 0] = 1.0;
                 prec[1, 1] = 1.0;
                 prec[2, 2] = 1.0;
-                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, 'x', iau06arr, fArgs06, out x, out y, out s);
+                nut = iau06xys(jdtt, jdftt, ddx, ddy, 'x', iau06arr, fArgs06, xysarr, out x, out y, out s);
 
                 st = sidereal(jdut1, 0.0, 0.0, fArgs06, lod, 2, opt);
+               
                 if (printopt == 'y')
                     Console.WriteLine(String.Format("xys cl {0}  {1}  {2} ", x, y, s));
             }
@@ -2704,7 +2704,7 @@ namespace AstroLibMethods
                 prec[2, 2] = 1.0;
                 // only needed for s
                 // probably just need the abbreivated form
-                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs06, out x, out y, out s);
+                nut = iau06xys(jdtt, jdftt, ddx, ddy, interp, iau06arr, fArgs06, xysarr, out x, out y, out s);
                 //double conv = 180.0 / Math.PI * 3600.0;
                 //Console.WriteLine( "xys " + (x * conv).ToString() + " " + (y * conv).ToString() + " "
                 //   + (s*conv).ToString());
@@ -2849,7 +2849,7 @@ namespace AstroLibMethods
         (
         ref double[] reci, ref double[] veci,
         Enum direct,
-        ref double[] rpef, ref double[] vpef,
+        ref double[] rtirs, ref double[] vtirs,
         EOpt opt,
         EOPSPWLib.iau06Class iau06arr, 
         double jdtt, double jdftt, double jdut1,
@@ -2876,7 +2876,7 @@ namespace AstroLibMethods
 
             deltapsi = 0.0;
             meaneps = 0.0;
-            char interp = 's';
+            char interp = 'x';
 
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
@@ -2888,7 +2888,7 @@ namespace AstroLibMethods
                 prec[0, 0] = 1.0;
                 prec[1, 1] = 1.0;
                 prec[2, 2] = 1.0;
-                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs06, out x, out y, out s);
+                nut = iau06xys(jdtt, jdftt, ddx, ddy, interp, iau06arr, fArgs06, xysarr, out x, out y, out s);
                 st = sidereal(jdut1, deltapsi, meaneps, fArgs06, lod, 2, opt);
             }
             else
@@ -2917,25 +2917,25 @@ namespace AstroLibMethods
 
                 temp = MathTimeLibr.matmult(stp, nutp, 3, 3, 3);
                 trans = MathTimeLibr.matmult(temp, precp, 3, 3, 3);
-                rpef = MathTimeLibr.matvecmult(trans, reci, 3);
+                rtirs = MathTimeLibr.matvecmult(trans, reci, 3);
 
                 tempvec1 = MathTimeLibr.matvecmult(trans, veci, 3);
-                MathTimeLibr.cross(omegaearth, rpef, out crossr);
-                vpef[0] = tempvec1[0] - crossr[0];
-                vpef[1] = tempvec1[1] - crossr[1];
-                vpef[2] = tempvec1[2] - crossr[2];
+                MathTimeLibr.cross(omegaearth, rtirs, out crossr);
+                vtirs[0] = tempvec1[0] - crossr[0];
+                vtirs[1] = tempvec1[1] - crossr[1];
+                vtirs[2] = tempvec1[2] - crossr[2];
             }
             else
             {
                 // ---- perform transformations
                 temp = MathTimeLibr.matmult(prec, nut, 3, 3, 3);
                 trans = MathTimeLibr.matmult(temp, st, 3, 3, 3);
-                reci = MathTimeLibr.matvecmult(trans, rpef, 3);
+                reci = MathTimeLibr.matvecmult(trans, rtirs, 3);
 
-                MathTimeLibr.cross(omegaearth, rpef, out crossr);
-                tempvec1[0] = vpef[0] + crossr[0];
-                tempvec1[1] = vpef[1] + crossr[1];
-                tempvec1[2] = vpef[2] + crossr[2];
+                MathTimeLibr.cross(omegaearth, rtirs, out crossr);
+                tempvec1[0] = vtirs[0] + crossr[0];
+                tempvec1[1] = vtirs[1] + crossr[1];
+                tempvec1[2] = vtirs[2] + crossr[2];
                 veci = MathTimeLibr.matvecmult(trans, tempvec1, 3);
             }
         }  //  eci_tirs
@@ -2991,7 +2991,7 @@ namespace AstroLibMethods
             (
             ref double[] reci, ref double[] veci,
             Enum direct,
-            ref double[] rtod, ref double[] vtod,
+            ref double[] rcirs, ref double[] vcirs,
             EOpt opt,
             EOPSPWLib.iau06Class iau06arr, 
             double jdtt, double jdftt, double jdut1, 
@@ -2999,8 +2999,7 @@ namespace AstroLibMethods
             )
         {
             double[] fArgs06 = new double[14];
-            double psia, wa, epsa, chia, x, y, s, ttt;
-            double meaneps, deltapsi, deltaeps, trueeps;
+            double x, y, s, ttt;
             double[,] tm = new double[3, 3];
             double[,] prec = new double[3, 3];
             double[,] nut = new double[3, 3];
@@ -3009,9 +3008,7 @@ namespace AstroLibMethods
             double[,] temp = new double[3, 3];
             double[,] trans = new double[3, 3];
 
-            deltapsi = 0.0;
-            meaneps = 0.0;
-            char interp = 's';
+            char interp = 'x';
 
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
@@ -3023,7 +3020,7 @@ namespace AstroLibMethods
                 prec[0, 0] = 1.0;
                 prec[1, 1] = 1.0;
                 prec[2, 2] = 1.0;
-                nut = iau06xys(jdtt + jdftt, ttt, ddx, ddy, interp, iau06arr, fArgs06, out x, out y, out s);
+                nut = iau06xys(jdtt, jdftt, ddx, ddy, interp, iau06arr, fArgs06, xysarr, out x, out y, out s);
             }
             else
             // iau-2006/2000 Nut or iau2000a approach
@@ -3044,15 +3041,15 @@ namespace AstroLibMethods
                 precp = MathTimeLibr.mattrans(prec, 3);
 
                 trans = MathTimeLibr.matmult(nutp, precp, 3, 3, 3);
-                rtod = MathTimeLibr.matvecmult(trans, reci, 3);
-                vtod = MathTimeLibr.matvecmult(trans, veci, 3);
+                rcirs = MathTimeLibr.matvecmult(trans, reci, 3);
+                vcirs = MathTimeLibr.matvecmult(trans, veci, 3);
             }
             else
             {
                 // ---- perform transformations
                 trans = MathTimeLibr.matmult(prec, nut, 3, 3, 3);
-                reci = MathTimeLibr.matvecmult(trans, rtod, 3);
-                veci = MathTimeLibr.matvecmult(trans, vtod, 3);
+                reci = MathTimeLibr.matvecmult(trans, rcirs, 3);
+                veci = MathTimeLibr.matvecmult(trans, vcirs, 3);
             }
         }  //  eci_cirs 
 
@@ -3137,7 +3134,6 @@ namespace AstroLibMethods
 
             deltapsi = 0.0;
             meaneps = 0.0;
-            char interp = 's';
 
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
@@ -3250,7 +3246,6 @@ namespace AstroLibMethods
             )
         {
             double[] fArgs = new double[14];
-            double gst;
             double deltaeps, trueeps, meaneps, deltapsi;
             double[] omegaearth = new double[3];
             double[] rpef = new double[3];
@@ -3375,7 +3370,7 @@ namespace AstroLibMethods
         {
             double[] fArgs06 = new double[14];
             double gst;
-            double deltaeps, trueeps, meaneps, deltapsi;
+            double deltapsi;
             double[] omegaearth = new double[3];
             double[] rpef = new double[3];
             double[] vpef = new double[3];
@@ -3389,7 +3384,6 @@ namespace AstroLibMethods
             double[,] pmp = new double[3, 3];
 
             deltapsi = 0.0;
-            meaneps = 0.0;
 
             fundarg(ttt, EOpt.e06cio, out fArgs06);
 
@@ -4737,9 +4731,9 @@ namespace AstroLibMethods
         public void rv2flt
             (
             double[] reci, double[] veci, double jdtt, double jdftt,
-            double jdut1, double jdxysstart, double lod,
-            double xp, double yp, int terms, double ddpsi, double ddeps, double ddx, double ddy,
-            EOPSPWLib.iau80Class iau80arr, EOPSPWLib.iau06Class iau06arr,
+            double jdut1,  double lod,
+            double xp, double yp, int terms, double ddpsi, double ddeps, 
+            EOPSPWLib.iau80Class iau80arr,
             out double lon, out double latgc, out double rtasc, out double decl,
             out double fpa, out double az, out double magr, out double magv
             )
@@ -17039,10 +17033,9 @@ namespace AstroLibMethods
         public void covct2fl
             (
             double[,] cartcov, double[] cartstate, string anomflt, double jdtt, double jdftt, double jdut1, 
-            double jdxysstart, double lod,
-            double xp, double yp, Int16 terms, double ddpsi, double ddeps, double ddx, double ddy,
-            EOPSPWLib.iau80Class iau80arr, EOPSPWLib.iau06Class iau06arr,
-            EOpt opt,
+            double lod,
+            double xp, double yp, Int16 terms, double ddpsi, double ddeps,
+            EOPSPWLib.iau80Class iau80arr, 
             out double[,] flcov, out double[,] tm
             )
         {
