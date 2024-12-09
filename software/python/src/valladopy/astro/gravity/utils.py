@@ -44,10 +44,7 @@ def pathm(llat: float, llon: float, range_: float, az: float) -> Tuple[float, fl
     else:
         # Case where launch is within a small distance of a pole
         if abs(np.cos(llat)) <= const.SMALL:
-            if np.pi < range_ < const.TWOPI:
-                deltan = az + np.pi
-            else:
-                deltan = az
+            deltan = az + np.pi if np.pi < range_ < const.TWOPI else az
 
         # Case where end point is within a small distance of a pole
         elif abs(np.cos(tlat)) <= const.SMALL:
