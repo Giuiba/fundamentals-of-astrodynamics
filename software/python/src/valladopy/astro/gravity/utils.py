@@ -1,3 +1,11 @@
+# -----------------------------------------------------------------------------
+# Author: David Vallado
+# Date: 27 May 2002
+#
+# Copyright (c) 2024
+# For license information, see LICENSE file
+# -----------------------------------------------------------------------------
+
 from typing import Tuple
 
 import numpy as np
