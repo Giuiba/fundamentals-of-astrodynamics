@@ -115,8 +115,8 @@ def sunriset(
 
     Args:
         jd (float): Julian date (days from 4713 BC)
-        latgd (float): Geodetic latitude of the site in radians
-        lon (float): Longitude of the site in radians (west is negative)
+        latgd (float): Geodetic latitude of the site in radians (-65 deg to 65 deg)
+        lon (float): Longitude of the site in radians (-2pi to 2pi) (west is negative)
         event_type (SunEventType): Type of event to calculate
                                    (default is SunEventType.SUNRISESET)
 
