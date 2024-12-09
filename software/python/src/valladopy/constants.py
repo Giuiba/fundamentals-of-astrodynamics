@@ -95,7 +95,7 @@ RADPDAY = 2.0 * np.pi * 1.002737909350795
 # Astronomical distances & measurements
 # fmt: off
 SPEEDOFLIGHT = 299792.458           # km/s
-AU = 149597870.7                    # km
+AU2KM = 149597870.7                 # km
 EARTH2MOON = 384400.0               # km
 MOONRADIUS = 1738.0                 # km
 SUNRADIUS = 696000.0                # km
@@ -111,4 +111,4 @@ MUSUN = 1.32712428e11
 MUMOON = 4902.799
 
 # Obliquities
-OBLIQUITYEARTH = 0.4090928  # 23.439291 degrees in radians
+OBLIQUITYEARTH = np.radians(23.439291)
