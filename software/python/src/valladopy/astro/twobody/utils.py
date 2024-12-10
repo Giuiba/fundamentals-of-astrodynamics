@@ -298,109 +298,61 @@ def checkhitearth(
     return hitearth, hitearthstr
 
 
-###############################################################################
-# Hill's Equations
-###############################################################################
-
-
-def hillsr(
-    r: ArrayLike, v: ArrayLike, alt: float, dts: float
-) -> tuple[np.ndarray, np.ndarray]:
-    """Calculate position and velocity information for Hill's (Clohessy-Wiltshire)
-    equations.
+def findtof(ro: ArrayLike, r: ArrayLike, p: float) -> float:
+    """Finds the time of flight for orbital transfer using p-iteration theory.
 
     References:
-        Vallado: 2007, p. 397, Algorithm 47
+        Vallado: 2007, p. 134-135, Algorithm 11
 
     Args:
-        r (array_like): Initial relative position of the interceptor in km
-        v (array_like): Initial relative velocity of the interceptor in km/s
-        alt (float): Altitude of the target satellite in km
-        dts (float): Desired time in seconds
+        ro (array_like): Interceptor position vector in km
+        r (array_like): Target position vector in km
+        p (float): Semiparameter in km
 
     Returns:
-        tuple: (rint, vint)
-            rint (np.ndarray): Final relative position of the interceptor in km
-            vint (np.ndarray): Final relative velocity of the interceptor in km/s
-
-    Notes:
-        - Position and velocity vectors are in the RSW frame
-        - Distance units for r and v are flexible, but must be consistent
+        float: Time of flight in seconds
     """
-    # Calculate orbital parameters
-    radius = RE + alt
-    omega = np.sqrt(MU / (radius**3))
-    nt = omega * dts
-    cosnt = np.cos(nt)
-    sinnt = np.sin(nt)
+    # Magnitudes of position vectors
+    magr = np.linalg.norm(r)
+    magro = np.linalg.norm(ro)
 
-    # Determine new positions
-    rint = np.zeros(3)
-    rint[0] = (
-        (v[0] / omega) * sinnt
-        - ((2.0 * v[1] / omega) + 3.0 * r[0]) * cosnt
-        + ((2.0 * v[1] / omega) + 4.0 * r[0])
-    )
-    rint[1] = (
-        (2.0 * v[0] / omega) * cosnt
-        + ((4.0 * v[1] / omega) + 6.0 * r[0]) * sinnt
-        + (r[1] - (2.0 * v[0] / omega))
-        - (3.0 * v[1] + 6.0 * omega * r[0]) * dts
-    )
-    rint[2] = r[2] * cosnt + (v[2] / omega) * sinnt
+    # Calculate cosine and sine of change in true anomaly
+    cosdnu = np.dot(ro, r) / (magro * magr)
+    rcrossr = np.cross(ro, r)
+    sindnu = np.linalg.norm(rcrossr) / (magro * magr)
 
-    # Determine new velocities
-    vint = np.zeros(3)
-    vint[0] = v[0] * cosnt + (2.0 * v[1] + 3.0 * omega * r[0]) * sinnt
-    vint[1] = (
-        -2.0 * v[0] * sinnt
-        + (4.0 * v[1] + 6.0 * omega * r[0]) * cosnt
-        - (3.0 * v[1] + 6.0 * omega * r[0])
-    )
-    vint[2] = -r[2] * omega * sinnt + v[2] * cosnt
+    # Intermediate calculations
+    k = magro * magr * (1.0 - cosdnu)
+    l_ = magro + magr
+    m = magro * magr * (1.0 + cosdnu)
+    a = (m * k * p) / ((2.0 * m - l_**2) * p**2 + 2.0 * k * l_ * p - k**2)
 
-    return rint, vint
+    # Compute f and g
+    f = 1.0 - (magr / p) * (1.0 - cosdnu)
+    g = magro * magr * sindnu / np.sqrt(MU * p)
+    alpha = 1.0 / a
 
-
-def hillsv(r: ArrayLike, alt: float, dts: float, tol: float = 1e-6) -> np.ndarray:
-    """Calculate the initial velocity for Hill's (Clohessy-Wiltshire) equations.
-
-    References:
-        Vallado: 2007, p. 410, Eq. 6-60
-
-    Args:
-        r (array_like): Initial position vector of the interceptor in km
-        alt (float): Altitude of the target satellite in km
-        dts (float): Desired time in seconds
-        tol (float, optional): Tolerance for calculations (defaults to 1e-6)
-
-    Returns:
-        np.ndarray: Initial velocity vector of the interceptor in km/s
-
-    Notes:
-        - Position and velocity vectors are in the RSW frame
-        - Distance units for r are flexible, and velocity units are consistent
-    """
-    # Calculate the orbital parameters
-    radius = RE + alt
-    omega = np.sqrt(MU / (radius**3))
-    nt = omega * dts
-    cosnt = np.cos(nt)
-    sinnt = np.sin(nt)
-
-    # Numerator and denominator for the initial velocity
-    numkm = (6.0 * r[0] * (nt - sinnt) - r[1]) * omega * sinnt - 2.0 * omega * r[0] * (
-        4.0 - 3.0 * cosnt
-    ) * (1.0 - cosnt)
-    denom = (4.0 * sinnt - 3.0 * nt) * sinnt + 4.0 * (1.0 - cosnt) * (1.0 - cosnt)
-
-    # Determine initial velocity
-    v = np.zeros(3)
-    v[1] = numkm / denom if abs(denom) > tol else 0.0
-    if abs(sinnt) > tol:
-        v[0] = (
-            -(omega * r[0] * (4.0 - 3.0 * cosnt) + 2.0 * (1.0 - cosnt) * v[1]) / sinnt
+    # Find time of flight based on orbit type
+    if alpha > SMALL:
+        # Elliptical case
+        dnu = np.arctan2(sindnu, cosdnu)
+        fdot = (
+            np.sqrt(MU / p)
+            * np.tan(dnu * 0.5)
+            * (((1.0 - cosdnu) / p) - (1.0 / magro) - (1.0 / magr))
         )
-    v[2] = -r[2] * omega / np.tan(nt)
+        cosdeltae = 1.0 - (magro / a) * (1.0 - f)
+        sindeltae = (-magro * magr * fdot) / np.sqrt(MU * a)
+        deltae = np.arctan2(sindeltae, cosdeltae)
+        tof = g + np.sqrt(a**3 / MU) * (deltae - sindeltae)
+    elif alpha < SMALL:
+        # Hyperbolic case
+        deltah = np.arccosh(1.0 - (magro / a) * (1.0 - f))
+        tof = g + np.sqrt(-(a**3) / MU) * (np.sinh(deltah) - deltah)
+    else:
+        # Parabolic case
+        c = np.sqrt(magr**2 + magro**2 - 2.0 * magr * magro * cosdnu)
+        s = (magro + magr + c) * 0.5
+        tof = (2.0 / 3.0) * np.sqrt((s**3) * 0.5 / MU) * (1.0 - ((s - c) / s) ** 1.5)
 
-    return v
+    return tof
