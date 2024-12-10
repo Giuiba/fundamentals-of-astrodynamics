@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-import src.valladopy.astro.iod.sun as sun
+import src.valladopy.astro.celestial.sun as sun
 
 from ...conftest import DEFAULT_TOL
 

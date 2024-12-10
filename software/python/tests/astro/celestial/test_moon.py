@@ -1,6 +1,6 @@
 import numpy as np
 
-import src.valladopy.astro.iod.moon as moon
+import src.valladopy.astro.celestial.moon as moon
 
 from ...conftest import DEFAULT_TOL
 
