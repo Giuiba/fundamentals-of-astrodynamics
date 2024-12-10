@@ -12,6 +12,8 @@ from enum import Enum
 import numpy as np
 from numpy.typing import ArrayLike
 
+from ... import constants as const
+
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -39,15 +41,16 @@ def sight(
     Returns:
         bool: True if there is line-of-sight, False otherwise
     """
-    eesqrd = 0.006694385
-    re = 6378.137
-
     # Magnitudes
     magr1 = np.linalg.norm(r1)
     magr2 = np.linalg.norm(r2)
 
     # Scale z-components for ellipsoidal Earth
-    temp = 1.0 / np.sqrt(1.0 - eesqrd) if earth_model == EarthModel.ELLIPSOIDAL else 1.0
+    temp = (
+        1.0 / np.sqrt(1.0 - const.ECCEARTHSQRD)
+        if earth_model == EarthModel.ELLIPSOIDAL
+        else 1.0
+    )
     tr1 = np.array([r1[0], r1[1], r1[2] * temp])
     tr2 = np.array([r2[0], r2[1], r2[2] * temp])
 
@@ -67,5 +70,5 @@ def sight(
     if tmin < 0.0 or tmin > 1.0:
         return True
     else:
-        distsqrd = ((1.0 - tmin) * asqrd + adotb * tmin) / re**2
+        distsqrd = ((1.0 - tmin) * asqrd + adotb * tmin) / const.RE**2
         return True if distsqrd > 1.0 else False

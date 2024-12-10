@@ -11,7 +11,7 @@ import src.valladopy.astro.celestial.utils as utils
             [0.0, 5740.323, 3189.068],
             utils.EarthModel.ELLIPSOIDAL,
             False,
-            0.508224865077047,
+            0.5082248650848982,
         ),
         (
             [0.0, 5740.323, 3189.068],
@@ -23,7 +23,7 @@ import src.valladopy.astro.celestial.utils as utils
             [122233179.72368076, -76150708.25425531, -33016373.913704105],
             utils.EarthModel.ELLIPSOIDAL,
             True,
-            -2.3342657116393083e-05,
+            -2.334265707720442e-05,
         ),
         (
             [122233179.72368076, -76150708.25425531, -33016373.913704105],
