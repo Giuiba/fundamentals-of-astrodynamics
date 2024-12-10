@@ -11,8 +11,11 @@ from enum import Enum
 from typing import Tuple
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from ... import constants as const
+from ..time.sidereal import lstime
+from .utils import EarthModel, in_sight
 
 
 # Set up logging
@@ -94,7 +97,7 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
     if eclplong < 0.0:
         eclplong += const.TWOPI
     if abs(eclplong - rtasc) > np.pi / 2.0:
-        rtasc += np.pi
+        rtasc += 0.5 * np.pi * round((eclplong - rtasc) / (0.5 * np.pi))
 
     # Declination (radians)
     decl = np.arcsin(np.sin(obliquity) * np.sin(eclplong))
@@ -207,3 +210,90 @@ def sunriset(
         results[event] = uttemp
 
     return results["sunrise"], results["sunset"]
+
+
+def in_light(
+    r: ArrayLike, jd: float, earth_model: EarthModel = EarthModel.ELLIPSOIDAL
+) -> bool:
+    """Determines if a spacecraft is in sunlight at a given time.
+
+    References:
+        Vallado: 2001, p. 291-295, Algorithm 35
+
+    Args:
+        r (array_like): Position vector of the spacecraft in km
+        jd (float): Julian date (days from 4713 BC)
+        earth_model (EarthModel, optional): Earth model to use (default is ELLIPSOIDAL)
+
+    Returns:
+        bool: True if the spacecraft is in sunlight, False otherwise
+    """
+    # Calculate the Sun's position vector
+    rsun, *_ = position(jd)
+
+    # Determine if the spacecraft is in sunlight
+    return in_sight(rsun, r, earth_model)
+
+
+def illumination(jd: float, lat: float, lon: float) -> float:
+    """Calculates the illumination due to the sun at a given location and time.
+
+    References:
+        Vallado: 2022, p. 316-317, Eq. 5-10, Table 5-1
+
+    Args:
+        jd (float): Julian date (days from 4713 BC)
+        lat (float): Latitude of the location in radians
+        lon (float): Longitude of the location in radians (-2pi to 2pi) (West negative)
+
+    Returns:
+        float: Luminous emmittance, lux (lumen/m²)
+    """
+    # Sun right ascension and declination
+    _, srtasc, sdecl = position(jd)
+
+    # Local sidereal time
+    lst, _ = lstime(lon, jd)
+
+    # Local hour angle
+    lha = lst - srtasc
+
+    # Sun elevation
+    sunel = np.arcsin(
+        np.sin(sdecl) * np.sin(lat) + np.cos(sdecl) * np.cos(lat) * np.cos(lha)
+    )
+
+    # Convert sun elevation to degrees
+    sunel_deg = np.degrees(sunel)
+
+    # Compute illumination using ground illumination indices
+    sunillum = 0.0
+    if sunel_deg > -18.01:
+        x = sunel_deg / 90.0
+
+        # Determine coefficients based on sun elevation
+        # See Table 5-1 in Vallado 2022 (p. 317)
+        if sunel_deg >= 20:
+            l0, l1, l2, l3 = 3.74, 3.97, -4.07, 1.47
+        elif 5.0 <= sunel_deg < 20.0:
+            l0, l1, l2, l3 = 3.05, 13.28, -45.98, 64.33
+        elif -0.8 <= sunel_deg < 5.0:
+            l0, l1, l2, l3 = 2.88, 22.26, -207.64, 1034.30
+        elif -5.0 <= sunel_deg < -0.8:
+            l0, l1, l2, l3 = 2.88, 21.81, -258.11, -858.36
+        elif -12.0 <= sunel_deg < -5.0:
+            l0, l1, l2, l3 = 2.70, 12.17, -431.69, -1899.83
+        elif -18.0 <= sunel_deg < -12.0:
+            l0, l1, l2, l3 = 13.84, 262.72, 1447.42, 2797.93
+        else:
+            l0, l1, l2, l3 = 0.0, 0.0, 0.0, 0.0
+
+        # Compute illumination
+        l1 = l0 + l1 * x + l2 * x**2 + l3 * x**3
+        sunillum = 10.0**l1
+
+        # Clamp sunillum to valid range
+        if sunillum < 0.0 or sunillum >= 1e4:
+            sunillum = 0.0
+
+    return sunillum

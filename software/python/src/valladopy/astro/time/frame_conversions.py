@@ -281,9 +281,9 @@ def ecef2eci(
 
     Returns:
         tuple: (reci, veci, aeci)
-            reci (np.ndarray): ECI position vector
-            veci (np.ndarray): ECI velocity vector
-            aeci (np.ndarray): ECI acceleration vector
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+            aeci (np.ndarray): ECI acceleration vector in km/s²
     """
     # Find matrices that account for various orbit effects
     prec, nut, st, pm, omegaearth = calc_orbit_effects(

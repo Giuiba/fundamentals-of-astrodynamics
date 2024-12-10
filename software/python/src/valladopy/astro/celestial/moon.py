@@ -273,3 +273,47 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float,
     moonphaseang = (meanlonmoon - loneclsun) % np.degrees(const.TWOPI)
 
     return results["moonrise"], results["moonset"], moonphaseang, error
+
+
+def illumination(f: float, elev: float) -> float:
+    """Calculates the illumination due to the moon.
+
+    References:
+        Vallado: 2022, p. 316-317, Eq. 5-10, Table 5-1
+
+    Args:
+        f (float): Phase angle in radians
+        elev (float): Moon elevation in radians
+
+    Returns:
+        float: Luminous emmittance, lux (lumen/m²)
+    """
+    # Convert inputs to degrees
+    f = np.degrees(f)
+    elev = np.degrees(elev)
+
+    # Determine coefficients based on moon elevation
+    # See Table 5-1 in Vallado 2022 (p. 317)
+    if elev >= 20:
+        l0, l1, l2, l3 = -1.95, 4.06, -4.24, 1.56
+    elif 5.0 <= elev < 20.0:
+        l0, l1, l2, l3 = -2.58, 12.58, -42.58, 59.06
+    elif -0.8 < elev < 5.0:
+        l0, l1, l2, l3 = -2.79, 24.27, -252.95, 1321.29
+    else:
+        l0, l1, l2, l3 = 0.0, 0.0, 0.0, 0.0
+        f = 0.0
+
+    # Compute l1 and l2 based on coefficients and phase angle
+    x = elev / 90.0
+    l1 = l0 + l1 * x + l2 * x**2 + l3 * x**3
+    l2 = -0.00868 * f - 2.2e-9 * f**4
+
+    # Compute moon illumination
+    moonillum = 10.0 ** (l1 + l2)
+
+    # Clamp moonillum to valid range
+    if moonillum < 0 or moonillum >= 1:
+        moonillum = 0.0
+
+    return moonillum

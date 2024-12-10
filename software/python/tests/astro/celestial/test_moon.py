@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-import src.valladopy.astro.iod.moon as moon
+import src.valladopy.astro.celestial.moon as moon
 
-from ...conftest import DEFAULT_TOL
+from ...conftest import DEFAULT_TOL, custom_isclose
 
 
 def test_position():
@@ -38,3 +38,17 @@ def test_moonriset(lon, moonrise_expected, moonset_expected, moonphaseang_expect
     assert np.isclose(moonrise, moonrise_expected, rtol=DEFAULT_TOL)
     assert np.isclose(moonset, moonset_expected, rtol=DEFAULT_TOL)
     assert np.isclose(moonphaseang, moonphaseang_expected, rtol=DEFAULT_TOL)
+
+
+@pytest.mark.parametrize(
+    "elev, illum_expected",
+    [
+        (np.radians(100), 0.11663785663534358),
+        (np.radians(15), 0.016132194140321483),
+        (np.radians(3), 0.0024392692225373856),
+        (np.radians(-1), 0.0),
+    ],
+)
+def test_illumination(elev, illum_expected):
+    f = np.radians(45)
+    assert custom_isclose(moon.illumination(f, elev), illum_expected)
