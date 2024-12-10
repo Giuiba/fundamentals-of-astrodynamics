@@ -10,8 +10,8 @@
 %                -
 %
 %  inputs          description                    range / units
-%    f           - moon hase angle                rad
-%    moonel      - moon elevation                 rad
+%    f           - moon phase angle               deg
+%    moonel      - moon elevation                 deg
 %
 %  outputs       :
 %    moonill     - moon illumination
@@ -59,7 +59,7 @@ function [moonillum] = moonill ( f,moonel );
                end
 
        l1= l0 + l1*x + l2*x*x + l3*x*x*x;
-       l2= (-0.00868 *f - 2.2d-9*f*f*f*f);
+       l2= (-0.00868 *f - 2.2e-9*f*f*f*f);
 
 %       hzparal =   0.9508 + 0.0518*cos( (134.9+477198.85*ttdb)*deg2rad )
 %                + 0.0095*cos( (259.2-413335.38*ttdb)*deg2rad )
