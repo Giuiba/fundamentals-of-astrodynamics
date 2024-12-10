@@ -11,8 +11,10 @@ from enum import Enum
 from typing import Tuple
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from ... import constants as const
+from .utils import EarthModel, in_sight
 
 
 # Set up logging
@@ -207,3 +209,26 @@ def sunriset(
         results[event] = uttemp
 
     return results["sunrise"], results["sunset"]
+
+
+def in_light(
+    r: ArrayLike, jd: float, earth_model: EarthModel = EarthModel.ELLIPSOIDAL
+) -> bool:
+    """Determines if a spacecraft is in sunlight at a given time.
+
+    References:
+        Vallado: 2001, p. 291-295, Algorithm 35
+
+    Args:
+        r (array_like): Position vector of the spacecraft in km
+        jd (float): Julian date (days from 4713 BC)
+        earth_model (EarthModel, optional): Earth model to use (default is ELLIPSOIDAL)
+
+    Returns:
+        bool: True if the spacecraft is in sunlight, False otherwise
+    """
+    # Calculate the Sun's position vector
+    rsun, *_ = position(jd)
+
+    # Determine if the spacecraft is in sunlight
+    return in_sight(rsun, r, earth_model)

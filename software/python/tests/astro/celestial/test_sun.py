@@ -1,7 +1,9 @@
+import logging
 import numpy as np
 import pytest
 
 import src.valladopy.astro.celestial.sun as sun
+from src.valladopy.astro.celestial.utils import EarthModel
 
 from ...conftest import DEFAULT_TOL
 
@@ -56,3 +58,21 @@ def test_invalid_event_type():
     with pytest.raises(ValueError) as excinfo:
         sun.sunriset(2450165.5, np.radians(40), 0, "galactic")
     assert "Invalid event type" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "earth_model, in_light, tmin",
+    [
+        (EarthModel.ELLIPSOIDAL, True, 1.0000233426570773),
+        (EarthModel.SPHERICAL, True, 1.000023290642131),
+    ],
+)
+def test_in_light(earth_model, in_light, tmin, caplog):
+    # Vallado 2022, Example 5-6
+    r = [0.0, -4464.696, -5102.509]
+    jd = 2449763.5
+
+    # Call function with logging
+    with caplog.at_level(logging.DEBUG):
+        assert sun.in_light(r, jd, earth_model) == in_light
+        assert f"Minimum parametric value (tmin): {tmin}" in caplog.messages[0]

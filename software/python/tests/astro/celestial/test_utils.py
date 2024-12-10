@@ -33,11 +33,11 @@ import src.valladopy.astro.celestial.utils as utils
         ),
     ],
 )
-def test_sight(r2, earth_model, los, tmin, caplog):
+def test_in_sight(r2, earth_model, los, tmin, caplog):
     # Vallado 2022, Example 5-6
     r1 = [0.0, -4464.696, -5102.509]
 
     # Call function with logging
     with caplog.at_level(logging.DEBUG):
-        assert utils.sight(r1, r2, earth_model) == los
+        assert utils.in_sight(r1, r2, earth_model) == los
         assert f"Minimum parametric value (tmin): {tmin}" in caplog.messages[0]

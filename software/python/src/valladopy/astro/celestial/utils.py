@@ -24,7 +24,7 @@ class EarthModel(Enum):
     ELLIPSOIDAL = "e"
 
 
-def sight(
+def in_sight(
     r1: ArrayLike, r2: ArrayLike, earth_model: EarthModel = EarthModel.ELLIPSOIDAL
 ) -> bool:
     """Determines if there is line-of-sight (LOS) between two satellites, considering
