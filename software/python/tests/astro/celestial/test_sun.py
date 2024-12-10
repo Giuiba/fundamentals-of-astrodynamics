@@ -79,6 +79,7 @@ def test_in_light(earth_model, in_light, tmin, caplog):
 
 
 def test_illumination():
+    # TODO: find examples to hit all sun elevation ranges
     jd = 2449763.5
     lat = np.radians(45)
     lon = np.radians(-75)

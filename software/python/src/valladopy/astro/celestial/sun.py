@@ -236,7 +236,7 @@ def in_light(
 
 
 def illumination(jd: float, lat: float, lon: float) -> float:
-    """Calculates the illumination due to the sun based on the given parameters.
+    """Calculates the illumination due to the sun at a given location and time.
 
     References:
         Vallado: 2022, p. 316-317, Eq. 5-10, Table 5-1
@@ -293,7 +293,7 @@ def illumination(jd: float, lat: float, lon: float) -> float:
         sunillum = 10.0**l1
 
         # Clamp sunillum to valid range
-        if sunillum < 0.0 or sunillum > 1e4:
+        if sunillum < 0.0 or sunillum >= 1e4:
             sunillum = 0.0
 
     return sunillum
