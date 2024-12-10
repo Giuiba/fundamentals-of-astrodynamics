@@ -103,7 +103,7 @@ def pathm(llat: float, llon: float, range_: float, az: float) -> Tuple[float, fl
 
 def rngaz(
     llat: float, llon: float, tlat: float, tlon: float, tof: float = 0.0
-) -> tuple[float, float]:
+) -> Tuple[float, float]:
     """Calculates the range and azimuth between two specified ground points
     on a spherical Earth.
 
