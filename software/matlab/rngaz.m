@@ -45,7 +45,7 @@ function [range,az] = rngaz ( llat,llon,tlat,tlon,tof );
 
         % -------------------------  implementation   -------------------------
         range= acos( sin(llat)*sin(tlat) + ...
-              cos(llat)*cos(tlat)*cos(tlon-llon + omegaearth*tof) );
+              cos(llat)*cos(tlat)*cos(tlon-llon + earthrot*tof) );
 
         % ------ check if the range is 0 or half the earth  ---------
         if ( abs( sin(range)*cos(llat) ) < small )
@@ -60,7 +60,7 @@ function [range,az] = rngaz ( llat,llon,tlat,tlon,tof );
         end
 
         % ------ check if the azimuth is grt than pi ( 180deg ) -------
-        if ( sin( tlon - llon + omegaearth*tof ) < 0.0  )
+        if ( sin( tlon - llon + earthrot*tof ) < 0.0  )
             az= twopi - az;
         end
 
