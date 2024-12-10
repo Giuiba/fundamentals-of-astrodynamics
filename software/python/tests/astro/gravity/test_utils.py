@@ -30,5 +30,5 @@ def test_rngaz():
     range_, az = utils.rngaz(llat, llon, tlat, tlon, tof)
 
     # Check results
-    assert np.isclose(range_, 6853.249350147515, rtol=DEFAULT_TOL)
-    assert np.isclose(az, 5.992572405341972, rtol=DEFAULT_TOL)
+    assert np.isclose(range_, 2039.9822541511369, rtol=DEFAULT_TOL)
+    assert np.isclose(az, 0.4816107666380967, rtol=DEFAULT_TOL)

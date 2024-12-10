@@ -75,20 +75,17 @@ def rngaz(
         llon (float): Start longitude in radians (0.0 to 2pi)
         tlat (float): End geocentric latitude in radians (-pi/2 to pi/2)
         tlon (float): End longitude in radians (0.0 to 2pi)
-        tof (float): Time of flight if applicable, in minutes (default is 0.0)
+        tof (float): Time of flight if applicable, in seconds (default is 0.0)
 
     Returns:
         tuple: (range_, az)
             range_ (float): Range between points in km
             az (float): Azimuth in radians (0.0 to 2pi)
     """
-    omegaearth = 0.05883359221938136  # rad/TU (TODO: fix units?)
-    # omegaearth = const.EARTHROT * const.MIN2SEC  # rad/min
-
     # Calculate the spherical range
     range_ = np.arccos(
         np.sin(llat) * np.sin(tlat)
-        + np.cos(llat) * np.cos(tlat) * np.cos(tlon - llon + omegaearth * tof)
+        + np.cos(llat) * np.cos(tlat) * np.cos(tlon - llon + const.EARTHROT * tof)
     )
 
     # Check for special cases where range is 0 or half the Earth
@@ -101,7 +98,7 @@ def rngaz(
         )
 
     # Adjust azimuth if it is greater than pi
-    if np.sin(tlon - llon + omegaearth * tof) < 0.0:
+    if np.sin(tlon - llon + const.EARTHROT * tof) < 0.0:
         az = const.TWOPI - az
 
     return range_ * const.RE, az
