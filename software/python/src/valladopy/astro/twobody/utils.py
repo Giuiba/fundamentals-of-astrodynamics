@@ -296,3 +296,63 @@ def checkhitearth(
                             hitearth, hitearthstr = True, "Hyperbolic impact"
 
     return hitearth, hitearthstr
+
+
+def findtof(ro: ArrayLike, r: ArrayLike, p: float) -> float:
+    """Finds the time of flight for orbital transfer using p-iteration theory.
+
+    References:
+        Vallado: 2007, p. 134-135, Algorithm 11
+
+    Args:
+        ro (array_like): Interceptor position vector in km
+        r (array_like): Target position vector in km
+        p (float): Semiparameter in km
+
+    Returns:
+        float: Time of flight in seconds
+    """
+    # Magnitudes of position vectors
+    magr = np.linalg.norm(r)
+    magro = np.linalg.norm(ro)
+
+    # Calculate cosine and sine of change in true anomaly
+    cosdnu = np.dot(ro, r) / (magro * magr)
+    rcrossr = np.cross(ro, r)
+    sindnu = np.linalg.norm(rcrossr) / (magro * magr)
+
+    # Intermediate calculations
+    k = magro * magr * (1.0 - cosdnu)
+    l_ = magro + magr
+    m = magro * magr * (1.0 + cosdnu)
+    a = (m * k * p) / ((2.0 * m - l_**2) * p**2 + 2.0 * k * l_ * p - k**2)
+
+    # Compute f and g
+    f = 1.0 - (magr / p) * (1.0 - cosdnu)
+    g = magro * magr * sindnu / np.sqrt(MU * p)
+    alpha = 1.0 / a
+
+    # Find time of flight based on orbit type
+    if alpha > SMALL:
+        # Elliptical case
+        dnu = np.arctan2(sindnu, cosdnu)
+        fdot = (
+            np.sqrt(MU / p)
+            * np.tan(dnu * 0.5)
+            * (((1.0 - cosdnu) / p) - (1.0 / magro) - (1.0 / magr))
+        )
+        cosdeltae = 1.0 - (magro / a) * (1.0 - f)
+        sindeltae = (-magro * magr * fdot) / np.sqrt(MU * a)
+        deltae = np.arctan2(sindeltae, cosdeltae)
+        tof = g + np.sqrt(a**3 / MU) * (deltae - sindeltae)
+    elif alpha < SMALL:
+        # Hyperbolic case
+        deltah = np.arccosh(1.0 - (magro / a) * (1.0 - f))
+        tof = g + np.sqrt(-(a**3) / MU) * (np.sinh(deltah) - deltah)
+    else:
+        # Parabolic case
+        c = np.sqrt(magr**2 + magro**2 - 2.0 * magr * magro * cosdnu)
+        s = (magro + magr + c) * 0.5
+        tof = (2.0 / 3.0) * np.sqrt((s**3) * 0.5 / MU) * (1.0 - ((s - c) / s) ** 1.5)
+
+    return tof

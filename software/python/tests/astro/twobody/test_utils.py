@@ -135,3 +135,25 @@ def test_checkhitearth(
     hitearth, hitearthstr = utils.checkhitearth(altpad, r1, v1, r2, v2, nrev)
     assert hitearth == expected_hitearth
     assert hitearthstr == expected_hitearthstr
+
+
+@pytest.mark.parametrize(
+    "r, p, tof_expected",
+    [
+        ([5000, 5000, 0], 8000, 679.4405031710606),  # elliptical case
+        ([20000, 20000, 0], 8000, 2919.2991312782533),  # hyperbolic case
+        ([14000, 0, 0], 0, 799.557259683841),  # parabolic case
+    ],
+)
+def test_findtof(r, p, tof_expected):
+    ro = [7000, 0, 0]
+    tof = utils.findtof(ro, r, p)
+    assert np.isclose(tof, tof_expected, rtol=DEFAULT_TOL)
+
+
+def test_findtof_bad_inputs():
+    # Nonsensical orbit (a = 0, p = nonzero)
+    ro = [7000, 0, 0]
+    r1 = [14000, 0, 0]
+    p = 14000
+    assert np.isnan(utils.findtof(ro, r1, p))
