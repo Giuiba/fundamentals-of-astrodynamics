@@ -13,6 +13,9 @@ import numpy as np
 from ... import constants as const
 
 
+# TODO: do these functions belong here?
+
+
 def pathm(llat: float, llon: float, range_: float, az: float) -> Tuple[float, float]:
     """Determines the end position (latitude and longitude) for a given range and
     azimuth from a given starting point.

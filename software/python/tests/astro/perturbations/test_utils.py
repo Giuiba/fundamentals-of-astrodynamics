@@ -1,6 +1,6 @@
 import numpy as np
 
-import src.valladopy.astro.gravity.utils as utils
+import src.valladopy.astro.perturbations.utils as utils
 
 from ...conftest import DEFAULT_TOL
 
