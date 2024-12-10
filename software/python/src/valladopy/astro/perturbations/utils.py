@@ -118,6 +118,10 @@ def rngaz(
         tuple: (range_, az)
             range_ (float): Range between points in km
             az (float): Azimuth in radians (0.0 to 2pi)
+
+    Notes:
+        - The MATLAB/C# versions likely have inconsistent units and will therefore
+          produce different results (see issue #49).
     """
     # Calculate the spherical range
     range_ = np.arccos(
