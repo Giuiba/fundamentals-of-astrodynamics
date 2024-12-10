@@ -5,7 +5,7 @@ import pytest
 import src.valladopy.astro.celestial.sun as sun
 from src.valladopy.astro.celestial.utils import EarthModel
 
-from ...conftest import DEFAULT_TOL
+from ...conftest import DEFAULT_TOL, custom_isclose
 
 
 def test_position():
@@ -76,3 +76,10 @@ def test_in_light(earth_model, in_light, tmin, caplog):
     with caplog.at_level(logging.DEBUG):
         assert sun.in_light(r, jd, earth_model) == in_light
         assert f"Minimum parametric value (tmin): {tmin}" in caplog.messages[0]
+
+
+def test_illumination():
+    jd = 2449763.5
+    lat = np.radians(45)
+    lon = np.radians(-75)
+    assert custom_isclose(sun.illumination(jd, lat, lon), 0.0009449725651258739)
