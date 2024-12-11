@@ -33,37 +33,37 @@
 %  references    :
 %    vallado       2001, 246-248, alg 25
 %
-% [rr,rtasc,decl,drr,drtasc,ddecl] = rv2radec( r,v );
+%  [rr, rtasc, decl, drr, drtasc, ddecl] = rv2radec( r, v )
 % ------------------------------------------------------------------------------
 
-function [rr,rtasc,decl,drr,drtasc,ddecl] = rv2radec( r,v );
+function [rr, rtasc, decl, drr, drtasc, ddecl] = rv2radec( r, v )
 
-        small  = 0.00000001;
+    small  = 0.00000001;
 
-        % -------------------------  implementation   -------------------------
-        % ------------- calculate angles and rates ----------------
-        rr= mag(r);
-        temp= sqrt( r(1)*r(1) + r(2)*r(2) );
-        if ( temp < small )
-            rtasc= atan2( v(2) , v(1) );
-        else
-            rtasc= atan2( r(2) , r(1) );
-        end
-        if (rtasc < 0.0)
-            rtasc = rtasc + 2.0*pi;
-        end
-        decl= asin( r(3)/rr );
+    % -------------------------  implementation   -------------------------
+    % ------------- calculate angles and rates ----------------
+    rr= mag(r);
+    temp= sqrt( r(1)*r(1) + r(2)*r(2) );
+    if ( temp < small )
+        rtasc= atan2( v(2) , v(1) );
+    else
+        rtasc= atan2( r(2) , r(1) );
+    end
+    if (rtasc < 0.0)
+        rtasc = rtasc + 2.0*pi;
+    end
+    decl= asin( r(3)/rr );
 
-        temp1= -r(2)*r(2) - r(1)*r(1);  % different now
-        drr= dot(r,v)/rr;
-        if ( abs(temp1) > small )
-            drtasc= ( v(1)*r(2) - v(2)*r(1) ) / temp1;
-          else
-            drtasc= 0.0;
-          end
-        if ( abs( temp ) > small )
-            ddecl= ( v(3) - drr*sin( decl ) ) / temp;
-          else
-            ddecl= 0.0;
-          end
+    temp1= -r(2)*r(2) - r(1)*r(1);  % different now
+    drr= dot(r,v)/rr;
+    if ( abs(temp1) > small )
+        drtasc= ( v(1)*r(2) - v(2)*r(1) ) / temp1;
+    else
+        drtasc= 0.0;
+    end
+    if ( abs( temp ) > small )
+        ddecl= ( v(3) - drr*sin( decl ) ) / temp;
+    else
+        ddecl= 0.0;
+    end
 
