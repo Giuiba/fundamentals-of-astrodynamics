@@ -6,11 +6,16 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
+import logging
 from typing import Tuple
 
 import numpy as np
 
 from ... import constants as const
+
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 def pathm(llat: float, llon: float, range_: float, az: float) -> Tuple[float, float]:
@@ -109,3 +114,54 @@ def rngaz(
         az = const.TWOPI - az
 
     return range_ * const.RE, az
+
+
+def satfov(
+    az: float,
+    slatgd: float,
+    slon: float,
+    salt: float,
+    tfov: float,
+    etactr: float,
+    tol_fov: float = 1e-5,
+):
+    """Finds parameters relating to a satellite's field of view (FOV).
+
+    References:
+        Vallado: 2001, p. 776-781, Eq. 11-8 to 11-13
+
+    Args:
+        az (float): Azimuth in radians (0.0 to 2pi)
+        slatgd (float): Geodetic latitude of the satellite in radians (-pi/2 to pi/2)
+        slon (float): Longitude of the satellite in radians
+        salt (float): Altitude of the satellite in km
+        tfov (float): Total field of view in radians
+        etactr (float): Center where the sensor is pointed in radians
+        tol_fov (float): Tolerance for the center of the FOV (default is 1e-5)
+
+    Returns:
+        tuple: (rhomin, rhomax, lat, lon)
+            rhomin: Minimum slant range in km
+            rhomax: Maximum slant range in km
+            lat: Latitude of the center of the FOV in radians
+            lon: Longitude of the center of the FOV in radians
+    """
+    # Satellite parameters and limiting cases
+    r = const.RE + salt
+
+    # Maximum field of view
+    fovmin = etactr + tfov * 0.5
+    gamma = np.pi - np.arcsin(r * np.sin(fovmin) / const.RE)  # use larger angle
+    rhomax = const.RE * np.cos(gamma) + r * np.cos(fovmin)
+
+    # Slant range
+    lambda_ = np.arcsin(rhomax * np.sin(fovmin) / const.RE)
+    rhomin = lambda_ * const.RE
+
+    # Location of center of FOV
+    if abs(etactr) > tol_fov:
+        lat, lon = pathm(slatgd, slon, lambda_, az)
+    else:
+        lat, lon = slatgd, slon
+
+    return rhomin, rhomax, lat, lon
