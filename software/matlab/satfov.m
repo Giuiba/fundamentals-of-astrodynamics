@@ -14,7 +14,7 @@
 %    az          - azimuth                        rad
 %    slatgd      - geodetic latitude of sat       rad
 %    slon        - longitude of sat               rad
-%    salt        - altitudeof satellite           er
+%    salt        - altitudeof satellite           km
 %    tfov        - total field of view            rad
 %    etactr      - ctr where sensor looks         rad
 %

@@ -80,7 +80,7 @@ function [tof] = findtof ( ro,r, p );
           else
             % ------------------------ hyperbolic ---------------------
             if ( alpha < -small )
-                deltah = arccosh( 1.0 -(magro/a)*(1.0 -f) );
+                deltah = acosh( 1.0 -(magro/a)*(1.0 -f) );
                 tof    = g + sqrt(-a*a*a/mu)*(sinh(deltah)-deltah);
               else
                 % -------------------- parabolic ----------------------

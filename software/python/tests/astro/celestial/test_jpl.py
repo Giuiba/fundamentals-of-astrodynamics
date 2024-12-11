@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from pathlib import Path
 
-import src.valladopy.astro.iod.jpl as jpl
+import src.valladopy.astro.celestial.jpl as jpl
 
 from ...conftest import DEFAULT_TOL
 
