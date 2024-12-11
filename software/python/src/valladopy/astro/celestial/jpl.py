@@ -71,8 +71,7 @@ def find_jplde_param(
     jdjpldestart: float,
     interp: JPLInterp = JPLInterp.NONE,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Finds the JPL DE parameters for a given time using interpolation.
+    """Finds the JPL DE parameters for a given time using interpolation.
 
     Args:
         jdtdb (float): Epoch Julian date (days from 4713 BC)
