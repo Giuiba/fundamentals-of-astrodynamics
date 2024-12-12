@@ -258,14 +258,19 @@ def covct2cl(
     """Transforms a 6x6 covariance matrix from Cartesian elements to classical orbital
     elements.
 
+    References:
+        Vallado and Alfano 2015
+
     Args:
-        cartcov: 6x6 Cartesian covariance matrix.
-        cartstate: 6x1 Cartesian orbit state [rx, ry, rz, vx, vy, vz].
-        use_mean_anom: Flag to use mean anomaly instead of true anomaly
+        cartcov (np.ndarray): 6x6 Cartesian covariance matrix, in km and km/s
+        cartstate (np.ndarray): 6x1 Cartesian orbit state in km and km/s
+                                (rx, ry, rz, vx, vy, vz)
+        use_mean_anom (bool): Flag to use mean anomaly instead of true anomaly
 
     Returns:
-        classcov: 6x6 classical covariance matrix.
-        tm: Transformation matrix.
+        tuple: (classcov, tm)
+            classcov (np.ndarray): 6x6 Classical orbital elements covariance matrix
+            tm (np.ndarray): 6x6 Transformation matrix
     """
     # Parse the input state vector
     rx, ry, rz, vx, vy, vz = cartstate * KM2M  # convert to meters
