@@ -13,6 +13,11 @@ import numpy as np
 from ... import constants as const
 
 
+########################################################################################
+# Coplanar Transfers
+########################################################################################
+
+
 def hohmann(
     rinit: float,
     rfinal: float,
@@ -219,6 +224,11 @@ def onetangent(
     return deltava, deltavb, dttu, etran, atran, vtrana, vtranb
 
 
+########################################################################################
+# Non-Coplanar Transfers
+########################################################################################
+
+
 def inclonly(deltai: float, vinit: float, fpa: float) -> float:
     """Calculates the delta-v for a change in inclination only.
 
@@ -242,12 +252,12 @@ def inclonly(deltai: float, vinit: float, fpa: float) -> float:
 def nodeonly(
     iinit: float,
     ecc: float,
-    deltaomega: float,
+    deltaraan: float,
     vinit: float,
     fpa: float,
     incl: float,
     tol: float = 1e-7,
-) -> tuple[float, float, float, float]:
+) -> Tuple[float, float, float, float]:
     """Calculates the delta-v for a change in longitude of the ascending node.
 
     References:
@@ -256,7 +266,7 @@ def nodeonly(
     Args:
         iinit (float): Initial inclination in radians
         ecc (float): Eccentricity of the initial orbit
-        deltaomega (float): Change in longitude of the ascending node in radians
+        deltaraan (float): Change in right ascension of the ascending node in radians
         vinit (float): Initial velocity in km/s
         fpa (float): Flight path angle in radians
         incl (float): Inclination in radians
@@ -274,8 +284,8 @@ def nodeonly(
     """
     if ecc > tol:
         # Elliptical orbit
-        theta = np.arctan(np.sin(iinit) * np.tan(deltaomega))
-        ifinal = np.arcsin(np.sin(theta) / np.sin(deltaomega))
+        theta = np.arctan(np.sin(iinit) * np.tan(deltaraan))
+        ifinal = np.arcsin(np.sin(theta) / np.sin(deltaraan))
         deltav = 2.0 * vinit * np.cos(fpa) * np.sin(0.5 * theta)
 
         # Initial argument of latitude
@@ -284,17 +294,62 @@ def nodeonly(
     else:
         # Circular orbit
         ifinal = incl
-        theta = np.arccos(np.cos(iinit) ** 2 + np.sin(iinit) ** 2 * np.cos(deltaomega))
+        theta = np.arccos(np.cos(iinit) ** 2 + np.sin(iinit) ** 2 * np.cos(deltaraan))
         deltav = 2.0 * vinit * np.sin(0.5 * theta)
 
         # Initial argument of latitude
         arglat_init = np.arccos(
-            (np.tan(iinit) * (np.cos(deltaomega) - np.cos(theta))) / np.sin(theta)
+            (np.tan(iinit) * (np.cos(deltaraan) - np.cos(theta))) / np.sin(theta)
         )
 
     # Final argument of latitude
     arglat_final = np.arccos(
-        (np.cos(incl) * np.sin(incl) * (1.0 - np.cos(deltaomega))) / np.sin(theta)
+        (np.cos(incl) * np.sin(incl) * (1.0 - np.cos(deltaraan))) / np.sin(theta)
     )
 
     return ifinal, deltav, arglat_init, arglat_final
+
+
+def inclandnode(
+    iinit: float, ifinal: float, deltaraan: float, vinit: float, fpa: float
+) -> Tuple[float, float, float]:
+    """Calculates the delta-v for a change in inclination and right ascension of the
+    ascending node.
+
+    References:
+        Vallado 2007, p. 350, Algorithm 41
+
+    Args:
+        iinit (float): Initial inclination in radians
+        ifinal (float): Final inclination in radians
+        deltaraan (float): Change in right ascension of the ascending node in radians
+        vinit (float): Initial velocity in km/s
+        fpa (float): Flight path angle in radians
+
+    Returns:
+        tuple: (deltav, arglat_init, arglat_final)
+            deltav (float): Change in velocity in km/s
+            arglat_init (float): Initial argument of latitude in radians
+            arglat_final (float): Final argument of latitude in radians
+
+    Notes:
+        - Units are flexible for `vinit` and `deltav` will match its units
+    """
+    # Pre-compute trigonometric values for efficiency
+    cosdraan = np.cos(deltaraan)
+    sinii, cosii = np.sin(iinit), np.cos(iinit)
+    sinif, cosif = np.sin(ifinal), np.cos(ifinal)
+
+    # Calculate theta
+    cost = cosii * cosif + sinii * sinif * cosdraan
+    theta = np.arccos(cost)
+    sint = np.sin(theta)
+
+    # Calculate delta-v
+    deltav = inclonly(theta, vinit, fpa)
+
+    # Calculate argument of latitude changes
+    arglat_init = np.arccos((sinif * cosdraan - cost * sinii) / (sint * cosii))
+    arglat_final = np.arccos((cosii * sinif - sinii * cosif * cosdraan) / sint)
+
+    return deltav, arglat_init, arglat_final

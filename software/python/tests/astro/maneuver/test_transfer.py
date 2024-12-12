@@ -161,14 +161,15 @@ def test_inclonly(vinit, fpa, deltav_expected):
     ],
 )
 def test_nodeonly(ecc, fpa, ifinal_exp, deltav_exp, arglat_init_exp, arglat_final_exp):
+    # Input values
     iinit = np.radians(55.0)
-    deltaomega = np.radians(45.0)
+    deltaraan = np.radians(45.0)
     vinit = 5.892311
     incl = np.radians(55.0)
 
     # Calculate node change
     ifinal, deltav, arglat_init, arglat_final = transfer.nodeonly(
-        iinit, ecc, deltaomega, vinit, fpa, incl
+        iinit, ecc, deltaraan, vinit, fpa, incl
     )
 
     # Expected results
@@ -176,3 +177,30 @@ def test_nodeonly(ecc, fpa, ifinal_exp, deltav_exp, arglat_init_exp, arglat_fina
     assert custom_isclose(deltav, deltav_exp)
     assert custom_isclose(arglat_init, float(arglat_init_exp))
     assert custom_isclose(arglat_final, float(arglat_final_exp))
+
+
+@pytest.mark.parametrize(
+    "fpa, deltav_expected",
+    [
+        # Vallado 2007, Example 6-6
+        (0.0, 3.615924548496319),
+        # Test non-zero flight path angle
+        (np.radians(11.23), 3.546691598327748),
+    ],
+)
+def test_inclandnode(fpa, deltav_expected):
+    # Input values
+    iinit = np.radians(55.0)
+    ifinal = np.radians(40.0)
+    deltaraan = np.radians(45.0)
+    vinit = 5.892311
+
+    # Calculate inclination and node change
+    deltav, arglat_init, arglat_final = transfer.inclandnode(
+        iinit, ifinal, deltaraan, vinit, fpa
+    )
+
+    # Expected results
+    assert custom_isclose(deltav, deltav_expected)
+    assert custom_isclose(arglat_init, float(np.radians(128.9041397405515)))
+    assert custom_isclose(arglat_final, float(np.radians(97.38034532660193)))
