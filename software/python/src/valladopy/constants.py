@@ -16,6 +16,7 @@ import numpy as np
 SMALL = 1e-10
 
 # Distances
+KM2M = 1e3
 FT2M = 0.3048
 MILE2M = 1609.344
 NM2M = 1852
