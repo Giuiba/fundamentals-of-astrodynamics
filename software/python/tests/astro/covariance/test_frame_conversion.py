@@ -429,8 +429,11 @@ class TestClassical:
             [np.vstack([class_cov_base, cov_lastrow[:-1]]), cov_lastrow]
         )
 
-        # Test mean anomaly output
+        # Test with inputs
         cartcov, tm = fc.covcl2ct(class_cov, class_state, use_mean_anom=use_mean_anom)
 
+        # Compare results
+        # NOTE: The covariance seems very sensitive to machine precision, so we use a
+        #       higher absolute tolerance for this test
         assert custom_allclose(cartcov, cartcov_exp, atol=1e-3)
         assert custom_allclose(tm, tm_exp)
