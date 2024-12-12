@@ -219,7 +219,7 @@ def onetangent(
     return deltava, deltavb, dttu, etran, atran, vtrana, vtranb
 
 
-def inclonlychange(deltai: float, vinit: float, fpa: float) -> float:
+def inclonly(deltai: float, vinit: float, fpa: float) -> float:
     """Calculates the delta-v for a change in inclination only.
 
     References:
@@ -237,3 +237,64 @@ def inclonlychange(deltai: float, vinit: float, fpa: float) -> float:
         - Units are flexible for `vinit` and the output will match its units
     """
     return 2.0 * vinit * np.cos(fpa) * np.sin(0.5 * deltai)
+
+
+def nodeonly(
+    iinit: float,
+    ecc: float,
+    deltaomega: float,
+    vinit: float,
+    fpa: float,
+    incl: float,
+    tol: float = 1e-7,
+) -> tuple[float, float, float, float]:
+    """Calculates the delta-v for a change in longitude of the ascending node.
+
+    References:
+        Vallado 2007, pp. 349, Algorithm 40
+
+    Args:
+        iinit (float): Initial inclination in radians
+        ecc (float): Eccentricity of the initial orbit
+        deltaomega (float): Change in longitude of the ascending node in radians
+        vinit (float): Initial velocity in km/s
+        fpa (float): Flight path angle in radians
+        incl (float): Inclination in radians
+        tol (float): Tolerance for checking if transfer is elliptical (default 1e-7)
+
+    Returns:
+        tuple: (ifinal, deltav, arglat_init, arglat_final)
+            ifinal (float): Final inclination in radians
+            deltav (float): Change in velocity in km/s
+            arglat_init (float): Initial argument of latitude in radians
+            arglat_final (float): Final argument of latitude in radians
+
+    Notes:
+        - Units are flexible for `vinit` and `deltav` will match its units
+    """
+    if ecc > tol:
+        # Elliptical orbit
+        theta = np.arctan(np.sin(iinit) * np.tan(deltaomega))
+        ifinal = np.arcsin(np.sin(theta) / np.sin(deltaomega))
+        deltav = 2.0 * vinit * np.cos(fpa) * np.sin(0.5 * theta)
+
+        # Initial argument of latitude
+        arglat_init = np.pi / 2  # set at 90 degrees
+
+    else:
+        # Circular orbit
+        ifinal = incl
+        theta = np.arccos(np.cos(iinit) ** 2 + np.sin(iinit) ** 2 * np.cos(deltaomega))
+        deltav = 2.0 * vinit * np.sin(0.5 * theta)
+
+        # Initial argument of latitude
+        arglat_init = np.arccos(
+            (np.tan(iinit) * (np.cos(deltaomega) - np.cos(theta))) / np.sin(theta)
+        )
+
+    # Final argument of latitude
+    arglat_final = np.arccos(
+        (np.cos(incl) * np.sin(incl) * (1.0 - np.cos(deltaomega))) / np.sin(theta)
+    )
+
+    return ifinal, deltav, arglat_init, arglat_final
