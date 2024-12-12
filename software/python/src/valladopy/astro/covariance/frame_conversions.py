@@ -1,11 +1,12 @@
 import numpy as np
+from numpy.typing import ArrayLike
 
 from ..twobody import frame_conversions as fc
 from ...constants import KM2M, MUM
 
 
 ########################################################################################
-# Classical Elements
+# Classical <-> Cartesian Elements
 ########################################################################################
 
 
@@ -253,7 +254,7 @@ def _compute_partials_nu(
 
 
 def covct2cl(
-    cartcov: np.ndarray, cartstate: np.ndarray, use_mean_anom: bool = False
+    cartcov: ArrayLike, cartstate: ArrayLike, use_mean_anom: bool = False
 ) -> tuple[np.ndarray, np.ndarray]:
     """Transforms a 6x6 covariance matrix from Cartesian elements to classical orbital
     elements.
@@ -262,25 +263,24 @@ def covct2cl(
         Vallado and Alfano 2015
 
     Args:
-        cartcov (np.ndarray): 6x6 Cartesian covariance matrix, in km and km/s
-        cartstate (np.ndarray): 6x1 Cartesian orbit state in km and km/s
+        cartcov (array_like): 6x6 Cartesian covariance matrix in m and m/s
+        cartstate (array_like): 6x1 Cartesian orbit state in km and km/s
                                 (rx, ry, rz, vx, vy, vz)
         use_mean_anom (bool): Flag to use mean anomaly instead of true anomaly
+                              (defaults to False)
 
     Returns:
         tuple: (classcov, tm)
             classcov (np.ndarray): 6x6 Classical orbital elements covariance matrix
+                                   in m and m/s
             tm (np.ndarray): 6x6 Transformation matrix
     """
     # Parse the input state vector
-    rx, ry, rz, vx, vy, vz = cartstate * KM2M  # convert to meters
-    reci_m = np.array([rx, ry, rz])
-    veci_m = np.array([vx, vy, vz])
-    reci = reci_m / KM2M  # convert back to km
-    veci = veci_m / KM2M
+    reci_m = np.array(cartstate[:3]) * KM2M
+    veci_m = np.array(cartstate[3:]) * KM2M
 
     # Convert to classical orbital elements
-    _, a, ecc, incl, omega, argp, nu, *_ = fc.rv2coe(reci, veci)
+    _, a, ecc, incl, omega, argp, nu, *_ = fc.rv2coe(reci_m / KM2M, veci_m / KM2M)
     a *= KM2M
     n = np.sqrt(MUM / a**3)
 
@@ -301,7 +301,7 @@ def covct2cl(
 
     # Additional terms for argument of periapsis and true anomaly
     n_dot_e = np.dot(node_vec, ecc_vec)
-    sign_w = np.sign((magv**2 - MUM / magr) * rz - r_dot_v * vz)
+    sign_w = np.sign((magv**2 - MUM / magr) * reci_m[2] - r_dot_v * veci_m[2])
     cos_w = n_dot_e / (ecc * node)
     w_scale = -sign_w / np.sqrt(1 - cos_w**2)
 
@@ -347,3 +347,151 @@ def covct2cl(
     classcov = tm @ cartcov @ tm.T
 
     return classcov, tm
+
+
+def covcl2ct(
+    classcov: ArrayLike, classstate: ArrayLike, use_mean_anom: bool = False
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Transforms a 6x6 covariance matrix from classical elements to Cartesian elements.
+
+    Args:
+        classcov (array_like): 6x6 Classical orbital elements covariance matrix
+                               in m and m/s
+        classstate (array_like): 6x1 Classical orbital elements in km and radians
+                                (a, ecc, incl, node, argp, nu or m)
+        use_mean_anom (bool): Flag to use mean anomaly instead of true anomaly
+                              (defaults to False)
+
+    Returns:
+        tuple: (cartcov, tm)
+            cartcov (np.ndarray): 6x6 Cartesian covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+    """
+    # Parse the classical elements
+    a, ecc, incl, raan, argp, anom = classstate
+    a *= KM2M
+
+    # Convert anomaly as needed
+    if use_mean_anom:
+        e, nu = fc.newtonm(ecc, anom)
+    else:
+        nu = anom
+        e, _ = fc.newtonnu(ecc, nu)
+
+    # Compute trigonometric values
+    sin_inc, cos_inc = np.sin(incl), np.cos(incl)
+    sin_raan, cos_raan = np.sin(raan), np.cos(raan)
+    sin_w, cos_w = np.sin(argp), np.cos(argp)
+    sin_nu, cos_nu = np.sin(nu), np.cos(nu)
+
+    # Define PQW to ECI transformation elements (p. 168)
+    p11 = cos_raan * cos_w - sin_raan * sin_w * cos_inc
+    p12 = -cos_raan * sin_w - sin_raan * cos_w * cos_inc
+    p13 = sin_raan * sin_inc
+    p21 = sin_raan * cos_w + cos_raan * sin_w * cos_inc
+    p22 = -sin_raan * sin_w + cos_raan * cos_w * cos_inc
+    p23 = -cos_raan * sin_inc
+    p31 = sin_w * sin_inc
+    p32 = cos_w * sin_inc
+
+    # Define constants for efficiency
+    p0 = np.sqrt(MUM / (a * (1 - ecc**2)))
+    p1 = (1 - ecc**2) / (1 + ecc * cos_nu)
+    p2 = 1 / (2 * a) * p0
+    p3 = (2 * a * ecc + a * cos_nu + a * cos_nu * ecc**2) / ((1 + ecc * cos_nu) ** 2)
+    p4 = ecc * MUM / (a * (1 - ecc**2) ** 2 * p0)
+    p5 = a * p1
+    p6 = a * (1 - ecc**2) / ((1 + ecc * cos_nu) ** 2)
+
+    dmdnu = (1 - ecc**2) ** 1.5 / (1 + ecc * cos_nu) ** 2
+    dmde = (
+        -sin_nu
+        * (
+            (ecc * cos_nu + 1) * (ecc + cos_nu) / np.sqrt((ecc + cos_nu) ** 2)
+            + 1
+            - 2 * ecc**2
+            - ecc**3 * cos_nu
+        )
+        / ((ecc * cos_nu + 1) ** 2 * np.sqrt(1 - ecc**2))
+    )
+
+    # Compute partial derivatives
+    tm = np.zeros((6, 6))
+
+    # Partials of (a, ecc, incl, node, argp, nu) w.r.t. rx
+    tm[0, 0] = p1 * (p11 * cos_nu + p12 * sin_nu)
+    tm[0, 1] = -p3 * (p11 * cos_nu + p12 * sin_nu)
+    tm[0, 2] = p5 * p13 * (sin_w * cos_nu + cos_w * sin_nu)
+    tm[0, 3] = -p5 * (p21 * cos_nu + p22 * sin_nu)
+    tm[0, 4] = p5 * (p12 * cos_nu - p11 * sin_nu)
+    tm[0, 5] = p6 * (-p11 * sin_nu + p12 * (ecc + cos_nu))
+
+    if use_mean_anom:
+        tm[0, 5] /= dmdnu
+        tm[0, 1] -= tm[0, 5] * dmde
+
+    # Partials of (a, ecc, incl, node, argp, nu) w.r.t. ry
+    tm[1, 0] = p1 * (p21 * cos_nu + p22 * sin_nu)
+    tm[1, 1] = -p3 * (p21 * cos_nu + p22 * sin_nu)
+    tm[1, 2] = p5 * p23 * (sin_w * cos_nu + cos_w * sin_nu)
+    tm[1, 3] = p5 * (p11 * cos_nu + p12 * sin_nu)
+    tm[1, 4] = p5 * (p22 * cos_nu - p21 * sin_nu)
+    tm[1, 5] = p6 * (-p21 * sin_nu + p22 * (ecc + cos_nu))
+
+    if use_mean_anom:
+        tm[1, 5] /= dmdnu
+        tm[1, 1] -= tm[1, 5] * dmde
+
+    # Partials of (a, ecc, incl, node, argp, nu) w.r.t. rz
+    tm[2, 0] = p1 * (p31 * cos_nu + p32 * sin_nu)
+    tm[2, 1] = -p3 * sin_inc * (cos_w * sin_nu + sin_w * cos_nu)
+    tm[2, 2] = p5 * cos_inc * (cos_w * sin_nu + sin_w * cos_nu)
+    tm[2, 3] = 0.0
+    tm[2, 4] = p5 * sin_inc * (cos_w * cos_nu - sin_w * sin_nu)
+    tm[2, 5] = p6 * (-p31 * sin_nu + p32 * (ecc + cos_nu))
+
+    if use_mean_anom:
+        tm[2, 5] /= dmdnu
+        tm[2, 1] -= tm[2, 5] * dmde
+
+    # Partials of (a, ecc, incl, node, argp, nu) w.r.t. vx
+    tm[3, 0] = p2 * (p11 * sin_nu - p12 * (ecc + cos_nu))
+    tm[3, 1] = -p4 * (p11 * sin_nu - p12 * (ecc + cos_nu)) + p12 * p0
+    tm[3, 2] = -p0 * sin_raan * (p31 * sin_nu - p32 * (ecc + cos_nu))
+    tm[3, 3] = p0 * (p21 * sin_nu - p22 * (ecc + cos_nu))
+    tm[3, 4] = -p0 * (p12 * sin_nu + p11 * (ecc + cos_nu))
+    tm[3, 5] = -p0 * (p11 * cos_nu + p12 * sin_nu)
+
+    if use_mean_anom:
+        tm[3, 5] /= dmdnu
+        tm[3, 1] -= tm[3, 5] * dmde
+
+    # Partials of (a, ecc, incl, node, argp, nu) w.r.t. vy
+    tm[4, 0] = p2 * (p21 * sin_nu - p22 * (ecc + cos_nu))
+    tm[4, 1] = -p4 * (p21 * sin_nu - p22 * (ecc + cos_nu)) + p22 * p0
+    tm[4, 2] = p0 * cos_raan * (p31 * sin_nu - p32 * (ecc + cos_nu))
+    tm[4, 3] = p0 * (-p11 * sin_nu + p12 * (ecc + cos_nu))
+    tm[4, 4] = -p0 * (p22 * sin_nu + p21 * (ecc + cos_nu))
+    tm[4, 5] = -p0 * (p21 * cos_nu + p22 * sin_nu)
+
+    if use_mean_anom:
+        tm[4, 5] /= dmdnu
+        tm[4, 1] -= tm[4, 5] * dmde
+
+    # Partials of (a, ecc, incl, node, argp, nu) w.r.t. vz
+    tm[5, 0] = p2 * (p31 * sin_nu - p32 * (ecc + cos_nu))
+    tm[5, 1] = -p4 * (p31 * sin_nu - p32 * (ecc + cos_nu)) + p32 * p0
+    tm[5, 2] = p0 * cos_inc * (cos_w * cos_nu - sin_w * sin_nu + ecc * cos_w)
+    tm[5, 3] = 0.0
+    tm[5, 4] = -p0 * (p32 * sin_nu + p31 * (ecc + cos_nu))
+    tm[5, 5] = -p0 * (p31 * cos_nu + p32 * sin_nu)
+
+    if use_mean_anom:
+        tm[5, 5] /= dmdnu
+        tm[5, 1] -= tm[5, 5] * dmde
+
+    # Calculate the Cartesian covariance matrix
+    cartcov = tm @ classcov @ tm.T
+
+    return cartcov, tm

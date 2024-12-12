@@ -8,7 +8,7 @@ from ...conftest import custom_allclose
 
 class TestClassical:
     @pytest.fixture
-    def cov_base(self):
+    def class_cov_base(self):
         return [
             [
                 5331023186024109.0,
@@ -48,7 +48,7 @@ class TestClassical:
         ]
 
     @pytest.fixture
-    def tm_base(self):
+    def class_tm_base(self):
         return [
             [
                 0.5253644964759826,
@@ -135,7 +135,10 @@ class TestClassical:
             ),
         ],
     )
-    def test_covct2cl(self, cov_base, tm_base, use_mean_anom, tm_lastrow, cov_lastrow):
+    def test_covct2cl(
+        self, class_cov_base, class_tm_base, use_mean_anom, tm_lastrow, cov_lastrow
+    ):
+        # Define cartesian inputs
         cartcov = np.array(
             [
                 [24097166, 86695628, -5509927, -6294.97, 1752.326, 17.65861],
@@ -159,9 +162,9 @@ class TestClassical:
 
         # Update matrices
         # For covariance, last row == last column
-        tm_expected = np.vstack([tm_base, tm_lastrow])
+        tm_expected = np.vstack([class_tm_base, tm_lastrow])
         cov_expected = np.column_stack(
-            [np.vstack([cov_base, cov_lastrow[:-1]]), cov_lastrow]
+            [np.vstack([class_cov_base, cov_lastrow[:-1]]), cov_lastrow]
         )
 
         # Test mean anomaly output
@@ -169,3 +172,136 @@ class TestClassical:
 
         assert custom_allclose(classcov, cov_expected)
         assert custom_allclose(tm, tm_expected)
+
+    def test_covcl2ct(self, class_cov_base, class_tm_base):
+        # Define classical inputs
+        class_state_mean = np.array(
+            [
+                42087.7080574158,
+                0.0310900603602949,
+                0.00102577939911935,
+                2.14278761707691,
+                3.82453248238077,
+                1.55837880318832,
+            ]
+        )
+
+        class_last_row = [
+            -4083183084.476787,
+            6.924385395457872,
+            0.024197798266311993,
+            -26.219712037129213,
+            -3096.0677824371114,
+            3127.4269467985023,
+        ]
+
+        # Update matrices
+        # For covariance, last row == last column
+        class_cov_mean = np.column_stack(
+            [np.vstack([class_cov_base, class_last_row[:-1]]), class_last_row]
+        )
+
+        # Test mean anomaly output
+        tm_exp = [
+            [
+                0.26313983942512426,
+                -122181.09461831323,
+                -27000.833116307094,
+                -40629744.21000002,
+                -40629740.66496733,
+                -40219144.61841942,
+            ],
+            [
+                0.9653589155905844,
+                -510035.2045932821,
+                -17382.637901740887,
+                11074952.739999903,
+                11074974.61023185,
+                12318280.508156924,
+            ],
+            [
+                -0.000762985712046392,
+                388.5845977374862,
+                -31305277.396918915,
+                0.0,
+                28893.677010573563,
+                27849.176713029363,
+            ],
+            [
+                3.493683276822948e-05,
+                865.2314914318102,
+                1.71219733686734,
+                -900.7122362999926,
+                -900.7106317278178,
+                -808.3919389536693,
+            ],
+            [
+                -1.0700419170738e-05,
+                2955.794755743881,
+                1.1022810368438238,
+                -2940.822436000001,
+                -2940.8226451355285,
+                -2965.6792649314566,
+            ],
+            [
+                -2.4191514732274634e-08,
+                -2.387504193316633,
+                1985.1540268409651,
+                0.0,
+                2.409791539953639,
+                2.3439685169019615,
+            ],
+        ]
+        cartcov_exp = [
+            [
+                24098442.580799103,
+                86695218.21947145,
+                -5509927.873355819,
+                -6294.930929586146,
+                1752.417985989945,
+                17.658533888831073,
+            ],
+            [
+                86695551.13614655,
+                453000033.8695812,
+                -27999999.954731148,
+                -32967.40471932187,
+                6319.425707785413,
+                90.7335547196626,
+            ],
+            [
+                -5509927.0577840805,
+                -27999999.943911552,
+                1771703.0000502856,
+                2061.5921072992423,
+                -401.5839722053788,
+                -5.677635830610768,
+            ],
+            [
+                -6294.951171875,
+                -32967.40576171875,
+                2061.5921034812927,
+                6949865.000000715,
+                -1352585.999998629,
+                0.38500535738421604,
+            ],
+            [
+                1752.479736328125,
+                6319.385314941406,
+                -401.58407604694366,
+                -1352585.9999958351,
+                263241.3000110984,
+                2.013476115767844,
+            ],
+            [
+                17.658579101844225,
+                90.73356022074586,
+                -5.677635813602592,
+                0.3850053571416687,
+                2.01347612272229,
+                33.37338000069615,
+            ],
+        ]
+        cartcov, tm = fc.covcl2ct(class_cov_mean, class_state_mean, use_mean_anom=True)
+        assert custom_allclose(cartcov, cartcov_exp)
+        assert custom_allclose(tm, tm_exp)
