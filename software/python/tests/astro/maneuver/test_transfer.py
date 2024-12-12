@@ -115,3 +115,23 @@ def test_onetangent_bad_transfer(rinit_rfinal, nuinit_nufinal):
     # Calculate one-tangent transfer
     with pytest.raises(ValueError):
         transfer.onetangent(*rinit_rfinal, efinal, nuinit, nutran)
+
+
+@pytest.mark.parametrize(
+    "vinit, fpa, deltav_expected",
+    [
+        # Vallado 2007, Example 6-4
+        (5.892311, 0.0, 1.5382018364126486),
+        # Test non-zero flight path angle, Example 6-4
+        (5.993824, np.radians(-6.79), 1.5537274747634255),
+    ],
+)
+def test_inclonlychange(vinit, fpa, deltav_expected):
+    # Input values
+    deltai = np.radians(15)
+
+    # Calculate inclination-only change
+    deltav = transfer.inclonlychange(deltai, vinit, fpa)
+
+    # Expected results
+    assert custom_isclose(deltav, deltav_expected)

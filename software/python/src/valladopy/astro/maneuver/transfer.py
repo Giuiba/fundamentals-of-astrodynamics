@@ -217,3 +217,23 @@ def onetangent(
         raise ValueError("The one-tangent burn is not possible for this case.")
 
     return deltava, deltavb, dttu, etran, atran, vtrana, vtranb
+
+
+def inclonlychange(deltai: float, vinit: float, fpa: float) -> float:
+    """Calculates the delta-v for a change in inclination only.
+
+    References:
+        Vallado 2007, p. 346, Algorithm 39
+
+    Args:
+        deltai (float): Change in inclination in radians
+        vinit (float): Initial velocity in km/s
+        fpa (float): Flight path angle in radians
+
+    Returns:
+        float: Delta-v required for inclination change in km/s
+
+    Notes:
+        - Units are flexible for `vinit` and the output will match its units
+    """
+    return 2.0 * vinit * np.cos(fpa) * np.sin(0.5 * deltai)
