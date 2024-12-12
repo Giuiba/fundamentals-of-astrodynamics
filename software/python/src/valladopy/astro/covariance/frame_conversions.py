@@ -368,6 +368,13 @@ def covcl2ct(
             cartcov (np.ndarray): 6x6 Cartesian covariance matrix in m and m/s
             tm (np.ndarray): 6x6 Transformation matrix
     """
+
+    def update_row_with_mean_anomaly(mat, row):
+        if use_mean_anom:
+            mat[row, 5] /= dmdnu
+            mat[row, 1] -= mat[row, 5] * dmde
+        return mat
+
     # Parse the classical elements
     a, ecc, incl, raan, argp, anom = classstate
     a *= KM2M
@@ -426,10 +433,7 @@ def covcl2ct(
     tm[0, 3] = -p5 * (p21 * cos_nu + p22 * sin_nu)
     tm[0, 4] = p5 * (p12 * cos_nu - p11 * sin_nu)
     tm[0, 5] = p6 * (-p11 * sin_nu + p12 * (ecc + cos_nu))
-
-    if use_mean_anom:
-        tm[0, 5] /= dmdnu
-        tm[0, 1] -= tm[0, 5] * dmde
+    tm = update_row_with_mean_anomaly(tm, 0)
 
     # Partials of (a, ecc, incl, node, argp, nu) w.r.t. ry
     tm[1, 0] = p1 * (p21 * cos_nu + p22 * sin_nu)
@@ -438,10 +442,7 @@ def covcl2ct(
     tm[1, 3] = p5 * (p11 * cos_nu + p12 * sin_nu)
     tm[1, 4] = p5 * (p22 * cos_nu - p21 * sin_nu)
     tm[1, 5] = p6 * (-p21 * sin_nu + p22 * (ecc + cos_nu))
-
-    if use_mean_anom:
-        tm[1, 5] /= dmdnu
-        tm[1, 1] -= tm[1, 5] * dmde
+    tm = update_row_with_mean_anomaly(tm, 1)
 
     # Partials of (a, ecc, incl, node, argp, nu) w.r.t. rz
     tm[2, 0] = p1 * (p31 * cos_nu + p32 * sin_nu)
@@ -450,10 +451,7 @@ def covcl2ct(
     tm[2, 3] = 0.0
     tm[2, 4] = p5 * sin_inc * (cos_w * cos_nu - sin_w * sin_nu)
     tm[2, 5] = p6 * (-p31 * sin_nu + p32 * (ecc + cos_nu))
-
-    if use_mean_anom:
-        tm[2, 5] /= dmdnu
-        tm[2, 1] -= tm[2, 5] * dmde
+    tm = update_row_with_mean_anomaly(tm, 2)
 
     # Partials of (a, ecc, incl, node, argp, nu) w.r.t. vx
     tm[3, 0] = p2 * (p11 * sin_nu - p12 * (ecc + cos_nu))
@@ -462,10 +460,7 @@ def covcl2ct(
     tm[3, 3] = p0 * (p21 * sin_nu - p22 * (ecc + cos_nu))
     tm[3, 4] = -p0 * (p12 * sin_nu + p11 * (ecc + cos_nu))
     tm[3, 5] = -p0 * (p11 * cos_nu + p12 * sin_nu)
-
-    if use_mean_anom:
-        tm[3, 5] /= dmdnu
-        tm[3, 1] -= tm[3, 5] * dmde
+    tm = update_row_with_mean_anomaly(tm, 3)
 
     # Partials of (a, ecc, incl, node, argp, nu) w.r.t. vy
     tm[4, 0] = p2 * (p21 * sin_nu - p22 * (ecc + cos_nu))
@@ -474,10 +469,7 @@ def covcl2ct(
     tm[4, 3] = p0 * (-p11 * sin_nu + p12 * (ecc + cos_nu))
     tm[4, 4] = -p0 * (p22 * sin_nu + p21 * (ecc + cos_nu))
     tm[4, 5] = -p0 * (p21 * cos_nu + p22 * sin_nu)
-
-    if use_mean_anom:
-        tm[4, 5] /= dmdnu
-        tm[4, 1] -= tm[4, 5] * dmde
+    tm = update_row_with_mean_anomaly(tm, 4)
 
     # Partials of (a, ecc, incl, node, argp, nu) w.r.t. vz
     tm[5, 0] = p2 * (p31 * sin_nu - p32 * (ecc + cos_nu))
@@ -486,10 +478,7 @@ def covcl2ct(
     tm[5, 3] = 0.0
     tm[5, 4] = -p0 * (p32 * sin_nu + p31 * (ecc + cos_nu))
     tm[5, 5] = -p0 * (p31 * cos_nu + p32 * sin_nu)
-
-    if use_mean_anom:
-        tm[5, 5] /= dmdnu
-        tm[5, 1] -= tm[5, 5] * dmde
+    tm = update_row_with_mean_anomaly(tm, 5)
 
     # Calculate the Cartesian covariance matrix
     cartcov = tm @ classcov @ tm.T
