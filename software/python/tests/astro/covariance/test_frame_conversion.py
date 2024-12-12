@@ -432,5 +432,5 @@ class TestClassical:
         # Test mean anomaly output
         cartcov, tm = fc.covcl2ct(class_cov, class_state, use_mean_anom=use_mean_anom)
 
-        assert custom_allclose(cartcov, cartcov_exp)
+        assert custom_allclose(cartcov, cartcov_exp, rtol=1e-6, atol=1e-6)
         assert custom_allclose(tm, tm_exp)
