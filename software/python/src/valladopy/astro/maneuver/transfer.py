@@ -10,6 +10,8 @@ from typing import Tuple
 
 import numpy as np
 
+from ... import constants as const
+
 
 def hohmann(
     rinit: float,
@@ -22,23 +24,23 @@ def hohmann(
     """Calculates the delta-v values for a Hohmann transfer, either circle-to-circle
     or ellipse-to-ellipse.
 
+    References:
+        Vallado 2007, pp. 327, Algorithm 36
+
     Args:
-        rinit: Initial position magnitude (in er).
-        rfinal: Final position magnitude (in er).
-        einit: Eccentricity of the initial orbit.
-        efinal: Eccentricity of the final orbit.
-        nuinit: True anomaly of the initial orbit (0 or pi radians).
-        nufinal: True anomaly of the final orbit (0 or pi radians).
+        rinit (float): Initial position magnitude in km
+        rfinal (float): Final position magnitude in km
+        einit (float): Eccentricity of the initial orbit
+        efinal (float): Eccentricity of the final orbit
+        nuinit (float): True anomaly of the initial orbit in radians (0 or pi)
+        nufinal (float): True anomaly of the final orbit in radians (0 or pi)
 
     Returns:
-        tuple: A tuple containing:
-            - deltava (float): Change in velocity at point A (in er/tu).
-            - deltavb (float): Change in velocity at point B (in er/tu).
-            - dttu (float): Time of flight for the transfer (in tu).
+        tuple: (deltava, deltavb, dttu)
+            - deltava (float): Change in velocity at point A in km/s
+            - deltavb (float): Change in velocity at point B in km/s
+            - dttu (float): Time of flight for the transfer in seconds
     """
-    # Gravitational parameter in canonical units
-    mu = 1.0
-
     # Semi-major axes of initial, transfer, and final orbits
     ainit = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
     atran = (rinit + rfinal) / 2.0
@@ -49,16 +51,16 @@ def hohmann(
 
     if einit < 1.0 or efinal < 1.0:
         # Calculate delta-v at point A
-        vinit = np.sqrt((2.0 * mu) / rinit - (mu / ainit))
-        vtrana = np.sqrt((2.0 * mu) / rinit - (mu / atran))
+        vinit = np.sqrt((2.0 * const.MU) / rinit - (const.MU / ainit))
+        vtrana = np.sqrt((2.0 * const.MU) / rinit - (const.MU / atran))
         deltava = np.abs(vtrana - vinit)
 
         # Calculate delta-v at point B
-        vfinal = np.sqrt((2.0 * mu) / rfinal - (mu / afinal))
-        vtranb = np.sqrt((2.0 * mu) / rfinal - (mu / atran))
+        vfinal = np.sqrt((2.0 * const.MU) / rfinal - (const.MU / afinal))
+        vtranb = np.sqrt((2.0 * const.MU) / rfinal - (const.MU / atran))
         deltavb = np.abs(vfinal - vtranb)
 
         # Calculate transfer time of flight
-        dttu = np.pi * np.sqrt(atran**3 / mu)
+        dttu = np.pi * np.sqrt(atran**3 / const.MU)
 
     return deltava, deltavb, dttu

@@ -11,20 +11,23 @@ from ...conftest import custom_isclose
     "einit, efinal, deltava_expected, deltavb_expected",
     [
         # Vallado 2007, Example 6-1
-        (0.0, 0.0, 0.3108064306010284, 0.18698526891884426),
+        (0.0, 0.0, 2.457038635627854, 1.478187015430896),
         # Test non-zero eccentricities
-        (0.00123, 0.024, 0.3102006391807183, 0.1822894641495918),
+        (0.00123, 0.024, 2.4522496326398677, 1.4410649593617622),
     ],
 )
 def test_hohmann(einit, efinal, deltava_expected, deltavb_expected):
-    rinit = (const.RE + 191.3411) / const.RE
-    rfinal = (const.RE + 35781.34857) / const.RE
+    # Input values
+    rinit = const.RE + 191.3411
+    rfinal = const.RE + 35781.34857
     nuinit, nufinal = 0.0, np.pi
+
+    # Calculate Hohmann transfer
     deltava, deltavb, dttu = transfer.hohmann(
         rinit, rfinal, einit, efinal, nuinit, nufinal
     )
 
-    # Expected values
+    # Expected results
     assert custom_isclose(deltava, deltava_expected)
     assert custom_isclose(deltavb, deltavb_expected)
-    assert custom_isclose(dttu, 23.455512658504887)
+    assert custom_isclose(dttu / const.MIN2SEC, 315.4027569935991)
