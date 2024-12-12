@@ -1,45 +1,43 @@
-        % -----------------------------------------------------------------------------
-        %
-        %                           function readxys
-        %
-        %  this function initializes the xys iau2006 iau data. the input data files
-        %  are from processing the ascii files into a text file of xys calcualtion over
-        %  many years.
-        %
-        %  author        : david vallado           davallado@gmail.com   22 jan 2018
-        %
-        %  inputs          description                           range / units
-        %    xysLoc      - location for xys data file  
-        %    infilename  - file name
-        %
-        %  outputs       :
-        %    xysarr      - array of xys data records
-        %    jdxysstart  - julian date of the start of the xysarr data
-        %    jdfxysstart - julian date fraction of the start of the xysarr data
-        %
-        %  locals        :
-        %    pattern     - regex expression format
-        %
-        %  references    :
-        %   [jdxysstart, jdfxysstart, xys06arr] = readxys(infilename)
-        % ------------------------------------------------------------------------- */%
+% -----------------------------------------------------------------------------
+%
+%                           function readxys
+%
+%  this function initializes the xys iau2006 iau data. the input data files
+%  are from processing the ascii files into a text file of xys calcualtion over
+%  many years. the jd and jdf for the start of the file are in the first
+%  records. 
+%  Note: Read using a table instead of a structure for efficiency. all data 
+%  manipulations remain vectorized and efficient.
+%
+%  author        : david vallado           davallado@gmail.com   22 jan 2018
+%
+%  inputs          description                           range / units
+%    infilename      - location for xys data file
+%
+%  outputs       :
+%    xys06table  - array of xys data records
+%
+%  locals        :
+%
+%  references    :
+%   [xys06table] = readxys(infilename)
+% ------------------------------------------------------------------------- 
 
-    function [xys06arr] = readxys(infilename)
-        % 2435839.500000 0.0000000000 -0.004178909517 0.000027601169 0.000000078058
-        xys06arr = struct('x',zeros(52000), 'y',zeros(52000), 'z',zeros(52000), ...
-            'mjd',zeros(52000), 'jdxysstart', zeros(1), 'jdfxysstart', zeros(1));
+function [xys06table] = readxys(infilename)
 
-        xys06 = load(append(infilename, 'xysdata.dat'));
+    % Define the full file path
+    filepath = append(infilename, 'xysdata.dat');
 
-        %xys06arr.jdtt = xys06(:,1);
-        %xys06arr.jdftt = xys06(:,2);
-        xys06arr.x = xys06(:,3);
-        xys06arr.y = xys06(:,4);
-        xys06arr.s = xys06(:,5);
-        xys06arr.mjd = xys06(:,1) + xys06(:,2) - 2400000.5;
+    % Read the file directly into a table
+    opts = delimitedTextImportOptions('NumVariables', 5);
+    opts.DataLines = [1, Inf];
+    opts.Delimiter = ' ';
+    opts.VariableNames = {'jd', 'jdf', 'x', 'y', 's'};
+    opts.VariableTypes = {'double', 'double', 'double', 'double', 'double'};
 
-        % ---- find epoch date
-        xys06arr.jdxysstart = xys06(1,1);
-        xys06arr.jdfxysstart = xys06(1,2);
+    xys06table = readtable(filepath, opts);
 
-    end  % initXYS
+    % Compute derived columns directly in the table 
+    xys06table.mjd_tt = xys06table.jd + xys06table.jdf - 2400000.5;
+
+end

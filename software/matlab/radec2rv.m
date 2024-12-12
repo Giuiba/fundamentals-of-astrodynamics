@@ -33,22 +33,21 @@
 %  references    :
 %    vallado       2001, 246-248, alg 25
 %
-% [r,v] = radec2rv( rr,rtasc,decl,drr,drtasc,ddecl );
+% [r, v] = radec2rv( rr, rtasc, decl, drr, drtasc, ddecl )
 % ------------------------------------------------------------------------------
 
-function [r,v] = radec2rv( rr,rtasc,decl,drr,drtasc,ddecl );
+function [r, v] = radec2rv( rr, rtasc, decl, drr, drtasc, ddecl )
+    % -------------------------  implementation   -----------------
+    small        = 0.00000001;
 
-        % -------------------------  implementation   -----------------
-        small        = 0.00000001;
+    r(1)= rr*cos(decl)*cos(rtasc);
+    r(2)= rr*cos(decl)*sin(rtasc);
+    r(3)= rr*sin(decl);
+    r = r';
 
-        r(1)= rr*cos(decl)*cos(rtasc);
-        r(2)= rr*cos(decl)*sin(rtasc);
-        r(3)= rr*sin(decl);
-        r = r';
-        
-        v(1)= drr*cos(decl)*cos(rtasc) - rr*sin(decl)*cos(rtasc)*ddecl ...
-                 - rr*cos(decl)*sin(rtasc)*drtasc;
-        v(2)= drr*cos(decl)*sin(rtasc) - rr*sin(decl)*sin(rtasc)*ddecl ...
-                 + rr*cos(decl)*cos(rtasc)*drtasc;
-        v(3)= drr*sin(decl) + rr*cos(decl)*ddecl;
-        v = v';
+    v(1)= drr*cos(decl)*cos(rtasc) - rr*sin(decl)*cos(rtasc)*ddecl ...
+        - rr*cos(decl)*sin(rtasc)*drtasc;
+    v(2)= drr*cos(decl)*sin(rtasc) - rr*sin(decl)*sin(rtasc)*ddecl ...
+        + rr*cos(decl)*cos(rtasc)*drtasc;
+    v(3)= drr*sin(decl) + rr*cos(decl)*ddecl;
+    v = v';
