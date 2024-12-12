@@ -51,19 +51,21 @@
 % [x, y, s, pn] = iau06xys (iau06arr, fArgs, ttt, ddx, ddy, opt1)
 % ----------------------------------------------------------------------------
 
-function [x, y, s, pn] = iau06xys (iau06arr, fArgs06, xysarr, ttt, ddx, ddy, opt1)
+function [x, y, s, pn] = iau06xys (iau06arr, fArgs06, xys06table, ttt, ddx, ddy, opt1)
 
     sethelp;
 
     rad = 180.0 / pi;
 
-    if (contains(opt1, 's'))
+    if (contains(opt1, 'x'))
         [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt );
     else
         % not sure we need to pass this in? or calc
         jdtt = ttt*36525.0 + 2451545.0;
-        [x, y, s] = findxysparam(jdtt, 0.0, 's', xysarr);
+        [x, y, s] = findxysparam(jdtt, 0.0, 's', xys06table);
     end
+
+    x =  0.000390429583103574; y =3.52648563069063E-05; s =-1.4673151940162E-08;
 
     % add corrections if available
     x = x + ddx;

@@ -49,7 +49,7 @@
 % [reci,veci] = razel2rv ( rho,az,el,drho,daz,del,latgd,lon,alt,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
 % ------------------------------------------------------------------------------
 
-function [reci,veci] = razel2rv ( rho,az,el,drho,daz,del,latgd,lon,alt,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+function [reci,veci] = razel2rv ( rho,az,el,drho,daz,del,latgd,lon,alt,ttt,iau80arr,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
 
         % -------------------------  implementation   -----------------
         constmath;
@@ -74,6 +74,6 @@ function [reci,veci] = razel2rv ( rho,az,el,drho,daz,del,latgd,lon,alt,ttt,jdut1
         % -------- convert ecef to eci
         recef = recef;
         vecef = vecef;
-        a     = [0;0;0];
-        [reci,veci,aeci] = ecef2eci(recef,vecef,a,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+        aceef     = [0;0;0];
+        [reci,veci,aeci] = ecef2eci(recef,vecef,acef,ttt,iau80arr, jdut1,lod,xp,yp,terms,ddpsi,ddeps );
 

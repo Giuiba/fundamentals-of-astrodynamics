@@ -15056,7 +15056,7 @@ namespace AstroLibMethods
         *    llon        - start longitude (west -)               0.0  to 2pi rad
         *    tlat        - end geocentric latitude               -pi/2 to pi/2 rad
         *    tlon        - end longitude(west -)                  0.0  to 2pi rad
-        *    tof         - time of flight if icbm, or             0.0 min
+        *    tof         - time of flight if icbm, or             0.0 sec
         *
         *  outputs       :
         *    range       - range between points km
@@ -15079,8 +15079,7 @@ namespace AstroLibMethods
         {
             double twopi = 2.0 * Math.PI;
             double small = 0.00000001;
-            double omegaearth = 0.05883359221938136;
-            // fix units on tof and omegaearth
+            double omegaearth = gravConst.earthrot;
 
             // -------------------------  implementation   -------------------------
             range = Math.Acos(Math.Sin(llat) * Math.Sin(tlat) +
