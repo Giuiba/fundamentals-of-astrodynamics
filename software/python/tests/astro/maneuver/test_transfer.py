@@ -282,7 +282,9 @@ def test_mincombined(
     "einit, nuinit, deltava_exp, gama_exp",
     [
         # Vallado 2007, Example 6-7
-        (0.0, 0.0, 2.4696696299347445, np.radians(6.6314687256750915))
+        (0.0, 0.0, 2.4696696299347445, np.radians(6.6314687256750915)),
+        # Test non-zero eccentricity and true anomaly
+        (0.00123, np.pi, 2.474429703935413, np.radians(6.618654628381083)),
     ],
 )
 def test_combined(einit, nuinit, deltava_exp, gama_exp):
