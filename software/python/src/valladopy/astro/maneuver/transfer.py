@@ -461,3 +461,66 @@ def mincombined(
         n_iter += 1
 
     return deltai_init, tdi - deltai_init, deltava, deltavb, dtsec
+
+
+def combined(
+    rinit: float, rfinal: float, einit: float, nuinit: float, deltai: float
+) -> Tuple[float, float, float, float, float, float, float]:
+    """Calculates the delta-v for a Hohmann transfer between two orbits, considering
+    inclination changes.
+
+    References:
+        Vallado 2007, pp. 352-359, Example 6-7
+
+    Args:
+        rinit (float): Initial position magnitude in km
+        rfinal (float): Final position magnitude in km
+        einit (float): Eccentricity of the initial orbit
+        nuinit (float): True anomaly of the initial orbit in radians (0 or pi)
+        deltai (float): Inclination change in radians (final - initial)
+
+    Returns:
+        tuple: (deltai1, deltai2, deltava, deltavb, dtsec, gama, gamb)
+            deltai1 (float): Inclination change at point A in radians
+            deltai2 (float): Inclination change at point B in radians
+            deltava (float): Delta-v at point A in km/s
+            deltavb (float): Delta-v at point B in km/s
+            dtsec (float): Time of flight for the transfer in seconds
+            gama (float): Firing angle at point A in radians
+            gamb (float): Firing angle at point B in radians
+
+    TODO:
+        - Support non-circular final orbits?
+    """
+    # Semi-major axes
+    ainit = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
+    atran = (rinit + rfinal) * 0.5
+
+    # Specific mechanical energies
+    sme1 = -const.MU / (2.0 * ainit)
+    sme2 = -const.MU / (2.0 * atran)
+
+    # Velocities
+    vinit = np.sqrt(2.0 * (const.MU / rinit + sme1))
+    vtransa = np.sqrt(2.0 * (const.MU / rinit + sme2))
+    vfinal = np.sqrt(const.MU / rfinal)  # assumes circular orbit
+    vtransb = np.sqrt(2.0 * (const.MU / rfinal + sme2))
+
+    # Proportions of inclination change
+    ratio = rfinal / rinit
+    s = (1.0 / deltai) * np.arctan(np.sin(deltai) / (ratio**1.5 + np.cos(deltai)))
+    deltai1 = s * deltai
+    deltai2 = (1.0 - s) * deltai
+
+    # Delta-v calculations
+    deltava = np.sqrt(vinit**2 + vtransa**2 - 2.0 * vinit * vtransa * np.cos(deltai1))
+    deltavb = np.sqrt(vfinal**2 + vtransb**2 - 2.0 * vfinal * vtransb * np.cos(deltai2))
+
+    # Time of flight for the transfer
+    dtsec = np.pi * np.sqrt(atran**3 / const.MU)
+
+    # Firing angles
+    gama = np.arccos(-(vinit**2 + deltava**2 - vtransa**2) / (2.0 * vinit * deltava))
+    gamb = np.arccos(-(vtransb**2 + deltavb**2 - vfinal**2) / (2.0 * vtransb * deltavb))
+
+    return deltai1, deltai2, deltava, deltavb, dtsec, gama, gamb

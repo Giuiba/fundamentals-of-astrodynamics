@@ -276,3 +276,30 @@ def test_mincombined(
     assert custom_isclose(deltava, deltava_exp)
     assert custom_isclose(deltavb, deltavb_exp)
     assert custom_isclose(dtsec / const.MIN2SEC, 316.4374908669237)
+
+
+@pytest.mark.parametrize(
+    "einit, nuinit, deltava_exp, gama_exp",
+    [
+        # Vallado 2007, Example 6-7
+        (0.0, 0.0, 2.4696696299347445, np.radians(6.6314687256750915))
+    ],
+)
+def test_combined(einit, nuinit, deltava_exp, gama_exp):
+    rinit = const.RE + 191.0
+    rfinal = const.RE + 35780.0
+    deltai = np.radians(-28.5)
+
+    # Calculate combined transfer
+    deltai1, deltai2, deltava, deltavb, dtsec, gama, gamb = transfer.combined(
+        rinit, rfinal, einit, nuinit, deltai
+    )
+
+    # Expected results
+    assert custom_isclose(deltai1, float(np.radians(-1.594961534092242)))
+    assert custom_isclose(deltai2, float(np.radians(-26.90503846590776)))
+    assert custom_isclose(deltava, deltava_exp)
+    assert custom_isclose(deltavb, 1.8022162930889054)
+    assert custom_isclose(dtsec / const.MIN2SEC, 315.3863523156078)
+    assert custom_isclose(gama, float(gama_exp))
+    assert custom_isclose(gamb, float(np.radians(50.53946267721802)))
