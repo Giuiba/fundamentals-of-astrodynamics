@@ -544,6 +544,7 @@ def rendezvous(
     nufinal: float,
     kint: int,
     ktgt: int,
+    tol: float = 1e-6,
 ) -> tuple[float, float, float]:
     """Calculates parameters for a Hohmann transfer rendezvous.
 
@@ -560,6 +561,7 @@ def rendezvous(
         nufinal (float): True anomaly of the final orbit in radians (0 or pi)
         kint (int): Number of interceptor orbits
         ktgt (int): Number of target orbits to wait
+        tol (float): Tolerance for checking if orbit is the same (default 1e-6 rad/s)
 
     Returns:
         tuple: (phasef, waittime, deltav)
@@ -573,17 +575,20 @@ def rendezvous(
     vint = np.sqrt(const.MU / rcsint)
 
     # Same orbit case
-    if abs(angvelint - angveltgt) < 1e-6:
+    if abs(angvelint - angveltgt) < tol:
         periodtrans = (ktgt * const.TWOPI + phasei) / angveltgt
         atrans = (const.MU * (periodtrans / (const.TWOPI * kint)) ** 2) ** (1.0 / 3.0)
-        rp = 2.0 * atrans - rcsint
 
+        # Check for intersection with Earth
+        rp = 2.0 * atrans - rcsint
         if rp < 1.0:
             raise ValueError("Error: the transfer orbit intersects the Earth.")
 
+        # Calculate delta-V
         vtrans = np.sqrt((2.0 * const.MU / rcsint) - (const.MU / atrans))
         deltav = 2.0 * (vtrans - vint)
 
+        # Calculate final phase angle and wait time
         phasef = phasei
         waittime = periodtrans
 
@@ -592,12 +597,13 @@ def rendezvous(
         atrans = (rcsint + rcstgt) / 2.0
         dttutrans = np.pi * np.sqrt(atrans**3 / const.MU)
 
+        # Calculate final phase angle
         leadang = angveltgt * dttutrans
         phasef = np.pi - leadang
-
         if phasef < 0.0:
             phasef += np.pi
 
+        # Calculate wait time
         waittime = (phasef - phasei + 2.0 * np.pi * ktgt) / (angvelint - angveltgt)
 
         # Semi-major axes
@@ -605,20 +611,17 @@ def rendezvous(
         a2 = (rcsint + rcstgt) / 2.0
         a3 = (rcstgt * (1.0 + efinal * np.cos(nufinal))) / (1.0 - efinal**2)
 
-        # Specific mechanical energies
-        sme1 = -const.MU / (2.0 * a1)
-        sme2 = -const.MU / (2.0 * a2)
-        sme3 = -const.MU / (2.0 * a3)
-
-        # Delta-v at points A and B
-        vinit = np.sqrt(2.0 * ((const.MU / rcsint) + sme1))
-        vtransa = np.sqrt(2.0 * ((const.MU / rcsint) + sme2))
+        # Delta-V at point A
+        vinit = _compute_vel(rcsint, a1)
+        vtransa = _compute_vel(rcsint, a2)
         deltava = abs(vtransa - vinit)
 
-        vfinal = np.sqrt(2.0 * ((const.MU / rcstgt) + sme3))
-        vtransb = np.sqrt(2.0 * ((const.MU / rcstgt) + sme2))
+        # Delta-V at point B
+        vfinal = _compute_vel(rcstgt, a3)
+        vtransb = _compute_vel(rcstgt, a2)
         deltavb = abs(vfinal - vtransb)
 
+        # Total delta-V
         deltav = deltava + deltavb
 
     return phasef, waittime, deltav
