@@ -353,3 +353,111 @@ def inclandnode(
     arglat_final = np.arccos((cosii * sinif - sinii * cosif * cosdraan) / sint)
 
     return deltav, arglat_init, arglat_final
+
+
+########################################################################################
+# Combine Transfers
+########################################################################################
+
+
+def mincombined(
+    rinit: float,
+    rfinal: float,
+    einit: float,
+    efinal: float,
+    nuinit: float,
+    nufinal: float,
+    iinit: float,
+    ifinal: float,
+    use_optimal: bool = True,
+    tol: float = 1e-6,
+) -> tuple[float, float, float, float, float]:
+    """Calculates the delta-v and inclination change for the minimum velocity change
+    between two non-coplanar orbits.
+
+    References:
+        Vallado 2007, p. 355, Algorithm 42
+
+    Args:
+        rinit (float): Initial position magnitude in km
+        rfinal (float): Final position magnitude in km
+        einit (float): Eccentricity of the initial orbit
+        efinal (float): Eccentricity of the final orbit
+        nuinit (float): True anomaly of the initial orbit in radians (0 or pi)
+        nufinal (float): True anomaly of the final orbit in radians (0 or pi)
+        iinit (float): Initial inclination in radians
+        ifinal (float): Final inclination in radians
+        use_optimal (bool): Use iterative optimization for inclination change
+                            (default True)
+        tol (float): Tolerance for inclination iteration (default 1e-6)
+
+    Returns:
+        tuple: (deltai_init, deltai_final, deltava, deltavb, dt_sec)
+            deltai_init (float): Inclination change at point A in radians
+            deltai_final (float): Inclination change at point B in radians
+            deltava (float): Delta-v at point A in km/s
+            deltavb (float): Delta-v at point B in km/s
+            dt_sec (float): Time of flight for the transfer in seconds
+    """
+
+    def compute_vel(r, sme):
+        return np.sqrt(2.0 * ((const.MU / r) + sme))
+
+    def compute_sme(a):
+        return -const.MU / (2.0 * a)
+
+    # Compute semi-major axes
+    a1 = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
+    a2 = 0.5 * (rinit + rfinal)
+    a3 = (rfinal * (1.0 + efinal * np.cos(nufinal))) / (1.0 - efinal**2)
+
+    # Compute specific mechanical energy
+    sme1 = compute_sme(a1)
+    sme2 = compute_sme(a2)
+    sme3 = compute_sme(a3)
+
+    # Compute velocities
+    vinit = compute_vel(rinit, sme1)
+    v1t = compute_vel(rinit, sme2)
+    vfinal = compute_vel(rfinal, sme3)
+    v3t = compute_vel(rfinal, sme2)
+
+    # Delta inclination
+    tdi = ifinal - iinit
+
+    # Delta-Vs
+    temp = (1.0 / tdi) * np.arctan(
+        np.sin(tdi) / ((rfinal / rinit) ** 1.5 + np.cos(tdi))
+    )
+    deltava = np.sqrt(v1t**2 + vinit**2 - 2.0 * v1t * vinit * np.cos(temp * tdi))
+    deltavb = np.sqrt(
+        v3t**2 + vfinal**2 - 2.0 * v3t * vfinal * np.cos(tdi * (1.0 - temp))
+    )
+
+    # Inclination change
+    deltai_init = temp * tdi
+    deltai_final = tdi * (1.0 - temp)
+
+    # Compute transfer time of flight
+    dt_sec = np.pi * np.sqrt(a2**3 / const.MU)
+
+    if not use_optimal:
+        return deltai_init, deltai_final, deltava, deltavb, dt_sec
+
+    # Iterative optimization
+    deltai_final_iter, n_iter = 100.0, 0
+    while abs(deltai_init - deltai_final_iter) > tol:
+        deltai_final_iter = deltai_init
+        deltava = np.sqrt(
+            v1t**2 + vinit**2 - 2.0 * v1t * vinit * np.cos(deltai_final_iter)
+        )
+        deltavb = np.sqrt(
+            v3t**2 + vfinal**2 - 2.0 * v3t * vfinal * np.cos(tdi - deltai_final_iter)
+        )
+        deltai_init = np.arcsin(
+            (deltava * vfinal * v3t * np.sin(tdi - deltai_final_iter))
+            / (vinit * v1t * deltavb)
+        )
+        n_iter += 1
+
+    return deltai_init, tdi - deltai_init, deltava, deltavb, dt_sec

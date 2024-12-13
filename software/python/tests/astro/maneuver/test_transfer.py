@@ -204,3 +204,75 @@ def test_inclandnode(fpa, deltav_expected):
     assert custom_isclose(deltav, deltav_expected)
     assert custom_isclose(arglat_init, float(np.radians(128.9041397405515)))
     assert custom_isclose(arglat_final, float(np.radians(97.38034532660193)))
+
+
+@pytest.mark.parametrize(
+    "einit, efinal, deltai_init_exp, deltai_final_exp, deltava_exp, deltavb_exp, "
+    "use_optimal",
+    [
+        # Vallado 2007, Table 6-3, optimal
+        (
+            0.0,
+            0.0,
+            np.radians(0.9173377342379527),
+            np.radians(9.082662265762048),
+            2.431758178760123,
+            1.5091409647339542,
+            True,
+        ),
+        # Vallado 2007, Table 6-3, non-optimal
+        (
+            0.0,
+            0.0,
+            np.radians(0.589638589451664),
+            np.radians(9.410361410548337),
+            2.4293288846983843,
+            1.512146920521761,
+            False,
+        ),
+        # Test non-zero eccentricities
+        (
+            0.00123,
+            0.024,
+            np.radians(0.9256322124753574),
+            np.radians(9.074367787524643),
+            2.4270919461253353,
+            1.4724866802427696,
+            True,
+        ),
+    ],
+)
+def test_mincombined(
+    nuinit_nufinal,
+    einit,
+    efinal,
+    deltai_init_exp,
+    deltai_final_exp,
+    deltava_exp,
+    deltavb_exp,
+    use_optimal,
+):
+    # Input values
+    rinit = 6671.53  # km
+    rfinal = 42163.95  # km
+    iinit = np.radians(55.0)
+    ifinal = np.radians(65.0)
+
+    # Calculate minimum combined transfer
+    deltai_init, deltai_final, deltava, deltavb, dttu = transfer.mincombined(
+        rinit,
+        rfinal,
+        einit,
+        efinal,
+        *nuinit_nufinal,
+        iinit,
+        ifinal,
+        use_optimal=use_optimal,
+    )
+
+    # Expected results
+    assert custom_isclose(deltai_init, float(deltai_init_exp))
+    assert custom_isclose(deltai_final, float(deltai_final_exp))
+    assert custom_isclose(deltava, deltava_exp)
+    assert custom_isclose(deltavb, deltavb_exp)
+    assert custom_isclose(dttu / const.MIN2SEC, 316.4374908669237)
