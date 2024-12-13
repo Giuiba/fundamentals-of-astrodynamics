@@ -32,14 +32,14 @@ def test_hohmann(
     rinit_rfinal, nuinit_nufinal, einit, efinal, deltava_expected, deltavb_expected
 ):
     # Calculate Hohmann transfer
-    deltava, deltavb, dttu = transfer.hohmann(
+    deltava, deltavb, dtsec = transfer.hohmann(
         *rinit_rfinal, einit, efinal, *nuinit_nufinal
     )
 
     # Expected results
     assert custom_isclose(deltava, deltava_expected)
     assert custom_isclose(deltavb, deltavb_expected)
-    assert custom_isclose(dttu / const.MIN2SEC, 315.4027569935991)
+    assert custom_isclose(dtsec / const.MIN2SEC, 315.4027569935991)
 
 
 @pytest.mark.parametrize(
@@ -66,7 +66,7 @@ def test_bielliptic(
     rfinal = const.RE + 376310.0
 
     # Calculate bielliptic transfer
-    deltava, deltavb, deltavc, dttu = transfer.bielliptic(
+    deltava, deltavb, deltavc, dtsec = transfer.bielliptic(
         rinit, rb, rfinal, einit, efinal, *nuinit_nufinal
     )
 
@@ -74,7 +74,7 @@ def test_bielliptic(
     assert custom_isclose(deltava, deltava_expected)
     assert custom_isclose(deltavb, deltavb_expected)
     assert custom_isclose(deltavc, deltavc_expected)
-    assert custom_isclose(dttu / const.HR2SEC, 593.9199987732167)
+    assert custom_isclose(dtsec / const.HR2SEC, 593.9199987732167)
 
 
 @pytest.mark.parametrize(
@@ -92,14 +92,14 @@ def test_onetangent(rinit_rfinal, nuinit_nufinal, efinal, deltavb_expected):
     nutran = np.radians(160)
 
     # Calculate one-tangent transfer
-    deltava, deltavb, dttu, etran, atran, vtrana, vtranb = transfer.onetangent(
+    deltava, deltavb, dtsec, etran, atran, vtrana, vtranb = transfer.onetangent(
         *rinit_rfinal, efinal, nuinit, nutran
     )
 
     # Expected results
     assert custom_isclose(deltava, 2.575396079597792)
     assert custom_isclose(deltavb, deltavb_expected)
-    assert custom_isclose(dttu / const.MIN2SEC, 207.44540183723626)
+    assert custom_isclose(dtsec / const.MIN2SEC, 207.44540183723626)
     assert custom_isclose(etran, 0.7705727464030682)
     assert custom_isclose(atran, 28634.25027761329)
     assert custom_isclose(vtrana, 10.364786573669267)
@@ -259,7 +259,7 @@ def test_mincombined(
     ifinal = np.radians(65.0)
 
     # Calculate minimum combined transfer
-    deltai_init, deltai_final, deltava, deltavb, dttu = transfer.mincombined(
+    deltai_init, deltai_final, deltava, deltavb, dtsec = transfer.mincombined(
         rinit,
         rfinal,
         einit,
@@ -275,4 +275,4 @@ def test_mincombined(
     assert custom_isclose(deltai_final, float(deltai_final_exp))
     assert custom_isclose(deltava, deltava_exp)
     assert custom_isclose(deltavb, deltavb_exp)
-    assert custom_isclose(dttu / const.MIN2SEC, 316.4374908669237)
+    assert custom_isclose(dtsec / const.MIN2SEC, 316.4374908669237)

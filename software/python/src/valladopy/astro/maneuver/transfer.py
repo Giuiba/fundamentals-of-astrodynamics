@@ -41,10 +41,10 @@ def hohmann(
         nufinal (float): True anomaly of the final orbit in radians (0 or pi)
 
     Returns:
-        tuple: (deltava, deltavb, dttu)
+        tuple: (deltava, deltavb, dtsec)
             deltava (float): Change in velocity at point A in km/s
             deltavb (float): Change in velocity at point B in km/s
-            dttu (float): Time of flight for the transfer in seconds
+            dtsec (float): Time of flight for the transfer in seconds
     """
     # Semi-major axes of initial, transfer, and final orbits
     ainit = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
@@ -52,7 +52,7 @@ def hohmann(
     afinal = (rfinal * (1.0 + efinal * np.cos(nufinal))) / (1.0 - efinal**2)
 
     # Initialize outputs
-    deltava, deltavb, dttu = 0.0, 0.0, 0.0
+    deltava, deltavb, dtsec = 0.0, 0.0, 0.0
 
     if einit < 1.0 or efinal < 1.0:
         # Calculate delta-v at point A
@@ -66,9 +66,9 @@ def hohmann(
         deltavb = np.abs(vfinal - vtranb)
 
         # Calculate transfer time of flight
-        dttu = np.pi * np.sqrt(atran**3 / const.MU)
+        dtsec = np.pi * np.sqrt(atran**3 / const.MU)
 
-    return deltava, deltavb, dttu
+    return deltava, deltavb, dtsec
 
 
 def bielliptic(
@@ -96,11 +96,11 @@ def bielliptic(
         nufinal (float): True anomaly of the final orbit in radians (0 or pi)
 
     Returns:
-        tuple: (deltava, deltavb, deltavc, dttu)
+        tuple: (deltava, deltavb, deltavc, dtsec)
             deltava (float): Change in velocity at point A in km/s
             deltavb (float): Change in velocity at point B in km/s
             deltavc (float): Change in velocity at point C in km/s
-            dttu (float): Time of flight for the transfer in seconds
+            dtsec (float): Time of flight for the transfer in seconds
     """
     # Semi-major axes of initial, transfer, and final orbits
     ainit = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
@@ -109,7 +109,7 @@ def bielliptic(
     afinal = (rfinal * (1.0 + efinal * np.cos(nufinal))) / (1.0 - efinal**2)
 
     # Initialize outputs
-    deltava, deltavb, deltavc, dttu = 0.0, 0.0, 0.0, 0.0
+    deltava, deltavb, deltavc, dtsec = 0.0, 0.0, 0.0, 0.0
 
     # Check if inputs represent elliptical orbits
     if einit < 1.0 and efinal < 1.0:
@@ -129,11 +129,11 @@ def bielliptic(
         deltavc = np.abs(vfinal - vtran2c)
 
         # Calculate total time of flight
-        dttu = np.pi * np.sqrt(atran1**3 / const.MU) + np.pi * np.sqrt(
+        dtsec = np.pi * np.sqrt(atran1**3 / const.MU) + np.pi * np.sqrt(
             atran2**3 / const.MU
         )
 
-    return deltava, deltavb, deltavc, dttu
+    return deltava, deltavb, deltavc, dtsec
 
 
 def onetangent(
@@ -160,10 +160,10 @@ def onetangent(
         tol (float): Tolerance for checking if transfer orbit is valid (default 1e-6)
 
     Returns:
-        tuple: (deltava, deltavb, dttu, etran, atran, vtrana, vtranb)
+        tuple: (deltava, deltavb, dtsec, etran, atran, vtrana, vtranb)
             deltava (float): Change in velocity at point A in km/s
             deltavb (float): Change in velocity at point B in km/s
-            dttu (float): Time of flight for the transfer in seconds
+            dtsec (float): Time of flight for the transfer in seconds
             etran (float): Eccentricity of the transfer orbit
             atran (float): Semi-major axis of the transfer orbit in km
             vtrana (float): Velocity of the transfer orbit at point A in km/s
@@ -172,8 +172,8 @@ def onetangent(
     Raises:
         ValueError: If the one-tangent burn is not possible for the given inputs
     """
-    # Initialize variables
-    dttu = 0.0
+    # Initialize transfer time
+    dtsec = 0.0
 
     # Ratio of initial to final orbit radii
     ratio = rinit / rfinal
@@ -215,13 +215,13 @@ def onetangent(
             cosv = (etran + np.cos(nutran)) / (1.0 + etran * np.cos(nutran))
             e = np.arctan2(sinv, cosv)
             eainit = 0.0 if abs(nuinit) < 0.01 else np.pi
-            dttu = np.sqrt(atran**3 / const.MU) * (
+            dtsec = np.sqrt(atran**3 / const.MU) * (
                 e - etran * np.sin(e) - (eainit - etran * np.sin(eainit))
             )
     else:
         raise ValueError("The one-tangent burn is not possible for this case.")
 
-    return deltava, deltavb, dttu, etran, atran, vtrana, vtranb
+    return deltava, deltavb, dtsec, etran, atran, vtrana, vtranb
 
 
 ########################################################################################
@@ -356,7 +356,7 @@ def inclandnode(
 
 
 ########################################################################################
-# Combine Transfers
+# Combined Transfers
 ########################################################################################
 
 
@@ -392,12 +392,12 @@ def mincombined(
         tol (float): Tolerance for inclination iteration (default 1e-6)
 
     Returns:
-        tuple: (deltai_init, deltai_final, deltava, deltavb, dt_sec)
+        tuple: (deltai_init, deltai_final, deltava, deltavb, dtsec)
             deltai_init (float): Inclination change at point A in radians
             deltai_final (float): Inclination change at point B in radians
             deltava (float): Delta-v at point A in km/s
             deltavb (float): Delta-v at point B in km/s
-            dt_sec (float): Time of flight for the transfer in seconds
+            dtsec (float): Time of flight for the transfer in seconds
     """
 
     def compute_vel(r, sme):
@@ -439,10 +439,10 @@ def mincombined(
     deltai_final = tdi * (1.0 - temp)
 
     # Compute transfer time of flight
-    dt_sec = np.pi * np.sqrt(a2**3 / const.MU)
+    dtsec = np.pi * np.sqrt(a2**3 / const.MU)
 
     if not use_optimal:
-        return deltai_init, deltai_final, deltava, deltavb, dt_sec
+        return deltai_init, deltai_final, deltava, deltavb, dtsec
 
     # Iterative optimization
     deltai_final_iter, n_iter = 100.0, 0
@@ -460,4 +460,4 @@ def mincombined(
         )
         n_iter += 1
 
-    return deltai_init, tdi - deltai_init, deltava, deltavb, dt_sec
+    return deltai_init, tdi - deltai_init, deltava, deltavb, dtsec
