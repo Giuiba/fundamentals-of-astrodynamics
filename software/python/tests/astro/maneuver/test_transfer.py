@@ -308,37 +308,63 @@ def test_combined(einit, nuinit, deltava_exp, gama_exp):
 
 
 @pytest.mark.parametrize(
-    "rcsint, rcstgt, einit, efinal, nufinal, kint, ktgt, waittime_exp, deltav_exp",
+    "rcstgt, einit, efinal, nufinal, kint, ktgt, phasef_exp, waittime_exp, deltav_exp",
     [
         # Vallado 2007, Example 6-8, Part 1
         (
             12756.274,
-            12756.274,
             0.0,
             0.0,
             0.0,
             1,
             1,
+            np.radians(-20.0),
             225.6949830406384,
             -0.2192686615890107,
         ),
         # Vallado 2007, Example 6-8, Part 2
         (
             12756.274,
-            12756.274,
             0.0,
             0.0,
             0.0,
             2,
             2,
+            np.radians(-20.0),
             464.6661415542555,
             -0.10648139790646738,
+        ),
+        # Vallado 2007, Example 6-9
+        (
+            42159.48,
+            0.0,
+            0.0,
+            0.0,
+            1,
+            1,
+            np.radians(85.391519024022),
+            370.61383589095425,
+            2.315710041662876,
+        ),
+        # Test non-zero eccentricities and final true anomaly
+        (
+            42159.48,
+            0.00123,
+            0.024,
+            np.pi,
+            1,
+            1,
+            np.radians(85.391519024022),
+            370.61383589095425,
+            2.2751512282382222,
         ),
     ],
 )
 def test_rendezvous(
-    rcsint, rcstgt, einit, efinal, nufinal, kint, ktgt, waittime_exp, deltav_exp
+    rcstgt, einit, efinal, nufinal, kint, ktgt, phasef_exp, waittime_exp, deltav_exp
 ):
+    # Input values
+    rcsint = 12756.274
     phasei = np.radians(-20.0)
     nuinit = 0.0
 
@@ -348,6 +374,21 @@ def test_rendezvous(
     )
 
     # Expected results
-    assert custom_isclose(phasef, float(phasei))
+    assert custom_isclose(phasef, float(phasef_exp))
     assert custom_isclose(waittime / const.MIN2SEC, waittime_exp)
     assert custom_isclose(deltav, deltav_exp)
+
+
+def test_rendezvous_intersects():
+    # Input values
+    rcsint = rcstgt = 12756.274
+    phasei = np.radians(-20.0)
+    einit = efinal = nuinit = nufinal = 0.0
+    kint = 10
+    ktgt = 1
+
+    # Calculate rendezvous transfer
+    with pytest.raises(ValueError):
+        transfer.rendezvous(
+            rcsint, rcstgt, phasei, einit, efinal, nuinit, nufinal, kint, ktgt
+        )
