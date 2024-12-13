@@ -305,3 +305,49 @@ def test_combined(einit, nuinit, deltava_exp, gama_exp):
     assert custom_isclose(dtsec / const.MIN2SEC, 315.3863523156078)
     assert custom_isclose(gama, float(gama_exp))
     assert custom_isclose(gamb, float(np.radians(50.53946267721802)))
+
+
+@pytest.mark.parametrize(
+    "rcsint, rcstgt, einit, efinal, nufinal, kint, ktgt, waittime_exp, deltav_exp",
+    [
+        # Vallado 2007, Example 6-8, Part 1
+        (
+            12756.274,
+            12756.274,
+            0.0,
+            0.0,
+            0.0,
+            1,
+            1,
+            225.6949830406384,
+            -0.2192686615890107,
+        ),
+        # Vallado 2007, Example 6-8, Part 2
+        (
+            12756.274,
+            12756.274,
+            0.0,
+            0.0,
+            0.0,
+            2,
+            2,
+            464.6661415542555,
+            -0.10648139790646738,
+        ),
+    ],
+)
+def test_rendezvous(
+    rcsint, rcstgt, einit, efinal, nufinal, kint, ktgt, waittime_exp, deltav_exp
+):
+    phasei = np.radians(-20.0)
+    nuinit = 0.0
+
+    # Calculate rendezvous transfer
+    phasef, waittime, deltav = transfer.rendezvous(
+        rcsint, rcstgt, phasei, einit, efinal, nuinit, nufinal, kint, ktgt
+    )
+
+    # Expected results
+    assert custom_isclose(phasef, float(phasei))
+    assert custom_isclose(waittime / const.MIN2SEC, waittime_exp)
+    assert custom_isclose(deltav, deltav_exp)

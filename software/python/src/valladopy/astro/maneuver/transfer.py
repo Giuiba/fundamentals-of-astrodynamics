@@ -527,3 +527,98 @@ def combined(
     gamb = np.arccos(-(vtransb**2 + deltavb**2 - vfinal**2) / (2.0 * vtransb * deltavb))
 
     return deltai1, deltai2, deltava, deltavb, dtsec, gama, gamb
+
+
+########################################################################################
+# Rendezvous
+########################################################################################
+
+
+def rendezvous(
+    rcsint: float,
+    rcstgt: float,
+    phasei: float,
+    einit: float,
+    efinal: float,
+    nuinit: float,
+    nufinal: float,
+    kint: int,
+    ktgt: int,
+) -> tuple[float, float, float]:
+    """Calculates parameters for a Hohmann transfer rendezvous.
+
+    References:
+        Vallado 2007, pp. 364, Algorithms 44 and 45
+
+    Args:
+        rcsint (float): Radius of the interceptor's circular orbit in km
+        rcstgt (float): Radius of the target's circular orbit in km
+        phasei (float): Initial phase angle (target - interceptor) in radians
+        einit (float): Eccentricity of the initial orbit
+        efinal (float): Eccentricity of the final orbit
+        nuinit (float): True anomaly of the initial orbit in radians (0 or pi)
+        nufinal (float): True anomaly of the final orbit in radians (0 or pi)
+        kint (int): Number of interceptor orbits
+        ktgt (int): Number of target orbits to wait
+
+    Returns:
+        tuple: (phasef, waittime, deltav)
+            phasef (float): Final phase angle in radians
+            waittime (float): Wait time before next intercept opportunity in seconds
+            deltav (float): Total change in velocity in km/s
+    """
+    # Angular velocities
+    angvelint = np.sqrt(const.MU / rcsint**3)
+    angveltgt = np.sqrt(const.MU / rcstgt**3)
+    vint = np.sqrt(const.MU / rcsint)
+
+    # Same orbit case
+    if abs(angvelint - angveltgt) < 1e-6:
+        periodtrans = (ktgt * const.TWOPI + phasei) / angveltgt
+        atrans = (const.MU * (periodtrans / (const.TWOPI * kint)) ** 2) ** (1.0 / 3.0)
+        rp = 2.0 * atrans - rcsint
+
+        if rp < 1.0:
+            raise ValueError("Error: the transfer orbit intersects the Earth.")
+
+        vtrans = np.sqrt((2.0 * const.MU / rcsint) - (const.MU / atrans))
+        deltav = 2.0 * (vtrans - vint)
+
+        phasef = phasei
+        waittime = periodtrans
+
+    else:
+        # Different orbits
+        atrans = (rcsint + rcstgt) / 2.0
+        dttutrans = np.pi * np.sqrt(atrans**3 / const.MU)
+
+        leadang = angveltgt * dttutrans
+        phasef = np.pi - leadang
+
+        if phasef < 0.0:
+            phasef += np.pi
+
+        waittime = (phasef - phasei + 2.0 * np.pi * ktgt) / (angvelint - angveltgt)
+
+        # Semi-major axes
+        a1 = (rcsint * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
+        a2 = (rcsint + rcstgt) / 2.0
+        a3 = (rcstgt * (1.0 + efinal * np.cos(nufinal))) / (1.0 - efinal**2)
+
+        # Specific mechanical energies
+        sme1 = -const.MU / (2.0 * a1)
+        sme2 = -const.MU / (2.0 * a2)
+        sme3 = -const.MU / (2.0 * a3)
+
+        # Delta-v at points A and B
+        vinit = np.sqrt(2.0 * ((const.MU / rcsint) + sme1))
+        vtransa = np.sqrt(2.0 * ((const.MU / rcsint) + sme2))
+        deltava = abs(vtransa - vinit)
+
+        vfinal = np.sqrt(2.0 * ((const.MU / rcstgt) + sme3))
+        vtransb = np.sqrt(2.0 * ((const.MU / rcstgt) + sme2))
+        deltavb = abs(vfinal - vtransb)
+
+        deltav = deltava + deltavb
+
+    return phasef, waittime, deltav
