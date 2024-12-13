@@ -14,6 +14,27 @@ from ... import constants as const
 
 
 ########################################################################################
+# Utility Functions
+# TODO: Move to utility module
+########################################################################################
+
+
+def _calc_tof(a):
+    """Calculate the time of flight for a given semi-major axis."""
+    return np.pi * np.sqrt(a**3 / const.MU)
+
+
+def _compute_sme(a):
+    """Computes specific mechanical energy at a given semi-major axis."""
+    return -const.MU / (2.0 * a)
+
+
+def _compute_vel(r, a):
+    """Computes velocity magnitude at a given radius and specific mechanical energy."""
+    return np.sqrt(2.0 * ((const.MU / r) + _compute_sme(a)))
+
+
+########################################################################################
 # Coplanar Transfers
 ########################################################################################
 
@@ -56,17 +77,17 @@ def hohmann(
 
     if einit < 1.0 or efinal < 1.0:
         # Calculate delta-v at point A
-        vinit = np.sqrt((2.0 * const.MU) / rinit - (const.MU / ainit))
-        vtrana = np.sqrt((2.0 * const.MU) / rinit - (const.MU / atran))
+        vinit = _compute_vel(rinit, ainit)
+        vtrana = _compute_vel(rinit, atran)
         deltava = np.abs(vtrana - vinit)
 
         # Calculate delta-v at point B
-        vfinal = np.sqrt((2.0 * const.MU) / rfinal - (const.MU / afinal))
-        vtranb = np.sqrt((2.0 * const.MU) / rfinal - (const.MU / atran))
+        vfinal = _compute_vel(rfinal, afinal)
+        vtranb = _compute_vel(rfinal, atran)
         deltavb = np.abs(vfinal - vtranb)
 
         # Calculate transfer time of flight
-        dtsec = np.pi * np.sqrt(atran**3 / const.MU)
+        dtsec = _calc_tof(atran)
 
     return deltava, deltavb, dtsec
 
@@ -114,24 +135,22 @@ def bielliptic(
     # Check if inputs represent elliptical orbits
     if einit < 1.0 and efinal < 1.0:
         # Calculate delta-v at point A
-        vinit = np.sqrt((2.0 * const.MU) / rinit - (const.MU / ainit))
-        vtran1a = np.sqrt((2.0 * const.MU) / rinit - (const.MU / atran1))
+        vinit = _compute_vel(rinit, ainit)
+        vtran1a = _compute_vel(rinit, atran1)
         deltava = np.abs(vtran1a - vinit)
 
         # Calculate delta-v at point B
-        vtran1b = np.sqrt((2.0 * const.MU) / rb - (const.MU / atran1))
-        vtran2b = np.sqrt((2.0 * const.MU) / rb - (const.MU / atran2))
+        vtran1b = _compute_vel(rb, atran1)
+        vtran2b = _compute_vel(rb, atran2)
         deltavb = np.abs(vtran1b - vtran2b)
 
         # Calculate delta-v at point C
-        vtran2c = np.sqrt((2.0 * const.MU) / rfinal - (const.MU / atran2))
-        vfinal = np.sqrt((2.0 * const.MU) / rfinal - (const.MU / afinal))
+        vtran2c = _compute_vel(rfinal, atran2)
+        vfinal = _compute_vel(rfinal, afinal)
         deltavc = np.abs(vfinal - vtran2c)
 
         # Calculate total time of flight
-        dtsec = np.pi * np.sqrt(atran1**3 / const.MU) + np.pi * np.sqrt(
-            atran2**3 / const.MU
-        )
+        dtsec = _calc_tof(atran1) + _calc_tof(atran2)
 
     return deltava, deltavb, deltavc, dtsec
 
@@ -196,11 +215,11 @@ def onetangent(
 
         # Calculate velocities
         vinit = np.sqrt(const.MU / rinit)
-        vtrana = np.sqrt((2.0 * const.MU) / rinit - (const.MU / atran))
+        vtrana = _compute_vel(rinit, atran)
         deltava = np.abs(vtrana - vinit)
 
-        vfinal = np.sqrt((2.0 * const.MU) / rfinal - (const.MU / afinal))
-        vtranb = np.sqrt((2.0 * const.MU) / rfinal - (const.MU / atran))
+        vfinal = _compute_vel(rfinal, afinal)
+        vtranb = _compute_vel(rfinal, atran)
         fpatranb = np.arctan2(etran * np.sin(nutran), 1.0 + etran * np.cos(nutran))
         fpafinal = np.arctan2(efinal * np.sin(nutran), 1.0 + efinal * np.cos(nutran))
         deltavb = np.sqrt(
@@ -399,28 +418,16 @@ def mincombined(
             deltavb (float): Delta-v at point B in km/s
             dtsec (float): Time of flight for the transfer in seconds
     """
-
-    def compute_vel(r, sme):
-        return np.sqrt(2.0 * ((const.MU / r) + sme))
-
-    def compute_sme(a):
-        return -const.MU / (2.0 * a)
-
     # Compute semi-major axes
     a1 = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
     a2 = 0.5 * (rinit + rfinal)
     a3 = (rfinal * (1.0 + efinal * np.cos(nufinal))) / (1.0 - efinal**2)
 
-    # Compute specific mechanical energy
-    sme1 = compute_sme(a1)
-    sme2 = compute_sme(a2)
-    sme3 = compute_sme(a3)
-
     # Compute velocities
-    vinit = compute_vel(rinit, sme1)
-    v1t = compute_vel(rinit, sme2)
-    vfinal = compute_vel(rfinal, sme3)
-    v3t = compute_vel(rfinal, sme2)
+    vinit = _compute_vel(rinit, a1)
+    v1t = _compute_vel(rinit, a2)
+    vfinal = _compute_vel(rfinal, a3)
+    v3t = _compute_vel(rfinal, a2)
 
     # Delta inclination
     tdi = ifinal - iinit
@@ -439,7 +446,7 @@ def mincombined(
     deltai_final = tdi * (1.0 - temp)
 
     # Compute transfer time of flight
-    dtsec = np.pi * np.sqrt(a2**3 / const.MU)
+    dtsec = _calc_tof(a2)
 
     if not use_optimal:
         return deltai_init, deltai_final, deltava, deltavb, dtsec
@@ -467,10 +474,10 @@ def combined(
     rinit: float, rfinal: float, einit: float, nuinit: float, deltai: float
 ) -> Tuple[float, float, float, float, float, float, float]:
     """Calculates the delta-v for a Hohmann transfer between two orbits, considering
-    inclination changes.
+    inclination changes. The final orbit is assumed to be circular.
 
     References:
-        Vallado 2007, pp. 352-359, Example 6-7
+        Vallado 2007, p. 352-359, Example 6-7
 
     Args:
         rinit (float): Initial position magnitude in km
@@ -496,15 +503,11 @@ def combined(
     ainit = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
     atran = (rinit + rfinal) * 0.5
 
-    # Specific mechanical energies
-    sme1 = -const.MU / (2.0 * ainit)
-    sme2 = -const.MU / (2.0 * atran)
-
     # Velocities
-    vinit = np.sqrt(2.0 * (const.MU / rinit + sme1))
-    vtransa = np.sqrt(2.0 * (const.MU / rinit + sme2))
+    vinit = _compute_vel(rinit, ainit)
+    vtransa = _compute_vel(rinit, atran)
     vfinal = np.sqrt(const.MU / rfinal)  # assumes circular orbit
-    vtransb = np.sqrt(2.0 * (const.MU / rfinal + sme2))
+    vtransb = _compute_vel(rfinal, atran)
 
     # Proportions of inclination change
     ratio = rfinal / rinit
@@ -517,7 +520,7 @@ def combined(
     deltavb = np.sqrt(vfinal**2 + vtransb**2 - 2.0 * vfinal * vtransb * np.cos(deltai2))
 
     # Time of flight for the transfer
-    dtsec = np.pi * np.sqrt(atran**3 / const.MU)
+    dtsec = _calc_tof(atran)
 
     # Firing angles
     gama = np.arccos(-(vinit**2 + deltava**2 - vtransa**2) / (2.0 * vinit * deltava))
