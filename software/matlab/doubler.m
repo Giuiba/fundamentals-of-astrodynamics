@@ -5,21 +5,27 @@
 %
 % dav 12-23-03
 %
+%
+% [r2, r3, f1, f2, q1, magr1, magr2, a, deltae32] = doubler(cc1, cc2, magrsite1, magrsite2, magr1in, magr2in,...
+%    los1, los2, los3, rsite1, rsite2, rsite3, t1, t3, n12, n13, n23)
+%
 
-function [r2,r3,f1,f2,q1,magr1,magr2,a,deltae32] = doubler( cc1,cc2,magrsite1,magrsite2,magr1in,magr2in,...
-    los1,los2,los3,rsite1,rsite2,rsite3,t1,t3, n12, n13, n23, re, mu)
-  
+function [r2, r3, f1, f2, q1, magr1, magr2, a, deltae32] = doubler(cc1, cc2, magrsite1, magrsite2, magr1in, magr2in,...
+        los1, los2, los3, rsite1, rsite2, rsite3, t1, t3, n12, n13, n23)
+
+    constastro;
+
     %show = 'y';
     show = 'n';
-    
+
     twopi = 2.0 * pi;
 
     %   re = 6378.137;
     %   mu = 3.986004418e5;
-    
+
     %   re = 149597870.0;
     %   mu = 1.32712428e11;
-    
+
     tempsq = cc1 * cc1 - 4.0 * (magrsite1^2 - magr1in^2);
     if tempsq < 0.0
         tempsq = 300.0;  % default range, use because hyperbolic likely at shorter times, lower alt
@@ -30,7 +36,7 @@ function [r2,r3,f1,f2,q1,magr1,magr2,a,deltae32] = doubler( cc1,cc2,magrsite1,ma
         tempsq = 300.0;  % a default range, not 0.0
     end
     rho2 = (-cc2 + sqrt(tempsq)) * 0.5;
-    
+
     %rsite1
     %rsite2
     r1 = rho1 * los1 + rsite1;
@@ -53,7 +59,7 @@ function [r2,r3,f1,f2,q1,magr1,magr2,a,deltae32] = doubler( cc1,cc2,magrsite1,ma
 
 
     %if direct == 'y'
-        w = cross(r1,r2)/(magr1*magr2);
+    w = cross(r1,r2)/(magr1*magr2);
     %else
     %    w = -cross(r1,r2)/(magr1*magr2);
     %end
@@ -76,9 +82,9 @@ function [r2,r3,f1,f2,q1,magr1,magr2,a,deltae32] = doubler( cc1,cc2,magrsite1,ma
     if show == 'y'
         fprintf(1,'after 1st mag  %11.7f  %11.7f  %11.7f \n',magr1,magr2,magr3 );
     end
-%dot(r2,r1)
-%magr2*magr1
-%cross(r2,r1)
+    %dot(r2,r1)
+    %magr2*magr1
+    %cross(r2,r1)
     cosdv21 = dot(r2,r1)/(magr2*magr1);
     sindv21 = mag(cross(r2,r1))/(magr2*magr1);
     dv21 = atan2(sindv21,cosdv21) + twopi * n12;
@@ -134,12 +140,12 @@ function [r2,r3,f1,f2,q1,magr1,magr2,a,deltae32] = doubler( cc1,cc2,magrsite1,ma
         deltam12 = -deltae21+2*s*(sin(deltae21/2))^2+c*sin(deltae21);
     else
         fprintf(1,'hyperbolic, e1 is greater than 0.99 %11.7f \n',e);
-         if (a > 0.0)
+        if (a > 0.0)
             a = -a;  % get right sign for hyperbolic orbit
             p = -p;
         end
         n = sqrt(mu/-a^3);
-        
+
         s = magr2/p*sqrt(e^2-1)*esinv2;
         c = magr2/p*(e^2+ecosv2);
 
@@ -165,4 +171,5 @@ function [r2,r3,f1,f2,q1,magr1,magr2,a,deltae32] = doubler( cc1,cc2,magrsite1,ma
 
     q1 = sqrt(f1^2+f2^2);
 
+end
 

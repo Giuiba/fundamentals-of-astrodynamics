@@ -1,74 +1,74 @@
-    % ------------------------------------------------------------------------------
-    %
-    %                           function lambertu
-    %
-    %  this function solves the lambert problem for orbit determination and returns
-    %    the velocity vectors at each of two given position vectors.  the solution
-    %    uses universal variables for calculation and a bissection technique
-    %    updating psi.
-    %
-    %  author        : david vallado                  719-573-2600    1 mar 2001
-    %
-    %  inputs          description                         range / units
-    %    r1          - ijk position vector 1               km
-    %    v1          - ijk velocity vector 1               needed for 180 deg transfer  km / s
-    %    r2          - ijk position vector 2               km
-    %    dm          - direction of motion                 'S','L'  short long period
-    %    de          - direction of energy                 'L','H'  low high energy
-    %    dtsec       - time between r1 and r2              s
-    %    nrev        - multiple revoluions                 0, 1, ...
-    %    tbi         - time of the bottom interval -       only needed for multi-rev cases
-    %                  this is a two-dimension array of psi and tof
-    %  outputs       :
-    %    v1          - ijk velocity vector                 km / s
-    %    v2          - ijk velocity vector                 km / s
-    %    error       - error flag                          'ok', ...
-    %
-    %  locals        :
-    %    vara        - variable of the iteration,
-    %                  not the semi-axis
-    %    y           - area between position vectors
-    %    upper       - upper bound for z
-    %    lower       - lower bound for z
-    %    cosdeltanu  - cosine of true anomaly change        rad
-    %    f           - f expression
-    %    g           - g expression
-    %    gdot        - g dot expression
-    %    x           - old universal variable x
-    %    xcubed      - x cubed
-    %    zold        - old value of z
-    %    znew        - new value of z
-    %    c2          - c2(z) function
-    %    c3          - c3(z) function
-    %    timenew     - new time                             s
-    %    small       - tolerance for roundoff errors
-    %    i, j        - index
-    %
-    %  coupling      :
-    %    mag         - magnitude of a vector
-    %    dot         - dot product of two vectors
-    %    findc2c3    - find c2 and c3 functions
-    %
-    %  references    :
-    %    vallado       2013, 489-493, alg 58, ex 7-5
-    %
-    % [vo,v,errorl] = lambertu ( r1, v1, r2, dm, df, nrev, dtwait, dtsec, tbi, outfile );
-    % ------------------------------------------------------------------------------
+% ------------------------------------------------------------------------------
+%
+%                           function lambertu
+%
+%  this function solves the lambert problem for orbit determination and returns
+%    the velocity vectors at each of two given position vectors.  the solution
+%    uses universal variables for calculation and a bissection technique
+%    updating psi.
+%
+%  author        : david vallado                  719-573-2600    1 mar 2001
+%
+%  inputs          description                         range / units
+%    r1          - ijk position vector 1               km
+%    v1          - ijk velocity vector 1               needed for 180 deg transfer  km / s
+%    r2          - ijk position vector 2               km
+%    dm          - direction of motion                 'S','L'  short long period
+%    de          - direction of flight                 'L','H'  low high energy
+%    dtsec       - time between r1 and r2              s
+%    nrev        - multiple revoluions                 0, 1, ...
+%    tbi         - time of the bottom interval -       only needed for multi-rev cases
+%                  this is a two-dimension array of psi and tof
+%  outputs       :
+%    v1          - ijk velocity vector                 km / s
+%    v2          - ijk velocity vector                 km / s
+%    error       - error flag                          'ok', ...
+%
+%  locals        :
+%    vara        - variable of the iteration,
+%                  not the semi-axis
+%    y           - area between position vectors
+%    upper       - upper bound for z
+%    lower       - lower bound for z
+%    cosdeltanu  - cosine of true anomaly change        rad
+%    f           - f expression
+%    g           - g expression
+%    gdot        - g dot expression
+%    x           - old universal variable x
+%    xcubed      - x cubed
+%    zold        - old value of z
+%    znew        - new value of z
+%    c2          - c2(z) function
+%    c3          - c3(z) function
+%    timenew     - new time                             s
+%    small       - tolerance for roundoff errors
+%    i, j        - index
+%
+%  coupling      :
+%    mag         - magnitude of a vector
+%    dot         - dot product of two vectors
+%    findc2c3    - find c2 and c3 functions
+%
+%  references    :
+%    vallado       2013, 489-493, alg 58, ex 7-5
+%
+% [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nrev, dtsec, tbi, outfile )
+% ------------------------------------------------------------------------------
 
-    function [v1dv,v2dv,errorl] = lambertu ( r1, v1, r2, dm, de, nrev, dtwait, dtsec, tbi, outfile )
+function [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nrev, dtsec, tbi, outfile )
 
     % -------------------------  implementation   -------------------------
-    mu = 398600.4418;  % km/s^2
+    constastro;
     small = 0.00001; % can affect cases where znew is multiples of 2pi^2
     numiter= 20;
     errorl  = '      ok';
     for i= 1 : 3
-        v1dv(i) = 0.0;
-        v2dv(i) = 0.0;
+        v1tu(i) = 0.0;
+        v2tu(i) = 0.0;
     end
 
     dtold = 0.0;
-    
+
     % try canonical units for testing
     %constastro;
     %mu = 1.0;
@@ -106,9 +106,9 @@
         %if ((dm == 'l') && (df == 'd')) || ((dm == 's') && (df == 'r'))
         %if ((df == 'r') && (dm == 's')) || ((df == 'd') && (dm == 'l'))
         if (de == 'H') %  && (dm == 'L')) || ((de == 'L') && (dm == 'L'))
-            upper = tbi(nrev,1);
+            upper = tbi;
         else
-            lower = tbi(nrev,1);
+            lower = tbi;
         end
     end
 
@@ -131,7 +131,7 @@
         %         taux = sqrt(yx)/sqrt(mu) * (k2*yx + vara);
     else
         %if (de == 'L')  % dm == 's' seemed better other way?????????????
-               psiold = lower + (upper - lower)*0.5;
+        psiold = lower + (upper - lower)*0.5;
         % else
         %            psiold = lower + (upper - lower)*0.6;
         %         end
@@ -156,11 +156,11 @@
         %                psiold = ( -b - sqrt(discrim) ) / ( 2.0 *a );
         %psiold = lower + (upper - lower)*0.3;
     end
-    
+
     [c2new,c3new] = findc2c3( psiold );
-    
+
     oosqrtmu = 1.0 / sqrt(mu);
-    
+
     % find initial dtold from psiold
     if (abs(c2new) > small)
         y = magr1 + magr2 - (vara * (1.0 - psiold * c3new) / sqrt(c2new));
@@ -174,13 +174,13 @@
     end
     xoldcubed = xold * xold * xold;
     dtold = (xoldcubed * c3new + vara * sqrt(y)) * oosqrtmu;
-    
+
     % -------  determine if  the orbit is possible at all ---------
     if ( abs( vara ) > 0.2 )   % not exactly zero
         loops  = 0;
         ynegktr= 1;  % y neg ktr
         dtnew = -10.0;
-        
+
         while ((abs(dtnew-dtsec) >= small) && (loops < numiter) && (ynegktr <= 10))
             % fprintf(1,'%3i  dtnew-dtsec %11.7f yneg %3i \n',loops,dtnew-dtsec,ynegktr );
             if ( abs(c2new) > small )
@@ -250,29 +250,29 @@
                     psinew= (upper+lower) * 0.5;
                     psilast = psinew;
                 end
-                
+
                 % ------------- find c2 and c3 functions ----------
                 [c2new,c3new] = findc2c3( psinew );
                 %if nrev > 0
-                fprintf(1,'%3i  y %11.7f x %11.7f %11.7f dtnew %11.7f %11.7f %11.7f psinew %11.7f %11.7f \n', ...
-                    loops,y,xold,dtsec, dtnew, lower, upper, psinew, dtdpsi); %(dtnew - dtsec)/dtdpsi );  % c2dot, c3dot
+                % fprintf(1,'%3i  y %11.7f x %11.7f %11.7f dtnew %11.7f %11.7f %11.7f psinew %11.7f %11.7f \n', ...
+                %     loops,y,xold,dtsec, dtnew, lower, upper, psinew, dtdpsi); %(dtnew - dtsec)/dtdpsi );  % c2dot, c3dot
                 %end
                 psilast = psiold;  % keep previous iteration
                 psiold = psinew;
                 dtold = dtnew;
-                
+
                 % --- make sure the first guess isn't too close ---
                 if ( (abs(dtnew - dtsec) < small) && (loops == 1) )
                     dtnew= dtsec - 1.0;
                 end
             end  % if  ynegktr < 10
-            
+
             %              fprintf(1,'#%3i  y %11.7f x %11.7f dtnew %11.7f psinew %11.7f \n',loops,y,x,dtnew,psinew );
             %              fprintf(1,'%3i  y %11.7f x %11.7f dtnew %11.7f psinew %11.7f \n',loops,y/re,x/sqrt(re),dtnew/tusec,psinew );
             %              fprintf(1,'%3i  y %11.7f x %11.7f dtnew %11.7f psinew %11.7f \n',loops,y/re,x/sqrt(re),dtnew/60.0,psinew );
             ynegktr = 1;
         end % while loop
-        
+
         if ( (loops >= numiter) || (ynegktr >= 10) )
             errorl= strcat('gnotconv',num2str(abs(dtnew - dtsec)));
             if ( ynegktr >= 10 )
@@ -288,8 +288,8 @@
             %  fdot = sqrt(mu*y)*(-magr2-magr1 + y)/(magr1*magr2*vara);
             %  f*gdot - fdot*g
             for i= 1 : 3
-                v1dv(i) = ( r2(i) - f*r1(i) )*g;
-                v2dv(i) = ( gdot*r2(i) - r1(i) )*g;
+                v1tu(i) = ( r2(i) - f*r1(i) )*g;
+                v2tu(i) = ( gdot*r2(i) - r1(i) )*g;
             end
         end   % if  the answer has converged
     else
@@ -314,8 +314,8 @@
         fprintf(1,'%11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \n',r1, v1t);
         fprintf(1,'%11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \n',r2, v2t);
 
-        v1dv = v1t;% / velkmps;
-        v2dv = v2t;% / velkmps;
+        v1tu = v1t;% / velkmps;
+        v2tu = v2t;% / velkmps;
 
         tof = dtsec;
         pause;
@@ -331,9 +331,9 @@
     end  % if  var a > 0.0
 
     if (strcmp(errorl, '      ok') ~= 0)
-        [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r1,v1dv);
+        [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r1,v1tu);
         fprintf(outfile,'%10s %3i %3i %2s %2s %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f case %11.7f %11.7f %11.7f %11.7f %11.7f ', ...
-            errorl, loops, nrev, dm, de, dtwait, dtnew, y, xold, v1dv(1), v1dv(2), v1dv(3), v2dv(1), v2dv(2), v2dv(3), lower, upper, psinew, dtdpsi, ecc); %(dtnew - dtsec)/dtdpsi, ecc );  % c2dot, c3dot
+            errorl, loops, nrev, dm, de, dtnew, y, xold, v1tu(1), v1tu(2), v1tu(3), v2tu(1), v2tu(2), v2tu(3), lower, upper, psinew, dtdpsi, ecc); %(dtnew - dtsec)/dtdpsi, ecc );  % c2dot, c3dot
         fprintf(1,'C%3i %3i %2s %2s %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f  %11.7f dnu %11.7f \n', ...
             loops, nrev, dm, de, dtnew, magr1, magr2, vara, y, xold, psinew, acos(cosdeltanu)*180.0/pi)
     else
@@ -341,9 +341,5 @@
         fprintf(1,'#%s \n',errorl);
     end
 
-    
-
-
-
-
+end
 

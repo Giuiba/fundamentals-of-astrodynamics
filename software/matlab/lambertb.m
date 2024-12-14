@@ -1,61 +1,61 @@
-    % ------------------------------------------------------------------------------
-    %
-    %                           function lambertb
-    %
-    %  this function solves lambert's problem using battins method. the method is
-    %    developed in battin (1987) and explained by Thompson 2018. it uses continued
-    %    fractions to speed the solution and has several parameters that are defined
-    %    differently than the traditional gaussian technique.
-    %
-    %  author        : david vallado                  719-573-2600   12 feb 2018
-    %
-    %  inputs          description                    range / units
-    %    r1          - ijk position vector 1          km
-    %    v1          - ijk velocity vector 1 needed for 180 deg transfer  km / s
-    %    r2          - ijk position vector 2          km
-    %    dm          - dir of motion (long, short)        'l','s'
-    %                  this is really a period discriminator
-    %    df          - dir of flight (direct, retrograde) 'd','r'
-    %                  this is the inclination discriminator
-    %    nrev        - number of revs to complete     0, 1, ...
-    %    dtsec       - time between r1 and r2         s
-    %
-    %  outputs       :
-    %    v1t         - ijk velocity vector            km / s
-    %    v2t         - ijk velocity vector            km / s
-    %    error       - error flag                     'ok',...
-    %
-    %  locals        :
-    %    i           - index
-    %    loops       -
-    %    u           -
-    %    b           -
-    %    sinv        -
-    %    cosv        -
-    %    rp          -
-    %    x           -
-    %    xn          -
-    %    y           -
-    %    l           -
-    %    m           -
-    %    cosdeltanu  -
-    %    sindeltanu  -
-    %    dnu         -
-    %
-    %  coupling      :
-    %    mag         - magnitude of a vector
-    %    arcsinh     - inverse hyperbolic sine
-    %    arccosh     - inverse hyperbolic cosine
-    %    sinh        - hyperbolic sine
-    %
-    %  references    :
-    %    vallado       2013, 493-497, ex 7-5
-    %    thompson      2018
-    %
-    % [v1dv, v2dv, errorb] = lambertb ( r1, v1, r2, dm, df, nrev, dtsec );
-    % ------------------------------------------------------------------------------
+% ------------------------------------------------------------------------------
+%
+%                           function lambertb
+%
+%  this function solves lambert's problem using battins method. the method is
+%    developed in battin (1987) and explained by Thompson 2018. it uses continued
+%    fractions to speed the solution and has several parameters that are defined
+%    differently than the traditional gaussian technique.
+%
+%  author        : david vallado                  719-573-2600   12 feb 2018
+%
+%  inputs          description                    range / units
+%    r1          - ijk position vector 1          km
+%    v1          - ijk velocity vector 1 needed for 180 deg transfer  km / s
+%    r2          - ijk position vector 2          km
+%    dm          - dir of motion (long, short)        'l','s'
+%                  this is really a period discriminator
+%    df          - dir of flight (direct, retrograde) 'd','r'
+%                  this is the inclination discriminator
+%    nrev        - number of revs to complete     0, 1, ...
+%    dtsec       - time between r1 and r2         s
+%
+%  outputs       :
+%    v1t         - ijk velocity vector            km / s
+%    v2t         - ijk velocity vector            km / s
+%    error       - error flag                     'ok',...
+%
+%  locals        :
+%    i           - index
+%    loops       -
+%    u           -
+%    b           -
+%    sinv        -
+%    cosv        -
+%    rp          -
+%    x           -
+%    xn          -
+%    y           -
+%    l           -
+%    m           -
+%    cosdeltanu  -
+%    sindeltanu  -
+%    dnu         -
+%
+%  coupling      :
+%    mag         - magnitude of a vector
+%    arcsinh     - inverse hyperbolic sine
+%    arccosh     - inverse hyperbolic cosine
+%    sinh        - hyperbolic sine
+%
+%  references    :
+%    vallado       2013, 493-497, ex 7-5
+%    thompson      2018
+%
+% [v1dv, v2dv, errorb] = lambertb ( r1, r2, v1, dm, df, nrev, dtsec );
+% ------------------------------------------------------------------------------
 
-    function [v1dv, v2dv, errorb] = lambertb ( r1, v1, r2, dm, df, nrev, dtsec )
+function [v1dv, v2dv, errorb] = lambertb ( r1, r2, v1, dm, df, nrev, dtsec )
     constmath;
     constastro;
 
@@ -81,7 +81,7 @@
         sindeltanu= magrcrossr/(magr1*magr2);
     else
         sindeltanu= -magrcrossr/(magr1*magr2);
-    end;
+    end
     dnu   = atan2( sindeltanu, cosdeltanu );
     % the angle needs to be positive to work for the long way
     if dnu < 0.0
@@ -141,6 +141,7 @@
             fprintf(1,' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n',loops, y, x, h1, h2, b, f );
             loops = loops + 1;
         end  % while
+
         fprintf(1,' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n',loops, y, x, h1, h2, b, f );
         x = xn;
         a = s*(1.0 + lam)^2*(1.0 + x)*(L + x) / (8.0*x);
@@ -205,7 +206,7 @@
             p = (2.0*magr1*magr2*y*y*(1.0 + x)^2*sin(dnu*0.5)^2) / (m*s*(1 + lam)^2);  % thompson
             ecc = sqrt( (eps^2 + 4.0*magr2/magr1*sin(dnu*0.5)^2*((L-x)/(L+x))^2) / (eps^2 + 4.0*magr2/magr1*sin(dnu*0.5)^2)  );
             [v1dv, v2dv] = lambhodograph( r1, v1, r2, p, ecc, dnu, dtsec );
-%            fprintf(1,'oldb v1t %16.8f %16.8f %16.8f %16.8f\n',v1dv, mag(v1dv) );
+            %            fprintf(1,'oldb v1t %16.8f %16.8f %16.8f %16.8f\n',v1dv, mag(v1dv) );
             %         r_180 = 0.001;  % 1 meter
             %         [v1dvh,v2dvh] = lambert_vel(r1, v1, r2, dnu, p, ecc, mu, dtsec, r_180);
             %         fprintf(1,'newb v1t %16.8f %16.8f %16.8f %16.8f\n',v1dvh, mag(v1dvh) );
@@ -227,3 +228,5 @@
             %fprintf(1,'loe v2t %16.8f %16.8f %16.8f %16.8f\n',v2dvl, mag(v2dvl) );
         end  % if loops converged < 30
     end
+
+end

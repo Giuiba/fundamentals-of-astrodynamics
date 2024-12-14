@@ -11,25 +11,23 @@
 %  23 dec 2003
 %   8 oct 2007
 %
-%  inputs          description                    range / units
-%    re           - radius earth, sun, etc        km
-%    mu           - grav param earth, sun etc     km3/s2
-%    rtasc1       - right ascension #1                          rad
-%    rtasc2       - right ascension #2                          rad
-%    rtasc3       - right ascension #3                          rad
-%    decl1        - declination #1                              rad
-%    decl2        - declination #2                              rad
-%    decl3        - declination #3                              rad
-%    jd1, jdf1    - julian date of 1st sighting                 days from 4713 bc
-%    jd2, jdf2    - julian date of 2nd sighting                 days from 4713 bc
-%    jd3, jdf3    - julian date of 3rd sighting                 days from 4713 bc
-%    rsite1       - eci site position vector                    km
-%    rsite2       - eci site position vector                    km
-%    rsite3       - eci site position vector                    km
+%  inputs          description                                range / units
+%    decl1        - declination #1                                rad
+%    decl2        - declination #2                                rad
+%    decl3        - declination #3                                rad
+%    rtasc1       - right ascension #1                            rad
+%    rtasc2       - right ascension #2                            rad
+%    rtasc3       - right ascension #3                            rad
+%    jd1, jdf1    - julian date of 1st sighting                   days from 4713 bc
+%    jd2, jdf2    - julian date of 2nd sighting                   days from 4713 bc
+%    jd3, jdf3    - julian date of 3rd sighting                   days from 4713 bc
+%    rseci1       - eci site1 position vector                     km
+%    rseci2       - eci site2 position vector                     km
+%    rseci3       - eci site3 position vector                     km
 %
 %  outputs        :
-%    r            - ijk position vector at t2     km
-%    v            - ijk velocity vector at t2     km / s
+%    r            - eci position vector                           km
+%    v            - eci velocity vector                           km / s
 %
 %  locals         :
 %    l1           - line of sight vector for 1st
@@ -71,11 +69,12 @@
 %  references     :
 %    vallado       2007, 429-439
 %
-% [r2,v2] = anglesg ( decl1,decl2,decl3,rtasc1,rtasc2,rtasc3,jd1,jdf1, jd2,jdf2, jd3, jdf3,rs1,rs2,rs3, re, mu );
+% [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
+%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3)
 % ------------------------------------------------------------------------------
 
-function [r2, v2] = anglesg ( decl1,decl2,decl3,rtasc1,rtasc2, ...
-                    rtasc3,jd1,jdf1, jd2,jdf2, jd3, jdf3, rseci1, rseci2, rseci3);
+function [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
+        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3)
     %show = 'y';
     show = 'n';
     constastro;
