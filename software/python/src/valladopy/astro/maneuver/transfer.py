@@ -545,7 +545,7 @@ def rendezvous_coplanar(
     kint: int,
     ktgt: int,
     tol: float = 1e-6,
-) -> tuple[float, float, float]:
+) -> Tuple[float, float, float]:
     """Calculates parameters for a Hohmann transfer rendezvous.
 
     References:
@@ -631,35 +631,35 @@ def rendezvous_noncoplanar(
     phasei: float,
     aint: float,
     atgt: float,
-    ktgt: int,
     kint: int,
+    ktgt: int,
     nodeint: float,
     truelon: float,
-    deltai: float
-) -> tuple[float, float, float, float, float, float]:
+    deltai: float,
+) -> Tuple[float, float, float, float, float, float]:
     """Calculates parameters for a non-coplanar Hohmann transfer maneuver.
 
     References:
         Vallado 2007, pp. 370, Algorithm 46
 
     Args:
-        phasei (float): Initial phase angle in radians.
-        aint (float): Semi-major axis of interceptor orbit in canonical units.
-        atgt (float): Semi-major axis of target orbit in canonical units.
-        ktgt (int): Number of target orbits.
-        kint (int): Number of interceptor orbits.
-        nodeint (float): Longitude of the ascending node of the interceptor in radians.
-        truelon (float): True longitude of the target in radians.
-        deltai (float): Change in inclination in radians.
+        phasei (float): Initial phase angle in radians
+        aint (float): Semi-major axis of interceptor orbit in km
+        atgt (float): Semi-major axis of target orbit in km
+        kint (int): Number of interceptor orbits
+        ktgt (int): Number of target orbits
+        nodeint (float): Longitude of the ascending node of the interceptor in radians
+        truelon (float): True longitude of the target in radians
+        deltai (float): Change in inclination in radians (final - initial)
 
     Returns:
         tuple: (ttrans, tphase, dvphase, dvtrans1, dvtrans2, aphase)
-            ttrans (float): Transfer time in canonical units.
-            tphase (float): Phase time in canonical units.
-            dvphase (float): Delta-v for phasing in canonical units.
-            dvtrans1 (float): Delta-v for first transfer in canonical units.
-            dvtrans2 (float): Delta-v for second transfer in canonical units.
-            aphase (float): Semi-major axis for phasing orbit in canonical units.
+            ttrans (float): Transfer time in seconds
+            tphase (float): Phase time in seconds
+            dvphase (float): Delta-v for phasing in km/s
+            dvtrans1 (float): Delta-v for first transfer in km/s
+            dvtrans2 (float): Delta-v for second transfer in km/s
+            aphase (float): Semi-major axis for phasing orbit in km/s
     """
     # Angular velocities
     angvelint = np.sqrt(const.MU / aint**3)
@@ -677,7 +677,7 @@ def rendezvous_noncoplanar(
     tphase = (leadnew - lead + const.TWOPI * ktgt) / angveltgt
 
     # Semi-major axis of phasing orbit
-    aphase = (const.MU * (tphase / (const.TWOPI * kint))**2)**(1 / 3)
+    aphase = (const.MU * (tphase / (const.TWOPI * kint)) ** 2) ** (1 / 3)
 
     # Delta-v calculations
     vint = np.sqrt(const.MU / aint)

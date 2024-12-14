@@ -384,11 +384,35 @@ def test_rendezvous_coplanar_intersects():
     rcsint = rcstgt = 12756.274
     phasei = np.radians(-20.0)
     einit = efinal = nuinit = nufinal = 0.0
-    kint = 10
-    ktgt = 1
+    kint, ktgt = 10, 1
 
     # Calculate rendezvous transfer
     with pytest.raises(ValueError):
         transfer.rendezvous_coplanar(
             rcsint, rcstgt, phasei, einit, efinal, nuinit, nufinal, kint, ktgt
         )
+
+
+def test_rendezvous_noncoplanar():
+    # Vallado, Example 6-10
+    phasei = np.pi - np.radians(15.0)
+    aint = 7143.51
+    atgt = 42159.4855
+    kint, ktgt = 1, 0
+    nodeint = np.radians(45.0)
+    truelon = np.radians(200.0)
+    deltai = np.radians(-28.5)
+
+    # Calculate rendezvous transfer
+    out = transfer.rendezvous_noncoplanar(
+        phasei, aint, atgt, kint, ktgt, nodeint, truelon, deltai
+    )
+    ttrans, tphase, dvphase, dvtrans1, dvtrans2, aphase = out
+
+    # Expected results
+    assert custom_isclose(ttrans / const.MIN2SEC, 320.9923637303245)
+    assert custom_isclose(tphase / const.MIN2SEC, 450.7328392802076)
+    assert custom_isclose(dvphase, 2.0762730792979385)
+    assert custom_isclose(dvtrans1, 0.2226079943473298)
+    assert custom_isclose(dvtrans2, 1.8024492966461878)
+    assert custom_isclose(aphase, 19473.30414898291)
