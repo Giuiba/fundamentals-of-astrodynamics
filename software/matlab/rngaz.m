@@ -20,7 +20,7 @@
 %    llon        - start longitude (west -)       0.0  to 2pi rad
 %    tlat        - end geocentric latitude        -pi/2 to  pi/2 rad
 %    tlon        - end longitude (west -)         0.0  to 2pi rad
-%    tof         - time of flight if icbm, or 0.0 min
+%    tof         - time of flight if icbm, or 0.0 sec
 %
 %  outputs       :
 %    range       - range between points           km
@@ -41,15 +41,11 @@
 % ------------------------------------------------------------------------------
 
 function [range,az] = rngaz ( llat,llon,tlat,tlon,tof );
-
-        twopi      = 2.0*pi;
-        small      = 0.00000001;
-        omegaearth = 0.05883359221938136;
-% fix units on tof and omegaearth
+        constastro;
 
         % -------------------------  implementation   -------------------------
         range= acos( sin(llat)*sin(tlat) + ...
-              cos(llat)*cos(tlat)*cos(tlon-llon + omegaearth*tof) );
+              cos(llat)*cos(tlat)*cos(tlon-llon + earthrot*tof) );
 
         % ------ check if the range is 0 or half the earth  ---------
         if ( abs( sin(range)*cos(llat) ) < small )
@@ -64,7 +60,7 @@ function [range,az] = rngaz ( llat,llon,tlat,tlon,tof );
         end
 
         % ------ check if the azimuth is grt than pi ( 180deg ) -------
-        if ( sin( tlon - llon + omegaearth*tof ) < 0.0  )
+        if ( sin( tlon - llon + earthrot*tof ) < 0.0  )
             az= twopi - az;
         end
 
