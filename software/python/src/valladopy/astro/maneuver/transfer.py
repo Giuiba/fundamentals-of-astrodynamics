@@ -41,7 +41,7 @@ def _compute_angular_vel(a):
 
 def _compute_deltav(v1, v2, theta):
     """Computes the delta-v for a given initial and final velocity with an angle."""
-    return np.sqrt(v1 ** 2 + v2 ** 2 - 2.0 * v1 * v2 * np.cos(theta))
+    return np.sqrt(v1**2 + v2**2 - 2.0 * v1 * v2 * np.cos(theta))
 
 
 def _compute_sma(r, e, nu):
