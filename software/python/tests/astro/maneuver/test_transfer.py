@@ -86,13 +86,13 @@ def test_bielliptic(
         (0.024, 2.0814417965636647),
     ],
 )
-def test_onetangent(rinit_rfinal, nuinit_nufinal, efinal, deltavb_expected):
+def test_one_tangent(rinit_rfinal, nuinit_nufinal, efinal, deltavb_expected):
     # Input values
     nuinit, _ = nuinit_nufinal
     nutran = np.radians(160)
 
     # Calculate one-tangent transfer
-    deltava, deltavb, dtsec, etran, atran, vtrana, vtranb = transfer.onetangent(
+    deltava, deltavb, dtsec, etran, atran, vtrana, vtranb = transfer.one_tangent(
         *rinit_rfinal, efinal, nuinit, nutran
     )
 
@@ -106,7 +106,7 @@ def test_onetangent(rinit_rfinal, nuinit_nufinal, efinal, deltavb_expected):
     assert custom_isclose(vtranb, 2.2335537984044187)
 
 
-def test_onetangent_bad_transfer(rinit_rfinal, nuinit_nufinal):
+def test_one_tangent_bad_transfer(rinit_rfinal, nuinit_nufinal):
     # Input values
     efinal = 0.0
     nuinit, _ = nuinit_nufinal
@@ -114,7 +114,7 @@ def test_onetangent_bad_transfer(rinit_rfinal, nuinit_nufinal):
 
     # Calculate one-tangent transfer
     with pytest.raises(ValueError):
-        transfer.onetangent(*rinit_rfinal, efinal, nuinit, nutran)
+        transfer.one_tangent(*rinit_rfinal, efinal, nuinit, nutran)
 
 
 @pytest.mark.parametrize(
@@ -126,12 +126,12 @@ def test_onetangent_bad_transfer(rinit_rfinal, nuinit_nufinal):
         (5.993824, np.radians(-6.79), 1.5537274747634255),
     ],
 )
-def test_inclonly(vinit, fpa, deltav_expected):
+def test_incl_only(vinit, fpa, deltav_expected):
     # Input values
     deltai = np.radians(15)
 
     # Calculate inclination-only change
-    deltav = transfer.inclonly(deltai, vinit, fpa)
+    deltav = transfer.incl_only(deltai, vinit, fpa)
 
     # Expected results
     assert custom_isclose(deltav, deltav_expected)
@@ -160,7 +160,7 @@ def test_inclonly(vinit, fpa, deltav_expected):
         ),
     ],
 )
-def test_nodeonly(ecc, fpa, ifinal_exp, deltav_exp, arglat_init_exp, arglat_final_exp):
+def test_node_only(ecc, fpa, ifinal_exp, deltav_exp, arglat_init_exp, arglat_final_exp):
     # Input values
     iinit = np.radians(55.0)
     deltaraan = np.radians(45.0)
@@ -168,7 +168,7 @@ def test_nodeonly(ecc, fpa, ifinal_exp, deltav_exp, arglat_init_exp, arglat_fina
     incl = np.radians(55.0)
 
     # Calculate node change
-    ifinal, deltav, arglat_init, arglat_final = transfer.nodeonly(
+    ifinal, deltav, arglat_init, arglat_final = transfer.node_only(
         iinit, ecc, deltaraan, vinit, fpa, incl
     )
 
@@ -188,7 +188,7 @@ def test_nodeonly(ecc, fpa, ifinal_exp, deltav_exp, arglat_init_exp, arglat_fina
         (np.radians(11.23), 3.546691598327748),
     ],
 )
-def test_inclandnode(fpa, deltav_expected):
+def test_incl_and_node(fpa, deltav_expected):
     # Input values
     iinit = np.radians(55.0)
     ifinal = np.radians(40.0)
@@ -196,7 +196,7 @@ def test_inclandnode(fpa, deltav_expected):
     vinit = 5.892311
 
     # Calculate inclination and node change
-    deltav, arglat_init, arglat_final = transfer.inclandnode(
+    deltav, arglat_init, arglat_final = transfer.incl_and_node(
         iinit, ifinal, deltaraan, vinit, fpa
     )
 
@@ -242,7 +242,7 @@ def test_inclandnode(fpa, deltav_expected):
         ),
     ],
 )
-def test_mincombined(
+def test_min_combined(
     nuinit_nufinal,
     einit,
     efinal,
@@ -259,7 +259,7 @@ def test_mincombined(
     ifinal = np.radians(65.0)
 
     # Calculate minimum combined transfer
-    deltai_init, deltai_final, deltava, deltavb, dtsec = transfer.mincombined(
+    deltai_init, deltai_final, deltava, deltavb, dtsec = transfer.min_combined(
         rinit,
         rfinal,
         einit,
@@ -360,7 +360,7 @@ def test_combined(einit, nuinit, deltava_exp, gama_exp):
         ),
     ],
 )
-def test_rendezvous(
+def test_rendezvous_coplanar(
     rcstgt, einit, efinal, nufinal, kint, ktgt, phasef_exp, waittime_exp, deltav_exp
 ):
     # Input values
@@ -369,7 +369,7 @@ def test_rendezvous(
     nuinit = 0.0
 
     # Calculate rendezvous transfer
-    phasef, waittime, deltav = transfer.rendezvous(
+    phasef, waittime, deltav = transfer.rendezvous_coplanar(
         rcsint, rcstgt, phasei, einit, efinal, nuinit, nufinal, kint, ktgt
     )
 
@@ -379,7 +379,7 @@ def test_rendezvous(
     assert custom_isclose(deltav, deltav_exp)
 
 
-def test_rendezvous_intersects():
+def test_rendezvous_coplanar_intersects():
     # Input values
     rcsint = rcstgt = 12756.274
     phasei = np.radians(-20.0)
@@ -389,6 +389,6 @@ def test_rendezvous_intersects():
 
     # Calculate rendezvous transfer
     with pytest.raises(ValueError):
-        transfer.rendezvous(
+        transfer.rendezvous_coplanar(
             rcsint, rcstgt, phasei, einit, efinal, nuinit, nufinal, kint, ktgt
         )

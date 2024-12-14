@@ -155,7 +155,7 @@ def bielliptic(
     return deltava, deltavb, deltavc, dtsec
 
 
-def onetangent(
+def one_tangent(
     rinit: float,
     rfinal: float,
     efinal: float,
@@ -248,7 +248,7 @@ def onetangent(
 ########################################################################################
 
 
-def inclonly(deltai: float, vinit: float, fpa: float) -> float:
+def incl_only(deltai: float, vinit: float, fpa: float) -> float:
     """Calculates the delta-v for a change in inclination only.
 
     References:
@@ -268,7 +268,7 @@ def inclonly(deltai: float, vinit: float, fpa: float) -> float:
     return 2.0 * vinit * np.cos(fpa) * np.sin(0.5 * deltai)
 
 
-def nodeonly(
+def node_only(
     iinit: float,
     ecc: float,
     deltaraan: float,
@@ -329,7 +329,7 @@ def nodeonly(
     return ifinal, deltav, arglat_init, arglat_final
 
 
-def inclandnode(
+def incl_and_node(
     iinit: float, ifinal: float, deltaraan: float, vinit: float, fpa: float
 ) -> Tuple[float, float, float]:
     """Calculates the delta-v for a change in inclination and right ascension of the
@@ -365,7 +365,7 @@ def inclandnode(
     sint = np.sin(theta)
 
     # Calculate delta-v
-    deltav = inclonly(theta, vinit, fpa)
+    deltav = incl_only(theta, vinit, fpa)
 
     # Calculate argument of latitude changes
     arglat_init = np.arccos((sinif * cosdraan - cost * sinii) / (sint * cosii))
@@ -379,7 +379,7 @@ def inclandnode(
 ########################################################################################
 
 
-def mincombined(
+def min_combined(
     rinit: float,
     rfinal: float,
     einit: float,
@@ -534,7 +534,7 @@ def combined(
 ########################################################################################
 
 
-def rendezvous(
+def rendezvous_coplanar(
     rcsint: float,
     rcstgt: float,
     phasei: float,
@@ -625,3 +625,70 @@ def rendezvous(
         deltav = deltava + deltavb
 
     return phasef, waittime, deltav
+
+
+def rendezvous_noncoplanar(
+    phasei: float,
+    aint: float,
+    atgt: float,
+    ktgt: int,
+    kint: int,
+    nodeint: float,
+    truelon: float,
+    deltai: float
+) -> tuple[float, float, float, float, float, float]:
+    """Calculates parameters for a non-coplanar Hohmann transfer maneuver.
+
+    References:
+        Vallado 2007, pp. 370, Algorithm 46
+
+    Args:
+        phasei (float): Initial phase angle in radians.
+        aint (float): Semi-major axis of interceptor orbit in canonical units.
+        atgt (float): Semi-major axis of target orbit in canonical units.
+        ktgt (int): Number of target orbits.
+        kint (int): Number of interceptor orbits.
+        nodeint (float): Longitude of the ascending node of the interceptor in radians.
+        truelon (float): True longitude of the target in radians.
+        deltai (float): Change in inclination in radians.
+
+    Returns:
+        tuple: (ttrans, tphase, dvphase, dvtrans1, dvtrans2, aphase)
+            ttrans (float): Transfer time in canonical units.
+            tphase (float): Phase time in canonical units.
+            dvphase (float): Delta-v for phasing in canonical units.
+            dvtrans1 (float): Delta-v for first transfer in canonical units.
+            dvtrans2 (float): Delta-v for second transfer in canonical units.
+            aphase (float): Semi-major axis for phasing orbit in canonical units.
+    """
+    # Angular velocities
+    angvelint = np.sqrt(const.MU / aint**3)
+    angveltgt = np.sqrt(const.MU / atgt**3)
+
+    # Transfer orbit parameters
+    atrans = (aint + atgt) / 2
+    ttrans = np.pi * np.sqrt(atrans**3 / const.MU)
+
+    deltatnode = phasei / angvelint
+    lead = angveltgt * ttrans
+    omeganode = angveltgt * deltatnode
+    phasenew = nodeint + np.pi - (truelon + omeganode)
+    leadnew = np.pi + phasenew
+    tphase = (leadnew - lead + const.TWOPI * ktgt) / angveltgt
+
+    # Semi-major axis of phasing orbit
+    aphase = (const.MU * (tphase / (const.TWOPI * kint))**2)**(1 / 3)
+
+    # Delta-v calculations
+    vint = np.sqrt(const.MU / aint)
+    vphase = np.sqrt(2 * const.MU / aint - const.MU / aphase)
+    dvphase = vphase - vint
+
+    vtrans1 = np.sqrt(2 * const.MU / aint - const.MU / atrans)
+    dvtrans1 = vtrans1 - vphase
+
+    vtrans2 = np.sqrt(2 * const.MU / atgt - const.MU / atrans)
+    vtgt = np.sqrt(const.MU / atgt)
+    dvtrans2 = np.sqrt(vtgt**2 + vtrans2**2 - 2 * vtgt * vtrans2 * np.cos(deltai))
+
+    return ttrans, tphase, dvphase, dvtrans1, dvtrans2, aphase
