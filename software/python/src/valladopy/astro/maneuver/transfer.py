@@ -34,6 +34,21 @@ def _compute_vel(r, a):
     return np.sqrt(2.0 * ((const.MU / r) + _compute_sme(a)))
 
 
+def _compute_angular_vel(a):
+    """Computes the angular velocity at a given semi-major axis."""
+    return np.sqrt(const.MU / a**3)
+
+
+def _compute_deltav(v1, v2, theta):
+    """Computes the delta-v for a given initial and final velocity with an angle."""
+    return np.sqrt(v1 ** 2 + v2 ** 2 - 2.0 * v1 * v2 * np.cos(theta))
+
+
+def _compute_sma(r, e, nu):
+    """Computes the semi-major axis for an elliptical orbit."""
+    return (r * (1.0 + e * np.cos(nu))) / (1.0 - e**2)
+
+
 ########################################################################################
 # Coplanar Transfers
 ########################################################################################
@@ -68,9 +83,9 @@ def hohmann(
             dtsec (float): Time of flight for the transfer in seconds
     """
     # Semi-major axes of initial, transfer, and final orbits
-    ainit = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
+    ainit = _compute_sma(rinit, einit, nuinit)
     atran = (rinit + rfinal) / 2.0
-    afinal = (rfinal * (1.0 + efinal * np.cos(nufinal))) / (1.0 - efinal**2)
+    afinal = _compute_sma(rfinal, efinal, nufinal)
 
     # Initialize outputs
     deltava, deltavb, dtsec = 0.0, 0.0, 0.0
@@ -124,10 +139,10 @@ def bielliptic(
             dtsec (float): Time of flight for the transfer in seconds
     """
     # Semi-major axes of initial, transfer, and final orbits
-    ainit = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
+    ainit = _compute_sma(rinit, einit, nuinit)
     atran1 = (rinit + rb) * 0.5
     atran2 = (rb + rfinal) * 0.5
-    afinal = (rfinal * (1.0 + efinal * np.cos(nufinal))) / (1.0 - efinal**2)
+    afinal = _compute_sma(rfinal, efinal, nufinal)
 
     # Initialize outputs
     deltava, deltavb, deltavc, dtsec = 0.0, 0.0, 0.0, 0.0
@@ -206,25 +221,24 @@ def one_tangent(
     # Check if transfer orbit is valid
     if etran >= 0.0:
         # Semi-major axes of initial, final, and transfer orbits
-        afinal = (rfinal * (1.0 + efinal * np.cos(nutran))) / (1.0 - efinal**2)
+        afinal = _compute_sma(rfinal, efinal, nutran)
 
         if abs(etran - 1.0) > tol:
-            atran = (rinit * (1.0 + etran * np.cos(nuinit))) / (1.0 - etran**2)
+            atran = _compute_sma(rinit, etran, nuinit)
         else:
             atran = np.inf  # parabolic orbit (infinite semi-major axis)
 
-        # Calculate velocities
+        # Calculate delta-V at point A
         vinit = np.sqrt(const.MU / rinit)
         vtrana = _compute_vel(rinit, atran)
         deltava = np.abs(vtrana - vinit)
 
+        # Calculate delta-V at point B
         vfinal = _compute_vel(rfinal, afinal)
         vtranb = _compute_vel(rfinal, atran)
         fpatranb = np.arctan2(etran * np.sin(nutran), 1.0 + etran * np.cos(nutran))
         fpafinal = np.arctan2(efinal * np.sin(nutran), 1.0 + efinal * np.cos(nutran))
-        deltavb = np.sqrt(
-            vtranb**2 + vfinal**2 - 2.0 * vtranb * vfinal * np.cos(fpatranb - fpafinal)
-        )
+        deltavb = _compute_deltav(vfinal, vtranb, fpatranb - fpafinal)
 
         # Calculate time of flight
         if etran < 1.0:
@@ -436,10 +450,8 @@ def min_combined(
     temp = (1.0 / tdi) * np.arctan(
         np.sin(tdi) / ((rfinal / rinit) ** 1.5 + np.cos(tdi))
     )
-    deltava = np.sqrt(v1t**2 + vinit**2 - 2.0 * v1t * vinit * np.cos(temp * tdi))
-    deltavb = np.sqrt(
-        v3t**2 + vfinal**2 - 2.0 * v3t * vfinal * np.cos(tdi * (1.0 - temp))
-    )
+    deltava = _compute_deltav(v1t, vinit, temp * tdi)
+    deltavb = _compute_deltav(v3t, vfinal, tdi * (1.0 - temp))
 
     # Inclination change
     deltai_init = temp * tdi
@@ -455,12 +467,8 @@ def min_combined(
     deltai_final_iter, n_iter = 100.0, 0
     while abs(deltai_init - deltai_final_iter) > tol:
         deltai_final_iter = deltai_init
-        deltava = np.sqrt(
-            v1t**2 + vinit**2 - 2.0 * v1t * vinit * np.cos(deltai_final_iter)
-        )
-        deltavb = np.sqrt(
-            v3t**2 + vfinal**2 - 2.0 * v3t * vfinal * np.cos(tdi - deltai_final_iter)
-        )
+        deltava = _compute_deltav(v1t, vinit, deltai_final_iter)
+        deltavb = _compute_deltav(v3t, vfinal, tdi - deltai_final_iter)
         deltai_init = np.arcsin(
             (deltava * vfinal * v3t * np.sin(tdi - deltai_final_iter))
             / (vinit * v1t * deltavb)
@@ -500,7 +508,7 @@ def combined(
         - Support non-circular final orbits?
     """
     # Semi-major axes
-    ainit = (rinit * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
+    ainit = _compute_sma(rinit, einit, nuinit)
     atran = (rinit + rfinal) * 0.5
 
     # Velocities
@@ -516,8 +524,8 @@ def combined(
     deltai2 = (1.0 - s) * deltai
 
     # Delta-v calculations
-    deltava = np.sqrt(vinit**2 + vtransa**2 - 2.0 * vinit * vtransa * np.cos(deltai1))
-    deltavb = np.sqrt(vfinal**2 + vtransb**2 - 2.0 * vfinal * vtransb * np.cos(deltai2))
+    deltava = _compute_deltav(vinit, vtransa, deltai1)
+    deltavb = _compute_deltav(vfinal, vtransb, deltai2)
 
     # Time of flight for the transfer
     dtsec = _compute_tof(atran)
@@ -570,8 +578,8 @@ def rendezvous_coplanar(
             deltav (float): Total change in velocity in km/s
     """
     # Angular velocities
-    angvelint = np.sqrt(const.MU / rcsint**3)
-    angveltgt = np.sqrt(const.MU / rcstgt**3)
+    angvelint = _compute_angular_vel(rcsint)
+    angveltgt = _compute_angular_vel(rcstgt)
     vint = np.sqrt(const.MU / rcsint)
 
     # Same orbit case
@@ -607,9 +615,9 @@ def rendezvous_coplanar(
         waittime = (phasef - phasei + 2.0 * np.pi * ktgt) / (angvelint - angveltgt)
 
         # Semi-major axes
-        a1 = (rcsint * (1.0 + einit * np.cos(nuinit))) / (1.0 - einit**2)
+        a1 = _compute_sma(rcsint, einit, nuinit)
         a2 = (rcsint + rcstgt) / 2.0
-        a3 = (rcstgt * (1.0 + efinal * np.cos(nufinal))) / (1.0 - efinal**2)
+        a3 = _compute_sma(rcstgt, efinal, nufinal)
 
         # Delta-V at point A
         vinit = _compute_vel(rcsint, a1)
@@ -662,8 +670,8 @@ def rendezvous_noncoplanar(
             aphase (float): Semi-major axis for phasing orbit in km/s
     """
     # Angular velocities
-    angvelint = np.sqrt(const.MU / aint**3)
-    angveltgt = np.sqrt(const.MU / atgt**3)
+    angvelint = _compute_angular_vel(aint)
+    angveltgt = _compute_angular_vel(atgt)
 
     # Calculate transfer time
     atrans = (aint + atgt) / 2
@@ -691,6 +699,6 @@ def rendezvous_noncoplanar(
     # Calculate delta-V for second transfer
     vtrans2 = _compute_vel(atgt, atrans)
     vtgt = np.sqrt(const.MU / atgt)
-    dvtrans2 = np.sqrt(vtgt**2 + vtrans2**2 - 2 * vtgt * vtrans2 * np.cos(deltai))
+    dvtrans2 = _compute_deltav(vtgt, vtrans2, deltai)
 
     return ttrans, tphase, dvphase, dvtrans1, dvtrans2, aphase
