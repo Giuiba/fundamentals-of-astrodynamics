@@ -68,8 +68,8 @@ function [deltai,deltai1,deltava,deltavb,dttu ] = mincomb(rinit,rfinal,einit,efi
      % ----------- find the optimum change of inclination ----------- }
      tdi = ifinal-iinit;
 
-     temp= (1.0/tdi) * arctan( (power(rfinal/rinit,1.5)-cos(tdi)) / sin(tdi) );
-     temp= (1.0/tdi) * arctan( sin(tdi) / (power(rfinal/rinit,1.5)+cos(tdi)) );
+     temp= (1.0/tdi) * atan( (power(rfinal/rinit,1.5)-cos(tdi)) / sin(tdi) );
+     temp= (1.0/tdi) * atan( sin(tdi) / (power(rfinal/rinit,1.5)+cos(tdi)) );
 
      deltava= sqrt( v1t*v1t + vinit*vinit - 2.0*v1t*vinit*cos(temp*tdi) );
      deltavb= sqrt( v3t*v3t + vfinal*vfinal - 2.0*v3t*vfinal*cos(tdi*(1.0-temp)) );
@@ -80,36 +80,32 @@ function [deltai,deltai1,deltava,deltavb,dttu ] = mincomb(rinit,rfinal,einit,efi
      % ----------------  find transfer time of flight  -------------- }
      dttu= pi * sqrt( a2*a2*a2 );
 
-     if show = 'y' then
-         dvold= abs(v1t-vinit) + sqrt( v3t*v3t + vfinal*vfinal - 2.0*v3t*vfinal*cos(tdi) );
-         fprintf(1,'s = ',temp:11:7,' this uses di in rad ' );
-         fprintf(1,'rinit ',rinit:14:7,rinit*6378.137:14:7,' rfinal ',rfinal:14:7,rfinal*6378.137:14:7 );
-         fprintf(1,'deltai1 ',deltai*rad:13:7,deltai1*rad:13:7 );
-         fprintf(1,'deltava ',deltava:13:7,'deltavb ',deltavb:13:7,' er/tu ' );
-         fprintf(1,'deltava ',deltava*7.905365998:13:7,'deltavb ',
-                                     deltavb*7.905365998:13:7,' km/s ' );
-         fprintf(1,1000*(deltava+deltavb)*7.905365998:13:7,' m/s' );
-         fprintf(1,'dv old way ',1000*dvold*7.905365998:13:7,' m/s' );
-         fprintf(1,'dttu     ',dttu*13.446851158:13:7,' min' );
-       end;
+     show = 'n'; % Set 'y' to display debug output
+     if strcmp(show, 'y')
+        fprintf('Optimal temp: %11.7f radians\n', temp);
+        fprintf('Initial radius: %11.7f km, Final radius: %11.7f km\n', rinit*6378.137, rfinal*6378.137);
+        fprintf('Inclination changes: deltai: %11.7f deg, deltai1: %11.7f deg\n', deltai*rad, deltai1*rad);
+        fprintf('Delta-v: deltava: %11.7f er/tu, deltavb: %11.7f er/tu\n', deltava, deltavb);
+        fprintf('Delta-v: deltava: %11.7f km/s, deltavb: %11.7f km//s\n', deltava*7.905365998, deltavb*7.905365998);
+        dvold= abs(v1t-vinit) + sqrt( v3t*v3t + vfinal*vfinal - 2.0*v3t*vfinal*cos(tdi) );
+        fprintf('Delta-v old: %11.7f km/s\n', dvold*7.905365998);
+        fprintf('Transfer time: %11.7f tu, %11.7f min\n', dttu, dttu*13.446851158);
+    end
 
      % ----- iterate to find the optimum change of inclination ----- }
      deltainew  = deltai;         % 1st guess, 0.01 to 0.025 seems good }
      deltai1    = 100.0;              % if going to smaller orbit, should be}
      numiter    = 0;                  % 1.0 - 0.025! }
 
-     while abs(deltainew-deltai1) > 0.000001 do
+     while abs(deltainew-deltai1) > 0.000001
          deltai1= deltainew;
          deltava= sqrt( v1t*v1t + vinit*vinit - 2.0*v1t*vinit* cos(deltai1) );
 
          deltavb= sqrt( v3t*v3t + vfinal*vfinal - 2.0*v3t*vfinal* cos(tdi-deltai1) );
 
          deltainew= asin( (deltava*vfinal*v3t*sin(tdi-deltai1)) / (vinit*v1t*deltavb) );
-         inc(numiter);
-       end;  % while abs() }
-     fprintf(1,'iter di ',deltai1*rad:14:6,'ø',numiter:3,
-             (deltava+deltavb)*7905.365998:13:7 );
+         numiter = numiter + 1;
+       end
 
-
-   end;  % procedure mincomb }
+   end
 
