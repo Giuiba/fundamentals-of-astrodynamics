@@ -19,7 +19,7 @@ from ... import constants as const
 ########################################################################################
 
 
-def _calc_tof(a):
+def _compute_tof(a):
     """Calculate the time of flight for a given semi-major axis."""
     return np.pi * np.sqrt(a**3 / const.MU)
 
@@ -87,7 +87,7 @@ def hohmann(
         deltavb = np.abs(vfinal - vtranb)
 
         # Calculate transfer time of flight
-        dtsec = _calc_tof(atran)
+        dtsec = _compute_tof(atran)
 
     return deltava, deltavb, dtsec
 
@@ -150,7 +150,7 @@ def bielliptic(
         deltavc = np.abs(vfinal - vtran2c)
 
         # Calculate total time of flight
-        dtsec = _calc_tof(atran1) + _calc_tof(atran2)
+        dtsec = _compute_tof(atran1) + _compute_tof(atran2)
 
     return deltava, deltavb, deltavc, dtsec
 
@@ -446,7 +446,7 @@ def min_combined(
     deltai_final = tdi * (1.0 - temp)
 
     # Compute transfer time of flight
-    dtsec = _calc_tof(a2)
+    dtsec = _compute_tof(a2)
 
     if not use_optimal:
         return deltai_init, deltai_final, deltava, deltavb, dtsec
@@ -520,7 +520,7 @@ def combined(
     deltavb = np.sqrt(vfinal**2 + vtransb**2 - 2.0 * vfinal * vtransb * np.cos(deltai2))
 
     # Time of flight for the transfer
-    dtsec = _calc_tof(atran)
+    dtsec = _compute_tof(atran)
 
     # Firing angles
     gama = np.arccos(-(vinit**2 + deltava**2 - vtransa**2) / (2.0 * vinit * deltava))
@@ -665,10 +665,11 @@ def rendezvous_noncoplanar(
     angvelint = np.sqrt(const.MU / aint**3)
     angveltgt = np.sqrt(const.MU / atgt**3)
 
-    # Transfer orbit parameters
+    # Calculate transfer time
     atrans = (aint + atgt) / 2
-    ttrans = np.pi * np.sqrt(atrans**3 / const.MU)
+    ttrans = _compute_tof(atrans)
 
+    # Calculate phase time
     deltatnode = phasei / angvelint
     lead = angveltgt * ttrans
     omeganode = angveltgt * deltatnode
@@ -679,15 +680,16 @@ def rendezvous_noncoplanar(
     # Semi-major axis of phasing orbit
     aphase = (const.MU * (tphase / (const.TWOPI * kint)) ** 2) ** (1 / 3)
 
-    # Delta-v calculations
-    vint = np.sqrt(const.MU / aint)
-    vphase = np.sqrt(2 * const.MU / aint - const.MU / aphase)
-    dvphase = vphase - vint
+    # Calculate phasing delta-V
+    vphase = _compute_vel(aint, aphase)
+    dvphase = vphase - np.sqrt(const.MU / aint)
 
-    vtrans1 = np.sqrt(2 * const.MU / aint - const.MU / atrans)
+    # Calculate delta-V for first transfer
+    vtrans1 = _compute_vel(aint, atrans)
     dvtrans1 = vtrans1 - vphase
 
-    vtrans2 = np.sqrt(2 * const.MU / atgt - const.MU / atrans)
+    # Calculate delta-V for second transfer
+    vtrans2 = _compute_vel(atgt, atrans)
     vtgt = np.sqrt(const.MU / atgt)
     dvtrans2 = np.sqrt(vtgt**2 + vtrans2**2 - 2 * vtgt * vtrans2 * np.cos(deltai))
 
