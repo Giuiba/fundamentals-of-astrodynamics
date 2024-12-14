@@ -56,7 +56,7 @@ def angular_velocity(a: float) -> float:
 
 
 def deltav(v1: float, v2: float, theta: float) -> float:
-    """Computes the delta-v for a given two velocities and an angle.
+    """Computes the delta-v for a given two velocity magnitudes and an angle.
 
     Args:
         v1 (float): Initial velocity in km/s
