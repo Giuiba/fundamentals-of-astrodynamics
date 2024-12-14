@@ -1,3 +1,11 @@
+# -----------------------------------------------------------------------------
+# Author: David Vallado
+# Date: 21 June 2002
+#
+# Copyright (c) 2024
+# For license information, see LICENSE file
+# -----------------------------------------------------------------------------
+
 import numpy as np
 from numpy.typing import ArrayLike
 
