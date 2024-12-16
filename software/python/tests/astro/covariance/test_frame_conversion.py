@@ -533,6 +533,9 @@ class TestEquinoctial:
         # fmt: on
     )
     def test_coveq2ct(self, eq_cov, eq_state, fr, anom_type, tm_exp, cartcov_exp):
+        # Test covariance conversion
         cartcov, tm = fc.coveq2ct(eq_cov, eq_state, fr, anom_type)
+
+        # Compare results
         assert custom_allclose(cartcov, cartcov_exp)
         assert custom_allclose(tm, tm_exp)
