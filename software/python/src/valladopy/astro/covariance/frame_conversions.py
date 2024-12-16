@@ -10,11 +10,12 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 from ..twobody import frame_conversions as fc
-from ...constants import KM2M, MUM
+from ...constants import KM2M, MUM, TWOPI
 
 
 ########################################################################################
 # Classical <-> Cartesian Elements
+# TODO: This section could use some cleanup
 ########################################################################################
 
 
@@ -523,23 +524,15 @@ def covct2eq(
             tm (np.ndarray): 6x6 Transformation matrix
     """
     # Parse input vectors
-    rx, ry, rz, vx, vy, vz = cartstate * KM2M  # Convert km to m
-    reci_m = np.array([rx, ry, rz])
-    veci_m = np.array([vx, vy, vz])
-    # reci_m = np.array(cartstate[:3]) * KM2M
-    # veci_m = np.array(cartstate[3:]) * KM2M
+    reci_m = np.array(cartstate[:3]) * KM2M
+    veci_m = np.array(cartstate[3:]) * KM2M
     magr = np.linalg.norm(reci_m)
     magv = np.linalg.norm(veci_m)
 
     # Classical orbital elements
     a = 1.0 / (2.0 / magr - magv**2 / MUM)
     n = np.sqrt(MUM / a**3)
-
-    hx = ry * vz - rz * vy
-    hy = -rx * vz + rz * vx
-    hz = rx * vy - ry * vx
-    h_vec = np.array([hx, hy, hz])
-    # h_vec = np.cross(reci_m, veci_m)
+    h_vec = np.cross(reci_m, veci_m)
     w_vec = h_vec / np.linalg.norm(h_vec)
     chi = w_vec[0] / (1.0 + fr * w_vec[2])
     psi = -w_vec[1] / (1.0 + fr * w_vec[2])
@@ -551,19 +544,16 @@ def covct2eq(
         [2.0 * fr * chi * psi, fr * (1.0 + chi**2 - psi**2), 2.0 * psi]
     )
 
+    # Compute eccentricity vector
     r_dot_v = np.dot(reci_m, veci_m)
     p1 = magv**2 - MUM / magr
-    ecc_vec = np.array(
-        [
-            (p1 * rx - r_dot_v * vx) / MUM,
-            (p1 * ry - r_dot_v * vy) / MUM,
-            (p1 * rz - r_dot_v * vz) / MUM,
-        ]
-    )
+    ecc_vec = (p1 * reci_m - r_dot_v * veci_m) / MUM
 
+    # Get eccentricity components
     af = np.dot(ecc_vec, f_vec)
     ag = np.dot(ecc_vec, g_vec)
 
+    # Intermediate terms
     x = np.dot(reci_m, f_vec)
     y = np.dot(reci_m, g_vec)
 
@@ -571,34 +561,29 @@ def covct2eq(
     p0 = 1.0 / (a * np.sqrt(1.0 - af**2 - ag**2))
     sinf = ag + p0 * ((1.0 - ag**2 * b) * y - ag * af * b * x)
     cosf = af + p0 * ((1.0 - af**2 * b) * x - ag * af * b * y)
-    f = np.arctan2(sinf, cosf)
-    if f < 0.0:
-        f += 2.0 * np.pi
+    f = np.arctan2(sinf, cosf) % TWOPI
 
     xd = n * a**2 / magr * (af * ag * b * np.cos(f) - (1.0 - ag**2 * b) * np.sin(f))
     yd = n * a**2 / magr * ((1.0 - af**2 * b) * np.cos(f) - af * ag * b * np.sin(f))
 
+    # Compute partial derivatives
     a_ = np.sqrt(MUM * a)
     b_ = np.sqrt(1.0 - ag**2 - af**2)
     c_ = 1.0 + chi**2 + psi**2
 
-    partxdaf = a * xd * yd / (a_ * b_) - a_ / magr**3 * (
-        a * ag * x / (1 + b_) + x * y / b_
-    )
-    partydaf = -a * xd**2 / (a_ * b_) - a_ / magr**3 * (
-        a * ag * y / (1 + b_) - x**2 / b_
-    )
-    partxdag = a * yd**2 / (a_ * b_) + a_ / magr**3 * (
-        a * af * x / (1 + b_) - y**2 / b_
-    )
-    partydag = -a * xd * yd / (a_ * b_) + a_ / magr**3 * (
-        a * af * y / (1 + b_) + x * y / b_
-    )
+    a_term = a_ / magr**3
+    term1_b = a / (1 + b_)
+    term2_b = 1 / b_
+
+    partxdaf = a * xd * yd / (a_ * b_) - a_term * (term1_b * ag * x + term2_b * x * y)
+    partydaf = -a * xd**2 / (a_ * b_) - a_term * (term1_b * ag * y - term2_b * x**2)
+    partxdag = a * yd**2 / (a_ * b_) + a_term * (term1_b * af * x - term2_b * y**2)
+    partydag = -a * xd * yd / (a_ * b_) + a_term * (term1_b * af * y + term2_b * x * y)
 
     # Initialize transformation matrix
     tm = np.zeros((6, 6))
 
-    # Partial derivatives for semi-major axis
+    # Partials of sma w.r.t. (rx ry rz vx vy vz)
     if use_mean_anom:
         p0 = 2.0 * a**2 / magr**3
         p1 = 2.0 / (n**2 * a)
@@ -606,125 +591,55 @@ def covct2eq(
         p0 = -3.0 * n * a / magr**3
         p1 = -3.0 / (n * a**2)
 
-    tm[0, 0] = p0 * rx
-    tm[0, 1] = p0 * ry
-    tm[0, 2] = p0 * rz
-    tm[0, 3] = p1 * vx
-    tm[0, 4] = p1 * vy
-    tm[0, 5] = p1 * vz
+    tm[0, :3] = p0 * reci_m
+    tm[0, 3:] = p1 * veci_m
 
     # Partials of v w.r.t. ag
-    tm34 = partxdag * f_vec[0] + partydag * g_vec[0]
-    tm35 = partxdag * f_vec[1] + partydag * g_vec[1]
-    tm36 = partxdag * f_vec[2] + partydag * g_vec[2]
+    tm_v_ag_parts = partxdag * f_vec + partydag * g_vec
 
     # Partials of af w.r.t. (rx ry rz vx vy vz)
     p0 = 1.0 / MUM
-    tm[1, 0] = (
-        -a * b * af * b_ * rx / (magr**3)
-        - (ag * (chi * xd - psi * fr * yd) * w_vec[0]) / (a_ * b_)
-        + (b_ / a_) * tm34
-    )
-    tm[1, 1] = (
-        -a * b * af * b_ * ry / (magr**3)
-        - (ag * (chi * xd - psi * fr * yd) * w_vec[1]) / (a_ * b_)
-        + (b_ / a_) * tm35
-    )
-    tm[1, 2] = (
-        -a * b * af * b_ * rz / (magr**3)
-        - (ag * (chi * xd - psi * fr * yd) * w_vec[2]) / (a_ * b_)
-        + (b_ / a_) * tm36
-    )
-    tm[1, 3] = p0 * ((2.0 * x * yd - xd * y) * g_vec[0] - y * yd * f_vec[0]) - (
-        ag * (psi * fr * y - chi * x) * w_vec[0]
-    ) / (a_ * b_)
-    tm[1, 4] = p0 * ((2.0 * x * yd - xd * y) * g_vec[1] - y * yd * f_vec[1]) - (
-        ag * (psi * fr * y - chi * x) * w_vec[1]
-    ) / (a_ * b_)
-    tm[1, 5] = p0 * ((2.0 * x * yd - xd * y) * g_vec[2] - y * yd * f_vec[2]) - (
-        ag * (psi * fr * y - chi * x) * w_vec[2]
-    ) / (a_ * b_)
+    af_term = -a * b * af * b_ / (magr**3)
+    chi_psi_term = ag * (chi * xd - psi * fr * yd) / (a_ * b_)
+    tm[1, :3] = af_term * reci_m - chi_psi_term * w_vec + (b_ / a_) * tm_v_ag_parts
+
+    xy_term = p0 * ((2.0 * x * yd - xd * y) * g_vec - y * yd * f_vec)
+    psi_chi_term = ag * (psi * fr * y - chi * x) / (a_ * b_)
+    tm[1, 3:] = xy_term - psi_chi_term * w_vec
 
     # Partials of v w.r.t. af
-    tm24 = partxdaf * f_vec[0] + partydaf * g_vec[0]
-    tm25 = partxdaf * f_vec[1] + partydaf * g_vec[1]
-    tm26 = partxdaf * f_vec[2] + partydaf * g_vec[2]
+    tm_v_af_parts = partxdaf * f_vec + partydaf * g_vec
 
     # Partials of af w.r.t. (rx ry rz vx vy vz)
-    tm[2, 0] = (
-        -a * b * ag * b_ * rx / (magr**3)
-        + (af * (chi * xd - psi * fr * yd) * w_vec[0]) / (a_ * b_)
-        - (b_ / a_) * tm24
-    )
-    tm[2, 1] = (
-        -a * b * ag * b_ * ry / (magr**3)
-        + (af * (chi * xd - psi * fr * yd) * w_vec[1]) / (a_ * b_)
-        - (b_ / a_) * tm25
-    )
-    tm[2, 2] = (
-        -a * b * ag * b_ * rz / (magr**3)
-        + (af * (chi * xd - psi * fr * yd) * w_vec[2]) / (a_ * b_)
-        - (b_ / a_) * tm26
-    )
-    tm[2, 3] = p0 * ((2.0 * xd * y - x * yd) * f_vec[0] - x * xd * g_vec[0]) + (
-        af * (psi * fr * y - chi * x) * w_vec[0]
-    ) / (a_ * b_)
-    tm[2, 4] = p0 * ((2.0 * xd * y - x * yd) * f_vec[1] - x * xd * g_vec[1]) + (
-        af * (psi * fr * y - chi * x) * w_vec[1]
-    ) / (a_ * b_)
-    tm[2, 5] = p0 * ((2.0 * xd * y - x * yd) * f_vec[2] - x * xd * g_vec[2]) + (
-        af * (psi * fr * y - chi * x) * w_vec[2]
-    ) / (a_ * b_)
+    ag_term = -a * b * ag * b_ / (magr**3)
+    chi_psi_term_af = af * (chi * xd - psi * fr * yd) / (a_ * b_)
+    tm[2, :3] = ag_term * reci_m + chi_psi_term_af * w_vec - (b_ / a_) * tm_v_af_parts
+
+    xy_term = p0 * ((2.0 * xd * y - x * yd) * f_vec - x * xd * g_vec)
+    psi_chi_term_af = af * (psi * fr * y - chi * x) / (a_ * b_)
+    tm[2, 3:] = xy_term + psi_chi_term_af * w_vec
 
     # Partials of chi w.r.t. (rx ry rz vx vy vz)
     den = 2.0 * a_ * b_
-    tm[3, 0] = -c_ * yd * w_vec[0] / den
-    tm[3, 1] = -c_ * yd * w_vec[1] / den
-    tm[3, 2] = -c_ * yd * w_vec[2] / den
-    tm[3, 3] = c_ * y * w_vec[0] / den
-    tm[3, 4] = c_ * y * w_vec[1] / den
-    tm[3, 5] = c_ * y * w_vec[2] / den
+    tm[3, :3] = -c_ * yd * w_vec / den
+    tm[3, 3:] = c_ * y * w_vec / den
 
     # Partials of psi w.r.t. (rx ry rz vx vy vz)
-    tm[4, 0] = -fr * c_ * xd * w_vec[0] / den
-    tm[4, 1] = -fr * c_ * xd * w_vec[1] / den
-    tm[4, 2] = -fr * c_ * xd * w_vec[2] / den
-    tm[4, 3] = fr * c_ * x * w_vec[0] / den
-    tm[4, 4] = fr * c_ * x * w_vec[1] / den
-    tm[4, 5] = fr * c_ * x * w_vec[2] / den
+    tm[4, :3] = -fr * c_ * xd * w_vec / den
+    tm[4, 3:] = fr * c_ * x * w_vec / den
 
     # Partials of true/mean anomaly w.r.t. (rx ry rz vx vy vz)
     tm[5, :] = 0
     if use_mean_anom:
-        tm[5, 0] = (
-            -vx / a_
-            + (chi * xd - psi * fr * yd) * w_vec[0] / (a_ * b_)
-            - (b * b_ / a_) * (ag * tm34 + af * tm24)
+        tm[5, :3] = (
+            -veci_m / a_
+            + (chi * xd - psi * fr * yd) * w_vec / (a_ * b_)
+            - (b * b_ / a_) * (ag * tm_v_ag_parts + af * tm_v_af_parts)
         )
-        tm[5, 1] = (
-            -vy / a_
-            + (chi * xd - psi * fr * yd) * w_vec[1] / (a_ * b_)
-            - (b * b_ / a_) * (ag * tm35 + af * tm25)
-        )
-        tm[5, 2] = (
-            -vz / a_
-            + (chi * xd - psi * fr * yd) * w_vec[2] / (a_ * b_)
-            - (b * b_ / a_) * (ag * tm36 + af * tm26)
-        )
-        tm[5, 3] = (
-            -2.0 * rx / a_
-            + (af * tm[2, 3] - ag * tm[1, 3]) / (1.0 + b_)
-            + (fr * psi * y - chi * x) * w_vec[0] / a_
-        )
-        tm[5, 4] = (
-            -2.0 * ry / a_
-            + (af * tm[2, 4] - ag * tm[1, 4]) / (1.0 + b_)
-            + (fr * psi * y - chi * x) * w_vec[1] / a_
-        )
-        tm[5, 5] = (
-            -2.0 * rz / a_
-            + (af * tm[2, 5] - ag * tm[1, 5]) / (1.0 + b_)
-            + (fr * psi * y - chi * x) * w_vec[2] / a_
+        tm[5, 3:] = (
+            -2.0 * reci_m / a_
+            + (af * tm[2, 3:6] - ag * tm[1, 3:6]) / (1.0 + b_)
+            + (fr * psi * y - chi * x) * w_vec / a_
         )
 
     # Compute the equinoctial covariance matrix
