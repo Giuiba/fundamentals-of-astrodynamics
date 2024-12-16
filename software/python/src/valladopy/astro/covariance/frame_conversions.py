@@ -724,11 +724,11 @@ def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyTy
         n = eqstate[0]  # rad/s
         a = (MUM / n**2) ** (1 / 3)  # in meters
 
+    # Get orbital elements
     af, ag, chi, psi = eqstate[1:5]
     use_mean_anom = anom_type in {AnomalyType.MEAN_A, AnomalyType.MEAN_N}
     meanlon_m = eqstate[5] if use_mean_anom else None
     meanlon_nu = eqstate[5] if not use_mean_anom else None
-
     omega = np.arctan2(chi, psi)
     argp = np.arctan2(ag, af) - fr * omega
     ecc = np.sqrt(af**2 + ag**2)
@@ -739,13 +739,10 @@ def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyTy
         _, m = newtonnu(ecc, nu)
         meanlon_m = np.mod(fr * omega + argp + m, TWOPI)
 
-    # Convert equinoctial to Cartesian state
+    # Convert equinoctial to cartesian state
     reci, veci = fc.eq2rv(a / KM2M, af, ag, chi, psi, meanlon_m, fr)
     reci_m = reci * KM2M
     veci_m = veci * KM2M
-
-    rx, ry, rz = reci_m
-    vx, vy, vz = veci_m
     magr = np.linalg.norm(reci_m)
 
     # Constants for transformation
@@ -759,7 +756,6 @@ def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyTy
     f_ = newton_mean_anomaly(meanlon_m, af, ag)
     x = a * ((1.0 - ag**2 * b) * np.cos(f_) + af * ag * b * np.sin(f_) - af)
     y = a * ((1.0 - af**2 * b) * np.sin(f_) + af * ag * b * np.cos(f_) - ag)
-
     xd = n * a**2 / magr * (af * ag * b * np.cos(f_) - (1.0 - ag**2 * b) * np.sin(f_))
     yd = n * a**2 / magr * ((1.0 - af**2 * b) * np.cos(f_) - af * ag * b * np.sin(f_))
 
@@ -793,12 +789,8 @@ def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyTy
         p0 = -2.0 / (3 * n)
         p1 = 1.0 / (3 * n)
 
-    tm[0, 0] = p0 * rx
-    tm[1, 0] = p0 * ry
-    tm[2, 0] = p0 * rz
-    tm[3, 0] = p1 * vx
-    tm[4, 0] = p1 * vy
-    tm[5, 0] = p1 * vz
+    tm[:3, 0] = p0 * reci_m
+    tm[3:, 0] = p1 * veci_m
 
     # Partials of (rx ry rz vx vy vz) w.r.t. af and ag
     tm[:3, 1] = partxaf * f_vec + partyaf * g_vec
@@ -808,29 +800,16 @@ def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyTy
 
     # Partials of (rx ry rz vx vy vz) w.r.t. chi and psi
     p0 = 2.0 * fr / c_
-    tm[0, 3] = p0 * (psi * (y * f_vec[0] - x * g_vec[0]) - x * w_vec[0])
-    tm[1, 3] = p0 * (psi * (y * f_vec[1] - x * g_vec[1]) - x * w_vec[1])
-    tm[2, 3] = p0 * (psi * (y * f_vec[2] - x * g_vec[2]) - x * w_vec[2])
-    tm[3, 3] = p0 * (psi * (yd * f_vec[0] - xd * g_vec[0]) - xd * w_vec[0])
-    tm[4, 3] = p0 * (psi * (yd * f_vec[1] - xd * g_vec[1]) - xd * w_vec[1])
-    tm[5, 3] = p0 * (psi * (yd * f_vec[2] - xd * g_vec[2]) - xd * w_vec[2])
-
-    tm[0, 4] = p0 * (chi * (x * g_vec[0] - y * f_vec[0]) + y * w_vec[0])
-    tm[1, 4] = p0 * (chi * (x * g_vec[1] - y * f_vec[1]) + y * w_vec[1])
-    tm[2, 4] = p0 * (chi * (x * g_vec[2] - y * f_vec[2]) + y * w_vec[2])
-    tm[3, 4] = p0 * (chi * (xd * g_vec[0] - yd * f_vec[0]) + yd * w_vec[0])
-    tm[4, 4] = p0 * (chi * (xd * g_vec[1] - yd * f_vec[1]) + yd * w_vec[1])
-    tm[5, 4] = p0 * (chi * (xd * g_vec[2] - yd * f_vec[2]) + yd * w_vec[2])
+    tm[:3, 3] = p0 * (psi * (y * f_vec - x * g_vec) - x * w_vec)
+    tm[3:, 3] = p0 * (psi * (yd * f_vec - xd * g_vec) - xd * w_vec)
+    tm[:3, 4] = p0 * (chi * (x * g_vec - y * f_vec) + y * w_vec)
+    tm[3:, 4] = p0 * (chi * (xd * g_vec - yd * f_vec) + yd * w_vec)
 
     # Partials of (rx ry rz vx vy vz) w.r.t. mean longitude
     p0 = 1.0 / n
     p1 = -n * a**3 / magr**3
-    tm[0, 5] = p0 * vx
-    tm[1, 5] = p0 * vy
-    tm[2, 5] = p0 * vz
-    tm[3, 5] = p1 * rx
-    tm[4, 5] = p1 * ry
-    tm[5, 5] = p1 * rz
+    tm[:3, 5] = p0 * veci_m
+    tm[3:, 5] = p1 * reci_m
 
     # Final Cartesian covariance
     cartcov = tm @ eqcov @ tm.T
