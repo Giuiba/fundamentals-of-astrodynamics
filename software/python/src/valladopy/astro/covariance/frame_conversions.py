@@ -6,15 +6,37 @@
 # For license information, see LICENSE file
 # -----------------------------------------------------------------------------
 
+from enum import Enum
 import numpy as np
 from numpy.typing import ArrayLike
 
 from ..twobody import frame_conversions as fc
-from ...constants import KM2M, MUM
+from ..twobody.newton import newtonnu
+from ...constants import KM2M, MUM, TWOPI
+
+
+class AnomalyType(Enum):
+    MEAN_A = "meana"
+    TRUE_A = "truea"
+    MEAN_N = "meann"
+    TRUE_N = "truen"
+
+
+def is_mean_anomaly(anom_type: AnomalyType) -> bool:
+    """Checks if the anomaly type is a mean anomaly.
+
+    Args:
+        anom_type (AnomalyType): Anomaly type
+
+    Returns:
+        bool: True if the anomaly type is a mean anomaly
+    """
+    return anom_type in [AnomalyType.MEAN_A, AnomalyType.MEAN_N]
 
 
 ########################################################################################
 # Classical <-> Cartesian Elements
+# TODO: This section could use some cleanup
 ########################################################################################
 
 
@@ -360,8 +382,10 @@ def covct2cl(
 def covcl2ct(
     classcov: ArrayLike, classstate: ArrayLike, use_mean_anom: bool = False
 ) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Transforms a 6x6 covariance matrix from classical elements to Cartesian elements.
+    """Transforms a 6x6 covariance matrix from classical elements to Cartesian elements.
+
+    References:
+        Vallado and Alfano 2015
 
     Args:
         classcov (array_like): 6x6 Classical orbital elements covariance matrix
@@ -490,5 +514,312 @@ def covcl2ct(
 
     # Calculate the Cartesian covariance matrix
     cartcov = tm @ classcov @ tm.T
+
+    return cartcov, tm
+
+
+########################################################################################
+# Equinoctial <-> Cartesian Elements
+########################################################################################
+
+
+def newton_mean_anomaly(meanlon_m, af, ag, tol=1e-8, max_iter=25):
+    """
+    Solves for the equinoctial anomaly (F) using Newton's method.
+
+    Args:
+        meanlon_m (float): Mean longitude (mean anomaly + mean argument of latitude).
+        af (float): Component of the eccentricity vector in equinoctial elements.
+        ag (float): Component of the eccentricity vector in equinoctial elements.
+        tol (float, optional): Convergence tolerance. Defaults to 1e-8.
+        max_iter (int, optional): Maximum number of iterations. Defaults to 25.
+
+    Returns:
+        float: The solved equinoctial anomaly (F).
+    """
+    # Initial guess
+    f0 = meanlon_m
+    for ktr in range(max_iter):
+        # Compute the function value and its derivative
+        f1 = f0 - (f0 + ag * np.cos(f0) - af * np.sin(f0) - meanlon_m) / (
+            1.0 - ag * np.sin(f0) - af * np.cos(f0)
+        )
+
+        # Check for convergence
+        if abs(f1 - f0) < tol:
+            return f1
+
+        # Update the guess
+        f0 = f1
+
+    # If the loop completes without convergence, raise an error
+    raise RuntimeError(f"Newton method failed to converge after {max_iter} iterations.")
+
+
+def covct2eq(
+    cartcov: ArrayLike, cartstate: ArrayLike, fr: int, use_mean_anom: bool = False
+):
+    """Transforms a 6x6 covariance matrix from Cartesian to equinoctial elements.
+
+    References:
+        Vallado and Alfano 2015
+
+    Args:
+        cartcov (array_like): 6x6 Cartesian covariance matrix in m and m/s
+        cartstate (array_like): 6x1 Cartesian state vector in km and km/s
+                                (rx, ry, rz, vx, vy, vz)
+        fr (int): Retrograde factor (+1 or -1)
+        use_mean_anom (bool): Flag to use mean anomaly instead of true anomaly
+                              (defaults to False)
+
+    Returns:
+        tuple: (eqcov, tm)
+            eqcov (np.ndarray): 6x6 Equinoctial covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+    """
+    # Parse input vectors
+    reci_m = np.array(cartstate[:3]) * KM2M
+    veci_m = np.array(cartstate[3:]) * KM2M
+    magr = np.linalg.norm(reci_m)
+    magv = np.linalg.norm(veci_m)
+
+    # Classical orbital elements
+    a = 1.0 / (2.0 / magr - magv**2 / MUM)
+    n = np.sqrt(MUM / a**3)
+    h_vec = np.cross(reci_m, veci_m)
+    w_vec = h_vec / np.linalg.norm(h_vec)
+    chi = w_vec[0] / (1.0 + fr * w_vec[2])
+    psi = -w_vec[1] / (1.0 + fr * w_vec[2])
+
+    # Equinoctial components
+    p0 = 1.0 / (1.0 + chi**2 + psi**2)
+    f_vec = p0 * np.array([1.0 - chi**2 + psi**2, 2.0 * chi * psi, -2.0 * fr * chi])
+    g_vec = p0 * np.array(
+        [2.0 * fr * chi * psi, fr * (1.0 + chi**2 - psi**2), 2.0 * psi]
+    )
+
+    # Compute eccentricity vector
+    r_dot_v = np.dot(reci_m, veci_m)
+    p1 = magv**2 - MUM / magr
+    ecc_vec = (p1 * reci_m - r_dot_v * veci_m) / MUM
+
+    # Get eccentricity components
+    af = np.dot(ecc_vec, f_vec)
+    ag = np.dot(ecc_vec, g_vec)
+
+    # Intermediate terms
+    x = np.dot(reci_m, f_vec)
+    y = np.dot(reci_m, g_vec)
+
+    b = 1.0 / (1.0 + np.sqrt(1.0 - af**2 - ag**2))
+    p0 = 1.0 / (a * np.sqrt(1.0 - af**2 - ag**2))
+    sinf = ag + p0 * ((1.0 - ag**2 * b) * y - ag * af * b * x)
+    cosf = af + p0 * ((1.0 - af**2 * b) * x - ag * af * b * y)
+    f = np.arctan2(sinf, cosf) % TWOPI
+
+    xd = n * a**2 / magr * (af * ag * b * np.cos(f) - (1.0 - ag**2 * b) * np.sin(f))
+    yd = n * a**2 / magr * ((1.0 - af**2 * b) * np.cos(f) - af * ag * b * np.sin(f))
+
+    # Compute partial derivatives
+    a_ = np.sqrt(MUM * a)
+    b_ = np.sqrt(1.0 - ag**2 - af**2)
+    c_ = 1.0 + chi**2 + psi**2
+
+    a_term = a_ / magr**3
+    term1_b = a / (1 + b_)
+    term2_b = 1 / b_
+
+    partxdaf = a * xd * yd / (a_ * b_) - a_term * (term1_b * ag * x + term2_b * x * y)
+    partydaf = -a * xd**2 / (a_ * b_) - a_term * (term1_b * ag * y - term2_b * x**2)
+    partxdag = a * yd**2 / (a_ * b_) + a_term * (term1_b * af * x - term2_b * y**2)
+    partydag = -a * xd * yd / (a_ * b_) + a_term * (term1_b * af * y + term2_b * x * y)
+
+    # Initialize transformation matrix
+    tm = np.zeros((6, 6))
+
+    # Partials of sma w.r.t. (rx ry rz vx vy vz)
+    if use_mean_anom:
+        p0 = 2.0 * a**2 / magr**3
+        p1 = 2.0 / (n**2 * a)
+    else:
+        p0 = -3.0 * n * a / magr**3
+        p1 = -3.0 / (n * a**2)
+
+    tm[0, :3] = p0 * reci_m
+    tm[0, 3:] = p1 * veci_m
+
+    # Partials of v w.r.t. ag
+    tm_v_ag_parts = partxdag * f_vec + partydag * g_vec
+
+    # Partials of af w.r.t. (rx ry rz vx vy vz)
+    p0 = 1.0 / MUM
+    af_term = -a * b * af * b_ / (magr**3)
+    chi_psi_term = ag * (chi * xd - psi * fr * yd) / (a_ * b_)
+    tm[1, :3] = af_term * reci_m - chi_psi_term * w_vec + (b_ / a_) * tm_v_ag_parts
+
+    xy_term = p0 * ((2.0 * x * yd - xd * y) * g_vec - y * yd * f_vec)
+    psi_chi_term = ag * (psi * fr * y - chi * x) / (a_ * b_)
+    tm[1, 3:] = xy_term - psi_chi_term * w_vec
+
+    # Partials of v w.r.t. af
+    tm_v_af_parts = partxdaf * f_vec + partydaf * g_vec
+
+    # Partials of af w.r.t. (rx ry rz vx vy vz)
+    ag_term = -a * b * ag * b_ / (magr**3)
+    chi_psi_term_af = af * (chi * xd - psi * fr * yd) / (a_ * b_)
+    tm[2, :3] = ag_term * reci_m + chi_psi_term_af * w_vec - (b_ / a_) * tm_v_af_parts
+
+    xy_term = p0 * ((2.0 * xd * y - x * yd) * f_vec - x * xd * g_vec)
+    psi_chi_term_af = af * (psi * fr * y - chi * x) / (a_ * b_)
+    tm[2, 3:] = xy_term + psi_chi_term_af * w_vec
+
+    # Partials of chi w.r.t. (rx ry rz vx vy vz)
+    den = 2.0 * a_ * b_
+    tm[3, :3] = -c_ * yd * w_vec / den
+    tm[3, 3:] = c_ * y * w_vec / den
+
+    # Partials of psi w.r.t. (rx ry rz vx vy vz)
+    tm[4, :3] = -fr * c_ * xd * w_vec / den
+    tm[4, 3:] = fr * c_ * x * w_vec / den
+
+    # Partials of true/mean anomaly w.r.t. (rx ry rz vx vy vz)
+    tm[5, :] = 0
+    if use_mean_anom:
+        tm[5, :3] = (
+            -veci_m / a_
+            + (chi * xd - psi * fr * yd) * w_vec / (a_ * b_)
+            - (b * b_ / a_) * (ag * tm_v_ag_parts + af * tm_v_af_parts)
+        )
+        tm[5, 3:] = (
+            -2.0 * reci_m / a_
+            + (af * tm[2, 3:6] - ag * tm[1, 3:6]) / (1.0 + b_)
+            + (fr * psi * y - chi * x) * w_vec / a_
+        )
+
+    # Compute the equinoctial covariance matrix
+    eqcov = tm @ cartcov @ tm.T
+
+    return eqcov, tm
+
+
+def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyType):
+    """Transforms a 6x6 covariance matrix from equinoctial to cartesian elements.
+
+    References:
+        Vallado and Alfano 2015
+
+    Args:
+        eqcov (array_like): 6x6 equinoctial covariance matrix in m and m/s
+        eqstate (array_like): 6x1 equinoctial orbit state in km and km/s
+                              (a/n, af, ag, chi, psi, lm/ln)
+        fr (int): Retrograde factor (+1 or -1)
+        anom_type (AnomalyType): Anomaly type (MEAN_A, TRUE_A, MEAN_N, TRUE_N)
+
+    Returns:
+        tuple: (cartcov, tm)
+            cartcov (np.ndarray): 6x6 Cartesian covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+
+    TODO:
+        - Return cartesian covariance matrix not as expected?
+    """
+    # Parse eqstate and anomaly-dependent calculations
+    use_anom_a = anom_type in {AnomalyType.TRUE_A, AnomalyType.MEAN_A}
+    if use_anom_a:
+        a = eqstate[0] * KM2M  # in meters
+        n = np.sqrt(MUM / a**3)
+    else:
+        n = eqstate[0]  # rad/s
+        a = (MUM / n**2) ** (1.0 / 3.0)  # in meters
+
+    # Get orbital elements
+    af, ag, chi, psi = eqstate[1:5]
+    use_mean_anom = anom_type in {AnomalyType.MEAN_A, AnomalyType.MEAN_N}
+    meanlon_m = eqstate[5] if use_mean_anom else None
+    meanlon_nu = eqstate[5] if not use_mean_anom else None
+    omega = np.arctan2(chi, psi)
+    argp = np.arctan2(ag, af) - fr * omega
+    ecc = np.sqrt(af**2 + ag**2)
+
+    # Update for true anomaly
+    if not use_mean_anom:
+        nu = np.mod(meanlon_nu - fr * omega - argp, TWOPI)
+        _, m = newtonnu(ecc, nu)
+        meanlon_m = np.mod(fr * omega + argp + m, TWOPI)
+
+    # Convert equinoctial to cartesian state
+    reci, veci = fc.eq2rv(a / KM2M, af, ag, chi, psi, meanlon_m, fr)
+    reci_m = reci * KM2M
+    veci_m = veci * KM2M
+    magr = np.linalg.norm(reci_m)
+
+    # Constants for transformation
+    a_ = n * a**2
+    b_ = np.sqrt(1.0 - ag**2 - af**2)
+    c_ = 1.0 + chi**2 + psi**2
+    b = 1.0 / (1.0 + b_)
+    g_ = a_ * b_
+
+    # Compute partial derivatives
+    f_ = newton_mean_anomaly(meanlon_m, af, ag)
+    x = a * ((1.0 - ag**2 * b) * np.cos(f_) + af * ag * b * np.sin(f_) - af)
+    y = a * ((1.0 - af**2 * b) * np.sin(f_) + af * ag * b * np.cos(f_) - ag)
+    xd = n * a**2 / magr * (af * ag * b * np.cos(f_) - (1.0 - ag**2 * b) * np.sin(f_))
+    yd = n * a**2 / magr * ((1.0 - af**2 * b) * np.cos(f_) - af * ag * b * np.sin(f_))
+
+    # Equinoctial system components
+    p0 = 1.0 / (1.0 + chi**2 + psi**2)
+    f_vec = p0 * np.array([1.0 - chi**2 + psi**2, 2.0 * chi * psi, -2.0 * fr * chi])
+    g_vec = p0 * np.array(
+        [2.0 * fr * chi * psi, fr * (1.0 + chi**2 - psi**2), 2.0 * psi]
+    )
+    w_vec = p0 * np.array([2.0 * chi, -2.0 * psi, fr * (1.0 - chi**2 - psi**2)])
+
+    # Partial derivatives wrt af and ag
+    partxaf = ag * b * xd / n + a * y * xd / g_ - a
+    partyaf = ag * b * yd / n - a * x * xd / g_
+    partxag = -af * b * xd / n + a * y * yd / g_
+    partyag = -af * b * yd / n - a * x * yd / g_ - a
+
+    partxdaf = a * xd * yd / g_ - a_ / magr**3 * (a * ag * x / (1 + b_) + x * y / b_)
+    partydaf = -a * xd**2 / g_ - a_ / magr**3 * (a * ag * y / (1 + b_) - x**2 / b_)
+    partxdag = a * yd**2 / g_ + a_ / magr**3 * (a * af * x / (1 + b_) - y**2 / b_)
+    partydag = -a * xd * yd / g_ + a_ / magr**3 * (a * af * y / (1 + b_) + x * y / b_)
+
+    # Initialize transformation matrix
+    tm = np.zeros((6, 6))
+
+    # Partials of (rx ry rz vx vy vz) w.r.t. sma
+    if use_anom_a:
+        p0 = 1.0 / a
+        p1 = -1.0 / (2 * a)
+    else:
+        p0 = -2.0 / (3 * n)
+        p1 = 1.0 / (3 * n)
+
+    tm[:3, 0] = p0 * reci_m
+    tm[3:, 0] = p1 * veci_m
+
+    # Partials of (rx ry rz vx vy vz) w.r.t. af and ag
+    tm[:3, 1] = partxaf * f_vec + partyaf * g_vec
+    tm[3:, 1] = partxdaf * f_vec + partydaf * g_vec
+    tm[:3, 2] = partxag * f_vec + partyag * g_vec
+    tm[3:, 2] = partxdag * f_vec + partydag * g_vec
+
+    # Partials of (rx ry rz vx vy vz) w.r.t. chi and psi
+    p0 = 2.0 * fr / c_
+    tm[:3, 3] = p0 * (psi * (y * f_vec - x * g_vec) - x * w_vec)
+    tm[3:, 3] = p0 * (psi * (yd * f_vec - xd * g_vec) - xd * w_vec)
+    tm[:3, 4] = p0 * (chi * (x * g_vec - y * f_vec) + y * w_vec)
+    tm[3:, 4] = p0 * (chi * (xd * g_vec - yd * f_vec) + yd * w_vec)
+
+    # Partials of (rx ry rz vx vy vz) w.r.t. mean longitude
+    p0 = 1.0 / n
+    p1 = -n * a**3 / magr**3
+    tm[:3, 5] = p0 * veci_m
+    tm[3:, 5] = p1 * reci_m
+
+    # Final Cartesian covariance
+    cartcov = tm @ eqcov @ tm.T
 
     return cartcov, tm
