@@ -34,41 +34,63 @@ def cartstate():
     )
 
 
-class TestClassical:
-    classcov_lastrow_mean = [
-        -4083183084.476787,
-        6.924385395457872,
-        0.024197798266311993,
-        -26.219712037129213,
-        -3096.0677824371114,
-        3127.4269467985023,
+# fmt: off
+def class_cov_base():
+    return [
+        [5331023186024109.0, -9040508.167764489, -31592.14808101208,
+         34232891.77449311, 4042240100.791793],
+        [-9040508.167764485, 0.015331208062918465, 5.372146060128627e-05,
+         -0.058207412772983746, -6.854798802080871],
+        [-31592.148081012085, 5.3721460601286275e-05, 1.7678810701926767e-06,
+         -0.0019143196050926616, -0.02224371317903348],
+        [34232891.77449311, -0.05820741277298375, -0.0019143196050926614,
+         2.0749611965515924, 24.101664311430255],
+        [4042240100.791794, -6.854798802080872, -0.02224371317903348,
+         24.101664311430255, 3066.878198247249],
     ]
 
-    classcov_lastrow_true = [
-        -4076472971.3328567,
-        6.913006182584299,
-        0.024158032674088642,
-        -26.176623722291907,
-        -3090.979848722306,
-        3117.1564568280405,
+
+def make_cov(cov_base, last_row):
+    return np.column_stack([np.vstack([cov_base, last_row[:-1]]), last_row])
+
+
+def class_cov_true():
+    last_row = [
+        -4076472971.3328567, 6.913006182584299, 0.024158032674088642,
+        -26.176623722291907, -3090.979848722306, 3117.1564568280405,
+    ]
+    return make_cov(class_cov_base(), last_row)
+
+
+def class_cov_mean():
+    last_row = [
+        -4083183084.476787, 6.924385395457872, 0.024197798266311993,
+        -26.219712037129213, -3096.0677824371114, 3127.4269467985023,
+    ]
+    return make_cov(class_cov_base(), last_row)
+# fmt: on
+
+
+def class_state_base():
+    return [
+        42087.7080574158,
+        0.0310900603602949,
+        0.00102577939911935,
+        2.14278761707691,
+        3.82453248238077,
     ]
 
+
+def class_state_true():
+    return [*class_state_base(), 1.62054408207275]
+
+
+def class_state_mean():
+    return [*class_state_base(), 1.55837880318832]
+
+
+class TestClassicalCartesian:
     # fmt: off
-    @pytest.fixture
-    def class_cov_base(self):
-        return [
-            [5331023186024109.0, -9040508.167764489, -31592.14808101208,
-             34232891.77449311, 4042240100.791793],
-            [-9040508.167764485, 0.015331208062918465, 5.372146060128627e-05,
-             -0.058207412772983746, -6.854798802080871],
-            [-31592.148081012085, 5.3721460601286275e-05, 1.7678810701926767e-06,
-             -0.0019143196050926616, -0.02224371317903348],
-            [34232891.77449311, -0.05820741277298375, -0.0019143196050926614,
-             2.0749611965515924, 24.101664311430255],
-            [4042240100.791794, -6.854798802080872, -0.02224371317903348,
-             24.101664311430255, 3066.878198247249],
-        ]
-
     @pytest.fixture
     def class_tm_base(self):
         return [
@@ -85,32 +107,22 @@ class TestClassical:
         ]
     # fmt: on
 
-    @pytest.fixture
-    def class_state_base(self):
-        return [
-            42087.7080574158,
-            0.0310900603602949,
-            0.00102577939911935,
-            2.14278761707691,
-            3.82453248238077,
-        ]
-
     @pytest.mark.parametrize(
-        "use_mean_anom, tm_lastrow, cov_lastrow",
+        "use_mean_anom, tm_lastrow, cov_expected",
         [
             (
                 # fmt: off
                 True,
                 [-2.1012648980705486e-07, -7.34696403701101e-07, 5.891834658944977e-10,
                  0.020044836175870634, -0.006003072956312084, -1.3955411651010935e-05],
-                classcov_lastrow_mean,
+                class_cov_mean(),
             ),
             (
                 # fmt: off
                 False,
                 [-2.0977247629131585e-07, -7.334919093688606e-07, 5.882093186826968e-10,
                  0.02001187135777983, -0.005993331445269153, -1.3932388555455746e-05],
-                classcov_lastrow_true,
+                class_cov_true(),
             ),
         ],
     )
@@ -118,18 +130,14 @@ class TestClassical:
         self,
         cartcov,
         cartstate,
-        class_cov_base,
         class_tm_base,
         use_mean_anom,
         tm_lastrow,
-        cov_lastrow,
+        cov_expected,
     ):
         # Update matrices
         # For covariance, last row == last column
         tm_expected = np.vstack([class_tm_base, tm_lastrow])
-        cov_expected = np.column_stack(
-            [np.vstack([class_cov_base, cov_lastrow[:-1]]), cov_lastrow]
-        )
 
         # Test covariance conversion
         classcov, tm = fc.covct2cl(cartcov, cartstate, use_mean_anom=use_mean_anom)
@@ -139,13 +147,13 @@ class TestClassical:
         assert custom_allclose(tm, tm_expected)
 
     @pytest.mark.parametrize(
-        "use_mean_anom, anom_rad, cov_lastrow, tm_exp, cartcov_exp",
+        "use_mean_anom, class_state, class_cov, tm_exp, cartcov_exp",
         # fmt: off
         [
             (
                 True,
-                1.55837880318832,
-                classcov_lastrow_mean,
+                class_state_mean(),
+                class_cov_mean(),
                 np.array(
                     [
                         [0.26313983942512426, -122181.09461831323, -27000.833116307094,
@@ -181,8 +189,8 @@ class TestClassical:
             ),
             (
                 False,
-                1.62054408207275,
-                classcov_lastrow_true,
+                class_state_true(),
+                class_cov_true(),
                 np.array(
                     [
                         [0.26313983942513086, -137728.61043798938, -27000.833116307254,
@@ -221,23 +229,12 @@ class TestClassical:
     )
     def test_covcl2ct(
         self,
-        class_state_base,
-        class_cov_base,
-        class_tm_base,
         use_mean_anom,
-        anom_rad,
-        cov_lastrow,
+        class_state,
+        class_cov,
         tm_exp,
         cartcov_exp,
     ):
-        # Define classical inputs
-        class_state = np.array([*class_state_base, anom_rad])
-
-        # Update covariance (last row == last column)
-        class_cov = np.column_stack(
-            [np.vstack([class_cov_base, cov_lastrow[:-1]]), cov_lastrow]
-        )
-
         # Test covariance conversion
         cartcov, tm = fc.covcl2ct(class_cov, class_state, use_mean_anom=use_mean_anom)
 
@@ -248,7 +245,7 @@ class TestClassical:
         assert custom_allclose(tm, tm_exp)
 
 
-class TestEquinoctial:
+class TestEquinoctialCartesian:
     # fmt: off
     eq_cov_true_n = [
         [3.620382720282475e-08, -8.020295923888982e-05, -0.0003212558295547466,
@@ -547,3 +544,12 @@ class TestEquinoctial:
         # Compare results
         assert custom_allclose(cartcov, cartcov_exp)
         assert custom_allclose(tm, tm_exp)
+
+
+class TestEquinoctialClassical:
+    def test_covcl2eq(self):
+        class_cov = [
+            [5331023186024110.0, -9040508.16776447, -31592.1480810121, 34232891.7744931,
+             4042240100.79178, -4076472971.33286],
+
+        ]
