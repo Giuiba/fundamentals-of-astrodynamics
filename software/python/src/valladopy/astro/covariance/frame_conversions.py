@@ -66,7 +66,7 @@ def _compute_partials_ecc(reci_m, veci_m, ecc_vec, ecc):
         - (vy**2 + vz**2 - MUM / magr + MUM * rx**2 / magr3) * ecc_vec[0]
     )
     tm_ecc[1] = -p0 * (
-        ((vx * vy - MUM * rx * ry / magr3) * ecc_vec[0])
+        ((vx * vy - MUM * rx * ry / magr3) * ecc_vec[0])  # TODO: check
         + ((vy * vz - MUM * ry * rz / magr3) * ecc_vec[2])
         - (vx**2 + vz**2 - MUM / magr + MUM * ry**2 / magr3) * ecc_vec[1]
     )
