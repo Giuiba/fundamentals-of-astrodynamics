@@ -1,70 +1,67 @@
-    % ------------------------------------------------------------------------------
-    %
-    %                           function kepler
-    %
-    %  this function solves keplers problem for orbit determination and returns a
-    %    future geocentric equatorial (ijk) position and velocity vector.  the
-    %    solution uses universal variables.
-    %
-    %  author        : david vallado                  719-573-2600   22 jun 2002
-    %
-    %  revisions
-    %    vallado     - fix some mistakes                             13 apr 2004
-    %
-    %  inputs          description                    range / units
-    %    ro          - ijk position vector - initial  km
-    %    vo          - ijk velocity vector - initial  km / s
-    %    dtsec       - length of time to propagate    s
-    %
-    %  outputs       :
-    %    r           - ijk position vector            km
-    %    v           - ijk velocity vector            km / s
-    %    error       - error flag                     'ok', ...
-    %
-    %  locals        :
-    %    f           - f expression
-    %    g           - g expression
-    %    fdot        - f dot expression
-    %    gdot        - g dot expression
-    %    xold        - old universal variable x
-    %    xoldsqrd    - xold squared
-    %    xnew        - new universal variable x
-    %    xnewsqrd    - xnew squared
-    %    znew        - new value of z
-    %    c2new       - c2(psi) function
-    %    c3new       - c3(psi) function
-    %    dtsec       - change in time                 s
-    %    timenew     - new time                       s
-    %    rdotv       - result of ro dot vo
-    %    a           - semi or axis                   km
-    %    alpha       - reciprocol  1/a
-    %    sme         - specific mech energy           km2 / s2
-    %    period      - time period for satellite      s
-    %    s           - variable for parabolic case
-    %    w           - variable for parabolic case
-    %    h           - angular momentum vector
-    %    temp        - temporary real*8 value
-    %    i           - index
-    %
-    %  coupling      :
-    %    mag         - magnitude of a vector
-    %    findc2c3    - find c2 and c3 functions
-    %
-    %  references    :
-    %    vallado       2004, 95-103, alg 8, ex 2-4
-    %
-    % [r, v] =  kepler  ( ro, vo, dtsec );
-    % ------------------------------------------------------------------------------
+% ------------------------------------------------------------------------------
+%
+%                           function kepler
+%
+%  this function solves keplers problem for orbit determination and returns a
+%    future geocentric equatorial (ijk) position and velocity vector.  the
+%    solution uses universal variables.
+%
+%  author        : david vallado                  719-573-2600   22 jun 2002
+%
+%  revisions
+%    vallado     - fix some mistakes                             13 apr 2004
+%
+%  inputs          description                    range / units
+%    ro          - ijk position vector - initial  km
+%    vo          - ijk velocity vector - initial  km / s
+%    dtsec       - length of time to propagate    s
+%
+%  outputs       :
+%    r           - ijk position vector            km
+%    v           - ijk velocity vector            km / s
+%    error       - error flag                     'ok', ...
+%
+%  locals        :
+%    f           - f expression
+%    g           - g expression
+%    fdot        - f dot expression
+%    gdot        - g dot expression
+%    xold        - old universal variable x
+%    xoldsqrd    - xold squared
+%    xnew        - new universal variable x
+%    xnewsqrd    - xnew squared
+%    znew        - new value of z
+%    c2new       - c2(psi) function
+%    c3new       - c3(psi) function
+%    dtsec       - change in time                 s
+%    timenew     - new time                       s
+%    rdotv       - result of ro dot vo
+%    a           - semi or axis                   km
+%    alpha       - reciprocol  1/a
+%    sme         - specific mech energy           km2 / s2
+%    period      - time period for satellite      s
+%    s           - variable for parabolic case
+%    w           - variable for parabolic case
+%    h           - angular momentum vector
+%    temp        - temporary real*8 value
+%    i           - index
+%
+%  coupling      :
+%    mag         - magnitude of a vector
+%    findc2c3    - find c2 and c3 functions
+%
+%  references    :
+%    vallado       2004, 95-103, alg 8, ex 2-4
+%
+% [r, v] =  kepler(ro, vo, dtsec)
+% ------------------------------------------------------------------------------
 
-    function [r, v] =  kepler  ( ro, vo, dtseco );
-    %function [r,v,errork] =  kepler  ( ro,vo, dtseco, fid );
+function [r, v] =  kepler(ro, vo, dtseco)
 
     % -------------------------  implementation   -----------------
     % set constants and intermediate printouts
     constmath;
-    re         = 6378.1363;         % km
-    mu         = 398600.4415;      % km3/s2
-    velkmps = sqrt(mu / re);
+    constastro;
     show = 'n';
     numiter    =    50;
 
@@ -165,14 +162,14 @@
             if (xnew < 0.0 && dtsec > 0.0)
                 xnew = xold*0.5;
             end
-             
+
             if show =='y'
                 fprintf(1,'kep %3i %11.7f %11.7f %11.7f %11.7f %11.7f \n', ...
                     ktr,xold,znew,rval,xnew,dtnew*tmp);
                 fprintf(1,'%3i %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \n', ...
                     ktr,xold/sqrt(re),znew,c2new, c3new, rval/re,xnew/sqrt(re),dtnew/sqrt(mu));
             end
-  
+
             ktr = ktr + 1;
             xold = xnew;
         end

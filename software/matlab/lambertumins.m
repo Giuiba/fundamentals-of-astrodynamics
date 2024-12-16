@@ -1,22 +1,31 @@
-% -------------------------------------------------------------------------
-% find the minimum psi values for the universal variable lambert problem
-% for multi-rev cases
-%  inputs          description                    range / units
-%    r1          - ijk position vector 1             km
-%    r2          - ijk position vector 2             km
-%    dm          - direction of motion (long/short)  'L','S'
-%    you could maybe pass in the max number of revs you're willing to
-%    consider...
-%    nrev        - multiple revoluions                0, 1, ...
+  % ------------------------------------------------------------------------------
+%                           function lambertumins
+%
+%  find the minimum psi values for the universal variable lambert problem
+%
+%  author        : david vallado           davallado@gmail.com    8 jun 2016
+%
+%  inputs          description                          range / units
+%    r1          - ijk position vector 1                 km
+%    r2          - ijk position vector 2                 km
+%    nrev        - multiple revolutions                  0, 1,  
+%    dm          - direction of motion                  'S', 'L'
+%                  this is the inclination discriminator
 %
 %  outputs       :
-%    tbi         - 2D array containing the dt (sec), psi (unitless) values for the minimums of
-%    nrev = 1, 2, 3, ...
+%    kbi         - k values for min tof for each nrev
+%    tof         - min time of flight for each nrev      sec
 %
+%  references    :
+%    Arora and Russell AAS 10-198
+%
+% [kbi, tof] = lambertumins( r1, r2, nrev, dm )
+% ------------------------------------------------------------------------------*/
 
-function [psib, tof] = lambertumins( r1, r2, nrev, dm )
+function [kbi, tof] = lambertumins( r1, r2, nrev, dm )
+    constastro;
+    
     small = 0.00000001;
-    mu = 398600.4418;  % km/s^2
     oomu = 1.0 / sqrt(mu);  % for speed
     sqrtmu = sqrt(mu);
     numiter = 20; % arbitrary limit here - doens't seem to break it. 
@@ -97,7 +106,7 @@ function [psib, tof] = lambertumins( r1, r2, nrev, dm )
         % calculate once at the end
         dtnew = (x^3*c3 + vara*sqrty) * oomu;
         tof = dtnew;
-        psib = psinew;
+        kbi = psinew;
         fprintf(1,' %3i %12.4f %12.4f %12.4f %12.4f %11.4f %12.4f %12.4f %11.4f %11.4f \n',loops, y, dtdpsi, psiold, psinew, psinew - psiold, dtdpsi, dtdpsi2, lower, upper );
  %       fprintf(1,' nrev %3i  dtnew %12.5f psi %12.5f  lower %10.3f upper %10.3f %10.6f %10.6f \n',nrev, dtnew, psiold, lower, upper, c2, c3);
  %   end % for checking multi rev cases

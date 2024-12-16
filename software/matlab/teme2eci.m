@@ -36,34 +36,36 @@
 %  references    :
 %    vallado       2013, 231-233
 %
-% [reci, veci, aeci] = teme2eci  ( rteme, vteme, ateme, ttt, ddpsi, ddeps);
+% [reci, veci, aeci] = teme2eci  ( rteme, vteme, ateme, iau80arr, ttt, ddpsi, ddeps)
 % ----------------------------------------------------------------------------
 
-function [reci, veci, aeci] = teme2eci  ( rteme, vteme, ateme, ttt, ddpsi, ddeps);
+function [reci, veci, aeci] = teme2eci  ( rteme, vteme, ateme, iau80arr, ttt, ddpsi, ddeps)
 
-        [prec,psia, wa, ea, xa] = precess ( ttt, '80' );
+    [fArgs] = fundarg(ttt, '80');
 
-        [deltapsi, trueeps, meaneps, omega, nut] = nutation  (ttt, ddpsi, ddeps );
-        
-        % ------------------------ find eqeg ----------------------
-        % rotate teme through just geometric terms 
-        eqeg = deltapsi* cos(meaneps);
+    [prec,psia,wa,ea,xa] = precess ( ttt, '80' );
 
-        eqeg = rem (eqeg, 2.0*pi);
+    [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-        eqe(1,1) =  cos(eqeg);
-        eqe(1,2) =  sin(eqeg);
-        eqe(1,3) =  0.0;
-        eqe(2,1) = -sin(eqeg);
-        eqe(2,2) =  cos(eqeg);
-        eqe(2,3) =  0.0;
-        eqe(3,1) =  0.0;
-        eqe(3,2) =  0.0;
-        eqe(3,3) =  1.0;
+    % ------------------------ find eqeg ----------------------
+    % rotate teme through just geometric terms
+    eqeg = deltapsi* cos(meaneps);
 
-        tm = prec * nut * eqe';
-        
-        reci = tm * rteme';
-        veci = tm * vteme';
-        aeci = tm * ateme;
+    eqeg = rem (eqeg, 2.0*pi);
+
+    eqe(1,1) =  cos(eqeg);
+    eqe(1,2) =  sin(eqeg);
+    eqe(1,3) =  0.0;
+    eqe(2,1) = -sin(eqeg);
+    eqe(2,2) =  cos(eqeg);
+    eqe(2,3) =  0.0;
+    eqe(3,1) =  0.0;
+    eqe(3,2) =  0.0;
+    eqe(3,3) =  1.0;
+
+    tm = prec * nut * eqe';
+
+    reci = tm * rteme;
+    veci = tm * vteme;
+    aeci = tm * ateme;
 

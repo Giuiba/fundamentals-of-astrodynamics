@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 using MathTimeMethods;     // Edirection, globals
 using EOPSPWMethods;       // EOPDataClass, SPWDataClass, iau80Class, iau00Class
 using AstroLibMethods;     // EOpt, gravityConst, astroConst, xysdataClass, jpldedataClass
-//using AstroLambertkMethods;
+using AstroLambertkMethods;
 using System.IO;
 
 namespace TestAllTool
@@ -25,7 +25,7 @@ namespace TestAllTool
 
         public AstroLib AstroLibr = new AstroLib();
 
-        //public AstroLambertkLib AstroLambertkLibr = new AstroLambertkLib();
+        public AstroLambertkLib AstroLambertkLibr = new AstroLambertkLib();
 
         public StringBuilder strbuild = new StringBuilder();
 
@@ -183,7 +183,7 @@ namespace TestAllTool
 
             if (methodType == "lambertu" && (runopt == "all" || (dein == de && nrev == 0)))
             {
-                AstroLibr.lambertuniv(r1, r2, v1, dm, de, 0, 0.0, dtsec, 0.0, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                AstroLibr.lambertuniv(r1, r2, v1, dm, de, 0, dtsec, 0.0, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                 //strbuild.AppendLine(detailSum);
                 strbuild.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                 strbuild.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -215,7 +215,7 @@ namespace TestAllTool
 
             if (methodType == "lambertb" && (runopt == "all" || (dein == de && nrev == 0)))
             {
-                AstroLibr.lambertbattin(r1, r2, v1, dm, de, 0, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                AstroLibr.lambertbattin(r1, r2, v1, dm, de, 0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                 //strbuild.AppendLine(detailSum);
                 strbuild.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                 strbuild.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -285,7 +285,7 @@ namespace TestAllTool
             }
             if (methodType == "lambertu" && (runopt == "all" || (dein == de && nrev == 0)))
             {
-                AstroLibr.lambertuniv(r1, r2, v1, dm, de, 0, 0.0, dtsec, 0.0, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                AstroLibr.lambertuniv(r1, r2, v1, dm, de, 0, dtsec, 0.0, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                 //strbuild.AppendLine(detailSum);
                 strbuild.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                 strbuild.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -316,7 +316,7 @@ namespace TestAllTool
             }
             if (methodType == "lambertb" && (runopt == "all" || (dein == de && nrev == 0)))
             {
-                AstroLibr.lambertbattin(r1, r2, v1, dm, de, 0, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                AstroLibr.lambertbattin(r1, r2, v1, dm, de, 0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                 //strbuild.AppendLine(detailSum);
                 strbuild.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                 strbuild.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -408,7 +408,7 @@ namespace TestAllTool
                 if (methodType == "lambertu" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
                 {
                     AstroLibr.lambertumins(r1, r2, nnrev, dm, out kbi, out tof);
-                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuild.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                     strbuild.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -439,7 +439,7 @@ namespace TestAllTool
             }
             if (methodType == "lambertb" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
             {
-                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                 //strbuild.AppendLine(detailSum);
                 strbuild.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                 strbuild.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -518,7 +518,7 @@ namespace TestAllTool
                 if (methodType == "lambertu" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
                 {
                     AstroLibr.lambertumins(r1, r2, nnrev, dm, out kbi, out tof);
-                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuild.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                     strbuild.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -549,7 +549,7 @@ namespace TestAllTool
                 }
                 if (methodType == "lambertb" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
                 {
-                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuild.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                     strbuild.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -624,7 +624,7 @@ namespace TestAllTool
                 if (methodType == "lambertu" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
                 {
                     AstroLibr.lambertumins(r1, r2, nnrev, dm, out kbi, out tof);
-                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuild.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                     strbuild.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -655,7 +655,7 @@ namespace TestAllTool
                 }
                 if (methodType == "lambertb" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
                 {
-                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuild.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                     strbuild.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -730,7 +730,7 @@ namespace TestAllTool
             if (methodType == "lambertu" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
             {
                 AstroLibr.lambertumins(r1, r2, nnrev, dm, out kbi, out tof);
-                AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                 //strbuild.AppendLine(detailSum);
                 strbuild.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                 strbuild.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -762,7 +762,7 @@ namespace TestAllTool
             if (methodType == "lambertb" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
             {
 
-                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                 //strbuild.AppendLine(detailSum);
                 strbuild.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                 strbuild.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -954,6 +954,15 @@ namespace TestAllTool
                     strbuildsum.AppendLine("\n\n ================================ case number " + caseopt.ToString() + " ================================");
                     strbuildall.AppendLine("\n\n ================================ case number " + caseopt.ToString() + " ================================");
 
+                    // update GUI
+                    this.r1.Text = r1[0] + " " + r1[1] + " " + r1[2];
+                    this.v1.Text = v1[0] + " " + v1[1] + " " + v1[2];
+                    this.r2.Text = r2[0] + " " + r2[1] + " " + r2[2];
+                    this.v2.Text = v2[0] + " " + v2[1] + " " + v2[2];
+                    this.dtsec.Text = dtsec.ToString();
+                    this.nrev.Text = nrev.ToString();
+                    this.dtwait.Text = dtwait.ToString();
+
                     dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt, methodType, ref strbuildall, ref strbuildsum, out caseerr);
                     if (caseopt > 82)
                     {
@@ -982,7 +991,7 @@ namespace TestAllTool
             } // if tmpint >= -1
             else
             {
-                // --------------------------- do case from screen GUI
+                // --------------------------- do case from screen GUI ----------------
                 // assign all the screen values
                 nrev = Convert.ToInt32(this.nrev.Text);
                 dtsec = Convert.ToDouble(this.dtsec.Text);

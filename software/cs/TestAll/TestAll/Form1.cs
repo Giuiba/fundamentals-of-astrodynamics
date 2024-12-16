@@ -15,6 +15,7 @@ using SGP4Methods;
 using System.Data;
 using System.Diagnostics.Eventing.Reader;
 using static AstroLibMethods.AstroLib;
+using System.Threading;
 
 namespace TestAllTool
 {
@@ -2501,18 +2502,11 @@ namespace TestAllTool
             EOPSPWLib.iau06Class iau06arr;
             fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
             EOPSPWLibr.iau80in(fileLoc, out iau80arr);
-            fileLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(fileLoc, out iau06arr);
 
             string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2020-02-12.txt";
             EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out mjdeopstart, out ktrActObs, out EOPupdate);
 
-            // now read it in
-            double jdxysstart, jdfxysstart;
-            AstroLib.xysdataClass[] xysarr = AstroLibr.xysarr;
-            AstroLibr.readXYS(ref xysarr, fileLoc, "xysdata.dat");
-
-            // gooding tests cases from Gooding paper (1997 CMDA)
+             // gooding tests cases from Gooding paper (1997 CMDA)
             double[] los1;
             double[] los2;
             double[] los3;
@@ -2766,6 +2760,14 @@ namespace TestAllTool
                 //            break;
                 //    }
                 //    strbuild.AppendLine("\nz " + z.ToString());
+
+
+
+
+                //could put in separate doangles function
+
+
+
 
                 //jd1 = jd[idx1] + jdf[idx1];
                 //jd2 = jd[idx2] + jdf[idx2];
@@ -3032,8 +3034,8 @@ namespace TestAllTool
 
         public void testlambertumins()
         {
-            double[,] tbidu = new double[10, 3];
-            double[,] tbiru = new double[10, 3];
+            double[,] tbiSu = new double[10, 3];
+            double[,] tbiLu = new double[10, 3];
             double[] r1 = new double[3];
             double[] r2 = new double[3];
             double tmin, tminp, tminenergy;
@@ -3066,36 +3068,36 @@ namespace TestAllTool
             for (i = 0; i < 1000; i++)
             {
                 AstroLibr.lambertumins(r1, r2, 1, 'S', out kbi, out tof);
-                tbidu[1, 1] = kbi;
-                tbidu[1, 2] = tof;
+                tbiSu[1, 1] = kbi;
+                tbiSu[1, 2] = tof;
                 AstroLibr.lambertumins(r1, r2, 2, 'S', out kbi, out tof);
-                tbidu[2, 1] = kbi;
-                tbidu[2, 2] = tof;
+                tbiSu[2, 1] = kbi;
+                tbiSu[2, 2] = tof;
                 AstroLibr.lambertumins(r1, r2, 3, 'S', out kbi, out tof);
-                tbidu[3, 1] = kbi;
-                tbidu[3, 2] = tof;
+                tbiSu[3, 1] = kbi;
+                tbiSu[3, 2] = tof;
                 AstroLibr.lambertumins(r1, r2, 4, 'S', out kbi, out tof);
-                tbidu[4, 1] = kbi;
-                tbidu[4, 2] = tof;
+                tbiSu[4, 1] = kbi;
+                tbiSu[4, 2] = tof;
                 AstroLibr.lambertumins(r1, r2, 5, 'S', out kbi, out tof);
-                tbidu[5, 1] = kbi;
-                tbidu[5, 2] = tof;
+                tbiSu[5, 1] = kbi;
+                tbiSu[5, 2] = tof;
 
                 AstroLibr.lambertumins(r1, r2, 1, 'L', out kbi, out tof);
-                tbiru[1, 1] = kbi;
-                tbiru[1, 2] = tof;
+                tbiLu[1, 1] = kbi;
+                tbiLu[1, 2] = tof;
                 AstroLibr.lambertumins(r1, r2, 2, 'L', out kbi, out tof);
-                tbiru[2, 1] = kbi;
-                tbiru[2, 2] = tof;
+                tbiLu[2, 1] = kbi;
+                tbiLu[2, 2] = tof;
                 AstroLibr.lambertumins(r1, r2, 3, 'L', out kbi, out tof);
-                tbiru[3, 1] = kbi;
-                tbiru[3, 2] = tof;
+                tbiLu[3, 1] = kbi;
+                tbiLu[3, 2] = tof;
                 AstroLibr.lambertumins(r1, r2, 4, 'L', out kbi, out tof);
-                tbiru[4, 1] = kbi;
-                tbiru[4, 2] = tof;
+                tbiLu[4, 1] = kbi;
+                tbiLu[4, 2] = tof;
                 AstroLibr.lambertumins(r1, r2, 5, 'L', out kbi, out tof);
-                tbiru[5, 1] = kbi;
-                tbiru[5, 2] = tof;
+                tbiLu[5, 1] = kbi;
+                tbiLu[5, 2] = tof;
             }
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;
@@ -3268,396 +3270,14 @@ namespace TestAllTool
 
 
         // test building the lambert envelope
-        private void testAll()
+   private void testAll()
         {
-            double mu, dtwait, dtsec, dtseco;
-            string detailSum, detailAll, errorout;
-            char dm, de, hitearth, whichcase;
-            Int32 ktr, ktr1, ktr2, ktr3, ktr4, i, iktr, nrev, numiter;
-            double f, g, gdot;
-            double tofu1, tofu2, kbiu1, kbiu2, tof, kbi;
-            double[] v1t = new double[3];
-            double[] v2t = new double[3];
-            double[] r1 = new double[3];
-            double[] r2 = new double[3];
-            double[] v1 = new double[3];
-            double[] v2 = new double[3];
-            double s, tau;
-            string outstr;
-            StringBuilder strbuild = new StringBuilder();
-            detailSum = "";
-            detailAll = "";
-            //char show = 'n';     // for test180, show = n, show180 = y
-            //char show180 = 'n';  // for testlamb known show = y, show180 = n, n/n for envelope
+            // done in lambert form
 
-            whichcase = 'k';  // k
-            // whichcase = 'u'; //  universal
-            // whichcase = 'b';  // battin
+        }
+          
 
-            dm = 's';
-            de = 'r';
-            double altpadc = 200.0 / 6378.137;  // set 200 km for altitude you set as the over limit. 
-            ktr1 = 0;
-            ktr2 = 0;
-            ktr3 = 0;
-            ktr4 = 0;
-            tofu1 = 0.0;
-            tofu2 = 0.0;
-            kbiu1 = 0.0;
-            kbiu2 = 0.0;
-
-            mu = 3.986004415e5;
-            //tusec = 806.8111238242922;
-            numiter = 17;
-            dtwait = 0.0;
-            tof = 0.0;
-            kbi = 0.0;
-
-            this.opsStatus.Text = "working on all cases ";
-            Refresh();
-
-            // book fig
-            r1 = new double[] { 2.500000 * 6378.137, 0.000000, 0.000000 };
-            r2 = new double[] { 1.9151111 * 6378.137, 1.6069690 * 6378.137, 0.000000 };
-            // assume circular initial orbit for vel calcs
-            v1 = new double[] { 0.0, Math.Sqrt(mu / r1[0]), 0.0 };
-            double ang = Math.Atan(r2[1] / r2[0]);
-            v2 = new double[] { -Math.Sqrt(mu / r2[1]) * Math.Cos(ang), Math.Sqrt(mu / r2[0]) * Math.Sin(ang), 0.0 };
-
-            //// test case
-            //double[] r2 = new double[] { -1105.78023519582, 2373.16130661458, 6713.89444816503 };
-            //double[] v2 = new double[] { 5.4720951867079, -4.39299050886976, 2.45681739563752 };
-            //double[] r1 = new double[] { 4938.49830042171, -1922.24810472241, 4384.68293292613 };
-            //double[] v1 = new double[] { 0.738204644165659, 7.20989453238397, 2.32877392066299 };
-
-            // more normal figure
-            //double[] r2 = new double[] { -10000.0, 3750.0, 0.00 };
-            //double[] v2 = new double[] { 5.4720951867079, -4.39299050886976, 2.45681739563752 };
-            //double[] r1 = new double[] {7278.0,  0.00, 0.00};
-            //double[] v1 = new double[] { 0.738204644165659, 7.20989453238397, 2.32877392066299 };
-
-            // case 71 ld1 this is a 360/0 deg case
-            //nrev = 1;
-            //r1 = new double[] { -1467.02165038667, 1586.15766686882, 6812.89290230288 };
-            //v1 = new double[] { -6.99554331377, -2.45471059071, -0.93275076625 };
-            //r2 = new double[] { -1467.02165038667, 1586.15766686882, 6812.89290230288 };
-            //v2 = new double[] { -0.631836782875836, 1.40386453042887, 2.14318960051298 };  // xx
-            //dtsec = 6325.0;
-
-            //double[] r2 = new double[] { 12214.84096602,  10249.46843675,      0.00000000};
-            //double[] v2 = new double[] {-4.77718638,      3.67191377,      0.00000000 };
-            //double[] r1 = new double[] { 15945.34250000,      0.00000000,      0.00000000 };
-            //double[] v1 = new double[] {  0.00000000,      4.99979228,      0.00000000 };
-
-            //// 179.9999972 test
-            //r1 = new double[] { 5690.21923, 3309.62377, 1311.30504 };
-            //v1 = new double[] { -6.99554331377, -2.45471059071, -0.93275076625 };
-            //r2 = new double[] { -5691.9147514, -3310.6095425, -1311.695711 };
-            //v2 = new double[] { -2.65211231086955, 1.55584941166386, -5.96175008776875E-07 };
-
-            // near 0 180 deg test
-            //r1 = new double[] { -1467.0216503866718, 1586.1576668688224, 6812.892902302875 };
-            //v1 = new double[] { -6.99554331377, -2.45471059071, -0.93275076625 };
-            //r2 = new double[] { 1482.87003576258, -1557.63131212973, -6827.43044367934 };
-            //v2 = new double[] { -2.65211231086955, 1.55584941166386, -5.96175008776875E-07 };
-
-
-            //r1 = new double[] { -1567.0216503866718, 1686.1576668688224, 6812.892902302875 };
-            //v1 = new double[] { -6.99554331377, -2.45471059071, -0.93275076625 };
-            //r2 = new double[] { 1482.87003576258, -1557.63131212973, -6827.43044367934 };
-            //v2 = new double[] { -2.65211231086955, 1.55584941166386, -5.96175008776875E-07 };
-
-            // case 25
-            //nrev = 1;
-            //r1 = new double[] { -1467.0216503866718, 1586.1576668688224, 6812.892902302875 };
-            //v1 = new double[] { -6.99554331377, -2.45471059071, -0.93275076625 };
-            //r2 = new double[] { -1271.900616, 2703.476434, 6306.177922 };
-            //v2 = new double[] { 2.65211231086955, -1.55584941166386, 5.96175008776875E-07 };
-            //dtsec = 5000.0; // 1sr
-
-            // case 78 Nathaniel test case
-            //nrev = 1;
-            //r1 = new double[] { 7117.5156243154161, -4257.1942597683246, -583.88210887807986 };
-            //v1 = new double[] { -7.0417929290503141, -2.8681303717265290, 1.2224374606557487 };
-            //r2 = new double[] { 7172.3074180808417, -4123.2685183007470, -560.47505356742181 };
-            //v2 = new double[] { 5.9109725501309471, 2.0990367313315055, -1.1164901518784618 };  // xx
-
-            //case 82: // Dan dread
-            nrev = 0;
-            r1 = new double[] { -1984.0302332256897, 1525.2723537058205, 6364.7695528344739 };
-            v1 = new double[] { 3.659783, -6.176723, 2.606056 };
-            r2 = new double[] { -5123.56515285304, -1168.59526837238, -4876.40096908065 };
-            v2 = new double[] { 5.9109725501309471, 2.0990367313315055, -1.1164901518784618 };  // xx
-            dtsec = 1130.0;
-
-            //// case 83: // Dan dread
-            //nrev = 0;
-            //r1 = new double[] { -1984.0302332256897, 1525.2723537058205, 6364.7695528344739 };
-            //v1 = new double[] { 3.659783, -6.176723, 2.606056 };
-            //r2 = new double[] { -2038.89153433683, 1538.41986781477, 6419.63247439258 };
-            //v2 = new double[] { 5.9109725501309471, 2.0990367313315055, -1.1164901518784618 };  // xx
-            //dtsec = 2580;
-
-            // ----------------------------- put min values etc points on plot ---------------------------------
-            double ktemp = -Math.Sqrt(2);
-            hitearth = '-';
-
-            // ----------------------------- put min values etc points on plot ---------------------------------
-            double tmin, tminp, tminenergy;
-            AstroLibr.lambertminT(r1, r2, 'S', 'L', 1, out tmin, out tminp, out tminenergy);
-            detailSum = "S   L   1  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + ktemp.ToString("0.#######").PadLeft(15) + " - 0";
-            strbuild.AppendLine(detailSum);
-            detailSum = "S   L   1  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + (-ktemp).ToString("0.#######").PadLeft(15) + " - 0\n";
-            strbuild.AppendLine(detailSum);
-            AstroLibr.lambertminT(r1, r2, 'S', 'L', 2, out tmin, out tminp, out tminenergy);
-            detailSum = "S   L   2  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + ktemp.ToString("0.#######").PadLeft(15) + " - 0";
-            strbuild.AppendLine(detailSum);
-            detailSum = "S   L   2  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + (-ktemp).ToString("0.#######").PadLeft(15) + " - 0\n";
-            strbuild.AppendLine(detailSum);
-            AstroLibr.lambertminT(r1, r2, 'S', 'L', 3, out tmin, out tminp, out tminenergy);
-            detailSum = "S   L   3  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + ktemp.ToString("0.#######").PadLeft(15) + " - 0";
-            strbuild.AppendLine(detailSum);
-            detailSum = "S   L   3  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + (-ktemp).ToString("0.#######").PadLeft(15) + " - 0\n";
-            strbuild.AppendLine(detailSum);
-
-            AstroLibr.lambertminT(r1, r2, 'S', 'H', 1, out tmin, out tminp, out tminenergy);
-            detailSum = "S   H   1  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + ktemp.ToString("0.#######").PadLeft(15) + " - 0";
-            strbuild.AppendLine(detailSum);
-            detailSum = "S   H   1  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + (-ktemp).ToString("0.#######").PadLeft(15) + " - 0\n";
-            strbuild.AppendLine(detailSum);
-            AstroLibr.lambertminT(r1, r2, 'S', 'H', 2, out tmin, out tminp, out tminenergy);
-            detailSum = "S   H   2  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + ktemp.ToString("0.#######").PadLeft(15) + " - 0";
-            strbuild.AppendLine(detailSum);
-            detailSum = "S   H   2  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + (-ktemp).ToString("0.#######").PadLeft(15) + " - 0\n";
-            strbuild.AppendLine(detailSum);
-            AstroLibr.lambertminT(r1, r2, 'S', 'H', 3, out tmin, out tminp, out tminenergy);
-            detailSum = "S   H   3  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + ktemp.ToString("0.#######").PadLeft(15) + " - 0";
-            strbuild.AppendLine(detailSum);
-            detailSum = "S   H   3  0.000 " + tmin.ToString("0.#######").PadLeft(15) + " mint " + (-ktemp).ToString("0.#######").PadLeft(15) + " - 0\n";
-            strbuild.AppendLine(detailSum);
-
-
-
-
-            // do 0 rev cases first
-            nrev = 0;
-            ktr = 0;  // overall ktr
-            for (iktr = 1; iktr <= 2; iktr++)
-            {
-                if (iktr == 1)
-                {
-                    dm = 'S';
-                    de = 'L';   // or 'H'
-                }
-                if (iktr == 2)
-                {
-                    dm = 'L';
-                    de = 'H';    // or 'L'
-                }
-
-                dtseco = 0.0;
-                // calc the actual lambert values
-                for (i = 1; i <= 500; i++)
-                {
-                    if (i < 60)
-                        dtsec = dtseco + i * 1.0;
-                    else
-                    {
-                        if (i < 200)
-                            dtsec = dtseco + (i - 59) * 60.0;
-                        else
-                            dtsec = dtseco + (i - 185) * 600.0;
-                    }
-                    if (de == 'L')
-                    {
-                        if (whichcase == 'k')
-                        {
-                            AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, 0.0, 0.0, numiter, altpadc, 'n', 'y',
-                                 out v1t, out v2t, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                            if (detailAll.Contains("gnot"))
-                            {
-                                AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, 0.0, 0.0, numiter, altpadc, 'n', 'y',
-                                     out v1t, out v2t, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                            }
-                        }
-                        if (whichcase == 'b')
-                            AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, 0.0, dtsec, altpadc, 'n', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
-                        if (whichcase == 'u')
-                            AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, 0.0, dtsec, 0.0, altpadc, 'n', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
-                    }
-                    else
-                    {
-                        if (whichcase == 'k')
-                        {
-                            AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, 0.0, 0.0, numiter, altpadc, 'n', 'y',
-                                 out v1t, out v2t, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                            if (detailAll.Contains("gnot"))
-                            {
-                                AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, 0.0, 0.0, numiter, altpadc, 'n', 'y',
-                                     out v1t, out v2t, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                            }
-                        }
-                        if (whichcase == 'b')
-                            AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, 0.0, dtsec, altpadc, 'n', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
-                        if (whichcase == 'u')
-                            AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, 0.0, dtsec, 0.0, altpadc, 'n', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
-                    }
-                    ktr = ktr + 1;
-                    if (whichcase == 'k' || whichcase == 'u')
-                        strbuild.AppendLine(detailSum);
-                    // if (detailAll.Contains("All"))
-                    if (whichcase == 'b')
-                        strbuild.AppendLine(detailSum);  // for battin tests
-                }  // for i through all the times
-
-                strbuild.AppendLine(" ");
-                if (iktr == 1)
-                    ktr1 = ktr;
-                if (iktr == 2)
-                    ktr2 = ktr;
-            } // for iktr through cases
-
-            strbuild.AppendLine(" ");
-
-            AstroLambertkLibr.lambertkmins1st(r1, r2, out s, out tau);
-
-            for (iktr = 1; iktr <= 4; iktr++)
-            {
-                if (iktr == 1)
-                {
-                    dm = 'S';
-                    de = 'L';
-                }
-                if (iktr == 2)
-                {
-                    dm = 'S';
-                    de = 'H';
-                }
-                if (iktr == 3)
-                {
-                    dm = 'L';
-                    de = 'L';
-                }
-                if (iktr == 4)
-                {
-                    dm = 'L';
-                    de = 'H';
-                }
-
-                for (nrev = 1; nrev <= 4; nrev++)
-                {
-                    dtseco = 0.0;
-                    if (nrev > 0)
-                    {
-                        // secs
-                        getmins(1, 'u', nrev, r1, r2, 0.0, 0.0, dm, de, out tofu1, out kbiu1, out tofu2, out kbiu2, out outstr);
-                        // secs fix SH and LL cases
-                        //if (dm == 'S' && de == 'H')
-                        //    AstroLambertkLibr.lambertkmins(s, tau, nrev, dm, 'L', out kbi, out tof);
-                        //else
-                        //if (dm == 'L' && de == 'L')
-                        //    AstroLambertkLibr.lambertkmins(s, tau, nrev, dm, 'H', out kbi, out tof);
-                        //else
-                            AstroLambertkLibr.lambertkmins(s, tau, nrev, dm, de, out kbi, out tof);
-
-
-                        //getmins(1, 'k', nrev, r1, r2, s, tau, dm, de, out tofk1, out kbik1, out tofk2, out kbik2, out outstr);
-
-                        if (de == 'H')
-                        {
-                            if (whichcase == 'k')
-                                dtseco = tof;  // in sec
-                            if (whichcase == 'u')
-                                dtseco = tofu2;
-                            if (whichcase == 'b')
-                                dtseco = tofu2;  // use the univ var value
-                        }
-                        else
-                        {
-                            if (whichcase == 'k')
-                                dtseco = tof;
-                            if (whichcase == 'u')
-                                dtseco = tofu1;
-                            if (whichcase == 'b')
-                                dtseco = tofu1;  // use the univ var value
-                        }
-                    }
-
-                    // calc the actual lambert values
-                    for (i = 1; i <= 500; i++)
-                    {
-                        if (i < 60)
-                            dtsec = dtseco + i * 1.0;
-                        else
-                        {
-                            if (i < 200)
-                                dtsec = dtseco + (i - 59) * 60.0;
-                            else
-                                dtsec = dtseco + (i - 185) * 600.0;
-                        }
-                        if (de == 'L')
-                        {
-                            if (whichcase == 'k')
-                            {
-                                AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, tof, kbi, numiter, altpadc, 'n', 'y',
-                                     out v1t, out v2t, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                                //if (detailAll.Contains("gnot"))
-                                //{
-                                //    AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, tbi, kbi, numiter, altpadc, 'n', 'y',
-                                //         out v1t, out v2t, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll, 'y', show180);
-                                //}
-                            }
-                            if (whichcase == 'b')
-                                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, 0.0, dtsec, altpadc, 'n', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
-                            if (whichcase == 'u')
-                                AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, 0.0, dtsec, tofu1, altpadc, 'n', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
-                        }
-                        else
-                        {
-                            if (whichcase == 'k')
-                            {
-                                AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, tof, kbi, numiter, altpadc, 'n', 'y',
-                                     out v1t, out v2t, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                                //if (detailAll.Contains("gnot"))
-                                //{
-                                //    AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, tbi, kbi, numiter, altpadc, 'n', 'y',
-                                //         out v1t, out v2t, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll, 'y', show180);
-                                //}
-                            }
-                            if (whichcase == 'b')
-                                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, 0.0, dtsec, altpadc, 'n', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
-                            if (whichcase == 'u')
-                                AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, 0.0, dtsec, tofu2, altpadc, 'n', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
-                        }
-                        ktr = ktr + 1;
-                        if (whichcase == 'k' || whichcase == 'u')
-                            strbuild.AppendLine(detailSum);
-                        // if (detailAll.Contains("All"))
-                        if (whichcase == 'b')
-                            strbuild.AppendLine(detailSum);  // for battin tests
-                    }  // for i through all the times
-
-                    strbuild.AppendLine(" ");
-                }  // if nrev > 0
-
-                strbuild.AppendLine(" ");
-                if (iktr == 2)
-                    ktr3 = ktr;
-                if (iktr == 4)
-                    ktr4 = ktr;
-            } // for iktr through cases
-
-            strbuild.AppendLine("ktrs " + ktr1.ToString() + " " + ktr2.ToString() + " " + ktr3.ToString() + " " + ktr4.ToString() + " ");
-
-            string directory = @"d:\codes\library\matlab\";
-            File.WriteAllText(directory + "tlambertAll.out", strbuild.ToString());
-
-            this.opsStatus.Text = "Done ";
-            Refresh();
-        }  // testAll
-
-
-        /* ------------------------------------------------------------------------------
+   /* ------------------------------------------------------------------------------
    *                                 testAllMoving 
    *                                    
    * calc the values needed to graph the whole envelope response. this is the most 
@@ -4487,8 +4107,8 @@ namespace TestAllTool
             double[] v2t3 = new double[3];
             double[] v1t4 = new double[3];
             double[] v2t4 = new double[3];
-            double[,] tbidu = new double[10, 3];
-            double[,] tbiru = new double[10, 3];
+            double[,] tbiSu = new double[10, 3];
+            double[,] tbiLu = new double[10, 3];
             double[] r1 = new double[3];
             double[] r2 = new double[3];
             double[] r3 = new double[3];
@@ -4526,36 +4146,36 @@ namespace TestAllTool
 
 
             AstroLibr.lambertumins(r1, r2, 1, 'S', out kbi, out tof);
-            tbidu[1, 1] = kbi;
-            tbidu[1, 2] = tof;
+            tbiSu[1, 1] = kbi;
+            tbiSu[1, 2] = tof;
             AstroLibr.lambertumins(r1, r2, 2, 'S', out kbi, out tof);
-            tbidu[2, 1] = kbi;
-            tbidu[2, 2] = tof;
+            tbiSu[2, 1] = kbi;
+            tbiSu[2, 2] = tof;
             AstroLibr.lambertumins(r1, r2, 3, 'S', out kbi, out tof);
-            tbidu[3, 1] = kbi;
-            tbidu[3, 2] = tof;
+            tbiSu[3, 1] = kbi;
+            tbiSu[3, 2] = tof;
             AstroLibr.lambertumins(r1, r2, 4, 'S', out kbi, out tof);
-            tbidu[4, 1] = kbi;
-            tbidu[4, 2] = tof;
+            tbiSu[4, 1] = kbi;
+            tbiSu[4, 2] = tof;
             AstroLibr.lambertumins(r1, r2, 5, 'S', out kbi, out tof);
-            tbidu[5, 1] = kbi;
-            tbidu[5, 2] = tof;
+            tbiSu[5, 1] = kbi;
+            tbiSu[5, 2] = tof;
 
             AstroLibr.lambertumins(r1, r2, 1, 'L', out kbi, out tof);
-            tbiru[1, 1] = kbi;
-            tbiru[1, 2] = tof;
+            tbiLu[1, 1] = kbi;
+            tbiLu[1, 2] = tof;
             AstroLibr.lambertumins(r1, r2, 2, 'L', out kbi, out tof);
-            tbiru[2, 1] = kbi;
-            tbiru[2, 2] = tof;
+            tbiLu[2, 1] = kbi;
+            tbiLu[2, 2] = tof;
             AstroLibr.lambertumins(r1, r2, 3, 'L', out kbi, out tof);
-            tbiru[3, 1] = kbi;
-            tbiru[3, 2] = tof;
+            tbiLu[3, 1] = kbi;
+            tbiLu[3, 2] = tof;
             AstroLibr.lambertumins(r1, r2, 4, 'L', out kbi, out tof);
-            tbiru[4, 1] = kbi;
-            tbiru[4, 2] = tof;
+            tbiLu[4, 1] = kbi;
+            tbiLu[4, 2] = tof;
             AstroLibr.lambertumins(r1, r2, 5, 'L', out kbi, out tof);
-            tbiru[5, 1] = kbi;
-            tbiru[5, 2] = tof;
+            tbiLu[5, 1] = kbi;
+            tbiLu[5, 2] = tof;
 
 
             if (show == 'y')
