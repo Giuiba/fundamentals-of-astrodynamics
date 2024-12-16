@@ -703,7 +703,10 @@ def covct2eq(
 
 
 def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyType):
-    """Transforms a 6x6 covariance matrix from equinoctial to Cartesian elements.
+    """Transforms a 6x6 covariance matrix from equinoctial to cartesian elements.
+
+    References:
+        Vallado and Alfano 2015
 
     Args:
         eqcov (array_like): 6x6 equinoctial covariance matrix in m and m/s
@@ -713,7 +716,12 @@ def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyTy
         anom_type (AnomalyType): Anomaly type (MEAN_A, TRUE_A, MEAN_N, TRUE_N)
 
     Returns:
-        tuple: Cartesian covariance matrix and transformation matrix (tm).
+        tuple: (cartcov, tm)
+            cartcov (np.ndarray): 6x6 Cartesian covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+
+    TODO:
+        - Return cartesian covariance matrix not as expected?
     """
     # Parse eqstate and anomaly-dependent calculations
     use_anom_a = anom_type in {AnomalyType.TRUE_A, AnomalyType.MEAN_A}
@@ -722,7 +730,7 @@ def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyTy
         n = np.sqrt(MUM / a**3)
     else:
         n = eqstate[0]  # rad/s
-        a = (MUM / n**2) ** (1 / 3)  # in meters
+        a = (MUM / n**2) ** (1.0 / 3.0)  # in meters
 
     # Get orbital elements
     af, ag, chi, psi = eqstate[1:5]
