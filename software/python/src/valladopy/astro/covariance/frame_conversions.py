@@ -982,6 +982,45 @@ def coveq2cl(
 ########################################################################################
 
 
+def _compute_partials_az(reci_m, veci_m):
+    """Compute partial derivatives of azimuth w.r.t. (rx, ry, rz, vx, vy, vz)."""
+    rx, ry, rz = reci_m
+    vx, vy, vz = veci_m
+    magr = np.linalg.norm(reci_m)
+    magv = np.linalg.norm(veci_m)
+    rdotv = np.dot(reci_m, veci_m)
+
+    # Sal from mathcad methoc
+    p2 = 1.0 / ((magv**2 - (rdotv / magr) ** 2) * (rx**2 + ry**2))
+    k1 = np.linalg.norm(reci_m) * np.cross(reci_m[:2], veci_m[:2])
+    k2 = ry * (ry * vz - rz * vy) + rx * (rx * vz - rz * vx)
+    k12_sq = k1**2 + k2**2
+
+    # Construct the transformation matrix
+    tm_az = np.zeros(6)
+    tm_az[0] = p2 * (
+        vy * (magr * vz - rz * rdotv / magr)
+        - (rx * vy - ry * vx) / magr * (rx * vz - rz * vx + rx * rdotv / magr)
+    )
+    p2 = 1.0 / (magr * k12_sq)
+    tm_az[0] = p2 * (
+        k1 * magr * (rz * vx - 2 * rx * vz)
+        + k2 * (-ry * vx * rx + vy * rx**2 + vy * magr**2)
+    )
+    tm_az[1] = p2 * (
+        k1 * magr * (rz * vy - 2 * ry * vz)
+        + k2 * (rx * vy * ry - vx * ry**2 - vx * magr**2)
+    )
+    p2 = k1 / (magr**2 * k12_sq)
+    tm_az[2] = p2 * (k2 * rz + (rx * vx + ry * vy) * magr**2)
+    p2 = 1.0 / k12_sq
+    tm_az[3] = p2 * (k1 * rx * rz - k2 * ry * magr)
+    tm_az[4] = p2 * (k1 * ry * rz + k2 * rx * magr)
+    tm_az[5] = -p2 * (k1 * (rx**2 + ry**2))
+
+    return tm_az
+
+
 def covct2fl(
     cartcov: np.ndarray,
     cartstate: np.ndarray,
@@ -1021,100 +1060,60 @@ def covct2fl(
             flcov (np.ndarray): 6x6 Flight parameters covariance matrix in m and m/s
             tm (np.ndarray): 6x6 Transformation matrix
     """
-    # Parse input state into Cartesian components (in meters and m/s)
-    rx, ry, rz, vx, vy, vz = cartstate * KM2M
+    # Parse input state into cartesian components (in meters and m/s)
+    reci_m = np.array(cartstate[:3]) * KM2M
+    veci_m = np.array(cartstate[3:]) * KM2M
 
+    # Convert to ECEF coordinates if using lat/lon
+    r = reci_m
     if use_latlon:
-        reci = np.array([rx, ry, rz]) / KM2M
-        veci = np.array([vx, vy, vz]) / KM2M
         aeci = np.array([0, 0, 0])
-        recef, vecef, _ = fc.eci2ecef(
-            reci, veci, aeci, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+        recef, *_ = fc.eci2ecef(
+            reci_m / KM2M,
+            veci_m / KM2M,
+            aeci,
+            ttt,
+            jdut1,
+            lod,
+            xp,
+            yp,
+            ddpsi,
+            ddeps,
+            eqeterms,
         )
-        recef *= KM2M
-        vecef *= KM2M
-        rxf, ryf, rzf = recef
-    else:
-        rxf, ryf, rzf = rx, ry, rz
+        r = recef * KM2M
 
     # Calculate common quantities
-    magr = np.sqrt(rx**2 + ry**2 + rz**2)
-    magv = np.sqrt(vx**2 + vy**2 + vz**2)
-    rdotv = rx * vx + ry * vy + rz * vz
-    h = np.sqrt(
-        (rx * vy - ry * vx) ** 2 + (rz * vx - rx * vz) ** 2 + (ry * vz - rz * vy) ** 2
-    )
+    magr = np.linalg.norm(reci_m)
+    magv = np.linalg.norm(veci_m)
+    h = np.linalg.norm(np.cross(reci_m, veci_m))
 
     # Initialize transformation matrix
     tm = np.zeros((6, 6))
 
     # Transformation matrix components for latlon or radec
-    if use_latlon:
-        p0 = 1.0 / (rxf**2 + ryf**2)
-        tm[0, 0] = -p0 * ryf
-        tm[0, 1] = p0 * rxf
+    r_xy2 = np.sum(r[:2] ** 2)
+    r_xy = np.sqrt(r_xy2)
 
-        p0 = 1.0 / (magr**2 * np.sqrt(rxf**2 + ryf**2))
-        tm[1, 0] = -p0 * (rxf * rzf)
-        tm[1, 1] = -p0 * (ryf * rzf)
-        tm[1, 2] = np.sqrt(rxf**2 + ryf**2) / magr**2
+    p0 = 1.0 / r_xy2
+    tm[0, 0:2] = [-p0 * r[1], p0 * r[0]]
 
-    else:
-        p0 = 1.0 / (rx**2 + ry**2)
-        tm[0, 0] = -p0 * ry
-        tm[0, 1] = p0 * rx
-
-        p0 = 1.0 / (magr**2 * np.sqrt(rx**2 + ry**2))
-        tm[1, 0] = -p0 * (rx * rz)
-        tm[1, 1] = -p0 * (ry * rz)
-        tm[1, 2] = np.sqrt(rx**2 + ry**2) / magr**2
+    p0 = 1.0 / (magr**2 * r_xy)
+    tm[1, 0:2] = -p0 * r[:2] * r[2]
+    tm[1, 2] = r_xy / magr**2
 
     # Partial of flight path angle (fpa) wrt (x, y, z, vx, vy, vz)
     p0 = 1.0 / (magr**2 * h)
     p1 = 1.0 / (magv**2 * h)
-    tm[2, 0] = p0 * (vx * (ry**2 + rz**2) - rx * (ry * vy + rz * vz))
-    tm[2, 1] = p0 * (vy * (rx**2 + rz**2) - ry * (rx * vx + rz * vz))
-    tm[2, 2] = p0 * (vz * (rx**2 + ry**2) - rz * (rx * vx + ry * vy))
-    tm[2, 3] = p1 * (rx * (vy**2 + vz**2) - vx * (ry * vy + rz * vz))
-    tm[2, 4] = p1 * (ry * (vx**2 + vz**2) - vy * (rx * vx + rz * vz))
-    tm[2, 5] = p1 * (rz * (vx**2 + vy**2) - vz * (rx * vx + ry * vy))
+    tm[2, :3] = p0 * (veci_m * np.sum(reci_m**2) - reci_m * np.sum(reci_m * veci_m))
+    tm[2, 3:] = p1 * (reci_m * np.sum(veci_m**2) - veci_m * np.sum(reci_m * veci_m))
 
     # Partial of azimuth (az) wrt (x, y, z, vx, vy, vz)
-    p2 = 1.0 / ((magv**2 - (rdotv / magr) ** 2) * (rx**2 + ry**2))
-    k1 = np.sqrt(rx**2 + ry**2 + rz**2) * (rx * vy - ry * vx)
-    k2 = ry * (ry * vz - rz * vy) + rx * (rx * vz - rz * vx)
+    tm[3, :] = _compute_partials_az(reci_m, veci_m)
 
-    tm[3, 0] = p2 * (
-        vy * (magr * vz - rz * rdotv / magr)
-        - (rx * vy - ry * vx) / magr * (rx * vz - rz * vx + rx * rdotv / magr)
-    )
-    p2 = 1.0 / (magr * (k1**2 + k2**2))
-    tm[3, 0] = p2 * (
-        k1 * magr * (rz * vx - 2 * rx * vz)
-        + k2 * (-ry * vx * rx + vy * rx**2 + vy * magr**2)
-    )
-    tm[3, 1] = p2 * (
-        k1 * magr * (rz * vy - 2 * ry * vz)
-        + k2 * (rx * vy * ry - vx * ry**2 - vx * magr**2)
-    )
-    p2 = k1 / (magr**2 * (k1**2 + k2**2))
-    tm[3, 2] = p2 * (k2 * rz + (rx * vx + ry * vy) * magr**2)
-    p2 = 1.0 / (k1**2 + k2**2)
-    tm[3, 3] = p2 * (k1 * rx * rz - k2 * ry * magr)
-    tm[3, 4] = p2 * (k1 * ry * rz + k2 * rx * magr)
-    tm[3, 5] = -p2 * (k1 * (rx**2 + ry**2))
-
-    # Partial of r wrt (x, y, z, vx, vy, vz)
-    p0 = 1.0 / magr
-    tm[4, 0] = p0 * rx
-    tm[4, 1] = p0 * ry
-    tm[4, 2] = p0 * rz
-
-    # Partial of v wrt (x, y, z, vx, vy, vz)
-    p0 = 1.0 / magv
-    tm[5, 3] = p0 * vx
-    tm[5, 4] = p0 * vy
-    tm[5, 5] = p0 * vz
+    # Partial of r and v wrt (x, y, z, vx, vy, vz)
+    tm[4, :3] = reci_m / magr
+    tm[5, 3:] = veci_m / magv
 
     # Calculate the output covariance matrix
     flcov = tm @ cartcov @ tm.T
@@ -1143,9 +1142,8 @@ def covct2rsw(
             tm (np.ndarray): 6x6 Transformation matrix
     """
     # Extract position and velocity vectors
-    x, y, z, vx, vy, vz = cartstate
-    r = np.array([x, y, z])
-    v = np.array([vx, vy, vz])
+    r = np.array(cartstate[:3])
+    v = np.array(cartstate[3:])
 
     # Define RSW unit vectors
     rv = unit(r)  # along the position vector (radial direction)
