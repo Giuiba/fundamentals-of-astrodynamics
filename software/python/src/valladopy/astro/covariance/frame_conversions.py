@@ -964,11 +964,11 @@ def coveq2cl(
         p4 = 1.0 / (af**2 + ag**2)
         tm[5, 1] = p4 * ag
         tm[5, 2] = -p4 * af
-        tm[5, 5] = 1.0
     else:
         tm[5, 1] = p3 * ag
         tm[5, 2] = -p3 * af
-        tm[5, 5] = 1.0
+
+    tm[5, 5] = 1.0
 
     # Compute the transformed covariance matrix
     classcov = tm @ eqcov @ tm.T
