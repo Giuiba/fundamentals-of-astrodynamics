@@ -982,6 +982,51 @@ def coveq2cl(
 ########################################################################################
 
 
+def covct2rsw(
+    cartcov: ArrayLike, cartstate: ArrayLike
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Transforms a 6x6 Cartesian covariance matrix to an orbit plane RSW frame.
+
+    Args:
+        cartcov (array_like): 6x6 Cartesian covariance matrix in (m, m/s) or (km, km/s)
+        cartstate (array_like): 6x1 Cartesian state vector in km and km/s
+                                (rx, ry, rz, vx, vy, vz)
+
+    Returns:
+        tuple: (covrsw, tm)
+            covrsw (np.ndarray): 6x6 RSW covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+    """
+    # Extract position and velocity vectors
+    x, y, z, vx, vy, vz = cartstate
+    r = np.array([x, y, z])
+    v = np.array([vx, vy, vz])
+
+    # Define RSW unit vectors
+    rv = unit(r)  # along the position vector (radial direction)
+    temv = np.cross(r, v)
+    wv = unit(temv)  # along the angular momentum vector (out of plane)
+    sv = np.cross(wv, rv)  # along the direction perpendicular to rv and wv (in-plane)
+
+    # Initialize the transformation matrix
+    tm = np.zeros((6, 6))
+
+    # Populate the position transformation submatrix
+    tm[0, 0:3] = rv
+    tm[1, 0:3] = sv
+    tm[2, 0:3] = wv
+
+    # Populate the velocity transformation submatrix
+    tm[3, 3:6] = rv
+    tm[4, 3:6] = sv
+    tm[5, 3:6] = wv
+
+    # Transform the covariance matrix
+    covrsw = tm @ cartcov @ tm.T
+
+    return covrsw, tm
+
+
 def covct2ntw(
     cartcov: ArrayLike, cartstate: ArrayLike
 ) -> Tuple[np.ndarray, np.ndarray]:
