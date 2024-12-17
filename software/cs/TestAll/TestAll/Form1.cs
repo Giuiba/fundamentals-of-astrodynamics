@@ -3224,7 +3224,7 @@ namespace TestAllTool
             altpadc = 100.0 / AstroLibr.gravConst.re;  //er
             dtwait = 0.0;
 
-            AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtwait, dtsec, altpadc, 'y', out v1t, out v2t, out hitearth, out errorsum, out errorout);
+            AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, altpadc, 'y', out v1t, out v2t, out hitearth, out errorsum, out errorout);
 
             strbuild.AppendLine("lambertbattin " + v1t[0].ToString(fmt) + " " + v1t[1].ToString(fmt) + " " + v1t[2].ToString(fmt) + " \nlambertbattin " +
                 v2t[0].ToString(fmt) + " " + v2t[1].ToString(fmt) + " " + v2t[2].ToString(fmt));
@@ -3480,13 +3480,13 @@ namespace TestAllTool
                                 //}
                             }
                             if (whichcase == 'b')
-                                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, dtwait, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                             if (whichcase == 'u')
                             {
                                 if (dm == 'S')
-                                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtwait, dtsec, kbish, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, kbish, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                                 else
-                                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtwait, dtsec, kbilg, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, kbilg, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                             }
                         }
                         else
@@ -3502,13 +3502,13 @@ namespace TestAllTool
                                 //}
                             }
                             if (whichcase == 'b')
-                                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, dtwait, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                             if (whichcase == 'u')
                             {
                                 if (dm == 'S')
-                                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtwait, dtsec, kbish, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, kbish, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                                 else
-                                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtwait, dtsec, kbilg, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, kbilg, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                             }
                         }
                         ktr = ktr + 1;
@@ -3621,13 +3621,13 @@ namespace TestAllTool
                                     //}
                                 }
                                 if (whichcase == 'b')
-                                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, dtwait, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                                 if (whichcase == 'u')
                                 {
                                     if (dm == 'S')
-                                        AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtwait, dtsec, kbish, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                        AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, kbish, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                                     else
-                                        AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtwait, dtsec, kbilg, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                        AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, kbilg, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                                 }
                             }
                             else
@@ -3643,13 +3643,13 @@ namespace TestAllTool
                                     //}
                                 }
                                 if (whichcase == 'b')
-                                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, dtwait, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                                 if (whichcase == 'u')
                                 {
                                     if (dm == 'S')
-                                        AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtwait, dtsec, kbish, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                        AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, kbish, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                                     else
-                                        AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtwait, dtsec, kbilg, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
+                                        AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, kbilg, altpadc, 'y', out v1t, out v2t, out hitearth, out detailSum, out detailAll);
                                 }
                             }
                             ktr = ktr + 1;
@@ -4187,20 +4187,20 @@ namespace TestAllTool
             dtwait = 0.0;
 
 
-            AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtwait, dtsec, kbi,
+            AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, kbi,
                           altpad, 'y', out v1t, out v2t, out hitearth, out errorsum, out errorout);
 
-            AstroLibr.lambertuniv(r1, r2, v1, dm, 'H', nrev, dtwait, dtsec, kbi,
+            AstroLibr.lambertuniv(r1, r2, v1, dm, 'H', nrev, dtsec, kbi,
               altpad, 'y', out v1t, out v2t, out hitearth, out errorsum, out errorout);
 
             dtsec = 21000.0;
-            AstroLibr.lambertuniv(r1, r2, v1, 'S', 'H', 1, dtwait, dtsec, kbi,
+            AstroLibr.lambertuniv(r1, r2, v1, 'S', 'H', 1, dtsec, kbi,
               altpad, 'y', out v1t, out v2t, out hitearth, out errorsum, out errorout);
-            AstroLibr.lambertuniv(r1, r2, v1, 'S', 'L', 1, dtwait, dtsec, kbi,
+            AstroLibr.lambertuniv(r1, r2, v1, 'S', 'L', 1, dtsec, kbi,
               altpad, 'y', out v1t, out v2t, out hitearth, out errorsum, out errorout);
-            AstroLibr.lambertuniv(r1, r2, v1, 'L', 'H', 1, dtwait, dtsec, kbi,
+            AstroLibr.lambertuniv(r1, r2, v1, 'L', 'H', 1, dtsec, kbi,
               altpad, 'y', out v1t, out v2t, out hitearth, out errorsum, out errorout);
-            AstroLibr.lambertuniv(r1, r2, v1, 'L', 'L', 1, dtwait, dtsec, kbi,
+            AstroLibr.lambertuniv(r1, r2, v1, 'L', 'L', 1, dtsec, kbi,
               altpad, 'y', out v1t, out v2t, out hitearth, out errorsum, out errorout);
 
 
@@ -4225,13 +4225,13 @@ namespace TestAllTool
             {
                 i = 0;
                 dtsec = i * 60.0;
-                AstroLibr.lambertuniv(r1, r2, v1, 'S', 'L', nrev, dtwait, dtsec, kbi,
+                AstroLibr.lambertuniv(r1, r2, v1, 'S', 'L', nrev, dtsec, kbi,
                               altpad, 'y', out v1t1, out v2t1, out hitearth, out errorsum, out errorout);
-                AstroLibr.lambertuniv(r1, r2, v1, 'S', 'H', nrev, dtwait, dtsec, kbi,
+                AstroLibr.lambertuniv(r1, r2, v1, 'S', 'H', nrev, dtsec, kbi,
                               altpad, 'y', out v1t2, out v2t2, out hitearth, out errorsum, out errorout);
-                AstroLibr.lambertuniv(r1, r2, v1, 'L', 'L', nrev, dtwait, dtsec, kbi,
+                AstroLibr.lambertuniv(r1, r2, v1, 'L', 'L', nrev, dtsec, kbi,
                               altpad, 'y', out v1t3, out v2t3, out hitearth, out errorsum, out errorout);
-                AstroLibr.lambertuniv(r1, r2, v1, 'L', 'H', nrev, dtwait, dtsec, kbi,
+                AstroLibr.lambertuniv(r1, r2, v1, 'L', 'H', nrev, dtsec, kbi,
                               altpad, 'y', out v1t4, out v2t4, out hitearth, out errorsum, out errorout);
 
                 if (errorout.Contains("ok"))
@@ -4276,13 +4276,13 @@ namespace TestAllTool
                     dtwait = j * 10.0;
                     dtwait = 0.0;  // set to 0 for now
 
-                    AstroLibr.lambertuniv(r1, r3, v1, 'S', 'L', nrev, dtwait, dtsec, kbi,
+                    AstroLibr.lambertuniv(r1, r3, v1, 'S', 'L', nrev, dtsec, kbi,
                                   altpad, 'y', out v1t1, out v2t1, out hitearth, out errorsum, out errorout);
-                    AstroLibr.lambertuniv(r1, r3, v1, 'S', 'H', nrev, dtwait, dtsec, kbi,
+                    AstroLibr.lambertuniv(r1, r3, v1, 'S', 'H', nrev, dtsec, kbi,
                                   altpad, 'y', out v1t2, out v2t2, out hitearth, out errorsum, out errorout);
-                    AstroLibr.lambertuniv(r1, r3, v1, 'L', 'L', nrev, dtwait, dtsec, kbi,
+                    AstroLibr.lambertuniv(r1, r3, v1, 'L', 'L', nrev, dtsec, kbi,
                                   altpad, 'y', out v1t3, out v2t3, out hitearth, out errorsum, out errorout);
-                    AstroLibr.lambertuniv(r1, r3, v1, 'L', 'H', nrev, dtwait, dtsec, kbi,
+                    AstroLibr.lambertuniv(r1, r3, v1, 'L', 'H', nrev, dtsec, kbi,
                                   altpad, 'y', out v1t4, out v2t4, out hitearth, out errorsum, out errorout);
                     if (errorout.Contains("ok"))
                     {
@@ -4331,13 +4331,13 @@ namespace TestAllTool
                     dtwait = j * step2;   // orig 600
                     AstroLibr.kepler(r2, v2, dtsec + dtwait, out r3, out v3);
 
-                    AstroLibr.lambertuniv(r4, r3, v4, 's', 'd', nrev, dtwait, dtsec, kbi,
+                    AstroLibr.lambertuniv(r4, r3, v4, 's', 'd', nrev, dtsec, kbi,
                                   altpad, 'y', out v1t1, out v2t1, out hitearth, out errorsum, out errorout);
-                    AstroLibr.lambertuniv(r4, r3, v4, 's', 'r', nrev, dtwait, dtsec, kbi,
+                    AstroLibr.lambertuniv(r4, r3, v4, 's', 'r', nrev, dtsec, kbi,
                                   altpad, 'y', out v1t2, out v2t2, out hitearth, out errorsum, out errorout);
-                    AstroLibr.lambertuniv(r4, r3, v4, 'l', 'd', nrev, dtwait, dtsec, kbi,
+                    AstroLibr.lambertuniv(r4, r3, v4, 'l', 'd', nrev, dtsec, kbi,
                                   altpad, 'y', out v1t3, out v2t3, out hitearth, out errorsum, out errorout);
-                    AstroLibr.lambertuniv(r4, r3, v4, 'l', 'r', nrev, dtwait, dtsec, kbi,
+                    AstroLibr.lambertuniv(r4, r3, v4, 'l', 'r', nrev, dtsec, kbi,
                                   altpad, 'y', out v1t4, out v2t4, out hitearth, out errorsum, out errorout);
                     if (errorout.Contains("ok"))
                     {
@@ -4556,7 +4556,7 @@ namespace TestAllTool
                 if (MathTimeLibr.mag(dr) > 0.01)
                     strbuildAll.AppendLine("velk does not get to r2 position (km) " + MathTimeLibr.mag(dr).ToString() + "\n");
 
-                AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, 0.0, dtsec, 0.0, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, 0.0, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                 //strbuild.AppendLine(detailSum);
                 strbuildAll.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                 strbuildAll.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -4574,7 +4574,7 @@ namespace TestAllTool
                 if (MathTimeLibr.mag(dv1) > 0.01 || MathTimeLibr.mag(dv2) > 0.01)
                     strbuildAll.AppendLine("velk does not match velu \n");
 
-                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                 //strbuild.AppendLine(detailSum);
                 strbuildAll.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                 strbuildAll.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -4649,7 +4649,7 @@ namespace TestAllTool
                     if (MathTimeLibr.mag(dr) > 0.01)
                         strbuildAll.AppendLine("velk does not get to r2 (km) position " + MathTimeLibr.mag(dr).ToString() + "\n");
 
-                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, 0.0, dtsec, 0.0, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nrev, dtsec, 0.0, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -4667,7 +4667,7 @@ namespace TestAllTool
                     if (MathTimeLibr.mag(dv1) > 0.01 || MathTimeLibr.mag(dv2) > 0.01)
                         strbuildAll.AppendLine("velk does not match velu \n");
 
-                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -4733,7 +4733,7 @@ namespace TestAllTool
                         strbuildAll.AppendLine("velk does not get to r2 (km) position " + MathTimeLibr.mag(dr).ToString() + "\n");
 
                     AstroLibr.lambertumins(r1, r2, nnrev, dm, out kbi, out tof);
-                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -4751,7 +4751,7 @@ namespace TestAllTool
                     if (MathTimeLibr.mag(dv1) > 0.01 || MathTimeLibr.mag(dv2) > 0.01)
                         strbuildAll.AppendLine("velk does not match velu \n");
 
-                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -4802,7 +4802,7 @@ namespace TestAllTool
                         strbuildAll.AppendLine("velk does not get to r2 (km) position " + MathTimeLibr.mag(dr).ToString() + "\n");
 
                     AstroLibr.lambertumins(r1, r2, nnrev, dm, out kbi, out tof);
-                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -4820,7 +4820,7 @@ namespace TestAllTool
                     if (MathTimeLibr.mag(dv1) > 0.01 || MathTimeLibr.mag(dv2) > 0.01)
                         strbuildAll.AppendLine("velk does not match velu \n");
 
-                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -4866,7 +4866,7 @@ namespace TestAllTool
                         strbuildAll.AppendLine("velk does not get to r2 (km) position " + MathTimeLibr.mag(dr).ToString() + "\n");
 
                     AstroLibr.lambertumins(r1, r2, nnrev, dm, out kbi, out tof);
-                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -4884,7 +4884,7 @@ namespace TestAllTool
                     if (MathTimeLibr.mag(dv1) > 0.01 || MathTimeLibr.mag(dv2) > 0.01)
                         strbuildAll.AppendLine("velk does not match velu \n");
 
-                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));
@@ -4929,7 +4929,7 @@ namespace TestAllTool
                         strbuildAll.AppendLine("velk does not get to r2 (km) position " + MathTimeLibr.mag(dr).ToString() + "\n");
 
                     AstroLibr.lambertumins(r1, r2, nnrev, dm, out kbi, out tof);
-                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertuniv(r1, r2, v1, dm, de, nnrev, dtsec, kbi, altpadc * AstroLibr.gravConst.re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("univ v1t " + " " + v1tu[0].ToString("0.00000000000") + " " + v1tu[1].ToString("0.00000000000") + " " + v1tu[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("univ v2t " + " " + v2tu[0].ToString("0.00000000000") + " " + v2tu[1].ToString("0.00000000000") + " " + v2tu[2].ToString("0.00000000000"));
@@ -4947,7 +4947,7 @@ namespace TestAllTool
                     if (MathTimeLibr.mag(dv1) > 0.01 || MathTimeLibr.mag(dv2) > 0.01)
                         strbuildAll.AppendLine("velk does not match velu \n");
 
-                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
+                    AstroLibr.lambertbattin(r1, r2, v1, dm, de, nnrev, dtsec, altpadc * AstroLibr.gravConst.re, 'n', out v1tb, out v2tb, out hitearth, out detailSum, out detailAll);
                     //strbuild.AppendLine(detailSum);
                     strbuildAll.AppendLine("batt v1t " + " " + v1tb[0].ToString("0.00000000000") + " " + v1tb[1].ToString("0.00000000000") + " " + v1tb[2].ToString("0.00000000000"));
                     strbuildAll.AppendLine("batt v2t " + " " + v2tb[0].ToString("0.00000000000") + " " + v2tb[1].ToString("0.00000000000") + " " + v2tb[2].ToString("0.00000000000"));

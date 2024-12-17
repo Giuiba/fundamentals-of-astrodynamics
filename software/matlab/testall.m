@@ -3940,90 +3940,90 @@ function [tof1, kbi1, tof2, kbi2, outstr] = getmins (loopktr, app, nrev, r1, r2,
     if (loopktr == 0)
 
         fprintf(1,'Lambertumin');
-        detailSum = 'S   L   1  0.000 ' + tof1.ToString('0.#######').PadLeft(15) + ' psimin ' + kbi1.ToString('0.#######').PadLeft(15) + ' -0\n';
+        detailSum = 'S   L   1  0.000 ' + tof1 + ' psimin ' + kbi1 + ' -0\n';
         fprintf(1,detailSum);
 
         fprintf(1,'Lambertkmin');
-        detailSum = 'S   L   1  0.000 ' + (tof1).ToString('0.#######').PadLeft(15) + ' kmin ' + kbi1.ToString('0.#######').PadLeft(15) + ' -0\n';
+        detailSum = 'S   L   1  0.000 ' + (tof1) + ' kmin ' + kbi1 + ' -0\n';
         fprintf(1,detailSum);
 
         % -----------------------------put min values etc points on plot ---------------------------------
         fprintf(1,'Lamberttmin');
-        lambertminT(r1, r2, 'S', 'L', 1, out tmin, out tminp, out tminenergy);
-        detailSum = 'S   L   tminp  0.000 ' + tminp.ToString('0.#######').PadLeft(15) + '5.0000000'.PadLeft(15) + ' -0';
+        [tmin, tminp, tminenergy] = lambertminT(r1, r2, 'S', 'L', 1);
+        detailSum = 'S   L   tminp  0.000 ' + tminp + '5.0000000'.PadLeft(15) + ' -0';
         fprintf(1,detailSum);
-        detailSum = 'S   L   tminp  0.000 ' + tminp.ToString('0.#######').PadLeft(15) + '-5.0000000'.PadLeft(15) + ' -0\n';
-        fprintf(1,detailSum);
-
-        detailSum = 'S   L   tminenergy  0.000 ' + tminenergy.ToString('0.#######').PadLeft(15) + '5.0000000'.PadLeft(15) + ' -0';
-        fprintf(1,detailSum);
-        detailSum = 'S   L   tminenergy  0.000 ' + tminenergy.ToString('0.#######').PadLeft(15) + '-5.0000000'.PadLeft(15) + ' -0\n';
+        detailSum = 'S   L   tminp  0.000 ' + tminp + '-5.0000000'.PadLeft(15) + ' -0\n';
         fprintf(1,detailSum);
 
-        lambertumins(r1, r2, 1, 'S', out kbish, out tofsh);
-        detailSum = 'S   L   1  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (tofsh - 5).ToString('0.#######').PadLeft(15) + ' -0';
+        detailSum = 'S   L   tminenergy  0.000 ' + tminenergy + '5.0000000'.PadLeft(15) + ' -0';
         fprintf(1,detailSum);
-        detailSum = 'S   L   1  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (tofsh + 5).ToString('0.#######').PadLeft(15) + ' -0\n';
-        fprintf(1,detailSum);
-        lambertumins(r1, r2, 2, 'S', out kbish, out tofsh);
-        lambertminT(r1, r2, 'S', 'L', 2, out tmin, out tminp, out tminenergy);
-        detailSum = 'S   L   2  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (tofsh - 5).ToString('0.#######').PadLeft(15) + ' -0';
-        fprintf(1,detailSum);
-        detailSum = 'S   L   2  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (tofsh + 5).ToString('0.#######').PadLeft(15) + ' -0\n';
-        fprintf(1,detailSum);
-        lambertumins(r1, r2, 3, 'S', out kbish, out tofsh);
-        lambertminT(r1, r2, 'S', 'L', 3, out tmin, out tminp, out tminenergy);
-        detailSum = 'S   L   3  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (tofsh - 5).ToString('0.#######').PadLeft(15) + ' -0';
-        fprintf(1,detailSum);
-        detailSum = 'S   L   3  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (tofsh + 5).ToString('0.#######').PadLeft(15) + ' -0\n';
+        detailSum = 'S   L   tminenergy  0.000 ' + tminenergy + '-5.0000000'.PadLeft(15) + ' -0\n';
         fprintf(1,detailSum);
 
-        lambertminT(r1, r2, 'L', 'H', 1, out tmin, out tminp, out tminenergy);
-        detailSum = 'L   H   tminp  0.000 ' + tminp.ToString('0.#######').PadLeft(15) + '5.0000000'.PadLeft(15) + ' -0';
+        [kbish, tofsh] = lambertumins(r1, r2, 1, 'S');
+        detailSum = 'S   L   1  0.000 ' + tmin + (tofsh - 5) + ' -0';
         fprintf(1,detailSum);
-        detailSum = 'L   H   tminp  0.000 ' + tminp.ToString('0.#######').PadLeft(15) + '-5.0000000'.PadLeft(15) + ' -0\n';
+        detailSum = 'S   L   1  0.000 ' + tmin + (tofsh + 5) + ' -0\n';
+        fprintf(1,detailSum);
+        [kbish, tofsh] = lambertumins(r1, r2, 2, 'S');
+        [tmin, tminp, tminenergy] = lambertminT(r1, r2, 'S', 'L', 2);
+        detailSum = 'S   L   2  0.000 ' + tmin + (tofsh - 5) + ' -0';
+        fprintf(1,detailSum);
+        detailSum = 'S   L   2  0.000 ' + tmin + (tofsh + 5) + ' -0\n';
+        fprintf(1,detailSum);
+        [kbish, tofsh] = lambertumins(r1, r2, 3, 'S');
+        [tmin, tminp, tminenergy] = lambertminT(r1, r2, 'S', 'L', 3);
+        detailSum = 'S   L   3  0.000 ' + tmin + (tofsh - 5) + ' -0';
+        fprintf(1,detailSum);
+        detailSum = 'S   L   3  0.000 ' + tmin + (tofsh + 5) + ' -0\n';
         fprintf(1,detailSum);
 
-        detailSum = 'L   H   tminenergy  0.000 ' + tminenergy.ToString('0.#######').PadLeft(15) + '5.0000000'.PadLeft(15) + ' -0';
+        [tmin, tminp, tminenergy] = lambertminT(r1, r2, 'L', 'H', 1);
+        detailSum = 'L   H   tminp  0.000 ' + tminp + '5.0000000'.PadLeft(15) + ' -0';
         fprintf(1,detailSum);
-        detailSum = 'L   H   tminenergy  0.000 ' + tminenergy.ToString('0.#######').PadLeft(15) + '-5.0000000'.PadLeft(15) + ' -0\n';
+        detailSum = 'L   H   tminp  0.000 ' + tminp + '-5.0000000'.PadLeft(15) + ' -0\n';
         fprintf(1,detailSum);
 
-        lambertumins(r1, r2, 1, 'L', out kbilg, out toflg);
-        detailSum = 'L   H   1  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (toflg - 5).ToString('0.#######').PadLeft(15) + ' -0';
+        detailSum = 'L   H   tminenergy  0.000 ' + tminenergy + '5.0000000'.PadLeft(15) + ' -0';
         fprintf(1,detailSum);
-        detailSum = 'L   H   1  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (toflg + 5).ToString('0.#######').PadLeft(15) + ' -0\n';
+        detailSum = 'L   H   tminenergy  0.000 ' + tminenergy + '-5.0000000'.PadLeft(15) + ' -0\n';
         fprintf(1,detailSum);
-        lambertumins(r1, r2, 2, 'L', out kbilg, out toflg);
-        lambertminT(r1, r2, 'S', 'H', 2, out tmin, out tminp, out tminenergy);
-        detailSum = 'L   H   2  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (toflg - 5).ToString('0.#######').PadLeft(15) + ' -0';
+
+        [kbilg, toflg] = lambertumins(r1, r2, 1, 'L');
+        detailSum = 'L   H   1  0.000 ' + tmin + (toflg - 5) + ' -0';
         fprintf(1,detailSum);
-        detailSum = 'L   H   2  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (toflg + 5).ToString('0.#######').PadLeft(15) + ' -0\n';
+        detailSum = 'L   H   1  0.000 ' + tmin + (toflg + 5) + ' -0\n';
         fprintf(1,detailSum);
-        lambertumins(r1, r2, 3, 'L', out kbilg, out toflg);
-        lambertminT(r1, r2, 'S', 'H', 3, out tmin, out tminp, out tminenergy);
-        detailSum = 'L   H   3  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (toflg - 5).ToString('0.#######').PadLeft(15) + ' -0';
+        [kbilg, toflg] = lambertumins(r1, r2, 2, 'L');
+        [tmin, tminp, tminenergy] = lambertminT(r1, r2, 'S', 'H', 2);
+        detailSum = 'L   H   2  0.000 ' + tmin + (toflg - 5) + ' -0';
         fprintf(1,detailSum);
-        detailSum = 'L   H   3  0.000 ' + tmin.ToString('0.#######').PadLeft(15) + (toflg + 5).ToString('0.#######').PadLeft(15) + ' -0\n';
+        detailSum = 'L   H   2  0.000 ' + tmin + (toflg + 5) + ' -0\n';
+        fprintf(1,detailSum);
+        [kbilg, toflg] = lambertumins(r1, r2, 3, 'L');
+        [tmin, tminp, tminenergy] = lambertminT(r1, r2, 'S', 'H', 3);
+        detailSum = 'L   H   3  0.000 ' + tmin + (toflg - 5) + ' -0';
+        fprintf(1,detailSum);
+        detailSum = 'L   H   3  0.000 ' + tmin + (toflg + 5) + ' -0\n';
         fprintf(1,detailSum);
 
         % find max rp values for each nrev
         double tmaxrp;
         lambertTmaxrp(r1, r2, 'S', 0, out tmaxrp, out v1t);
         fprintf(1,'x   x   0  0.000 ' + tmaxrp,
-        v1t(1).ToString('0.0000000').PadLeft(15) + v1t(2).ToString('0.0000000').PadLeft(15) + v1t(3).ToString('0.0000000').PadLeft(15));
+        v1t(1), v1t(2), v1t(3).ToString('0.0000000').PadLeft(15));
         fprintf(1,'x   x   0  0.000 ' + tmaxrp,
-        v1t(1).ToString('0.0000000').PadLeft(15) + v1t(2).ToString('0.0000000').PadLeft(15) + v1t(3).ToString('0.0000000').PadLeft(15) + '\n');
+        v1t(1), v1t(2), v1t(3), '\n');
         lambertTmaxrp(r1, r2, 'S', 1, out tmaxrp, out v1t);
         fprintf(1,'x   x   1  0.000 ' + tmaxrp,
-        v1t(1).ToString('0.0000000').PadLeft(15) + v1t(2).ToString('0.0000000').PadLeft(15) + v1t(3).ToString('0.0000000').PadLeft(15));
+        v1t(1), v1t(2), v1t(3).ToString('0.0000000').PadLeft(15));
         fprintf(1,'x   x   1  0.000 ' + tmaxrp,
-        v1t(1).ToString('0.0000000').PadLeft(15) + v1t(2).ToString('0.0000000').PadLeft(15) + v1t(3).ToString('0.0000000').PadLeft(15) + '\n');
+        v1t(1), v1t(2), v1t(3), '\n');
         lambertTmaxrp(r1, r2, 'S', 2, out tmaxrp, out v1t);
         fprintf(1,'x   x   2  0.000 ' + tmaxrp,
-        v1t(1).ToString('0.0000000').PadLeft(15) + v1t(2).ToString('0.0000000').PadLeft(15) + v1t(3).ToString('0.0000000').PadLeft(15));
+        v1t(1), v1t(2), v1t(3).ToString('0.0000000').PadLeft(15));
         fprintf(1,'x   x   2  0.000 ' + tmaxrp,
-        v1t(1).ToString('0.0000000').PadLeft(15) + v1t(2).ToString('0.0000000').PadLeft(15) + v1t(3).ToString('0.0000000').PadLeft(15) + '\n');
+        v1t(1), v1t(2), v1t(3), '\n');
     end  % if nrev > 0
 
     outstr = strbuild;
@@ -4051,14 +4051,10 @@ end   % getmins
 %
 % ------------------------------------------------------------------------------*/
 
-function makesurf
-    (
-    string infilename,
-    string outfilename
-    )
+function makesurf( infilename, outfilename )
     Restoflgine = '';
 
-    string[] fileData = File.ReadAllLines(infilename);
+    fileData = File.ReadAllLines(infilename);
 
     % process all the x lines
     numPerLine = 0;
@@ -4075,7 +4071,7 @@ function makesurf
         ktr = ktr + 1;
         NumLines = NumLines + 1;
 
-        for (i = 1; i <= numPerLine; i++)
+        for i = 1 : numPerLine
 
             line = fileData[ktr];
             line1 = Regex.Replace(line, @'\s+', ' ');
@@ -4105,7 +4101,7 @@ function makesurf
         fprintf(1,' Nan Nan NaN NaN NaN NaN');  % k,
         ktr = ktr + 1 + numinrow;  % get to first poof data
         line = fileData[ktr];
-        line1 = Regex.Replace(line, @'\s+', ' ');
+        line1 = Regex.Replace(line, '\s+', ' ');
         linesplt = line1.Split(' ');
         Restoflgine = linesplt(3), linesplt(4),
         linesplt(5), linesplt(6);
@@ -4118,7 +4114,7 @@ function makesurf
 
             ktr = ktr0 + j * numPerLine;
             line = fileData[ktr];
-            line1 = Regex.Replace(line, @'\s+', ' ');
+            line1 = Regex.Replace(line, '\s+', ' ');
             linesplt = line1.Split(' ');
             Restoflgine = linesplt(3), linesplt(4),
             linesplt(5), linesplt(6);
@@ -4129,7 +4125,7 @@ function makesurf
         numinrow = numinrow + 1;
     end  % while
 
-    string directory = @'d:\codes\library\matlab\';
+    directory = 'd:\codes\library\matlab\';
     File.WriteAllText(directory + 'surf.out', strbuild);
 end  % makesurf
 
@@ -4177,20 +4173,17 @@ function fixdat( infilename,outfilename,intindx1, intindx2, intindx3, intindx4, 
             end
 
             % ----Write out all the data to this point----
-            for lj=1:i
+            for j = 1:i
                 fprintf(1,DatArray(j));
             end
 
             % ----Write out crossover pofor the mandatory break ---
             if ((i == 2000) && ((!LongString.Contains('x')) || LongString.Length > 10))
-
                 fprintf(1,LongString);
                 % write out last one in loop !
                 i = 1;
                 DatArray(i) = LongString;
-
             else
-
                 i = 0;
                 ktr = ktr + 1;   % file counter
             end
@@ -4214,7 +4207,6 @@ function fixdat( infilename,outfilename,intindx1, intindx2, intindx3, intindx4, 
         if ((i == 2000) && (!LongString.Contains('x')) && LongString.Length > 10)
             fprintf(1,(i + 1), ' xx broken');
         else
-
             if (i > 0)
                 fprintf(1,i, ' xx ');
             end
@@ -4230,11 +4222,12 @@ end  % fixdat
 
 
 function testlambertuniv()
+    constastro;
+
     errorsum = '';
     errorout = '';
     show = 'n';     % for test180, show = n, show180 = y
     % show180 = 'n';  % for testlamb known show = y, show180 = n, n/n for envelope
-    hitearth, dm, de;
     nrev = 0;
     r1 = [ 2.500000 * re, 0.000000, 0.000000 ];
     r2 = [ 1.9151111 * re, 1.6069690 * re, 0.000000 ];
@@ -4412,993 +4405,130 @@ function testlambertuniv()
         fprintf(1,'%11.7f %11.7f  %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f  \n',dtwait, dtsec,...
             mag(dv11), mag(dv21),  mag(dv12),  mag(dv22),   mag(dv13), mag(dv23),  mag(dv14), mag(dv24));
     end
-else
-    fprintf(1,errorsum, errorout);
-end
 
-
-% fig 7-21
-r1 = [ -6175.1034, 2757.0706, 1626.6556 ];
-v1 = [ 2.376641, 1.139677, 7.078097 ];
-r2 = [ -6078.007289, 2796.641859, 1890.7135 ];
-v2 = [ 2.654700, 1.018600, 7.015400 ];
-
-strbuildFig.AppendLine('dtwait  dtsec       dv1       dv2 ');
-totaldts = 15000;
-totaldtw = 30000;
-step1 = 60;   % 60 orig
-step2 = 600;  % 600 orig
-stop1 = (int) (totaldts/step1);
-stop2 = (int) (totaldtw/step2);
-for i=0 : stop1  % orig 250, 15000 s total
-
-    dtsec = i * step1;    % orig 60
-    [r4, v4] = kepler(r1, v1, dtsec);
-    for (j = 0; j < stop2; j++)  % orig 25 600*25 = 15000 s total
-
-        dtwait = j * step2;   % orig 600
-        [r3, v3] =  kepler(r2, v2, dtsec + dtwait);
-        [kbi, tof] = lambertumins( r3, r4, 1, 'S' ) ;
-        [v1t1, v2t1, errorl] = lambertu (r3,  r4, v1, 'S', 'L', 1, dtsec, kbi, fid );
-
-        [kbi, tof] = lambertumins( r3, r4, 1, 'S' ) ;
-        [v1t2, v2t2, errorl] = lambertu ( r3,  r4, v1, 'S', 'H', 1, dtsec, kbi, fid );
-
-        [kbi, tof] = lambertumins( r3, r4, 1, 'L' ) ;
-        [v1t3, v2t3, errorl] = lambertu ( r3,  r4, v1, 'L', 'L', 1, dtsec, kbi, fid );
-
-        [kbi, tof] = lambertumins( r3, r4, 1, 'L' ) ;
-        [v1t4, v2t4, errorl] = lambertu ( r3,  r4, v1, 'L', 'H', 1, dtsec, kbi, fid );
-
-        if (errorout.Contains('ok'))
-            dv11 = v1t1 - v1;
-            dv21 = v2t1 - v2;
-            dv12 = v1t2 - v1;
-            dv22 = v2t2 - v2;
-            dv13 = v1t3 - v1;
-            dv23 = v2t3 - v2;
-            dv14 = v1t4 - v1;
-            dv24 = v2t4 - v2;
-
-            fprintf(1,'%11.7f %11.7f  %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f  \n',dtwait, dtsec,...
-                mag(dv11), mag(dv21),  mag(dv12),  mag(dv22),   mag(dv13), mag(dv23),  mag(dv14), mag(dv24));
-        end
-    else
-        strbuildFig.AppendLine(errorsum, errorout);
-    end
-end
-
-% write data out
-string directory = @'D:\Codes\LIBRARY\Matlab\';
-File.WriteAllText(directory + 'surfMovingSalltest.out', strbuildFig);
-end
-
-% test all the known problem cases for lambert
-% output these results separately to the testall directory
-private void testknowncases()
-
-%  this file runs all the known problem cases.
-double tusec = 806.8111238242922;
-Int16 numiter = 16;
-Int32 caseopt, nrev;
-double dtwait, dtsec;
-r1 = new double(4);
-r2 = new double(4);
-v1 = new double(4);
-v2 = new double(4);
-v1tk = new double(4);
-v2tk = new double(4);
-v1tu = new double(4);
-v2tu = new double(4);
-v1tb = new double(4);
-v2tb = new double(4);
-v1tt = new double(4);
-v2tt = new double(4);
-string detailSum, detailAll, errorout;
-dv1 = new double(4);
-dv2 = new double(4);
-dv1t = new double(4);
-dv2t = new double(4);
-r3h = new double(4);
-v3h = new double(4);
-dr = new double(4);
-double ang, f, g, gdot, s, tau;
-double tmin, tminp, tminenergy;
-StringBuilder strbuildAll = new StringBuilder();
-detailSum = '';
-detailAll = '';
-%i;
-char dm, de, hitearth;
-% for test180, show = n, show180 = y
-% for testlamb, show = y, show180 = n known cases
-% for envelope, show = n, show180 = n
-
-double altpadc = 200.0 / re;  % set 200 km for altitude you set as the over limit.
-
-dtsec = 0.0;
-nrev = 0;
-for (caseopt = 0; caseopt <= 85; caseopt++) % 74
-
-    dtwait = 0.0;
-    % Problem cases during evaluation
-    switch (caseopt)
-
-        case 0:
-            fprintf(3,'\n-------- lambert test book pg 497 short way \n');
-            nrev = 0;
-            r1 = [ 2.500000 * re, 0.000000, 0.000000 ];
-            r2 = [ 1.9151111 * re, 1.6069690 * re, 0.000000 ];
-            % assume circular initial orbit for vel calcs
-            v1 = [ 0.0, sqrt(mu / r1(1)), 0.0 ];
-            ang = atan(r2(2) / r2(1));
-            v2 = [ -sqrt(mu / r2(2)) * cos(ang), sqrt(mu / r2(1)) * sin(ang), 0.0 ];
-            dtsec = 99900.3;
-            dtsec = 76.0 * 60.0;
-            dtsec = 21000.0;
-
-            fprintf(3,'r1 ', r1(1).ToString('0.00000000000'), r1(2).ToString('0.00000000000'), r1(3).ToString('0.00000000000'));
-            fprintf(3,'r2 ', r2(1).ToString('0.00000000000'), r2(2).ToString('0.00000000000'), r2(3).ToString('0.00000000000'));
-            fprintf(3,'v1 ', v1(1).ToString('0.00000000000'), v1(2).ToString('0.00000000000'), v1(3).ToString('0.00000000000'));
-            fprintf(3,'v2 ', v2(1).ToString('0.00000000000'), v2(2).ToString('0.00000000000'), v2(3).ToString('0.00000000000'));
-            break;
-        case 1:
-            nrev = 1;
-            r2 = [ -1105.78023519582, 2373.16130661458, 6713.89444816503 ];
-            v2 = [ 5.4720951867079, -4.39299050886976, 2.45681739563752 ];
-            r1 = [ 4938.49830042171, -1922.24810472241, 4384.68293292613 ];
-            v1 = [ 0.738204644165659, 7.20989453238397, 2.32877392066299 ];
-            dtsec = 6372.69272563561; % 1ld
-            break;
-    end  % switch
-
-    fprintf(3,'===== Lambert Case ' + caseopt, ' === ');
-
-    ang = atan(r2(2) / r2(1));
-    double magr1 = mag(r1);
-    double magr2 = mag(r2);
-
-    % this value stays constant in all calcs, vara changes with df
-    double cosdeltanu = dot(r1, r2) / (magr1 * magr2);
-
-    %fprintf(1,'now do findtbi calcs');
-    %fprintf(1,'iter       y         dtnew          psiold      psinew   psinew-psiold   dtdpsi      dtdpsi2    lower    upper     ');
-
-    [s, tau] = lambertkmins1st(r1, r2);
-    fprintf(3,' s ' + s,' tau ' + tau );
-
-    double kbi, tof;
-    double[,] tbidk = new double[10, 3];
-    [kbi, tof] = lambertkmins(s, tau, 1, 'x', 'L');
-    tbidk(2, 2) = kbi;
-    tbidk(2, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 2, 'x', 'L');
-    tbidk(3, 2) = kbi;
-    tbidk(3, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 3, 'x', 'L');
-    tbidk(4, 2) = kbi;
-    tbidk(4, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 4, 'x', 'L');
-    tbidk(5, 2) = kbi;
-    tbidk(5, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 5, 'x', 'L');
-    tbidk(6, 2) = kbi;
-    tbidk(6, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 6, 'x', 'L');
-    tbidk[6, 1] = kbi;
-    tbidk[6, 2] = tof / tusec;
-
-    double[,] tbirk = new double[10, 3];
-    [kbi, tof] = lambertkmins(s, tau, 1, 'x', 'H');
-    tbirk(2, 2) = kbi;
-    tbirk(2, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 2, 'x', 'H');
-    tbirk(3, 2) = kbi;
-    tbirk(3, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 3, 'x', 'H');
-    tbirk(4, 2) = kbi;
-    tbirk(4, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 4, 'x', 'H');
-    tbirk(5, 2) = kbi;
-    tbirk(5, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 5, 'x', 'H');
-    tbirk(6, 2) = kbi;
-    tbirk(6, 3) = tof / tusec;
-    [kbi, tof] = lambertkmins(s, tau, 6, 'x', 'H');
-    tbirk[6, 1] = kbi;
-    tbirk[6, 2] = tof / tusec;
-
-    fprintf(3,'From k variables ');
-    fprintf(3,' ' + tbidk(2, 2).ToString('#0.00000000000') + '  ' + (tbidk(2, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbidk(2, 3)).ToString('0.00000000000') + ' tu ');
-    fprintf(3,' ' + tbidk(3, 2).ToString('#0.00000000000') + '  ' + (tbidk(3, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbidk(3, 3)).ToString('0.00000000000') + ' tu ');
-    fprintf(3,' ' + tbidk(4, 2).ToString('#0.00000000000') + '  ' + (tbidk(4, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbidk(4, 3)).ToString('0.00000000000') + ' tu ');
-    fprintf(3,' ' + tbidk(5, 2).ToString('#0.00000000000') + '  ' + (tbidk(5, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbidk(5, 3)).ToString('0.00000000000') + ' tu ');
-    fprintf(3,' ' + tbidk(6, 2).ToString('#0.00000000000') + '  ' + (tbidk(6, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbidk(6, 3)).ToString('0.00000000000') + ' tu ');
-    fprintf(3,'');
-    fprintf(3,' ' + tbirk(2, 2).ToString('#0.00000000000') + '  ' + (tbirk(2, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbirk(2, 3)).ToString('0.00000000000') + ' tu ');
-    fprintf(3,' ' + tbirk(3, 2).ToString('#0.00000000000') + '  ' + (tbirk(3, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbirk(3, 3)).ToString('0.00000000000') + ' tu ');
-    fprintf(3,' ' + tbirk(4, 2).ToString('#0.00000000000') + '  ' + (tbirk(4, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbirk(4, 3)).ToString('0.00000000000') + ' tu ');
-    fprintf(3,' ' + tbirk(5, 2).ToString('#0.00000000000') + '  ' + (tbirk(5, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbirk(5, 3)).ToString('0.00000000000') + ' tu ');
-    fprintf(3,' ' + tbirk(6, 2).ToString('#0.00000000000') + '  ' + (tbirk(6, 3) * tusec).ToString('0.00000000000') + ' s ' + (tbirk(6, 3)).ToString('0.00000000000') + ' tu ');
-
-
-    %fprintf(1,'lambertTest' + caseopt, r1(1).ToString('0.00000000000'), r1(2).ToString('0.00000000000'), r1(3).ToString('0.00000000000') +
-    %    ' ' + v1(1).ToString('0.00000000000'), v1(2).ToString('0.00000000000'), v1(3).ToString('0.00000000000') +
-    %    ' ' + r2(1).ToString('0.00000000000'), r2(2).ToString('0.00000000000'), r2(3).ToString('0.00000000000') +
-    %    ' ' + v2(1).ToString('0.00000000000'), v2(2).ToString('0.00000000000'), v2(3).ToString('0.00000000000'), dtsec);
-
-    lambertminT(r1, r2, 'S', 'L', 1, out tmin, out tminp, out tminenergy);
-    fprintf(3,'mS ' + tmin + ' minp ' + tminp + ' minener ' + tminenergy);
-    lambertminT(r1, r2, 'S', 'L', 2, out tmin, out tminp, out tminenergy);
-    fprintf(3,'mS ' + tmin + ' minp ' + tminp + ' minener ' + tminenergy);
-    lambertminT(r1, r2, 'S', 'L', 3, out tmin, out tminp, out tminenergy);
-    fprintf(3,'mS ' + tmin + ' minp ' + tminp + ' minener ' + tminenergy);
-
-    lambertminT(r1, r2, 'L', 'H', 1, out tmin, out tminp, out tminenergy);
-    fprintf(3,'mL ' + tmin + ' minp ' + tminp + ' minener ' + tminenergy);
-    lambertminT(r1, r2, 'L', 'H', 2, out tmin, out tminp, out tminenergy);
-    fprintf(3,'mL ' + tmin + ' minp ' + tminp + ' minener ' + tminenergy);
-    lambertminT(r1, r2, 'L', 'H', 3, out tmin, out tminp, out tminenergy);
-    fprintf(3,'mL ' + tmin + ' minp ' + tminp + ' minener ' + tminenergy);
-
-    char modecon = 'n';  % 'c' to shortcut bad cases (hitearth) at iter 3 or 'n'
-
-    fprintf(3,' TEST ------------------ s/l  H  0 rev ------------------');
-    hitearth = ' ';
-    dm = 'S';
-    de = 'H';
-    AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, 0.0, 0.0, numiter, altpadc, modecon, 'n',
-    out v1tk, out v2tk, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-    fprintf(3,detailAll);
-    %fprintf(1,'k#' + caseopt, detailSum + ' diffs ' + MathTimeLib::mag(dr).ToString('0.00000000000'));
-    fprintf(3,'lamk v1t ', v1tk(1).ToString('0.00000000000'), v1tk(2).ToString('0.00000000000'), v1tk(3).ToString('0.00000000000'));
-    fprintf(3,'lamk v2t ', v2tk(1).ToString('0.00000000000'), v2tk(2).ToString('0.00000000000'), v2tk(3).ToString('0.00000000000'));
-    %fprintf(1,magv1t.ToString('0.0000000').PadLeft(12), magv2t.ToString('0.0000000').PadLeft(12));
-
-    kepler(r1, v1tk, dtsec, out r3h, out v3h);
-    fprintf(3,'r3h ', r3h(1).ToString('0.00000000000'), r3h(2).ToString('0.00000000000'), r3h(3).ToString('0.00000000000'));
-    for (j = 0; j < 3; j++)
-        dr(j) = r2(j) - r3h(j);
-        if (mag(dr) > 0.01)
-            fprintf(3,'velk does not get to r2 position (km) ' + mag(dr), '\n');
-
-            lambertuniv(r1, r2, v1, dm, de, nrev, 0.0, dtsec, 0.0, altpadc * re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
-            %fprintf(1,detailSum);
-            fprintf(3,'univ v1t ', v1tu(1).ToString('0.00000000000'), v1tu(2).ToString('0.00000000000'), v1tu(3).ToString('0.00000000000'));
-            fprintf(3,'univ v2t ', v2tu(1).ToString('0.00000000000'), v2tu(2).ToString('0.00000000000'), v2tu(3).ToString('0.00000000000'));
-            kepler(r1, v1tu, dtsec, out r3h, out v3h);
-            for (j = 0; j < 3; j++)
-                dr(j) = r2(j) - r3h(j);
-                if (mag(dr) > 0.01)
-                    fprintf(3,'velu does not get to r2 position (km) ' + mag(dr), '\n');
-
-                    for (j = 0; j < 3; j++)
-
-                        dv1(j) = v1tk(j) - v1tu(j);
-                        dv2(j) = v2tk(j) - v2tu(j);
-                    end
-                    if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                        fprintf(3,'velk does not match velu \n');
-
-                           [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nrev, 0.0, dtsec, altpadc, 'y');
-                        %fprintf(1,detailSum);
-                        fprintf(3,'batt v1t ', v1tb(1).ToString('0.00000000000'), v1tb(2).ToString('0.00000000000'), v1tb(3).ToString('0.00000000000'));
-                        fprintf(3,'batt v2t ', v2tb(1).ToString('0.00000000000'), v2tb(2).ToString('0.00000000000'), v2tb(3).ToString('0.00000000000'));
-                        kepler(r1, v1tb, dtsec, out r3h, out v3h);
-                        for (j = 0; j < 3; j++)
-                            dr(j) = r2(j) - r3h(j);
-                            if (mag(dr) > 0.01)
-                                fprintf(3,'velb does not get to r2 position (km) ' + mag(dr), '\n');
-                                %fprintf(1,'diffs ' + mag(dr).ToString('0.00000000000'));
-
-                                for (j = 0; j < 3; j++)
-
-                                    dv1(j) = v1tk(j) - v1tb(j);
-                                    dv2(j) = v2tk(j) - v2tb(j);
-                                end
-                                if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                    fprintf(3,'velk does not match velb \n');
-                                    %fprintf(1,'diffs ' + MathTimeLib::mag(dr).ToString('0.00000000000'));
-
-                                    %% teds approach
-    %r2ted = [ r2(1), r2(2), r2(3) ];
-    %v2ted = [ v2(1), v2(2), v2(3) ];
-    %r1ted = [ r1(1), r1(2), r1(3) ];
-    %v1ted = [ v1(1), v1(2), v1(3) ];
-    %Cartesian r1com = new Cartesian(r1ted(1), r1ted(2), r1ted(3));
-    %Cartesian v1com = new Cartesian(v1ted(1), v1ted(2), v1ted(3));
-    %Cartesian r2com = new Cartesian(r2ted(1), r2ted(2), r2ted(3));
-    %Cartesian v2com = new Cartesian(v2ted(1), v2ted(2), v2ted(3));
-    %var result = LambertDeltaV.FindMinimumDeltaV(r2com, v2com, r1com, v1com, dtsec, Lambert.EngagementType.Prox, 0);  % .Intercept
-    %v1tr =  result.Velocities.Item1.X, result.Velocities.Item1.Y, result.Velocities.Item1.Z ];  % LambertKMin/s
-    %v2tr =  result.Velocities.Item2.X, result.Velocities.Item2.Y, result.Velocities.Item2.Z ];  % LambertKMin/s
-    %for (i = 0; i < 3; i++)
-    %
-    %    dv1t(i) = v1(i) - v1tr(i);
-    %    dv2t(i) = v2(i) - v2tr(i);
-    %end
-    %magv1tt = mag(dv1);
-    %magv2tt = mag(dv2);
-    %%fprintf(1,detailAll);  % dont do again
-    %double knew = 1.1;
-    %detailAll = ('T' + detailSum.PadLeft(2) + result.LambertCalculations.PadLeft(4) + 0.PadLeft(3) + '   ' + dm + '  ' + df + dtwait.ToString('0.00000000000').PadLeft(15) +
-    %           dtsec.ToString('0.00000000000').PadLeft(15) + knew.ToString('0.00000000000').PadLeft(15) +
-    %           v1tr(1).ToString('0.00000000000').PadLeft(15) + v1tr(2).ToString('0.00000000000').PadLeft(15) + v1tr(3).ToString('0.00000000000').PadLeft(15) +
-    %           v2tr(1).ToString('0.00000000000').PadLeft(15) + v2tr(2).ToString('0.00000000000').PadLeft(15) + v2tr(3).ToString('0.00000000000').PadLeft(15) +
-    %           (cos(cosdeltanu) * 180 / pi).ToString('0.00000000000').PadLeft(15) + caseopt + hitearth);
-    %%                fprintf(1,detailAll);
-
-    %%                fprintf(1,magv1tt.ToString('0.00000000000') + '  ' + magv2tt.ToString('0.00000000000') + ' \n');
-    %if ((abs(magv1t - magv1tt) > 0.01) || (abs(magv2t - magv2tt) > 0.01))
-    %    fprintf(1,'Error between the approaches');
-
-    % timing of routines
-    %var watch = System.Diagnostics.Stopwatch.StartNew();
-    %l = 0;
-    %for (l = 1; l < 500; l++)
-
-    fprintf(3,' TEST ------------------ s/l L 0 rev ------------------');
-    dm = 'L';
-    de = 'L';
-    % k near 180 is about 53017 while battin is 30324!
-    AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nrev, dtwait, dtsec, 0.0, 0.0, numiter, altpadc, modecon, 'n',
-    out v1tk, out v2tk, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-    fprintf(3,detailAll);
-    %fprintf(1,'k#' + caseopt, detailSum + ' diffs ' + mag(dr).ToString('0.00000000000'));
-    fprintf(3,'lamk v1t ', v1tk(1).ToString('0.00000000000'), v1tk(2).ToString('0.00000000000'), v1tk(3).ToString('0.00000000000'));
-    fprintf(3,'lamk v2t ', v2tk(1).ToString('0.00000000000'), v2tk(2).ToString('0.00000000000'), v2tk(3).ToString('0.00000000000'));
-    %fprintf(1,magv1t.ToString('0.0000000').PadLeft(12), magv2t.ToString('0.0000000').PadLeft(12));
-
-    kepler(r1, v1tk, dtsec, out r3h, out v3h);
-    for (j = 0; j < 3; j++)
-        dr(j) = r2(j) - r3h(j);
-        if (mag(dr) > 0.01)
-            fprintf(3,'velk does not get to r2 (km) position ' + mag(dr), '\n');
-
-            lambertuniv(r1, r2, v1, dm, de, nrev, 0.0, dtsec, 0.0, altpadc * re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
-            %fprintf(1,detailSum);
-            fprintf(3,'univ v1t ', v1tu(1).ToString('0.00000000000'), v1tu(2).ToString('0.00000000000'), v1tu(3).ToString('0.00000000000'));
-            fprintf(3,'univ v2t ', v2tu(1).ToString('0.00000000000'), v2tu(2).ToString('0.00000000000'), v2tu(3).ToString('0.00000000000'));
-            kepler(r1, v1tu, dtsec, out r3h, out v3h);
-            for (j = 0; j < 3; j++)
-                dr(j) = r2(j) - r3h(j);
-                if (mag(dr) > 0.01)
-                    fprintf(3,'velu does not get to r2 (km) position ' + mag(dr), '\n');
-
-                    for (j = 0; j < 3; j++)
-
-                        dv1(j) = v1tk(j) - v1tu(j);
-                        dv2(j) = v2tk(j) - v2tu(j);
-                    end
-                    if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                        fprintf(3,'velk does not match velu \n');
-
-                        [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nrev, 0.0, dtsec, altpadc, 'y');
-                        %fprintf(1,detailSum);
-                        fprintf(3,'batt v1t ', v1tb(1).ToString('0.00000000000'), v1tb(2).ToString('0.00000000000'), v1tb(3).ToString('0.00000000000'));
-                        fprintf(3,'batt v2t ', v2tb(1).ToString('0.00000000000'), v2tb(2).ToString('0.00000000000'), v2tb(3).ToString('0.00000000000'));
-                        kepler(r1, v1tb, dtsec, out r3h, out v3h);
-                        for (j = 0; j < 3; j++)
-                            dr(j) = r2(j) - r3h(j);
-                            if (mag(dr) > 0.01)
-                                fprintf(3,'velb does not get to r2 (km) position ' + mag(dr), '\n');
-                                %fprintf(1,'diffs ' + mag(dr).ToString('0.00000000000'));
-
-                                for (j = 0; j < 3; j++)
-
-                                    dv1(j) = v1tk(j) - v1tb(j);
-                                    dv2(j) = v2tk(j) - v2tb(j);
-                                end
-                                if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                    fprintf(3,'velk does not match velb \n');
-                                    %fprintf(1,'diffs ' + MathTimeLib::mag(dr).ToString('0.00000000000'));
-
-                                    for (j = 0; j < 3; j++)
-
-                                        dv1(j) = v1tk(j) - v1tb(j);
-                                        dv2(j) = v2tk(j) - v2tb(j);
-                                    end
-                                    if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                        fprintf(3,'velk does not match velb \n');
-                                        %fprintf(1,'diffs ' + MathTimeLib::mag(dr).ToString('0.00000000000'));
-                                    end
-                                    %watch.Stop();
-                                    %var elapsedMs = watch.ElapsedMilliseconds;
-                                    %Console.WriteLine(watch.ElapsedMilliseconds);
-
-                                    % use random nrevs, but check if nrev = 0 and set to 1
-                                    % but then you have to check that there is enough time for 1 rev
-                                    nnrev = nrev;
-                                    if (nnrev == 0)
-                                        nnrev = 1;
-
-                                        lambertminT(r1, r2, 'S', 'L', nnrev, out tmin, out tminp, out tminenergy);
-                                        fprintf(3,'mS ' + tmin + ' minp ' + tminp + ' minener ' + tminenergy);
-                                        lambertminT(r1, r2, 'L', 'L', nnrev, out tmin, out tminp, out tminenergy);
-                                        fprintf(3,'mL ' + tmin + ' minp ' + tminp + ' minener ' + tminenergy);
-
-                                        fprintf(3,' TEST ------------------ S  L ' + nnrev, ' rev ------------------');
-                                        %if (dtsec / tusec >= tbidk[nnrev, 2])
-                                        % do inside lambertk now
-
-                                        dm = 'S';
-                                        de = 'L';
-                                        [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);
-                                        AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nnrev, dtwait, dtsec, tof, kbi, numiter, altpadc, modecon, 'n',
-                                        out v1tk, out v2tk, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                                        fprintf(3,detailAll);
-                                        %fprintf(1,'k#' + caseopt, detailSum + ' diffs ' + mag(dr).ToString('0.00000000000'));
-                                        fprintf(3,'lamk v1t ', v1tk(1).ToString('0.00000000000'), v1tk(2).ToString('0.00000000000'), v1tk(3).ToString('0.00000000000'));
-                                        fprintf(3,'lamk v2t ', v2tk(1).ToString('0.00000000000'), v2tk(2).ToString('0.00000000000'), v2tk(3).ToString('0.00000000000'));
-                                        %fprintf(1,magv1t.ToString('0.0000000').PadLeft(12), magv2t.ToString('0.0000000').PadLeft(12));
-
-                                        kepler(r1, v1tk, dtsec, out r3h, out v3h);
-                                        for (j = 0; j < 3; j++)
-                                            dr(j) = r2(j) - r3h(j);
-                                            if (mag(dr) > 0.01)
-                                                fprintf(3,'velk does not get to r2 (km) position ' + mag(dr), '\n');
-
-                                                lambertumins(r1, r2, nnrev, dm);
-                                                lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
-                                                %fprintf(1,detailSum);
-                                                fprintf(3,'univ v1t ', v1tu(1).ToString('0.00000000000'), v1tu(2).ToString('0.00000000000'), v1tu(3).ToString('0.00000000000'));
-                                                fprintf(3,'univ v2t ', v2tu(1).ToString('0.00000000000'), v2tu(2).ToString('0.00000000000'), v2tu(3).ToString('0.00000000000'));
-                                                kepler(r1, v1tu, dtsec, out r3h, out v3h);
-                                                for (j = 0; j < 3; j++)
-                                                    dr(j) = r2(j) - r3h(j);
-                                                    if (mag(dr) > 0.01)
-                                                        fprintf(3,'velu does not get to r2 (km) position ' + mag(dr), '\n');
-
-                                                        for (j = 0; j < 3; j++)
-
-                                                            dv1(j) = v1tk(j) - v1tu(j);
-                                                            dv2(j) = v2tk(j) - v2tu(j);
-                                                        end
-                                                        if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                                            fprintf(3,'velk does not match velu \n');
-
-                                                            [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
-                                                            %fprintf(1,detailSum);
-                                                            fprintf(3,'batt v1t ', v1tb(1).ToString('0.00000000000'), v1tb(2).ToString('0.00000000000'), v1tb(3).ToString('0.00000000000'));
-                                                            fprintf(3,'batt v2t ', v2tb(1).ToString('0.00000000000'), v2tb(2).ToString('0.00000000000'), v2tb(3).ToString('0.00000000000'));
-                                                            kepler(r1, v1tb, dtsec, out r3h, out v3h);
-                                                            for (j = 0; j < 3; j++)
-                                                                dr(j) = r2(j) - r3h(j);
-                                                                if (mag(dr) > 0.01)
-                                                                    fprintf(3,'velb does not get to r2 (km) position ' + mag(dr), '\n');
-                                                                    %fprintf(1,'diffs ' + mag(dr).ToString('0.00000000000'));
-
-                                                                    for (j = 0; j < 3; j++)
-
-                                                                        dv1(j) = v1tk(j) - v1tb(j);
-                                                                        dv2(j) = v2tk(j) - v2tb(j);
-                                                                    end
-                                                                    if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                                                        fprintf(3,'velk does not match velb \n');
-                                                                        %fprintf(1,'diffs ' + MathTimeLib::mag(dr).ToString('0.00000000000'));
-                                                                    end
-                                                                    %else
-                                                                    %    fprintf(1,' ------------------------- not enough time for 1 revs ');
-
-                                                                    fprintf(3,' TEST ------------------ L  L ' + nnrev, ' rev ------------------');
-                                                                    %if (dtsec / tusec >= tbidk[nnrev, 2])
-                                                                    % do inside lambertk now
-
-                                                                    dm = 'L';
-                                                                    de = 'L';
-                                                                    % switch tdi!!  tdidk to tdirk 'H'
-                                                                    [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);  % 'H'
-
-                                                                    %double tofk1, kbik2, tofk2, kbik1;
-                                                                    %string outstr;
-                                                                    %getmins(1, 'k', nrev, r1, r2, s, tau, dm, de, out tofk1, out kbik1, out tofk2, out kbik2, out outstr);
-
-                                                                    AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nnrev, dtwait, dtsec, tof, kbi, numiter, altpadc, modecon, 'n',
-                                                                    out v1tk, out v2tk, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                                                                    fprintf(3,detailAll);
-                                                                    %fprintf(1,'k#' + caseopt, detailSum + ' diffs ' + mag(dr).ToString('0.00000000000'));
-                                                                    fprintf(3,'lamk v1t ', v1tk(1).ToString('0.00000000000'), v1tk(2).ToString('0.00000000000'), v1tk(3).ToString('0.00000000000'));
-                                                                    fprintf(3,'lamk v2t ', v2tk(1).ToString('0.00000000000'), v2tk(2).ToString('0.00000000000'), v2tk(3).ToString('0.00000000000'));
-                                                                    %fprintf(1,magv1t.ToString('0.0000000').PadLeft(12), magv2t.ToString('0.0000000').PadLeft(12));
-
-                                                                    kepler(r1, v1tk, dtsec, out r3h, out v3h);
-                                                                    for (j = 0; j < 3; j++)
-                                                                        dr(j) = r2(j) - r3h(j);
-                                                                        if (mag(dr) > 0.01)
-                                                                            fprintf(3,'velk does not get to r2 (km) position ' + mag(dr), '\n');
-
-                                                                            lambertumins(r1, r2, nnrev, dm);
-                                                                            lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
-                                                                            %fprintf(1,detailSum);
-                                                                            fprintf(3,'univ v1t ', v1tu(1).ToString('0.00000000000'), v1tu(2).ToString('0.00000000000'), v1tu(3).ToString('0.00000000000'));
-                                                                            fprintf(3,'univ v2t ', v2tu(1).ToString('0.00000000000'), v2tu(2).ToString('0.00000000000'), v2tu(3).ToString('0.00000000000'));
-                                                                            kepler(r1, v1tu, dtsec, out r3h, out v3h);
-                                                                            for (j = 0; j < 3; j++)
-                                                                                dr(j) = r2(j) - r3h(j);
-                                                                                if (mag(dr) > 0.01)
-                                                                                    fprintf(3,'velu does not get to r2 (km) position ' + mag(dr), '\n');
-
-                                                                                    for (j = 0; j < 3; j++)
-
-                                                                                        dv1(j) = v1tk(j) - v1tu(j);
-                                                                                        dv2(j) = v2tk(j) - v2tu(j);
-                                                                                    end
-                                                                                    if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                                                                        fprintf(3,'velk does not match velu \n');
-
-                                                                                        [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
-                                                                                        %fprintf(1,detailSum);
-                                                                                        fprintf(3,'batt v1t ', v1tb(1).ToString('0.00000000000'), v1tb(2).ToString('0.00000000000'), v1tb(3).ToString('0.00000000000'));
-                                                                                        fprintf(3,'batt v2t ', v2tb(1).ToString('0.00000000000'), v2tb(2).ToString('0.00000000000'), v2tb(3).ToString('0.00000000000'));
-                                                                                        kepler(r1, v1tb, dtsec, out r3h, out v3h);
-                                                                                        for (j = 0; j < 3; j++)
-                                                                                            dr(j) = r2(j) - r3h(j);
-                                                                                            if (mag(dr) > 0.01)
-                                                                                                fprintf(3,'velb does not get to r2 (km) position ' + mag(dr), '\n');
-                                                                                                %fprintf(1,'diffs ' + mag(dr).ToString('0.00000000000'));
-
-                                                                                                for (j = 0; j < 3; j++)
-
-                                                                                                    dv1(j) = v1tk(j) - v1tb(j);
-                                                                                                    dv2(j) = v2tk(j) - v2tb(j);
-                                                                                                end
-                                                                                                if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                                                                                    fprintf(3,'velk does not match velb \n');
-                                                                                                    %fprintf(1,'diffs ' + MathTimeLib::mag(dr).ToString('0.00000000000'));
-                                                                                                end
-                                                                                                %else
-                                                                                                %    fprintf(1,' ------------------------- not enough time for 1 revs ');
-
-                                                                                                fprintf(3,' TEST ------------------ S  H ' + nnrev, ' rev ------------------');
-                                                                                                %if (dtsec / tusec >= tbirk[nnrev, 2])
-                                                                                                % do inside lambertk now
-
-                                                                                                dm = 'S';
-                                                                                                de = 'H';
-                                                                                                % switch tdi!!  tdirk to tdidk  'L'
-                                                                                                [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);  % 'L'
-                                                                                                AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nnrev, dtwait, dtsec, tof, kbi, numiter, altpadc, modecon, 'n',
-                                                                                                out v1tk, out v2tk, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                                                                                                fprintf(3,detailAll);
-                                                                                                %fprintf(1,'k#' + caseopt, detailSum + ' diffs ' + mag(dr).ToString('0.00000000000'));
-                                                                                                fprintf(3,'lamk v1t ', v1tk(1).ToString('0.00000000000'), v1tk(2).ToString('0.00000000000'), v1tk(3).ToString('0.00000000000'));
-                                                                                                fprintf(3,'lamk v2t ', v2tk(1).ToString('0.00000000000'), v2tk(2).ToString('0.00000000000'), v2tk(3).ToString('0.00000000000'));
-                                                                                                %fprintf(1,magv1t.ToString('0.0000000').PadLeft(12), magv2t.ToString('0.0000000').PadLeft(12));
-
-                                                                                                kepler(r1, v1tk, dtsec, out r3h, out v3h);
-                                                                                                for (j = 0; j < 3; j++)
-                                                                                                    dr(j) = r2(j) - r3h(j);
-                                                                                                    if (mag(dr) > 0.01)
-                                                                                                        fprintf(3,'velk does not get to r2 (km) position ' + mag(dr), '\n');
-
-                                                                                                        lambertumins(r1, r2, nnrev, dm);
-                                                                                                        lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
-                                                                                                        %fprintf(1,detailSum);
-                                                                                                        fprintf(3,'univ v1t ', v1tu(1).ToString('0.00000000000'), v1tu(2).ToString('0.00000000000'), v1tu(3).ToString('0.00000000000'));
-                                                                                                        fprintf(3,'univ v2t ', v2tu(1).ToString('0.00000000000'), v2tu(2).ToString('0.00000000000'), v2tu(3).ToString('0.00000000000'));
-                                                                                                        kepler(r1, v1tu, dtsec, out r3h, out v3h);
-                                                                                                        for (j = 0; j < 3; j++)
-                                                                                                            dr(j) = r2(j) - r3h(j);
-                                                                                                            if (mag(dr) > 0.01)
-                                                                                                                fprintf(3,'velu does not get to r2 (km) position ' + mag(dr), '\n');
-
-                                                                                                                for (j = 0; j < 3; j++)
-
-                                                                                                                    dv1(j) = v1tk(j) - v1tu(j);
-                                                                                                                    dv2(j) = v2tk(j) - v2tu(j);
-                                                                                                                end
-                                                                                                                if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                                                                                                    fprintf(3,'velk does not match velu \n');
-
-                                                                                                                    [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
-                                                                                                                    %fprintf(1,detailSum);
-                                                                                                                    fprintf(3,'batt v1t ', v1tb(1).ToString('0.00000000000'), v1tb(2).ToString('0.00000000000'), v1tb(3).ToString('0.00000000000'));
-                                                                                                                    fprintf(3,'batt v2t ', v2tb(1).ToString('0.00000000000'), v2tb(2).ToString('0.00000000000'), v2tb(3).ToString('0.00000000000'));
-                                                                                                                    kepler(r1, v1tb, dtsec, out r3h, out v3h);
-                                                                                                                    for (j = 0; j < 3; j++)
-                                                                                                                        dr(j) = r2(j) - r3h(j);
-                                                                                                                        if (mag(dr) > 0.01)
-                                                                                                                            fprintf(3,'velb does not get to r2 (km) position ' + mag(dr), '\n');
-                                                                                                                            %fprintf(1,'diffs ' + mag(dr).ToString('0.00000000000'));
-
-                                                                                                                            for (j = 0; j < 3; j++)
-
-                                                                                                                                dv1(j) = v1tk(j) - v1tb(j);
-                                                                                                                                dv2(j) = v2tk(j) - v2tb(j);
-                                                                                                                            end
-                                                                                                                            if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                                                                                                                fprintf(3,'velk does not match velb \n');
-                                                                                                                                %fprintf(1,'diffs ' + MathTimeLib::mag(dr).ToString('0.00000000000'));
-                                                                                                                            end
-                                                                                                                            %else
-                                                                                                                            %    fprintf(1,' ------------------------- not enough time for 1 revs ');
-
-                                                                                                                            fprintf(3,' TEST ------------------ L  H ' + nnrev, ' rev ------------------');
-                                                                                                                            %if (dtsec / tusec >= tbirk[nnrev, 2])
-                                                                                                                            % do inside lambertk now
-
-                                                                                                                            dm = 'L';
-                                                                                                                            de = 'H';
-                                                                                                                            [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);
-                                                                                                                            AstroLambertkLibr.lambertK(r1, v1, r2, dm, de, nnrev, dtwait, dtsec, tof, kbi, numiter, altpadc, modecon, 'n',
-                                                                                                                            out v1tk, out v2tk, out f, out g, out gdot, out hitearth, out errorout, out detailSum, out detailAll);
-                                                                                                                            fprintf(3,detailAll);
-                                                                                                                            %fprintf(1,'k#' + caseopt, detailSum + ' diffs ' + mag(dr).ToString('0.00000000000'));
-                                                                                                                            fprintf(3,'lamk v1t ', v1tk(1).ToString('0.00000000000'), v1tk(2).ToString('0.00000000000'), v1tk(3).ToString('0.00000000000'));
-                                                                                                                            fprintf(3,'lamk v2t ', v2tk(1).ToString('0.00000000000'), v2tk(2).ToString('0.00000000000'), v2tk(3).ToString('0.00000000000'));
-                                                                                                                            %fprintf(1,magv1t.ToString('0.0000000').PadLeft(12), magv2t.ToString('0.0000000').PadLeft(12));
-
-                                                                                                                            kepler(r1, v1tk, dtsec, out r3h, out v3h);
-                                                                                                                            for (j = 0; j < 3; j++)
-                                                                                                                                dr(j) = r2(j) - r3h(j);
-                                                                                                                                if (mag(dr) > 0.01)
-                                                                                                                                    fprintf(3,'velk does not get to r2 (km) position ' + mag(dr), '\n');
-
-                                                                                                                                    lambertumins(r1, r2, nnrev, dm);
-                                                                                                                                    lambertuniv(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, altpadc * re, 'n', out v1tu, out v2tu, out hitearth, out detailSum, out detailAll);
-                                                                                                                                    %fprintf(1,detailSum);
-                                                                                                                                    fprintf(3,'univ v1t ', v1tu(1).ToString('0.00000000000'), v1tu(2).ToString('0.00000000000'), v1tu(3).ToString('0.00000000000'));
-                                                                                                                                    fprintf(3,'univ v2t ', v2tu(1).ToString('0.00000000000'), v2tu(2).ToString('0.00000000000'), v2tu(3).ToString('0.00000000000'));
-                                                                                                                                    kepler(r1, v1tu, dtsec, out r3h, out v3h);
-                                                                                                                                    for (j = 0; j < 3; j++)
-                                                                                                                                        dr(j) = r2(j) - r3h(j);
-                                                                                                                                        if (mag(dr) > 0.01)
-                                                                                                                                            fprintf(3,'velu does not get to r2 (km) position ' + mag(dr), '\n');
-
-                                                                                                                                            for (j = 0; j < 3; j++)
-
-                                                                                                                                                dv1(j) = v1tk(j) - v1tu(j);
-                                                                                                                                                dv2(j) = v2tk(j) - v2tu(j);
-                                                                                                                                            end
-                                                                                                                                            if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                                                                                                                                fprintf(3,'velk does not match velu \n');
-
-                                                                                                                                                [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
-                                                                                                                                                %fprintf(1,detailSum);
-                                                                                                                                                fprintf(3,'batt v1t ', v1tb(1).ToString('0.00000000000'), v1tb(2).ToString('0.00000000000'), v1tb(3).ToString('0.00000000000'));
-                                                                                                                                                fprintf(3,'batt v2t ', v2tb(1).ToString('0.00000000000'), v2tb(2).ToString('0.00000000000'), v2tb(3).ToString('0.00000000000'));
-                                                                                                                                                kepler(r1, v1tb, dtsec, out r3h, out v3h);
-                                                                                                                                                for (j = 0; j < 3; j++)
-                                                                                                                                                    dr(j) = r2(j) - r3h(j);
-                                                                                                                                                    if (mag(dr) > 0.01)
-                                                                                                                                                        fprintf(3,'velb does not get to r2 (km) position ' + mag(dr), '\n');
-                                                                                                                                                        %fprintf(1,'diffs ' + mag(dr).ToString('0.00000000000'));
-
-                                                                                                                                                        for (j = 0; j < 3; j++)
-
-                                                                                                                                                            dv1(j) = v1tk(j) - v1tb(j);
-                                                                                                                                                            dv2(j) = v2tk(j) - v2tb(j);
-                                                                                                                                                        end
-                                                                                                                                                        if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                                                                                                                                                            fprintf(3,'velk does not match velb \n');
-                                                                                                                                                            %fprintf(1,'diffs ' + MathTimeLib::mag(dr).ToString('0.00000000000'));
-                                                                                                                                                        end
-                                                                                                                                                        %else
-                                                                                                                                                        %    fprintf(1,' ------------------------- not enough time for 1 revs ');
-
-                                                                                                                                                        fprintf(3,' --------------------------------end case ' + caseopt + '------------------------------------------------ ');
-                                                                                                                                                        string resultStr = strbuildAll;
-                                                                                                                                                    end
-
-                                                                                                                                                    string directory = @'D:\Codes\LIBRARY\cs\TestAll\';
-                                                                                                                                                    File.WriteAllText(directory + 'testall-lambertknown.out', strbuildAll);
-
-                                            end  % testknowncases
-
-
-                                            function testradecgeo2azel()
-                                                rtasc = 294.98914583 / rad;
-                                                decl = -20.8234944 / rad;
-                                                xp = 0.0;
-                                                yp = 0.0;
-                                                lod = 0.0;
-                                                jdut1 = 2453101.82740678310;
-                                                ttt = 0.042623631889;
-                                                ddpsi = -0.052195;
-                                                ddeps = -0.003875;
-                                                rr = 12373.3546098;  % km
-                                                latgd = 39.007 / rad;
-                                                lon = -104.883 / rad;
-                                                alt = 0.3253;
-
-                                                [az, el] = radecgeo2azel(rtasc, decl, rr, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, AstroLib.EOpt.e80);
-                                            end
-
-                                            function testijk2ll()
-                                                rad = 180.0 / pi;
-
-                                                r = [ 1.023 * re, 1.076 * re, 1.011 * re ];
-
-                                                [latgc, latgd, lon, hellp] = ecef2ll(r);
-
-                                                fprintf(1,'ecef2ll %11.7f  %11.7f  %11.7f  \n', latgd*rad, lon * rad, hellp);
-
-                                                [latgc, latgd, lon, hellp] = ecef2llb(r);
-
-                                                fprintf(1,'ecef2llb %11.7f  %11.7f  %11.7f  \n', latgd*rad, lon * rad, hellp);
-                                            end
-
-                                            function testgd2gc()
-                                                double rad = 180.0 / pi;
-                                                latgd = 34.173429 / rad;
-
-                                                [ans] = gd2gc(latgd);
-
-                                                fprintf(1,'gd2gc %11.7f \n' + ans,'\n');
-                                            end
-
-                                            function testsite()
-                                                latgd = 39.007 / rad;
-                                                lon = -104.883 / rad;
-                                                alt = 0.3253;
-                                                fprintf(1,'site gc %16.9f %16.9f %16.9f  %16.9f  \n',r, latgc*rad );
-
-                                                [rsecef, vsecef] = site(latgd, lon, alt);
-
-                                                fprintf(1,'site ' + rsecef(1), rsecef(2), rsecef(3),
-                                                vsecef(1), vsecef(2), vsecef(3));
-
-                                            end
-
-
-                                            % --------  sun          - analytical sun ephemeris
-                                            function testsun()
-                                                jd = 2449444.5;
-                                                [rsun, rtasc, decl] = sun(jd);
-
-                                                fprintf(1,'sun ' + rsun(1), rsun(2), rsun(3));
-
-
-                                                fprintf(1,'now take the TOD sun vector (analytical) and move to MOD and TOD for comparison \n');
-                                                %ttt= ( jd - 2451545.0  )/ 36525.0;
-                                                vmod = [0 0 0]';
-                                                amod = [0 0 0]';
-                                                [reci,veci,aeci] = mod2eci  ( rsun',vmod,amod,ttt );
-                                                fprintf(1,'mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                [reci,veci,aeci] = tod2eci  ( rsun',vmod,amod,ttt, ddpsi, ddeps );
-                                                fprintf(1,'tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n\n',db, mag(db) );
-
-                                                %         [reci,veci,aeci] = eci2mod ( rsun',vmod,amod,ttt );
-                                                %         fprintf(1,'eci - mod  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                %         db = reci*149597870.0-rsunaa';
-                                                %         fprintf(1,'delta eci - mod  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-                                                %
-                                                %         [reci,veci,aeci] = eci2tod ( rsun',vmod,amod,ttt, ddpsi, ddeps );
-                                                %         fprintf(1,'eci - tod  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                %         db = reci*149597870.0-rsunaa';
-                                                %         fprintf(1,'delta eci - tod  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                [hms] = hms2rad( 0,44,33.42 );
-                                                [dms] = dms2rad( 4,47,18.3 );
-                                                fprintf(1,'hms ast alm rtasc %11.9f decl %11.9f \n',hms*rad,dms*rad );
-
-
-                                                % now try alamnac method
-                                                [rsuna,rtasca,decla] = sunalmanac ( jd+jdfrac );
-                                                fprintf(1,'\n\nsun  rtasc %14.6f deg decl %14.6f deg\n',rtasca*rad, decla*rad );
-                                                fprintf(1,'sun ALM %11.9f%11.9f%11.9f au\n',rsuna );
-                                                fprintf(1,'sun ALM %14.4f%14.4f%14.4f km\n',rsuna*149597870.0 );
-
-                                                fprintf(1,'rs aa ICRF %11.9f %11.9f %11.9f km \n',rsunaa);
-
-                                                fprintf(1,'now take the TOD sun vector (analytical) and move to MOD and TOD for comparison \n');
-                                                %ttt= ( jd - 2451545.0  )/ 36525.0;
-                                                vmod = [0 0 0]';
-                                                amod = [0 0 0]';
-                                                [reci,veci,aeci] = mod2eci  ( rsuna',vmod,amod,ttt );
-                                                fprintf(1,'mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                [reci,veci,aeci] = tod2eci  ( rsuna',vmod,amod,ttt, ddpsi, ddeps );
-                                                fprintf(1,'tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n\n',db, mag(db) );
-
-                                                %         [reci,veci,aeci] = eci2mod ( rsuna',vmod,amod,ttt );
-                                                %         fprintf(1,'eci - mod  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                %         db = reci*149597870.0-rsunaa';
-                                                %         fprintf(1,'delta eci - mod  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-                                                %
-                                                %         [reci,veci,aeci] = eci2tod ( rsuna',vmod,amod,ttt, ddpsi, ddeps );
-                                                %         fprintf(1,'eci - tod  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                %         db = reci*149597870.0-rsunaa';
-                                                %         fprintf(1,'delta eci - tod  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                [hms] = hms2rad( 0,44,33.42 );
-                                                [dms] = dms2rad( 4,47,18.3 );
-                                                fprintf(1,'hms ast alm rtasc %11.9f decl %11.9f \n',hms*rad,dms*rad );
-
-                                                fprintf(1,'==============================================================\n');
-                                                % previous edition example
-                                                year = 1994;
-                                                mon = 4;
-                                                day = 1;
-                                                hr = 23;
-                                                minute = 58;
-                                                second = 59.816;
-                                                [jd,jdfrac] = jday(year, mon, day, hr, minute, second);
-                                                fprintf(1,'jd  %11.9f \n',jd+jdfrac );
-                                                dat = 28;
-                                                dut1 = -0.0226192;
-                                                [ut1, tut1, jdut1,jdut1frac, utc, tai, tt, ttt, jdtt,jdttfrac, tdb, ttdb, jdtdb,jdtdbfrac ] ...
-                                                    = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
-                                                fprintf(1,'input data \n\n');
-                                                fprintf(1,' year %5i ',year);
-                                                fprintf(1,' mon %4i ',mon);
-                                                fprintf(1,' day %3i ',day);
-                                                fprintf(1,' %3i:%2i:%8.6f\n ',hr,minute,second );
-                                                fprintf(1,' dut1 %8.6f s',dut1);
-                                                fprintf(1,' dat %3i s',dat);
-
-                                                fprintf(1,'tt  %8.6f ttt  %16.12f jdtt  %18.11f ',tt,ttt,jdtt );
-                                                [h,m,s] = sec2hms( tt );
-                                                fprintf(1,'hms %3i %3i %8.6f \n',h,m,s);
-
-                                                [rsun,rtasc,decl] = sun ( jd+jdfrac );
-                                                fprintf(1,'sun  rtasc %14.6f deg decl %14.6f deg\n',rtasc*rad,decl*rad );
-                                                fprintf(1,'sun ICRS %11.9f%11.9f%11.9f au\n',rsun );
-                                                fprintf(1,'sun ICRS %14.4f%14.4f%14.4f km\n',rsun*149597870.0 );
-
-                                                rsunaa = [0.9772766 0.1922635  0.0833613]*149597870.0; % astronomical alm value into km
-                                                fprintf(1,'rs almanac MOD %11.9f %11.9f %11.9f km \n',rsunaa);
-
-                                                fprintf(1,'now take the TOD sun vector (analytical) and move to MOD and TOD for comparison \n');
-                                                %ttt= ( jd - 2451545.0  )/ 36525.0;
-                                                vmod = [0 0 0]';
-                                                amod = [0 0 0]';
-                                                [reci,veci,aeci] = mod2eci  ( rsun',vmod,amod,ttt );
-                                                fprintf(1,'mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                [reci,veci,aeci] = tod2eci  ( rsun',vmod,amod,ttt, ddpsi, ddeps );
-                                                fprintf(1,'tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n\n',db, mag(db) );
-
-                                                %         [reci,veci,aeci] = eci2mod ( rsun',vmod,amod,ttt );
-                                                %         fprintf(1,'eci - mod  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                %         db = reci*149597870.0-rsunaa';
-                                                %         fprintf(1,'delta eci - mod  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-                                                %
-                                                %         [reci,veci,aeci] = eci2tod ( rsun',vmod,amod,ttt, ddpsi, ddeps );
-                                                %         fprintf(1,'eci - tod  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                %         db = reci*149597870.0-rsunaa';
-                                                %         fprintf(1,'delta eci - tod  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                % now try alamnac method
-                                                [rsuna,rtasca,decla] = sunalmanac ( jd+jdfrac );
-                                                fprintf(1,'\n\nsun  rtasc %14.6f deg decl %14.6f deg\n',rtasca*rad, decla*rad );
-                                                fprintf(1,'sun ALM %11.9f%11.9f%11.9f au\n',rsuna );
-                                                fprintf(1,'sun ALM %14.4f%14.4f%14.4f km\n',rsuna*149597870.0 );
-
-                                                fprintf(1,'rs aa ICRF %11.9f %11.9f %11.9f km \n',rsunaa);
-
-                                                fprintf(1,'now take the TOD sun vector (analytical) and move to MOD and TOD for comparison \n');
-                                                %ttt= ( jd - 2451545.0  )/ 36525.0;
-                                                vmod = [0 0 0]';
-                                                amod = [0 0 0]';
-                                                [reci,veci,aeci] = mod2eci  ( rsuna',vmod,amod,ttt );
-                                                fprintf(1,'mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                [reci,veci,aeci] = tod2eci  ( rsuna',vmod,amod,ttt, ddpsi, ddeps );
-                                                fprintf(1,'tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                fprintf(1,'==============================================================\n');
-                                                % another example tdt = 29+32.184 secs less than 4/2 at 0 hrs
-                                                year = 1995;
-                                                mon = 4;
-                                                day = 1;
-                                                hr = 23;
-                                                minute = 58;
-                                                second = 58.816;
-                                                [jd,jdfrac] = jday(year, mon, day, hr, minute, second);
-                                                fprintf(1,'jd  %11.9f \n',jd+jdfrac );
-                                                dat = 29;
-                                                dut1 = 0.1535663;
-                                                [ut1, tut1, jdut1,jdut1frac, utc, tai, tt, ttt, jdtt,jdttfrac, tdb, ttdb, jdtdb,jdtdbfrac ] ...
-                                                    = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
-                                                fprintf(1,'input data \n\n');
-                                                fprintf(1,' year %5i ',year);
-                                                fprintf(1,' mon %4i ',mon);
-                                                fprintf(1,' day %3i ',day);
-                                                fprintf(1,' %3i:%2i:%8.6f\n ',hr,minute,second );
-                                                fprintf(1,' dut1 %8.6f s',dut1);
-                                                fprintf(1,' dat %3i s',dat);
-
-                                                fprintf(1,'ut1 %8.6f tut1 %16.12f jdut1 %18.11f ',ut1,tut1,jdut1 );
-                                                [h,m,s] = sec2hms( ut1 );
-                                                fprintf(1,'hms %3i %3i %8.6f \n',h,m,s);
-                                                fprintf(1,'utc %8.6f ',utc );
-                                                [h,m,s] = sec2hms( utc );
-                                                fprintf(1,'hms %3i %3i %8.6f \n',h,m,s);
-                                                fprintf(1,'tai %8.6f',tai );
-                                                [h,m,s] = sec2hms( tai );
-                                                fprintf(1,'hms %3i %3i %8.6f \n',h,m,s);
-                                                fprintf(1,'tt  %8.6f ttt  %16.12f jdtt  %18.11f ',tt,ttt,jdtt );
-                                                [h,m,s] = sec2hms( tt );
-                                                fprintf(1,'hms %3i %3i %8.6f \n',h,m,s);
-                                                fprintf(1,'tdb %8.6f ttdb %16.12f jdtdb %18.11f\n',tdb,ttdb,jdtdb );
-
-                                                [rsun,rtasc,decl] = sun ( jd+jdfrac );
-                                                fprintf(1,'sun  rtasc %14.6f deg decl %14.6f deg\n',rtasc*rad,decl*rad );
-                                                fprintf(1,'sun ICRS %11.9f%11.9f%11.9f au\n',rsun );
-                                                fprintf(1,'sun ICRS %14.4f%14.4f%14.4f km\n',rsun*149597870.0 );
-
-                                                rsunaa = [0.9781158 0.1884327  0.0816997]*149597870.0; % astronomical alm value into km
-                                                fprintf(1,'rs almanac MOD %11.9f %11.9f %11.9f km \n',rsunaa);
-
-                                                %ttt= ( jd - 2451545.0  )/ 36525.0;
-                                                vmod = [0 0 0]';
-                                                amod = [0 0 0]';
-                                                [reci,veci,aeci] = mod2eci  ( rsun',vmod,amod,ttt );
-                                                fprintf(1,'mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                [reci,veci,aeci] = tod2eci  ( rsun',vmod,amod,ttt, ddpsi, ddeps );
-                                                fprintf(1,'tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n\n',db, mag(db) );
-
-                                                %         [reci,veci,aeci] = eci2mod ( rsun',vmod,amod,ttt );
-                                                %         fprintf(1,'eci - mod  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                %         db = reci*149597870.0-rsunaa';
-                                                %         fprintf(1,'delta eci - mod  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-                                                %
-                                                %         [reci,veci,aeci] = eci2tod ( rsun',vmod,amod,ttt, ddpsi, ddeps );
-                                                %         fprintf(1,'eci - tod  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                %         db = reci*149597870.0-rsunaa';
-                                                %         fprintf(1,'delta eci - tod  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                % now try alamnac method
-                                                [rsuna,rtasca,decla] = sunalmanac ( jd+jdfrac );
-                                                fprintf(1,'\n\nsun  rtasc %14.6f deg decl %14.6f deg\n',rtasca*rad, decla*rad );
-                                                fprintf(1,'sun ALM %11.9f%11.9f%11.9f au\n',rsuna );
-                                                fprintf(1,'sun ALM %14.4f%14.4f%14.4f km\n',rsuna*149597870.0 );
-
-                                                fprintf(1,'rs aa ICRF %11.9f %11.9f %11.9f km \n',rsunaa);
-
-                                                fprintf(1,'now take the TOD sun vector (analytical) and move to MOD and TOD for comparison \n');
-                                                %ttt= ( jd - 2451545.0  )/ 36525.0;
-                                                vmod = [0 0 0]';
-                                                amod = [0 0 0]';
-                                                [reci,veci,aeci] = mod2eci  ( rsuna',vmod,amod,ttt );
-                                                fprintf(1,'mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta mod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                                [reci,veci,aeci] = tod2eci  ( rsuna',vmod,amod,ttt, ddpsi, ddeps );
-                                                fprintf(1,'tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',reci*149597870.0, mag(reci)*149597870.0 );
-                                                db = reci*149597870.0-rsunaa';
-                                                fprintf(1,'delta tod - eci  %11.9f %11.9f %11.9f %11.4f km  \n',db, mag(db) );
-
-                                            end
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
+    % fig 7-21
+    r1 = [ -6175.1034, 2757.0706, 1626.6556 ];
+    v1 = [ 2.376641, 1.139677, 7.078097 ];
+    r2 = [ -6078.007289, 2796.641859, 1890.7135 ];
+    v2 = [ 2.654700, 1.018600, 7.015400 ];
+
+    strbuildFig.AppendLine('dtwait  dtsec       dv1       dv2 ');
+    totaldts = 15000;
+    totaldtw = 30000;
+    step1 = 60;   % 60 orig
+    step2 = 600;  % 600 orig
+    stop1 = (int) (totaldts/step1);
+    stop2 = (int) (totaldtw/step2);
+    for i=0 : stop1  % orig 250, 15000 s total
+
+        dtsec = i * step1;    % orig 60
+        [r4, v4] = kepler(r1, v1, dtsec);
+        for (j = 0; j < stop2; j++)  % orig 25 600*25 = 15000 s total
+
+            dtwait = j * step2;   % orig 600
+            [r3, v3] =  kepler(r2, v2, dtsec + dtwait);
+            [kbi, tof] = lambertumins( r3, r4, 1, 'S' ) ;
+            [v1t1, v2t1, errorl] = lambertu (r3,  r4, v1, 'S', 'L', 1, dtsec, kbi, fid );
+
+            [kbi, tof] = lambertumins( r3, r4, 1, 'S' ) ;
+            [v1t2, v2t2, errorl] = lambertu ( r3,  r4, v1, 'S', 'H', 1, dtsec, kbi, fid );
+
+            [kbi, tof] = lambertumins( r3, r4, 1, 'L' ) ;
+            [v1t3, v2t3, errorl] = lambertu ( r3,  r4, v1, 'L', 'L', 1, dtsec, kbi, fid );
+
+            [kbi, tof] = lambertumins( r3, r4, 1, 'L' ) ;
+            [v1t4, v2t4, errorl] = lambertu ( r3,  r4, v1, 'L', 'H', 1, dtsec, kbi, fid );
+
+            if (errorout.Contains('ok'))
+                dv11 = v1t1 - v1;
+                dv21 = v2t1 - v2;
+                dv12 = v1t2 - v1;
+                dv22 = v2t2 - v2;
+                dv13 = v1t3 - v1;
+                dv23 = v2t3 - v2;
+                dv14 = v1t4 - v1;
+                dv24 = v2t4 - v2;
+
+                fprintf(1,'%11.7f %11.7f  %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f  \n',dtwait, dtsec,...
+                    mag(dv11), mag(dv21),  mag(dv12),  mag(dv22),   mag(dv13), mag(dv23),  mag(dv14), mag(dv24));
             end
-                        end
-                    end
-                end
-            end
+        else
+            strbuildFig.AppendLine(errorsum, errorout);
         end
-
-
     end
+
+    % write data out
+    string directory = @'D:\Codes\LIBRARY\Matlab\';
+    File.WriteAllText(directory + 'surfMovingSalltest.out', strbuildFig);
+end
+
+
+
+function testradecgeo2azel()
+    rtasc = 294.98914583 / rad;
+    decl = -20.8234944 / rad;
+    xp = 0.0;
+    yp = 0.0;
+    lod = 0.0;
+    jdut1 = 2453101.82740678310;
+    ttt = 0.042623631889;
+    ddpsi = -0.052195;
+    ddeps = -0.003875;
+    rr = 12373.3546098;  % km
+    latgd = 39.007 / rad;
+    lon = -104.883 / rad;
+    alt = 0.3253;
+
+    [az, el] = radecgeo2azel(rtasc, decl, rr, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, AstroLib.EOpt.e80);
+end
+
+function testijk2ll()
+    rad = 180.0 / pi;
+
+    r = [ 1.023 * re, 1.076 * re, 1.011 * re ];
+
+    [latgc, latgd, lon, hellp] = ecef2ll(r);
+
+    fprintf(1,'ecef2ll %11.7f  %11.7f  %11.7f  \n', latgd*rad, lon * rad, hellp);
+
+    [latgc, latgd, lon, hellp] = ecef2llb(r);
+
+    fprintf(1,'ecef2llb %11.7f  %11.7f  %11.7f  \n', latgd*rad, lon * rad, hellp);
+end
+
+function testgd2gc()
+    rad = 180.0 / pi;
+    latgd = 34.173429 / rad;
+
+    [ans] = gd2gc(latgd);
+
+    fprintf(1,'gd2gc %11.7f \n', ans);
+end
+
+function testsite()
+    rad = 180.0 / pi;
+    latgd = 39.007 / rad;
+    lon = -104.883 / rad;
+    alt = 0.3253;
+
+    [rsecef, vsecef] = site(latgd, lon, alt);
+    fprintf(1,'site gc %16.9f %16.9f %16.9f  %16.9f  \n', rsecef, latgd*rad );
+
+    fprintf(1,'site %16.9f %16.9f %16.9f %16.9f %16.9f %16.9f \n', rsecef(1), rsecef(2), rsecef(3), ...
+        vsecef(1), vsecef(2), vsecef(3));
+end
+
+
+% --------  sun          - analytical sun ephemeris
+function testsun()
+    jd = 2449444.5;
+
+    [rsun, rtasc, decl] = sun(jd);
+
+    fprintf(1,'sun  %16.9f %16.9f %16.9f \n', rsun(1), rsun(2), rsun(3));
+
+
+end
 
 % --------  moon         - analytical moon ephemeris
 function testmoon()
@@ -5409,993 +4539,798 @@ function testmoon()
 end
 
 
-    function testkepler()
-        dtsec = 42397.344;  % s
+function testkepler()
+    dtsec = 42397.344;  % s
 
-        r1 = [ 2.500000 * re, 0.000000, 0.000000 ];
-        % assume circular initial orbit for vel calcs
-        v1 = [ 0.0, sqrt(mu / r1(1)), 0.0 ];
-        fprintf(1,'kepler %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f  %16.8f \n', r1(1), r1(2), r1(3), v1(1), v1(2), v1(3), dtsec);
+    r1 = [ 2.500000 * re, 0.000000, 0.000000 ];
+    % assume circular initial orbit for vel calcs
+    v1 = [ 0.0, sqrt(mu / r1(1)), 0.0 ];
+    fprintf(1,'kepler %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f  %16.8f \n', r1(1), r1(2), r1(3), v1(1), v1(2), v1(3), dtsec);
 
-        kepler(r1, v1, dtsec, out r2, out v2);
+    [r2, v2] = kepler(r1, v1, dtsec);
 
-        fprintf(1,'kepler %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
+    fprintf(1,'kepler %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
 
-        % test multi-rev case
-                [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1);
-        period = 2.0 * pi * sqrt(Math.Pow(mag(r1),3)/ mu);
+    % test multi-rev case
+    [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1);
+    period = 2.0 * pi * sqrt(mag(r1)^3 / mu);
 
-        [r2, v3] = kepler(r1, v1, dtsec+7.0*period);
+    [r2, v3] = kepler(r1, v1, dtsec+7.0*period);
 
-        fprintf(1,'kepler ' + r2(1), r2(2), r2(3),
-        v2(1), v2(2), v2(3), (dtsec+7.0*period));
+    fprintf(1,'kepler %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f \n', r2(1), r2(2), r2(3), ...
+           v2(1), v2(2), v2(3), dtsec+7.0*period);
 
-        % alt tests
-        % initial coes with more than one period = 6281.815597 sec
-        rad = 180.0/pi;
-        [ro, vo] = coe2rv (7358.39, 0.0, 28.5/rad, 0.0/rad, 30.0/rad, 0.0/rad, 0.0, 0.0, 0.0);
-        fprintf(1,'input: \n' );
-        fprintf(1,'ro %16.8f %16.8f %16.8f km \n',ro );
-        fprintf(1,'vo %16.8f %16.8f %16.8f km/s \n',vo );
+    % alt tests
+    % initial coes with more than one period = 6281.815597 sec
+    rad = 180.0/pi;
+    [ro, vo] = coe2rv (7358.39, 0.0, 28.5/rad, 0.0/rad, 30.0/rad, 0.0/rad, 0.0, 0.0, 0.0);
+    fprintf(1,'input: \n' );
+    fprintf(1,'ro %16.8f %16.8f %16.8f km \n',ro );
+    fprintf(1,'vo %16.8f %16.8f %16.8f km/s \n',vo );
 
-        % convert 40 minutes to seconds
-        dtsec = 4000.0*60.0;
-        dtsec = 1.291007302335531e+03;
-        dtsec = 6281.815597;
-        fprintf(1,'dt %16.8f sec \n',dtsec );
-        fprintf(1,'intermediate values: \n' );
+    % convert 40 minutes to seconds
+    dtsec = 4000.0*60.0;
+    dtsec = 1.291007302335531e+03;
+    dtsec = 6281.815597;
+    fprintf(1,'dt %16.8f sec \n',dtsec );
+    fprintf(1,'intermediate values: \n' );
 
-        [r1,v1] =  kepler ( ro,vo, dtsec );
+    [r1,v1] =  kepler ( ro,vo, dtsec );
 
-        % answer in km and km/s
-        fprintf(1,'output: \n' );
-        fprintf(1,'r1 %16.8f %16.8f %16.8f er \n',r1/re );
-        fprintf(1,'r1 %16.8f %16.8f %16.8f km \n',r1 );
-        fprintf(1,'v1 %16.8f %16.8f %16.8f er/tu \n',v1/velkmps );
-        fprintf(1,'v1 %16.8f %16.8f %16.8f km/s \n',v1 );
+    % answer in km and km/s
+    fprintf(1,'output: \n' );
+    fprintf(1,'r1 %16.8f %16.8f %16.8f er \n',r1/re );
+    fprintf(1,'r1 %16.8f %16.8f %16.8f km \n',r1 );
+    fprintf(1,'v1 %16.8f %16.8f %16.8f er/tu \n',v1/velkmps );
+    fprintf(1,'v1 %16.8f %16.8f %16.8f km/s \n',v1 );
+
+    ro=[-3244.01178958993; 5561.5015207476; 3181.63137126354];
+    vo=[-0.311911476329513; 3.55766787343696; -6.53796978233233];
+    dtsec = 240.0;
+    fprintf(1,'dt %16.8f sec \n',dtsec );
+    fprintf(1,'intermediate values: \n' );
+
+    [r1,v1] =  kepler ( ro,vo, dtsec );
+
+    % answer in km and km/s
+    fprintf(1,'output: \n' );
+    fprintf(1,'r1 %16.8f %16.8f %16.8f er \n',r1/re );
+    fprintf(1,'r1 %16.8f %16.8f %16.8f km \n',r1 );
+    fprintf(1,'v1 %16.8f %16.8f %16.8f er/tu \n',v1/velkmps );
+    fprintf(1,'v1 %16.8f %16.8f %16.8f km/s \n',v1 );
+end
+
+function testsunmoonjpl()
+    [jd, jdF] = day(2017, 5, 11, 3, 51, 42.7657);
+
+    fprintf(1,' =============================   test sun and moon ephemerides =============================\n');
+
+    % read in jpl sun moon files
+    % answers
+    fprintf(1,'2017  5 11  0  96576094.2145 106598001.2476 46210616.7776     151081093.9419  0.9804616 -252296.5509 -302841.7334 -93212.7720');
+    fprintf(1,'2017  5 11 12  95604355.9737 107353047.2919 46537942.1006     151098145.9151  0.9802403 -218443.5158 -325897.7785 -102799.8515');
+    fprintf(1,'2017  5 12  0  94625783.6875 108100430.4112 46861940.2387     151115133.0492  0.9800199 -182165.5046 -345316.4032 -111246.7742');
+
+    % for 1 day centers, need to adjust the initjpl function
+    %initjplde(ref jpldearr, 'D:/Codes/LIBRARY/DataLib/', 'sunmooneph_430t.txt', out jdjpldestart, out jdjpldestartFrac);
+    infilename = append('D:\Codes\LIBRARY\DataLib\', 'sunmooneph_430t12.txt');
+    [jpldearr, jdjpldestart, jdjpldestartFrac] = initjplde(infilename);
+
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 0.0, 'l', jpldearr);
+    fprintf(1,'findjpldeephem 0000 hrs l %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f \n', jd, rsun(1), ...
+          rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
+
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 0.0, 's', jpldearr);
+    fprintf(1,'findjpldeephem 0000 hrs s %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f \n', jd, rsun(1), ...
+          rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
+
+    sunmoonjpl(jd, 0.0, 's', ref jpldearr, jdjpldestart, out rsun, out rtascs, out decls, out rmoon, out rtascm, out declm);
+    fprintf(1,'sunmoon 0000 hrs s\n ' + jd, jdF, rsun(1),
+    rsun(2), rsun(3),
+    rmoon(1), rmoon(2), rmoon(3));
 
 
+    findjpldeparam(jd, jdF, 'l', jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
+    fprintf(1,'findjpldeephem hrs l\n ' + jd, jdF, rsun(1),
+    rsun(2), rsun(3),
+    rmoon(1), rmoon(2), rmoon(3));
 
-        ro=[-3244.01178958993; 5561.5015207476; 3181.63137126354];
-        vo=[-0.311911476329513; 3.55766787343696; -6.53796978233233];
-        dtsec = 240.0;
-        fprintf(1,'dt %16.8f sec \n',dtsec );
-        fprintf(1,'intermediate values: \n' );
+    sunmoonjpl(jd, jdF, 'l', ref jpldearr, jdjpldestart, out rsun, out rtascs, out decls, out rmoon, out rtascm, out declm);
+    fprintf(1,'sunmoon hrs l\n ' + jd, jdF, rsun(1),
+    rsun(2), rsun(3),
+    rmoon(1), rmoon(2), rmoon(3));
 
-        [r1,v1] =  kepler ( ro,vo, dtsec );
+    findjpldeparam(jd, 1.0, 'l', jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
+    fprintf(1,'findjpldeephem 2400 hrs s\n ' + jd, jdF, rsun(1),
+    rsun(2), rsun(3),
+    rmoon(1), rmoon(2), rmoon(3));
 
-        % answer in km and km/s
-        fprintf(1,'output: \n' );
-        fprintf(1,'r1 %16.8f %16.8f %16.8f er \n',r1/re );
-        fprintf(1,'r1 %16.8f %16.8f %16.8f km \n',r1 );
-        fprintf(1,'v1 %16.8f %16.8f %16.8f er/tu \n',v1/velkmps );
-        fprintf(1,'v1 %16.8f %16.8f %16.8f km/s \n',v1 );
 
+    % ex 8.5 test
+    jday(2020, 2, 18, 15, 8, 47.23847, out jd, out jdF);
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 0.0, 's', jpldearr);
+    fprintf(1,'findjpldeephem 0000 hrs s %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f \n', jd, rsun(1), ...
+          rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
+
+    % test interpolation of vectors
+    % shows spline is MUCH better - 3 km sun variation in mid day linear, 60m diff with spline.
+    jday(2017, 5, 11, 3, 51, 42.7657, out jd, out jdF);
+    jday(2000, 1, 1, 0, 0, 0.0, out jd, out jdF);
+    fprintf(1,'findjplde  mfme     rsun x             y                 z             rmoon x             y                z      (km)');
+
+    var watch = System.Diagnostics.Stopwatch.StartNew();
+    % the code that you want to measure comes here
+    % read in jpl sun moon files - seems to be the slowest part (800 msec)
+    infilename = append('D:\Codes\LIBRARY\DataLib\', 'sunmooneph_430t.txt');
+    [jpldearr, jdjpldestart, jdjpldestartFrac] = initjplde(infilename);
+
+    for (ii = 0; ii < 36500; ii++)
+
+        % seems pretty fast (45 msec)
+        for (jj = 0; jj < 24; jj++)
+
+            findjpldeparam(jd + ii, (jj * 1.0) / 24.0, 's', jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
+            % the write takes some time (160 msec)
+            %fprintf(1,' ' + jd, (ii * 60.0).ToString('0000'),
+            %    rsun(1), rsun(2), rsun(3),
+            %    rmoon(1), rmoon(2), rmoon(3));
+        end
+    end
+
+end
+
+
+function testkp2ap()
+
+    for i = 1: 27
+        kp = 10.0 * i / 3.0;
+        [ap] = kp2ap(kp);
+        % get spacing correct, leading 0, front spaces
+        fprintf(1,'%11.7f %11.7f  %11.7f \n', i, 0.1 * kp, ap);
+    end
+end
+
+
+function testazel2radec()
+    rad = 180.0 / pi;
+
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
+
+    xp = 0.0;
+    yp = 0.0;
+    lod = 0.0;
+    ddpsi = -0.052195;
+    ddeps = -0.003875;
+    dut1 = -0.37816;
+
+    year = 2015;
+    mon = 12;
+    day = 15;
+    hr = 16;
+    dat = 36;
+    minute = 58;
+    second = 50.208;
+    eqeterms = 2;
+    [jd, jdFrac] = jday(year, mon, day, hr, minute, second);
+
+    % note you have to use tdb for time of ineterst AND j2000 (when dat = 32)
+    jdtt = jd;
+    jdftt = jdFrac + (dat + 32.184) / 86400.0;
+    ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
+    jdut1 = jd + jdFrac + dut1 / 86400.0;
+
+    recef = [ -605.79221660 -5870.22951108 3493.05319896 ];
+    recef = [ -100605.79221660 -1005870.22951108 1003493.05319896 ];
+    vecef = [ -1.56825429 -3.70234891 -6.47948395 ];
+    aecef = [0.0 0.0 0.0];
+    asecef = [0.0 0.0 0.0];
+
+    [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    lon = -104.883 / rad;
+    latgd = 39.007 / rad;
+    alt = 2.102;
+    [rsecef, vsecef] = site(latgd, lon, alt);
+
+    [rseci, vseci, aseci] = ecef2eci(rsecef', vsecef', asecef', iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+
+    [lst, gst] = lstime(lon, jdut1);
+
+    % prout initial conditions
+    fprintf(1,'recef  ' + recef(1), recef(2), recef(3),
+    'v  ' + vecef(1), vecef(2), vecef(3));
+    fprintf(1,'rs ecef  ' + rsecef(1), rsecef(2), rsecef(3));
+    fprintf(1,'reci  ' + reci(1), reci(2), reci(3),
+    'v  ' + veci(1), veci(2), veci(3));
+    fprintf(1,'rs eci  ' + rseci(1), rseci(2), rseci(3));
+
+
+    rv_razel(ref recef, ref vecef, latgd, lon, alt, MathTimeLib.Edirection.eto, ref rho, ref az, ref el, ref drho, ref daz, ref del);
+
+    rv_radec(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rr, ref rtasc, ref decl, ref drr, ref drtasc, ref ddecl);
+
+    rv_tradec(ref reci, ref veci, rseci, MathTimeLib.Edirection.eto, ref rho, ref trtasc, ref tdecl, ref drho, ref dtrtasc, ref dtdecl);
+
+    % prout results
+    fprintf(1,'razel ' + rho, az, el,
+    '  ' + drho, daz, del);
+    fprintf(1,'radec ' + rr, rtasc, decl,
+    '  ' + drr, drtasc, ddecl);
+    fprintf(1,'tradec ' + rho, trtasc, tdecl,
+    drho, dtrtasc, dtdecl);
+
+    [rtasc, decl, rtasc1] = azel_radec(az, el, lst, latgd);
+    fprintf(1,'radec ' + rtasc + ' rtasc1 ' + rtasc1, decl);
+    fprintf(1,'radec ' + (pi * 2 - rtasc) + ' rtasc1 ' + (pi * 2 - rtasc1), decl);
+end
+
+
+% ------------------------------------------------------------------------------
+%
+%                           function LegPolyEx
+%
+%   this function finds the exact (from equations) Legendre polynomials for the gravity field.
+%   note that the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21
+%   in my text). fortran implementations will have indicies of 1 greater as they often
+%   start at 1. these are exact expressions derived from mathematica.
+%
+%  author        : david vallado             davallado@gmail.com  16 dec 2019
+%
+%  inputs        description                                   range / units
+%    latgc       - Geocentric lat of satellite                   pi to pi rad
+%    order       - size of gravity field                         1..2160..
+%
+%  outputs       :
+%    LegArr      - [,] array of Legendre polynomials
+%
+%  locals :
+%    L,m         - degree and order indices
+%    conv        - conversion to un-unitalize
+%
+%  coupling      :
+%   none
+%
+%  references :
+%    vallado       2013, 597, Eq 8-57
+% [LegArrEx] = LegPolyEx(latgc, order)
+% ------------------------------------------------------------------------------*/
+
+function [LegArrEx] = LegPolyEx(latgc, order)
+
+    % -------------------- exact epxressions ----------------------
+    LegArrEx(3, 1) = 0.5 * (3 * s * s - 1.0);
+    LegArrEx(3, 2) = 3.0 * s * c;
+    LegArrEx(3, 3) = 3.0 * c * c;
+
+    % include (-1)^m for all the terms
+    LegArrEx(4, 1) = -0.5 * s * (3 - 5 * s * s);
+    LegArrEx(4, 2) = (3.0 / 2) * c * (-1 + 5 * s * s); % 15s^2 - 3
+    LegArrEx(4, 3) = 15 * s * c * c;
+    LegArrEx(4, 4) = 15 * (c * c * c);
+
+    LegArrEx(5, 1) = 1.0 / 8.0 * (35.0 * s^4) - 30.0 * s^2) + 3.0);
+    LegArrEx(5, 2) = 2.5 * c * (-3 * s + 7 * s^3));
+    LegArrEx(5, 3) = 7.5 * c^2) * (-1 + 7 * s^2));
+    LegArrEx(5, 4) = 105.0 * c^3) * s;
+    LegArrEx(5, 5) = 105.0 * c^4);
+
+    LegArrEx(6, 1) = (1.0 / 8) * s * (15 - 70 * s^2) + 63 * s^4));
+    LegArrEx(6, 2) = (15.0 / 8) * c * (1 - 14 * s^2) + 21 * s^4));
+    LegArrEx(6, 3) = (105.0 / 2) * c * c * (-s + 3 * s^3));
+    LegArrEx(6, 4) = (105.0 / 2) * c^3) * (-1 + 9 * s^2));
+    LegArrEx(6, 5) = 945.0 * s * c^4);
+    LegArrEx(6, 6) = 945.0 * c^5);
+
+    LegArrEx[6, 0] = 1.0 / 16 * (-5 + 105 * s^2) - 315 * s^4) + 231 * s^6));
+    LegArrEx[6, 1] = (21.0 / 8) * c * (5 * s - 30 * s^3) + 33 * s^5));
+    LegArrEx[6, 2] = (105.0 / 8) * c * c * (1 - 18 * s^2) + 33 * s^4));
+    LegArrEx[6, 3] = (315.0 / 2) * c^3) * (-3 * s + 11 * s^3));
+    LegArrEx[6, 4] = 945.0 / 2 * Math.Pow(c * c, 2) * (-1 + 11 * s^2));
+    LegArrEx[6, 5] = 10395.0 * s * c^5);
+    LegArrEx[6, 6] = 10395.0 * Math.Pow(c * c, 3);
+
+    LegArrEx[7, 0] = 1.0 / 16 * (-35 * s + 315 * s^3) - 693 * s^5) + 429 * s^7));
+    LegArrEx[7, 1] = (7.0 / 16) * c * (-5 + 135 * s^2) - 495 * s^4) + 429 * s^6));
+    LegArrEx[7, 2] = (63.0 / 8) * c * c * (15 * s - 110 * s^3) + 143 * s^5));
+    LegArrEx[7, 3] = (315.0 / 8) * c^3) * (3 - 66 * s^2) + 143 * s^4));
+    LegArrEx[7, 4] = 3465.0 / 2 * Math.Pow(c * c, 2) * (-3 * s + 13 * s^3));
+    LegArrEx[7, 5] = (10395.0 / 2) * c^5) * (-1 + 13 * s^2));
+    LegArrEx[7, 6] = 135135.0 * s * Math.Pow(c * c, 3);
+    LegArrEx[7, 7] = 135135.0 * c^7);
+
+    LegArrEx[8, 0] = 1.0 / 128 * (35 - 1260 * s^2) + 6930 * s^4) - 12012 * s^6) + 6435 * s^8));
+    LegArrEx[8, 1] = (9.0 / 16) * c * (-35 * s + 385 * s^3) - 1001 * s^5) + 715 * s^7));
+    LegArrEx[8, 2] = (315.0 / 16) * c * c * (-1 + 33 * s^2) - 143 * s^4) + 143 * s^6));
+    LegArrEx[8, 3] = (3465.0 / 8) * c^3) * (3 * s - 26 * s^3) + 39 * s^5));
+    LegArrEx[8, 4] = 10395.0 / 8 * Math.Pow(c * c, 2) * (1 - 26 * s^2) + 65 * s^4));
+    LegArrEx[8, 5] = (135135.0 / 2) * c^5) * (-s + 5 * s^3));
+    LegArrEx[8, 6] = (135135.0 / 2) * Math.Pow(c * c, 3) * (-1 + 15 * s^2));
+    LegArrEx[8, 7] = 2027025.0 * s * c^7);
+    LegArrEx[8, 8] = 2027025.0 * Math.Pow(c * c, 4);
+
+    LegArrEx[9, 0] = 1.0 / 128 * (315 * s - 4620 * s^3) + 18018 * s^5) - 25740 * s^7) + 12155 * s^9));
+    LegArrEx[9, 1] = (45.0 / 128) * c * (7 - 308 * s^2) + 2002 * s^4) - 4004 * s^6) + 2431 * s^8));
+    LegArrEx[9, 2] = (495.0 / 16) * c * c * (-7 * s + 91 * s^3) - 273 * s^5) + 221 * s^7));
+    LegArrEx[9, 3] = (3465.0 / 16) * c^3) * (-1 + 39 * s^2) - 195 * s^4) + 221 * s^6));
+    LegArrEx[9, 4] = 135135.0 / 8 * Math.Pow(c * c, 2) * (s - 10 * s^3) + 17 * s^5));
+    LegArrEx[9, 5] = (135135.0 / 8) * c^5) * (1 - 30 * s^2) + 85 * s^4));
+    LegArrEx[9, 6] = (675675.0 / 2) * Math.Pow(c * c, 3) * (-3 * s + 17 * s^3));
+    LegArrEx[9, 7] = (2027025.0 / 2) * c^7) * (-1 + 17 * s^2));
+    LegArrEx[9, 8] = 34459425.0 * s * Math.Pow(c * c, 4);
+    LegArrEx[9, 9] = 34459425.0 * c^9);
+
+    LegArrEx[10, 0] = 1.0 / 256 * (-63 + 3465 * s^2) - 30030 * s^4) + 90090 * s^6) - 109395 * s^8) + 46189 * s^10));
+    LegArrEx[10, 1] = (55.0 / 128) * c * (63 * s - 1092 * s^3) + 4914 * s^5) - 7956 * s^7) + 4199 * s^9));
+    LegArrEx[10, 2] = (495.0 / 128) * c * c * (7 - 364 * s^2) + 2730 * s^4) - 6188 * s^6) + 4199 * s^8));
+    LegArrEx[10, 3] = (6435.0 / 16) * c^3) * (-7 * s + 105 * s^3) - 357 * s^5) + 323 * s^7));
+    LegArrEx[10, 4] = 45045.0 / 16 * Math.Pow(c * c, 2) * (-1 + 45 * s^2) - 255 * s^4) + 323 * s^6));
+    LegArrEx[10, 5] = (135135.0 / 8) * c^5) * (15 * s - 170 * s^3) + 323 * s^5));
+    LegArrEx[10, 6] = (675675.0 / 8) * Math.Pow(c * c, 3) * (3 - 102 * s^2) + 323 * s^4));
+    LegArrEx[10, 7] = (11486475.0 / 2) * c^7) * (-3 * s + 19 * s^3));
+    LegArrEx[10, 8] = 34459425.0 / 2 * Math.Pow(c * c, 4) * (-1 + 19 * s^2));
+    LegArrEx[10, 9] = 654729075.0 * s * c^9);
+    LegArrEx[10, 10] = 654729075.0 * Math.Pow(c * c, 5);
+
+    LegArrEx[11, 0] = 1.0 / 256 * (-693 * s + 15015 * s^3) - 90090 * s^5) + 218790 * s^7) - 230945 * s^9) + 88179 * s^11));
+    LegArrEx[11, 1] = (33.0 / 256) * c * (-21 + 1365 * s^2) - 13650 * s^4) + 46410 * s^6) - 62985 * s^8) + 29393 * s^10));
+    LegArrEx[11, 2] = (2145.0 / 128) * c * c * (21 * s - 420 * s^3) + 2142 * s^5) - 3876 * s^7) + 2261 * s^9));
+    LegArrEx[11, 3] = (45045.0 / 128) * c^3) * (1 - 60 * s^2) + 510 * s^4) - 1292 * s^6) + 969 * s^8));
+    LegArrEx[11, 4] = 135135.0 / 16 * Math.Pow(c * c, 2) * (-5 * s + 85 * s^3) - 323 * s^5) + 323 * s^7));
+    LegArrEx[11, 5] = (135135.0 / 16) * c^5) * (-5 + 255 * s^2) - 1615 * s^4) + 2261 * s^6));
+    LegArrEx[11, 6] = (2297295.0 / 8) * Math.Pow(c * c, 3) * (15 * s - 190 * s^3) + 399 * s^5));
+    LegArrEx[11, 7] = (34459425.0 / 8) * c^7) * (1 - 38 * s^2) + 133 * s^4));
+    LegArrEx[11, 8] = 654729075.0 / 2 * Math.Pow(c * c, 4) * (-s + 7 * s^3));
+    LegArrEx[11, 9] = (654729075.0 / 2) * c^9) * (-1 + 21 * s^2));
+    LegArrEx[11, 10] = 13749310575.0 * s * Math.Pow(c * c, 5);
+    LegArrEx[11, 11] = 13749310575.0 * c^11);
+
+    LegArrEx[12, 0] = (231.0 - 18018 * s^2) + 225225 * s^4) - 1021020 * s^6) + 2078505 * s^8) - 1939938 * s^10) + 676039 * s^12)) / 1024;
+    LegArrEx[12, 1] = (39.0 / 256) * c * (-231 * s + 5775 * s^3) - 39270 * s^5) + 106590 * s^7) - 124355 * s^9) + 52003 * s^11));
+    LegArrEx[12, 2] = (3003.0 / 256) * c * c * (-3 + 225 * s^2) - 2550 * s^4) + 9690 * s^6) - 14535 * s^8) + 7429 * s^10));
+    LegArrEx[12, 3] = (15015.0 / 128) * c^3) * (45 * s - 1020 * s^3) + 5814 * s^5) - 11628 * s^7) + 7429 * s^9));
+    LegArrEx[12, 4] = 135135.0 / 128 * Math.Pow(c * c, 2) * (5 - 340 * s^2) + 3230 * s^4) - 9044 * s^6) + 7429 * s^8));
+    LegArrEx[12, 5] = (2297295.0 / 16) * c^5) * (-5 * s + 95 * s^3) - 399 * s^5) + 437 * s^7));
+    LegArrEx[12, 6] = (2297295.0 / 16) * Math.Pow(c * c, 3) * (-5 + 285 * s^2) - 1995 * s^4) + 3059 * s^6));
+    LegArrEx[12, 7] = (130945815.0 / 8) * c^7) * (5 * s - 70 * s^3) + 161 * s^5));
+    LegArrEx[12, 8] = 654729075.0 / 8 * Math.Pow(c * c, 4) * (1 - 42 * s^2) + 161 * s^4));
+    LegArrEx[12, 9] = (4583103525.0 / 2) * c^9) * (-3 * s + 23 * s^3));
+    LegArrEx[12, 10] = (13749310575.0 / 2) * Math.Pow(c * c, 5) * (-1 + 23 * s^2));
+    LegArrEx[12, 11] = 316234143225.0 * s * c^11);
+    LegArrEx[12, 12] = 316234143225.0 * Math.Pow(c * c, 6);
+
+    LegArrEx[13, 0] = (3003.0 * s - 90090 * s^3) + 765765 * s^5) - 2771340 * s^7) + 4849845 * s^9) - 4056234 * s^11) + 1300075 * s^13)) / 1024;
+    LegArrEx[13, 1] = ((91.0 * c * (33 - 2970 * s^2) + 42075 * s^4) - 213180 * s^6) + 479655 * s^8) - 490314 * s^10) + 185725 * s^12)) / 1024));
+    LegArrEx[13, 2] = (1365.0 / 256) * c * c * (-99 * s + 2805 * s^3) - 21318 * s^5) + 63954 * s^7) - 81719 * s^9) + 37145 * s^11));
+    LegArrEx[13, 3] = (15015.0 / 256) * c^3) * (-9 + 765 * s^2) - 9690 * s^4) + 40698 * s^6) - 66861 * s^8) + 37145 * s^10));
+    LegArrEx[13, 4] = 255255.0 / 128 * Math.Pow(c * c, 2) * (45 * s - 1140 * s^3) + 7182 * s^5) - 15732 * s^7) + 10925 * s^9));
+    LegArrEx[13, 5] = (2297295.0 / 128) * c^5) * (5 - 380 * s^2) + 3990 * s^4) - 12236 * s^6) + 10925 * s^8));
+    LegArrEx[13, 6] = (43648605.0 / 16) * Math.Pow(c * c, 3) * (-5 * s + 105 * s^3) - 483 * s^5) + 575 * s^7));
+    LegArrEx[13, 7] = (218243025.0 / 16) * c^7) * (-1 + 63 * s^2) - 483 * s^4) + 805 * s^6));
+    LegArrEx[13, 8] = 4583103525.0 / 8 * Math.Pow(c * c, 4) * (3 * s - 46 * s^3) + 115 * s^5));
+    LegArrEx[13, 9] = (4583103525.0 / 8) * c^9) * (3 - 138 * s^2) + 575 * s^4));
+    LegArrEx[13, 10] = (105411381075.0 / 2) * Math.Pow(c * c, 5) * (-3 * s + 25 * s^3));
+    LegArrEx[13, 11] = (316234143225.0 / 2) * c^11) * (-1 + 25 * s^2));
+    LegArrEx[13, 12] = 7905853580625.0 * s * Math.Pow(c * c, 6);
+    LegArrEx[13, 13] = 7905853580625.0 * c^13);
+
+    LegArrEx[14, 0] = (-429.0 + 45045 * s^2) - 765765 * s^4) + 4849845 * s^6) - 14549535 * s^8) + 22309287 * s^10) - 16900975 * s^12) + 5014575 * s^14)) / 2048;
+    LegArrEx[14, 1] = ((105.0 * c * (429 * s - 14586 * s^3) + 138567 * s^5) - 554268 * s^7) + 1062347 * s^9) - 965770 * s^11) + 334305 * s^13)) / 1024));
+    LegArrEx[14, 2] = ((1365.0 * c * c * (33 - 3366 * s^2) + 53295 * s^4) - 298452 * s^6) + 735471 * s^8) - 817190 * s^10) + 334305 * s^12)) / 1024));
+    LegArrEx[14, 3] = (23205.0 / 256) * c^3) * (-99 * s + 3135 * s^3) - 26334 * s^5) + 86526 * s^7) - 120175 * s^9) + 58995 * s^11));
+    LegArrEx[14, 4] = 2297295.0 / 256 * Math.Pow(c * c, 2) * (-1 + 95 * s^2) - 1330 * s^4) + 6118 * s^6) - 10925 * s^8) + 6555 * s^10));
+    LegArrEx[14, 5] = (43648605.0 / 128) * c^5) * (5 * s - 140 * s^3) + 966 * s^5) - 2300 * s^7) + 1725 * s^9));
+    LegArrEx[14, 6] = (218243025.0 / 128) * Math.Pow(c * c, 3) * (1 - 84 * s^2) + 966 * s^4) - 3220 * s^6) + 3105 * s^8));
+    LegArrEx[14, 7] = (654729075.0 / 16) * c^7) * (-7 * s + 161 * s^3) - 805 * s^5) + 1035 * s^7));
+    LegArrEx[14, 8] = 4583103525.0 / 16 * Math.Pow(c * c, 4) * (-1 + 69 * s^2) - 575 * s^4) + 1035 * s^6));
+    LegArrEx[14, 9] = (105411381075.0 / 8) * c^9) * (3 * s - 50 * s^3) + 135 * s^5));
+    LegArrEx[14, 10] = (316234143225.0 / 8) * Math.Pow(c * c, 5) * (1 - 50 * s^2) + 225 * s^4));
+    LegArrEx[14, 11] = (7905853580625.0 / 2) * c^11) * (-s + 9 * s^3));
+    LegArrEx[14, 12] = 7905853580625.0 / 2 * Math.Pow(c * c, 6) * (-1 + 27 * s^2));
+    LegArrEx[14, 13] = 213458046676875.0 * s * c^13);
+    LegArrEx[14, 14] = 213458046676875.0 * Math.Pow(c * c, 7);
+
+    LegArrEx[15, 0] = (-6435.0 * s + 255255 * s^3) - 2909907 * s^5) + 14549535 * s^7) - 37182145 * s^9) + 50702925 * s^11) - 35102025 * s^13) + 9694845 * s^15)) / 2048;
+    LegArrEx[15, 1] = ((15.0 * c * (-429 + 51051 * s^2) - 969969 * s^4) + 6789783 * s^6) - 22309287 * s^8) + 37182145 * s^10) - 30421755 * s^12) + 9694845 * s^14)) / 2048));
+    LegArrEx[15, 2] = ((1785.0 * c * c * (429 * s - 16302 * s^3) + 171171 * s^5) - 749892 * s^7) + 1562275 * s^9) - 1533870 * s^11) + 570285 * s^13)) / 1024));
+    LegArrEx[15, 3] = ((69615.0 * c^3) * (11 - 1254 * s^2) + 21945 * s^4) - 134596 * s^6) + 360525 * s^8) - 432630 * s^10) + 190095 * s^12)) / 1024));
+    LegArrEx[15, 4] = 3968055.0 / 256 * Math.Pow(c * c, 2) * (-11 * s + 385 * s^3) - 3542 * s^5) + 12650 * s^7) - 18975 * s^9) + 10005 * s^11));
+    LegArrEx[15, 5] = (43648605.0 / 256) * c^5) * (-1 + 105 * s^2) - 1610 * s^4) + 8050 * s^6) - 15525 * s^8) + 10005 * s^10));
+    LegArrEx[15, 6] = (218243025.0 / 128) * Math.Pow(c * c, 3) * (21 * s - 644 * s^3) + 4830 * s^5) - 12420 * s^7) + 10005 * s^9));
+    LegArrEx[15, 7] = (654729075.0 / 128) * c^7) * (7 - 644 * s^2) + 8050 * s^4) - 28980 * s^6) + 30015 * s^8));
+    LegArrEx[15, 8] = 15058768725.0 / 16 * Math.Pow(c * c, 4) * (-7 * s + 175 * s^3) - 945 * s^5) + 1305 * s^7));
+    LegArrEx[15, 9] = (105411381075.0 / 16) * c^9) * (-1 + 75 * s^2) - 675 * s^4) + 1305 * s^6));
+    LegArrEx[15, 10] = (1581170716125.0 / 8) * Math.Pow(c * c, 5) * (5 * s - 90 * s^3) + 261 * s^5));
+    LegArrEx[15, 11] = (7905853580625.0 / 8) * c^11) * (1 - 54 * s^2) + 261 * s^4));
+    LegArrEx[15, 12] = 71152682225625.0 / 2 * Math.Pow(c * c, 6) * (-3 * s + 29 * s^3));
+    LegArrEx[15, 13] = (213458046676875.0 / 2) * c^13) * (-1 + 29 * s^2));
+    LegArrEx[15, 14] = 6190283353629375.0 * s * Math.Pow(c * c, 7);
+    LegArrEx[15, 15] = 6190283353629375.0 * c^15);
+
+    LegArrEx[16, 0] = (6435.0 - 875160 * s^2) + 19399380 * s^4) - 162954792 * s^6) + 669278610 * s^8) - 1487285800 * s^10) + 1825305300 * s^12) - 1163381400 * s^14) + 300540195 * s^16)) / 32768;
+    LegArrEx[16, 1] = ((17.0 * c * (-6435 * s + 285285 * s^3) - 3594591 * s^5) + 19684665 * s^7) - 54679625 * s^9) + 80528175 * s^11) - 59879925 * s^13) + 17678835 * s^15)) / 2048));
+    LegArrEx[16, 2] = ((765.0 * c * c * (-143 + 19019 * s^2) - 399399 * s^4) + 3062059 * s^6) - 10935925 * s^8) + 19684665 * s^10) - 17298645 * s^12) + 5892945 * s^14)) / 2048));
+    LegArrEx[16, 3] = ((101745.0 * c^3) * (143 * s - 6006 * s^3) + 69069 * s^5) - 328900 * s^7) + 740025 * s^9) - 780390 * s^11) + 310155 * s^13)) / 1024));
+    LegArrEx[16, 4] = (1322685.0 * Math.Pow(c * c, 2) * (11 - 1386 * s^2) + 26565 * s^4) - 177100 * s^6) + 512325 * s^8) - 660330 * s^10) + 310155 * s^12)) / 1024);
+    LegArrEx[16, 5] = (3968055.0 / 256) * c^5) * (-231 * s + 8855 * s^3) - 88550 * s^5) + 341550 * s^7) - 550275 * s^9) + 310155 * s^11));
+    LegArrEx[16, 6] = (43648605.0 / 256) * Math.Pow(c * c, 3) * (-21 + 2415 * s^2) - 40250 * s^4) + 217350 * s^6) - 450225 * s^8) + 310155 * s^10));
+    LegArrEx[16, 7] = (5019589575.0 / 128) * c^7) * (21 * s - 700 * s^3) + 5670 * s^5) - 15660 * s^7) + 13485 * s^9));
+    LegArrEx[16, 8] = 15058768725.0 / 128 * Math.Pow(c * c, 4) * (7 - 700 * s^2) + 9450 * s^4) - 36540 * s^6) + 40455 * s^8));
+    LegArrEx[16, 9] = (75293843625.0 / 16) * c^9) * (-35 * s + 945 * s^3) - 5481 * s^5) + 8091 * s^7));
+    LegArrEx[16, 10] = (527056905375.0 / 16) * Math.Pow(c * c, 5) * (-5 + 405 * s^2) - 3915 * s^4) + 8091 * s^6));
+    LegArrEx[16, 11] = (14230536445125.0 / 8) * c^11) * (15 * s - 290 * s^3) + 899 * s^5));
+    LegArrEx[16, 12] = 71152682225625.0 / 8 * Math.Pow(c * c, 6) * (3 - 174 * s^2) + 899 * s^4));
+    LegArrEx[16, 13] = (2063427784543125.0 / 2) * c^13) * (-3 * s + 31 * s^3));
+    LegArrEx[16, 14] = (6190283353629375.0 / 2) * Math.Pow(c * c, 7) * (-1 + 31 * s^2));
+    LegArrEx[16, 15] = 191898783962510625.0 * s * c^15);
+    LegArrEx[16, 16] = 191898783962510625.0 * Math.Pow(c * c, 8);
+
+    LegArrEx[17, 0] = (109395.0 * s - 5542680 * s^3) + 81477396 * s^5) - 535422888 * s^7) + 1859107250 * s^9) - 3650610600 * s^11) + 4071834900 * s^13) - 2404321560 * s^15) + 583401555 * s^17)) / 32768;
+    LegArrEx[17, 1] = ((153.0 * c * (715 - 108680 * s^2) + 2662660 * s^4) - 24496472 * s^6) + 109359250 * s^8) - 262462200 * s^10) + 345972900 * s^12) - 235717800 * s^14) + 64822395 * s^16)) / 32768));
+    LegArrEx[17, 2] = ((2907.0 * c * c * (-715 * s + 35035 * s^3) - 483483 * s^5) + 2877875 * s^7) - 8633625 * s^9) + 13656825 * s^11) - 10855425 * s^13) + 3411705 * s^15)) / 2048));
+    LegArrEx[17, 3] = ((14535.0 * c^3) * (-143 + 21021 * s^2) - 483483 * s^4) + 4029025 * s^6) - 15540525 * s^8) + 30045015 * s^10) - 28224105 * s^12) + 10235115 * s^14)) / 2048));
+    LegArrEx[17, 4] = (305235.0 * Math.Pow(c * c, 2) * (1001 * s - 46046 * s^3) + 575575 * s^5) - 2960100 * s^7) + 7153575 * s^9) - 8064030 * s^11) + 3411705 * s^13)) / 1024);
+    LegArrEx[17, 5] = ((43648605.0 * c^5) * (7 - 966 * s^2) + 20125 * s^4) - 144900 * s^6) + 450225 * s^8) - 620310 * s^10) + 310155 * s^12)) / 1024));
+    LegArrEx[17, 6] = (1003917915.0 / 256) * Math.Pow(c * c, 3) * (-21 * s + 875 * s^3) - 9450 * s^5) + 39150 * s^7) - 67425 * s^9) + 40455 * s^11));
+    LegArrEx[17, 7] = (3011753745.0 / 256) * c^7) * (-7 + 875 * s^2) - 15750 * s^4) + 91350 * s^6) - 202275 * s^8) + 148335 * s^10));
+    LegArrEx[17, 8] = 75293843625.0 / 128 * Math.Pow(c * c, 4) * (35 * s - 1260 * s^3) + 10962 * s^5) - 32364 * s^7) + 29667 * s^9));
+    LegArrEx[17, 9] = (75293843625.0 / 128) * c^9) * (35 - 3780 * s^2) + 54810 * s^4) - 226548 * s^6) + 267003 * s^8));
+    LegArrEx[17, 10] = (2032933777875.0 / 16) * Math.Pow(c * c, 5) * (-35 * s + 1015 * s^3) - 6293 * s^5) + 9889 * s^7));
+    LegArrEx[17, 11] = (14230536445125.0 / 16) * c^11) * (-5 + 435 * s^2) - 4495 * s^4) + 9889 * s^6));
+    LegArrEx[17, 12] = 412685556908625.0 / 8 * Math.Pow(c * c, 6) * (15 * s - 310 * s^3) + 1023 * s^5));
+    LegArrEx[17, 13] = (6190283353629375.0 / 8) * c^13) * (1 - 62 * s^2) + 341 * s^4));
+    LegArrEx[17, 14] = (191898783962510625.0 / 2) * Math.Pow(c * c, 7) * (-s + 11 * s^3));
+    LegArrEx[17, 15] = (191898783962510625.0 / 2) * c^15) * (-1 + 33 * s^2));
+    LegArrEx[17, 16] = 6332659870762850625.0 * s * Math.Pow(c * c, 8);
+    LegArrEx[17, 17] = 6332659870762850625.0 * c^17);
+
+    LegArrEx[18, 0] = (-12155.0 + 2078505 * s^2) - 58198140 * s^4) + 624660036 * s^6) - 3346393050 * s^8) + 10039179150 * s^10) - 17644617900 * s^12) + 18032411700 * s^14) - 9917826435 * s^16) + 2268783825 * s^18)) / 65536;
+    LegArrEx[18, 1] = ((171.0 * c * (12155 * s - 680680 * s^3) + 10958948 * s^5) - 78278200 * s^7) + 293543250 * s^9) - 619109400 * s^11) + 738168900 * s^13) - 463991880 * s^15) + 119409675 * s^17)) / 32768));
+    LegArrEx[18, 2] = ((14535.0 * c * c * (143 - 24024 * s^2) + 644644 * s^4) - 6446440 * s^6) + 31081050 * s^8) - 80120040 * s^10) + 112896420 * s^12) - 81880920 * s^14) + 23881935 * s^16)) / 32768));
+    LegArrEx[18, 3] = ((101745.0 * c^3) * (-429 * s + 23023 * s^3) - 345345 * s^5) + 2220075 * s^7) - 7153575 * s^9) + 12096045 * s^11) - 10235115 * s^13) + 3411705 * s^15)) / 2048));
+    LegArrEx[18, 4] = (3357585.0 * Math.Pow(c * c, 2) * (-13 + 2093 * s^2) - 52325 * s^4) + 470925 * s^6) - 1950975 * s^8) + 4032015 * s^10) - 4032015 * s^12) + 1550775 * s^14)) / 2048);
+    LegArrEx[18, 5] = ((77224455.0 * c^5) * (91 * s - 4550 * s^3) + 61425 * s^5) - 339300 * s^7) + 876525 * s^9) - 1051830 * s^11) + 471975 * s^13)) / 1024));
+    LegArrEx[18, 6] = ((1003917915.0 * Math.Pow(c * c, 3) * (7 - 1050 * s^2) + 23625 * s^4) - 182700 * s^6) + 606825 * s^8) - 890010 * s^10) + 471975 * s^12)) / 1024));
+    LegArrEx[18, 7] = (75293843625.0 / 256) * c^7) * (-7 * s + 315 * s^3) - 3654 * s^5) + 16182 * s^7) - 29667 * s^9) + 18879 * s^11));
+    LegArrEx[18, 8] = 75293843625.0 / 256 * Math.Pow(c * c, 4) * (-7 + 945 * s^2) - 18270 * s^4) + 113274 * s^6) - 267003 * s^8) + 207669 * s^10));
+    LegArrEx[18, 9] = (225881530875.0 / 128) * c^9) * (315 * s - 12180 * s^3) + 113274 * s^5) - 356004 * s^7) + 346115 * s^9));
+    LegArrEx[18, 10] = (14230536445125.0 / 128) * Math.Pow(c * c, 5) * (5 - 580 * s^2) + 8990 * s^4) - 39556 * s^6) + 49445 * s^8));
+    LegArrEx[18, 11] = (412685556908625.0 / 16) * c^11) * (-5 * s + 155 * s^3) - 1023 * s^5) + 1705 * s^7));
+    LegArrEx[18, 12] = 2063427784543125.0 / 16 * Math.Pow(c * c, 6) * (-1 + 93 * s^2) - 1023 * s^4) + 2387 * s^6));
+    LegArrEx[18, 13] = (191898783962510625.0 / 8) * c^13) * (s - 22 * s^3) + 77 * s^5));
+    LegArrEx[18, 14] = (191898783962510625.0 / 8) * Math.Pow(c * c, 7) * (1 - 66 * s^2) + 385 * s^4));
+    LegArrEx[18, 15] = (2110886623587616875.0 / 2) * c^15) * (-3 * s + 35 * s^3));
+    LegArrEx[18, 16] = 6332659870762850625.0 / 2 * Math.Pow(c * c, 8) * (-1 + 35 * s^2));
+    LegArrEx[18, 17] = 221643095476699771875.0 * s * c^17);
+    LegArrEx[18, 18] = 221643095476699771875.0 * Math.Pow(c * c, 9);
+
+    LegArrEx[19, 0] = (-230945.0 * s + 14549535 * s^3) - 267711444 * s^5) + 2230928700 * s^7) - 10039179150 * s^9) + 26466926850 * s^11) - 42075627300 * s^13) + 39671305740 * s^15) - 20419054425 * s^17) + 4418157975 * s^19)) / 65536;
+    LegArrEx[19, 1] = ((95.0 * c * (-2431 + 459459 * s^2) - 14090076 * s^4) + 164384220 * s^6) - 951080130 * s^8) + 3064591530 * s^10) - 5757717420 * s^12) + 6263890380 * s^14) - 3653936055 * s^16) + 883631595 * s^18)) / 65536));
+    LegArrEx[19, 2] = ((5985.0 * c * c * (7293 * s - 447304 * s^3) + 7827820 * s^5) - 60386040 * s^7) + 243221550 * s^9) - 548354040 * s^11) + 695987820 * s^13) - 463991880 * s^15) + 126233085 * s^17)) / 32768));
+    LegArrEx[19, 3] = ((1119195.0 * c^3) * (39 - 7176 * s^2) + 209300 * s^4) - 2260440 * s^6) + 11705850 * s^8) - 32256120 * s^10) + 48384180 * s^12) - 37218600 * s^14) + 11475735 * s^16)) / 32768));
+    LegArrEx[19, 4] = (25741485.0 * Math.Pow(c * c, 2) * (-39 * s + 2275 * s^3) - 36855 * s^5) + 254475 * s^7) - 876525 * s^9) + 1577745 * s^11) - 1415925 * s^13) + 498945 * s^15)) / 2048);
+    LegArrEx[19, 5] = ((77224455.0 * c^5) * (-13 + 2275 * s^2) - 61425 * s^4) + 593775 * s^6) - 2629575 * s^8) + 5785065 * s^10) - 6135675 * s^12) + 2494725 * s^14)) / 2048));
+    LegArrEx[19, 6] = ((1930611375.0 * Math.Pow(c * c, 3) * (91 * s - 4914 * s^3) + 71253 * s^5) - 420732 * s^7) + 1157013 * s^9) - 1472562 * s^11) + 698523 * s^13)) / 1024));
+    LegArrEx[19, 7] = ((25097947875.0 * c^7) * (7 - 1134 * s^2) + 27405 * s^4) - 226548 * s^6) + 801009 * s^8) - 1246014 * s^10) + 698523 * s^12)) / 1024));
+    LegArrEx[19, 8] = 225881530875.0 / 256 * Math.Pow(c * c, 4) * (-63 * s + 3045 * s^3) - 37758 * s^5) + 178002 * s^7) - 346115 * s^9) + 232841 * s^11));
+    LegArrEx[19, 9] = (1581170716125.0 / 256) * c^9) * (-9 + 1305 * s^2) - 26970 * s^4) + 178002 * s^6) - 445005 * s^8) + 365893 * s^10));
+    LegArrEx[19, 10] = (45853950767625.0 / 128) * Math.Pow(c * c, 5) * (45 * s - 1860 * s^3) + 18414 * s^5) - 61380 * s^7) + 63085 * s^9));
+    LegArrEx[19, 11] = (2063427784543125.0 / 128) * c^11) * (1 - 124 * s^2) + 2046 * s^4) - 9548 * s^6) + 12617 * s^8));
+    LegArrEx[19, 12] = 63966261320836875.0 / 16 * Math.Pow(c * c, 6) * (-s + 33 * s^3) - 231 * s^5) + 407 * s^7));
+    LegArrEx[19, 13] = (63966261320836875.0 / 16) * c^13) * (-1 + 99 * s^2) - 1155 * s^4) + 2849 * s^6));
+    LegArrEx[19, 14] = (2110886623587616875.0 / 8) * Math.Pow(c * c, 7) * (3 * s - 70 * s^3) + 259 * s^5));
+    LegArrEx[19, 15] = (2110886623587616875.0 / 8) * c^15) * (3 - 210 * s^2) + 1295 * s^4));
+    LegArrEx[19, 16] = 73881031825566590625.0 / 2 * Math.Pow(c * c, 8) * (-3 * s + 37 * s^3));
+    LegArrEx[19, 17] = (221643095476699771875.0 / 2) * c^17) * (-1 + 37 * s^2));
+    LegArrEx[19, 18] = 8200794532637891559375.0 * s * Math.Pow(c * c, 9);
+    LegArrEx[19, 19] = 8200794532637891559375.0 * c^19);
+
+    LegArrEx[20, 0] = (1.0 / 262144) * (46189 - 9699690 * s^2) + 334639305 * s^4) - 4461857400 * s^6) + 30117537450 * s^8) - 116454478140 * s^10) + 273491577450 * s^12) - 396713057400 * s^14) + 347123925225 * s^16) - 167890003050 * s^18) + 34461632205 * s^20));
+    LegArrEx[20, 1] = ((105.0 * c * (-46189 * s + 3187041 * s^3) - 63740820 * s^5) + 573667380 * s^7) - 2772725670 * s^9) + 7814045070 * s^11) - 13223768580 * s^13) + 13223768580 * s^15) - 7195285845 * s^17) + 1641030105 * s^19)) / 65536));
+    LegArrEx[20, 2] = ((21945.0 * c * c * (-221 + 45747 * s^2) - 1524900 * s^4) + 19213740 * s^6) - 119399670 * s^8) + 411265530 * s^10) - 822531060 * s^12) + 949074300 * s^14) - 585262485 * s^16) + 149184555 * s^18)) / 65536));
+    LegArrEx[20, 3] = ((1514205.0 * c^3) * (663 * s - 44200 * s^3) + 835380 * s^5) - 6921720 * s^7) + 29801850 * s^9) - 71524440 * s^11) + 96282900 * s^13) - 67856520 * s^15) + 19458855 * s^17)) / 32768));
+    LegArrEx[20, 4] = (77224455.0 * Math.Pow(c * c, 2) * (13 - 2600 * s^2) + 81900 * s^4) - 950040 * s^6) + 5259150 * s^8) - 15426840 * s^10) + 24542700 * s^12) - 19957800 * s^14) + 6486285 * s^16)) / 32768);
+    LegArrEx[20, 5] = ((386122275.0 * c^5) * (-65 * s + 4095 * s^3) - 71253 * s^5) + 525915 * s^7) - 1928355 * s^9) + 3681405 * s^11) - 3492615 * s^13) + 1297257 * s^15)) / 2048));
+    LegArrEx[20, 6] = ((25097947875.0 * Math.Pow(c * c, 3) * (-1 + 189 * s^2) - 5481 * s^4) + 56637 * s^6) - 267003 * s^8) + 623007 * s^10) - 698523 * s^12) + 299367 * s^14)) / 2048));
+    LegArrEx[20, 7] = ((225881530875.0 * c^7) * (21 * s - 1218 * s^3) + 18879 * s^5) - 118668 * s^7) + 346115 * s^9) - 465682 * s^11) + 232841 * s^13)) / 1024));
+    LegArrEx[20, 8] = (1581170716125.0 * Math.Pow(c * c, 4) * (3 - 522 * s^2) + 13485 * s^4) - 118668 * s^6) + 445005 * s^8) - 731786 * s^10) + 432419 * s^12)) / 1024);
+    LegArrEx[20, 9] = (45853950767625.0 / 256) * c^9) * (-9 * s + 465 * s^3) - 6138 * s^5) + 30690 * s^7) - 63085 * s^9) + 44733 * s^11));
+    LegArrEx[20, 10] = (137561852302875.0 / 256) * Math.Pow(c * c, 5) * (-3 + 465 * s^2) - 10230 * s^4) + 71610 * s^6) - 189255 * s^8) + 164021 * s^10));
+    LegArrEx[20, 11] = (21322087106945625.0 / 128) * c^11) * (3 * s - 132 * s^3) + 1386 * s^5) - 4884 * s^7) + 5291 * s^9));
+    LegArrEx[20, 12] = 63966261320836875.0 / 128 * Math.Pow(c * c, 6) * (1 - 132 * s^2) + 2310 * s^4) - 11396 * s^6) + 15873 * s^8));
+    LegArrEx[20, 13] = (2110886623587616875.0 / 16) * c^13) * (-s + 35 * s^3) - 259 * s^5) + 481 * s^7));
+    LegArrEx[20, 14] = (2110886623587616875.0 / 16) * Math.Pow(c * c, 7) * (-1 + 105 * s^2) - 1295 * s^4) + 3367 * s^6));
+    LegArrEx[20, 15] = (14776206365113318125.0 / 8) * c^15) * (15 * s - 370 * s^3) + 1443 * s^5));
+    LegArrEx[20, 16] = 221643095476699771875.0 / 8 * Math.Pow(c * c, 8) * (1 - 74 * s^2) + 481 * s^4));
+    LegArrEx[20, 17] = (8200794532637891559375.0 / 2) * c^17) * (-s + 13 * s^3));
+    LegArrEx[20, 18] = (8200794532637891559375.0 / 2) * Math.Pow(c * c, 9) * (-1 + 39 * s^2));
+    LegArrEx[20, 19] = 319830986772877770815625.0 * s * c^19);
+    LegArrEx[20, 20] = 319830986772877770815625.0 * Math.Pow(c * c, 10);
+
+    LegArrEx[21, 0] = (1.0 / 262144) * (969969 * s - 74364290 * s^3) + 1673196525 * s^5) - 17210021400 * s^7) + 97045398450 * s^9) - 328189892940 * s^11) + 694247850450 * s^13) - 925663800600 * s^15) + 755505013725 * s^17) - 344616322050 * s^19) + 67282234305 * s^21));
+    LegArrEx[21, 1] = (1.0 / 262144) * 231 * c * (4199 - 965770 * s^2) + 36216375 * s^4) - 521515800 * s^6) + 3780989550 * s^8) - 15628090140 * s^10) + 39070225350 * s^12) - 60108039000 * s^14) + 55599936075 * s^16) - 28345065450 * s^18) + 6116566755 * s^20));
+    LegArrEx[21, 2] = ((26565.0 * c * c * (-4199 * s + 314925 * s^3) - 6802380 * s^5) + 65756340 * s^7) - 339741090 * s^9) + 1019223270 * s^11) - 1829375100 * s^13) + 1933910820 * s^15) - 1109154735 * s^17) + 265937685 * s^19)) / 65536));
+    LegArrEx[21, 3] = ((504735.0 * c^3) * (-221 + 49725 * s^2) - 1790100 * s^4) + 24226020 * s^6) - 160929990 * s^8) + 590076630 * s^10) - 1251677700 * s^12) + 1526771700 * s^14) - 992401605 * s^16) + 265937685 * s^18)) / 65536));
+    LegArrEx[21, 4] = (22713075.0 * Math.Pow(c * c, 2) * (1105 * s - 79560 * s^3) + 1615068 * s^5) - 14304888 * s^7) + 65564070 * s^9) - 166890360 * s^11) + 237497820 * s^13) - 176426952 * s^15) + 53187537 * s^17)) / 32768);
+    LegArrEx[21, 5] = ((5019589575.0 * c^5) * (5 - 1080 * s^2) + 36540 * s^4) - 453096 * s^6) + 2670030 * s^8) - 8306760 * s^10) + 13970460 * s^12) - 11974680 * s^14) + 4091349 * s^16)) / 32768));
+    LegArrEx[21, 6] = ((15058768725.0 * Math.Pow(c * c, 3) * (-45 * s + 3045 * s^3) - 56637 * s^5) + 445005 * s^7) - 1730575 * s^9) + 3492615 * s^11) - 3492615 * s^13) + 1363783 * s^15)) / 2048));
+    LegArrEx[21, 7] = ((225881530875.0 * c^7) * (-3 + 609 * s^2) - 18879 * s^4) + 207669 * s^6) - 1038345 * s^8) + 2561251 * s^10) - 3026933 * s^12) + 1363783 * s^14)) / 2048));
+    LegArrEx[21, 8] = (45853950767625.0 * Math.Pow(c * c, 4) * (3 * s - 186 * s^3) + 3069 * s^5) - 20460 * s^7) + 63085 * s^9) - 89466 * s^11) + 47027 * s^13)) / 1024);
+    LegArrEx[21, 9] = ((45853950767625.0 * c^9) * (3 - 558 * s^2) + 15345 * s^4) - 143220 * s^6) + 567765 * s^8) - 984126 * s^10) + 611351 * s^12)) / 1024));
+    LegArrEx[21, 10] = (4264417421389125.0 / 256) * Math.Pow(c * c, 5) * (-3 * s + 165 * s^3) - 2310 * s^5) + 12210 * s^7) - 26455 * s^9) + 19721 * s^11));
+    LegArrEx[21, 11] = (4264417421389125.0 / 256) * c^11) * (-3 + 495 * s^2) - 11550 * s^4) + 85470 * s^6) - 238095 * s^8) + 216931 * s^10));
+    LegArrEx[21, 12] = 234542958176401875.0 / 128 * Math.Pow(c * c, 6) * (9 * s - 420 * s^3) + 4662 * s^5) - 17316 * s^7) + 19721 * s^9));
+    LegArrEx[21, 13] = (2110886623587616875.0 / 128) * c^13) * (1 - 140 * s^2) + 2590 * s^4) - 13468 * s^6) + 19721 * s^8));
+    LegArrEx[21, 14] = (2110886623587616875.0 / 16) * Math.Pow(c * c, 7) * (-35 * s + 1295 * s^3) - 10101 * s^5) + 19721 * s^7));
+    LegArrEx[21, 15] = (14776206365113318125.0 / 16) * c^15) * (-5 + 555 * s^2) - 7215 * s^4) + 19721 * s^6));
+    LegArrEx[21, 16] = 1640158906527578311875.0 / 8 * Math.Pow(c * c, 8) * (5 * s - 130 * s^3) + 533 * s^5));
+    LegArrEx[21, 17] = (8200794532637891559375.0 / 8) * c^17) * (1 - 78 * s^2) + 533 * s^4));
+    LegArrEx[21, 18] = (106610328924292590271875.0 / 2) * Math.Pow(c * c, 9) * (-3 * s + 41 * s^3));
+    LegArrEx[21, 19] = (319830986772877770815625.0 / 2) * c^19) * (-1 + 41 * s^2));
+    LegArrEx[21, 20] = 13113070457687988603440625.0 * s * Math.Pow(c * c, 10);
+    LegArrEx[21, 21] = 13113070457687988603440625.0 * c^21);
+
+end % LegPolyEx
+
+
+% ----------------------------------------------------------------------------
+% fukushima method (JG 2018)
+%   for very large spherical harmonic expansions and calcs of unitalized associated
+%   Legendre polynomials
+%
+%   Plm are converted to X-numbers
+%   Clm, Slm treated as F-numbers
+% -----------------------------------------------------------------------------
+
+% initialize legendre function values
+function [p] = pinit(n, m)
+    if (n == 0)
+        p(1) = 1.0;
+    else if (n == 1)
+            p(1) = 1.7320508075688773;
+    else if (n == 2)
+            if (m == 0)
+                p(1) = 0.5590169943749474;
+                p(2) = 1.6770509831248423;
+            end
+    else if (m == 1)
+            p(1) = 0.0;
+            p(2) = 1.9364916731037084;
+    end
+    else if (m == 2)
+            p(1) = 0.9682458365518542;
+            p(2) = -0.9682458365518542;
+    end
+    else if (n == 3)
+            if (m == 0)
+                p(1) = 0.9921567416492215;
+                p(2) = 1.6535945694153691;
+            end
+    else if (m == 1)
+            p(1) = 0.4050462936504913;
+            p(2) = 2.0252314682524563;
+    end
+    else if (m == 2)
+            p(1) = 1.2808688457449498;
+            p(2) = -1.2808688457449498;
+    end
+    else if (m == 3)
+            p(1) = 1.5687375497513917;
+            p(2) = -0.5229125165837972;
+    end
+    else if (n == 4)
+            if (m == 0)
+                p(1) = 0.421875;
+                p(2) = 0.9375;
+                p(3) = 1.640625;
+            end
+    else if (m == 1)
+            p(1) = 0.0;
+            p(2) = 0.5929270612815711;
+            p(3) = 2.0752447144854989;
+    end
+    else if (m == 2)
+            p(1) = 0.6288941186718159;
+            p(2) = 0.8385254915624211;
+            p(3) = -1.4674196102342370;
+    end
+    else if (m == 3)
+            p(1) = 0.0;
+            p(2) = 1.5687375497513917;
+            p(3) = -0.7843687748756958;
+    end
+    else if (m == 4)
+
+            p(1) = 0.8319487194983835;
+            p(2) = -1.1092649593311780;
+            p(3) = 0.2773162398327945;
+    end
+    end
+    end
+    end  % pinit
+
+
+    /* ----------------------------------------------------------------------------
+    *      x2f
+    *
+    *      convert x to f number
+    *
+    ------------------------------------------------------------------------------*/
+    function x2f(x, ix)
+
+        IND = 960;
+        BIG = Math.Pow(2.0, IND);
+        BIGI = Math.Pow(2.0, -IND);
+
+        if (ix == 0)
+            x2fv = x;
+        else if (ix == -1)
+                x2fv = x * BIGI;
+        else if (ix == 1)
+                x2fv = x * BIG;
+        else if (ix < 0)
+                x2fv = 0.0;
+        else if (x < 0)
+                x2fv = -BIG;
+        else
+            x2fv = BIG;
+
+            return x2fv;
+        end
+        end
+        end
+        end
+        end
     end
 
 
 
-    % test in geoloc.sln
-    %function testcovct2cl()
-    %
-    %    double[,] cartcov = new double[6, 6];
-    %    cartstate = new double(7);
-    %    string anomclass;
-    %    double[,] classcov = new double[6, 6];
-    %    double[,] tm = new double[6, 6];
+    /* ----------------------------------------------------------------------------
+    *                                  xunit
+    *
+    * uses the 'x' factor approach - value and exponent
+    *
+    ------------------------------------------------------------------------------*/
 
-    %    covct2cl(cartcov, cartstate, anomclass, out classcov, out tm);
+    function xunit
+        (
+        ref double x,
+        ref Int32 ix
+        )
+        IND = 960;
 
-    %end
-    %function testcovcl2ct()
-    %
-    %    covcl2ct
-    %    (double[,] classcov, classstate, string anomclass, out double[,] cartcov, out double[,] tm
-    %            );
-    %end
-    %function testcovct2eq()
-    %
-    %    classState = new double(7);
-    %    cartState = new double(7);
-    %    eqState = new double(7);
-    %    flState = new double(7);
-    %    double[,] cartCov = new double[6, 6];
-    %    double[,] classCov = new double[6, 6];
-    %    double[,] eqCov = new double[6, 6];
-    %    double[,] flCov = new double[6, 6];
-    %    double[,] rswCov = new double[6, 6];
-    %    double[,] ntwCov = new double[6, 6];
-    %    double[,] tm = new double[6, 6];
+        double BIG = Math.Pow(2, IND);
+        double BIGI = Math.Pow(2, -IND);
+        double BIGS = Math.Pow(2.0, 480);  % IND / 2
+        double BIGSI = Math.Pow(2.0, -480);  % IND / 2
 
-    %    cartCov = new double[,]   1, 0, 0, 0, 0, 0   0, 1, 0, 0, 0, 0   0, 0, 1, 0, 0, 0
-    %                          0, 0, 0, 1, 0, 0   0, 0, 0, 0, 1, 0   0, 0, 0, 0, 0, 1 end ];
+        w = abs(x);
+        if (w >= BIGS)
+
+            x = x * BIGI;
+            ix = ix + 1;
+        end
+    else if (w < BIGSI)
+
+            x = x * BIG;
+            ix = ix - 1;
+    end
+    end  % xunit
 
 
-    %    covct2eq
-    %    (     double[,] cartcov, cartstate, string anomeq, Int16 fr, out double[,] eqcov, out  tm                );
-    %end
-    %function testcoveq2ct()
-    %
-    %    coveq2ct
-    %     (                double[,] eqcov, eqstate, string anomeq, Int16 fr, out double[,] cartcov, out  tm                );
-    %end
-    %function testcovcl2eq()
-    %
-    %    covcl2eq
-    %    (
-    %            double[,] classcov, classstate, string anomclass, string anomeq, Int16 fr, out double[,] eqcov, out  tm                );
-       %end
-       %function testcoveq2cl()
+    /* ----------------------------------------------------------------------------
+    *                                       xl2sum
+    *
+    * routine to compute the two-term linear sum of X-numbers
+    * with F-number coefficients
+    *
+    ---------------------------------------------------------------------------- */
+    [z, iz] = function xlsum2(f, g, x, y, ix, iy)
+        IND = 960;
+        BIGI = Math.Pow(2, -IND);
+
+        id = ix - iy;
+        if (id == 0)
+
+            z = f * x + g * y;
+            iz = ix;
+        end
+    else if (id == 1)
+
+            z = f * x + g * (y * BIGI);
+            iz = ix;
+    end
+    else if (id == -1)
+
+            z = g * y + f * (x * BIGI);
+            iz = iy;
+    end
+    else if (id > 1)
+
+            z = f * x;
+            iz = ix;
+    end
+    else
+
+        z = g * y;
+        iz = iy;
+    end
+
+    xunit(ref z, ref iz);
+    end  % xlsum2
+
+
+    /* ----------------------------------------------------------------------------
+    *                                  dpeven
+    *
+    * find Pnnj and Pn,n-1,j when degree n is even and n >= 6. the returned values are
+    * (xp(j), ip(j)) and (xp1(j), ip1(j)), double X-number vectors representing
+    * Pnnj and Pn,n-1,j, respectively. required initial values for Pn-2,n-2,j as
+    * (xpold(j), ipold(j)) are needed.
+    *
+    *  inputs          description                                  range / units
+    *    n           - degree
+    *
+    *
+    *
+    *  outputs       :
+    *    xp1         - value
+    *    ip1         - exponent
+    *
+    *  locals        :
+    *                -
+    *
+    *  coupling      :
+    *    xunit
+    *    xlsum2
+    *
+    *  references    :
+    * Fukushima (2012a)
+    ---------------------------------------------------------------------------- */
+
+        [xp, xp1, ip, ip1] = function dpeven(n, xpold, ipold)
+
+            jx = n / 2;
+            jxm2 = jx - 2;
+            jxm1 = jx - 1;
+            n2 = n * 2;
+            gamma = sqrt(str2num(n2 + 1) * str2num(n2 - 1) / (str2num(n) * str2num(n - 1))) * 0.125;
+            gamma2 = gamma * 2.0;
+            xlsum2(gamma2, xpold(1), -gamma, xpold(2), out xp(1), ipold(1), ipold(2), out ip(1));
+            xlsum2(-gamma2, xpold(1), gamma2, xpold(2), out xtemp, ipold(1), ipold(2), out itemp);
+            xlsum2(1.0, xtemp, -gamma, xpold(3), out xp(2), itemp, ipold(3), out ip(2));
+            j = 2;
+            while (j <= jxm2)
+
+                jm1 = j - 1;
+                jp1 = j + 1;
+                xlsum2(-gamma, xpold[jm1], gamma2, xpold(j), out xtemp, ipold[jm1], ipold(j), out itemp);
+                xlsum2(1.0, xtemp, -gamma, xpold[jp1], out xp(j), itemp, ipold[jp1], out ip(j));
+                j = j + 1;
+            end
+            xlsum2(-gamma, xpold[jxm2], gamma2, xpold[jxm1], out xp[jxm1], ipold[jxm2], ipold[jxm1], out ip[jxm1]);
+            xp[jx] = -gamma * xpold[jxm1];
+            ip[jx] = ipold[jxm1];
+            xunit(ref xp[jx], ref ip[jx]);
+            alpha2 = sqrt(2.0 / str2num(n)) * 2.0;
+            xp1(1) = 0.0;
+            ip1(1) = 0;
+            j = 1;
+            while (j <= jx)
+
+                xp1(j) = -str2num(j) * alpha2 * xp(j);
+                ip1(j) = ip(j);
+                xunit(ref xp1(j), ref ip1(j));
+                j = j + 1;
+            end
+        end   % dpeven
+
+
+        % ----------------------------------------------------------------------------
+        %                                 dpodd
        %
-       %    coveq2cl(double[,] eqcov, eqstate, string anomeq, string anomclass, Int16 fr, out double[,] classcov, out  tm);
-       %end
-       %function testcovct2fl()
-       %
-       %    covct2fl
-       %      (
-       %            double[,] cartcov, cartstate, string anomflt, double ttt, double jdut1, double lod,
-       %            double xp, double yp, Int16 terms, double ddpsi, double ddeps, out double[,] flcov, out  tm
-       %            );
-       %end
-       %function testcovfl2ct()
-       %
-       %    covfl2ct(double[,] flcov, flstate, string anomflt, double ttt, double jdut1, double lod,
-       %            double xp, double yp, Int16 terms, double ddpsi, double ddeps, out double[,] cartcov, out  tm);
-
-       %end
-       %function testcovct_rsw()
-       %
-       %    covct_rsw(ref double[,] cartcov, cartstate, MathTimeLib.Edirection direct, ref double[,] rswcov, out  tm);
-       %        direct = MathTimeLib.Edirection.eto;
-       %        covct_ntw(ref cartCovo, cartState, direct, ref ntwCov, out tm);
-
-       %    end
-       %    function testcovct_ntw()
-       %
-       %        direct = MathTimeLib.Edirection.eto;
-       %        covct_ntw(ref cartCovo, cartState, direct, ref ntwCov, out tm);
-
-       %        covct_ntw(ref double[,] cartcov, cartstate, MathTimeLib.Edirection direct, ref double[,] ntwcov, out  tm);
-       %end
-
-       function testsunmoonjpl()
-           j[jd, jdF] = day(2017, 5, 11, 3, 51, 42.7657);
-
-           fprintf(1,' =============================   test sun and moon ephemerides =============================\n');
-
-           % read in jpl sun moon files
-           % answers
-           fprintf(1,'2017  5 11  0  96576094.2145 106598001.2476 46210616.7776     151081093.9419  0.9804616 -252296.5509 -302841.7334 -93212.7720');
-           fprintf(1,'2017  5 11 12  95604355.9737 107353047.2919 46537942.1006     151098145.9151  0.9802403 -218443.5158 -325897.7785 -102799.8515');
-           fprintf(1,'2017  5 12  0  94625783.6875 108100430.4112 46861940.2387     151115133.0492  0.9800199 -182165.5046 -345316.4032 -111246.7742');
-
-           % for 1 day centers, need to adjust the initjpl function
-           %initjplde(ref jpldearr, 'D:/Codes/LIBRARY/DataLib/', 'sunmooneph_430t.txt', out jdjpldestart, out jdjpldestartFrac);
-           infilename = append('D:\Codes\LIBRARY\DataLib\', 'sunmooneph_430t12.txt');
-           [jpldearr, jdjpldestart, jdjpldestartFrac] = initjplde(infilename);
-
-           findjpldeparam(jd, 0.0, 'l', jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
-           fprintf(1,'findjpldeephem 0000 hrs l\n ' + jd, ' 0.00000 ' + rsun(1),
-           rsun(2), rsun(3),
-           rmoon(1), rmoon(2), rmoon(3));
-
-           findjpldeparam(jd, 0.0, 's', jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
-           fprintf(1,'findjpldeephem 0000 hrs s\n ' + jd, jdF, rsun(1),
-           rsun(2), rsun(3),
-           rmoon(1), rmoon(2), rmoon(3));
-
-           sunmoonjpl(jd, 0.0, 's', ref jpldearr, jdjpldestart, out rsun, out rtascs, out decls, out rmoon, out rtascm, out declm);
-           fprintf(1,'sunmoon 0000 hrs s\n ' + jd, jdF, rsun(1),
-           rsun(2), rsun(3),
-           rmoon(1), rmoon(2), rmoon(3));
-
-
-           findjpldeparam(jd, jdF, 'l', jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
-           fprintf(1,'findjpldeephem hrs l\n ' + jd, jdF, rsun(1),
-           rsun(2), rsun(3),
-           rmoon(1), rmoon(2), rmoon(3));
-
-           sunmoonjpl(jd, jdF, 'l', ref jpldearr, jdjpldestart, out rsun, out rtascs, out decls, out rmoon, out rtascm, out declm);
-           fprintf(1,'sunmoon hrs l\n ' + jd, jdF, rsun(1),
-           rsun(2), rsun(3),
-           rmoon(1), rmoon(2), rmoon(3));
-
-           findjpldeparam(jd, 1.0, 'l', jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
-           fprintf(1,'findjpldeephem 2400 hrs s\n ' + jd, jdF, rsun(1),
-           rsun(2), rsun(3),
-           rmoon(1), rmoon(2), rmoon(3));
-
-
-           % ex 8.5 test
-           jday(2020, 2, 18, 15, 8, 47.23847, out jd, out jdF);
-           findjpldeparam(jd, 0.0, 's', jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
-           fprintf(1,'ex findjpldeephem 0000 hrs s\n ' + jd, jdF, rsun(1),
-           rsun(2), rsun(3),
-           rmoon(1), rmoon(2), rmoon(3));
-
-           % test interpolation of vectors
-           % shows spline is MUCH better - 3 km sun variation in mid day linear, 60m diff with spline.
-           jday(2017, 5, 11, 3, 51, 42.7657, out jd, out jdF);
-           jday(2000, 1, 1, 0, 0, 0.0, out jd, out jdF);
-           fprintf(1,'findjplde  mfme     rsun x             y                 z             rmoon x             y                z      (km)');
-
-           var watch = System.Diagnostics.Stopwatch.StartNew();
-           % the code that you want to measure comes here
-           % read in jpl sun moon files - seems to be the slowest part (800 msec)
-           infilename = append('D:\Codes\LIBRARY\DataLib\', 'sunmooneph_430t.txt');
-           [jpldearr, jdjpldestart, jdjpldestartFrac] = initjplde(infilename);
-
-           watch.Stop();
-           var elapsedMs = watch.ElapsedMilliseconds;
-
-           watch = System.Diagnostics.Stopwatch.StartNew();
-
-           ii;
-           for (ii = 0; ii < 36500; ii++)
-
-               % seems pretty fast (45 msec)
-               for (jj = 0; jj < 24; jj++)
-
-                   findjpldeparam(jd + ii, (jj * 1.0) / 24.0, 's', jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
-                   % the write takes some time (160 msec)
-                   %fprintf(1,' ' + jd, (ii * 60.0).ToString('0000'),
-                   %    rsun(1), rsun(2), rsun(3),
-                   %    rmoon(1), rmoon(2), rmoon(3));
-               end
-           end
-
-       end
-
-
-       function testkp2ap()
-
-           for i = 1: 27
-               kp = 10.0 * i / 3.0;
-               [ap] = kp2ap(kp);
-               % get spacing correct, leading 0, front spaces
-               fprintf(1,'%11.7f %11.7f  %11.7f \n', i, 0.1 * kp, ap);
-           end
-       end
-
-
-       function testazel2radec()
-
-           double rad = 180.0 / pi;
-           reci = new double(4);
-           veci = new double(4);
-           recef = new double(4);
-           vecef = new double(4);
-           rsecef = new double(4);
-           vsecef = new double(4);
-           rseci = new double(4);
-           vseci = new double(4);
-           double rho, az, el, drho, daz, del, alt, latgd, lon;
-           double rr, rtasc, decl, drr, drtasc, ddecl;
-           double trtasc, tdecl, dtrtasc, dtdecl;
-           double ttt, xp, yp, lod, jdut1, ddpsi, ddeps, ddx, ddy, dut1, lst, gst, jdtt, jdftt;
-           year, mon, day, hr, minute, dat;
-           double second, jd, jdFrac;
-
-           rr = trtasc = tdecl = rtasc = decl = drr = dtrtasc = dtdecl = drtasc = ddecl = 0.0;
-           rho = az = el = drho = daz = del = 0.0;
-
-           fileLoc = 'D:\Codes\LIBRARY\DataLib\';
-           [iau80arr] = iau80in(fileLoc);
-           fileLoc = 'D:\Codes\LIBRARY\DataLib\';
-           [iau06arr] = iau06in(fileLoc);
-
-           % now read it in
-           double jdxysstart, jdfxysstart;
-           AstroLib.xysdataClass[] xys06table = xys06table;
-    [jdxysstart, jdfxysstart, xys06arr] = initxys(infilename);
-
-           xp = 0.0;
-           yp = 0.0;
-           lod = 0.0;
-           ddpsi = -0.052195;
-           ddeps = -0.003875;
-           ddx = 0.0;  % fixxxxxx
-           ddy = 0.0;
-           dut1 = -0.37816;
-
-           year = 2015;
-           mon = 12;
-           day = 15;
-           hr = 16;
-           dat = 36;
-           minute = 58;
-           second = 50.208;
-           jday(year, mon, day, hr, minute, second, out jd, out jdFrac);
-
-           % note you have to use tdb for time of ineterst AND j2000 (when dat = 32)
-           jdtt = jd;
-           jdftt = jdFrac + (dat + 32.184) / 86400.0;
-           ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
-           jdut1 = jd + jdFrac + dut1 / 86400.0;
-
-           recef = [ -605.79221660, -5870.22951108, 3493.05319896 ];
-           recef = [ -100605.79221660, -1005870.22951108, 1003493.05319896 ];
-           vecef = [ -1.56825429, -3.70234891, -6.47948395 ];
-           eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
-           AstroLib.EOpt.e80, iau80arr, iau06arr,
-           jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
-
-           lon = -104.883 / rad;
-           latgd = 39.007 / rad;
-           alt = 2.102;
-           site(latgd, lon, alt, out rsecef, out vsecef);
-
-           eci_ecef(ref rseci, ref vseci, MathTimeLib.Edirection.efrom, ref rsecef, ref vsecef,
-           AstroLib.EOpt.e80, iau80arr, iau06arr,
-           jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
-
-           lstime(lon, jdut1, out lst, out gst);
-
-           % prout initial conditions
-           fprintf(1,'recef  ' + recef(1), recef(2), recef(3),
-           'v  ' + vecef(1), vecef(2), vecef(3));
-           fprintf(1,'rs ecef  ' + rsecef(1), rsecef(2), rsecef(3));
-           fprintf(1,'reci  ' + reci(1), reci(2), reci(3),
-           'v  ' + veci(1), veci(2), veci(3));
-           fprintf(1,'rs eci  ' + rseci(1), rseci(2), rseci(3));
-
-
-           rv_razel(ref recef, ref vecef, latgd, lon, alt, MathTimeLib.Edirection.eto, ref rho, ref az, ref el, ref drho, ref daz, ref del);
-
-           rv_radec(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rr, ref rtasc, ref decl, ref drr, ref drtasc, ref ddecl);
-
-           rv_tradec(ref reci, ref veci, rseci, MathTimeLib.Edirection.eto, ref rho, ref trtasc, ref tdecl, ref drho, ref dtrtasc, ref dtdecl);
-
-           % prout results
-           fprintf(1,'razel ' + rho, az, el,
-           '  ' + drho, daz, del);
-           fprintf(1,'radec ' + rr, rtasc, decl,
-           '  ' + drr, drtasc, ddecl);
-           fprintf(1,'tradec ' + rho, trtasc, tdecl,
-           drho, dtrtasc, dtdecl);
-
-           double rtasc1;
-           [rtasc, decl, rtasc1] = azel_radec(az, el, lst, latgd);
-           fprintf(1,'radec ' + rtasc + ' rtasc1 ' + rtasc1, decl);
-           fprintf(1,'radec ' + (pi * 2 - rtasc) + ' rtasc1 ' + (pi * 2 - rtasc1), decl);
-       end
-
-
-       % ------------------------------------------------------------------------------
-       %
-       %                           function LegPolyEx
-       %
-       %   this function finds the exact (from equations) Legendre polynomials for the gravity field.
-       %   note that the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21
-       %   in my text). fortran implementations will have indicies of 1 greater as they often
-       %   start at 1. these are exact expressions derived from mathematica.
-       %
-       %  author        : david vallado             davallado@gmail.com  16 dec 2019
-       %
-       %  inputs        description                                   range / units
-       %    latgc       - Geocentric lat of satellite                   pi to pi rad
-       %    order       - size of gravity field                         1..2160..
-       %
-       %  outputs       :
-       %    LegArr      - [,] array of Legendre polynomials
-       %
-       %  locals :
-       %    L,m         - degree and order indices
-       %    conv        - conversion to un-unitalize
-       %
-       %  coupling      :
-       %   none
-       %
-       %  references :
-       %    vallado       2013, 597, Eq 8-57
-       % ------------------------------------------------------------------------------*/
-
-       function LegPolyEx
-           (
-           double latgc,
-           Int32 order,
-           out double[,] LegArrEx
-           )
-
-           LegArrEx = new double[order + 2, order + 2];
-
-           double s = LegArrEx(2, 1) = sin(latgc);
-           double c = LegArrEx(2, 2) = cos(latgc);
-
-           % -------------------- exact epxressions ----------------------
-           LegArrEx(3, 1) = 0.5 * (3 * s * s - 1.0);
-           LegArrEx(3, 2) = 3.0 * s * c;
-           LegArrEx(3, 3) = 3.0 * c * c;
-
-           % include (-1)^m for all the terms
-           LegArrEx(4, 1) = -0.5 * s * (3 - 5 * s * s);
-           LegArrEx(4, 2) = (3.0 / 2) * c * (-1 + 5 * s * s); % 15s^2 - 3
-           LegArrEx(4, 3) = 15 * s * c * c;
-           LegArrEx(4, 4) = 15 * (c * c * c);
-
-           LegArrEx(5, 1) = 1.0 / 8.0 * (35.0 * s^4) - 30.0 * s^2) + 3.0);
-           LegArrEx(5, 2) = 2.5 * c * (-3 * s + 7 * s^3));
-           LegArrEx(5, 3) = 7.5 * c^2) * (-1 + 7 * s^2));
-           LegArrEx(5, 4) = 105.0 * c^3) * s;
-           LegArrEx(5, 5) = 105.0 * c^4);
-
-           LegArrEx(6, 1) = (1.0 / 8) * s * (15 - 70 * s^2) + 63 * s^4));
-           LegArrEx(6, 2) = (15.0 / 8) * c * (1 - 14 * s^2) + 21 * s^4));
-           LegArrEx(6, 3) = (105.0 / 2) * c * c * (-s + 3 * s^3));
-           LegArrEx(6, 4) = (105.0 / 2) * c^3) * (-1 + 9 * s^2));
-           LegArrEx(6, 5) = 945.0 * s * c^4);
-           LegArrEx(6, 6) = 945.0 * c^5);
-
-           LegArrEx[6, 0] = 1.0 / 16 * (-5 + 105 * s^2) - 315 * s^4) + 231 * s^6));
-           LegArrEx[6, 1] = (21.0 / 8) * c * (5 * s - 30 * s^3) + 33 * s^5));
-           LegArrEx[6, 2] = (105.0 / 8) * c * c * (1 - 18 * s^2) + 33 * s^4));
-           LegArrEx[6, 3] = (315.0 / 2) * c^3) * (-3 * s + 11 * s^3));
-           LegArrEx[6, 4] = 945.0 / 2 * Math.Pow(c * c, 2) * (-1 + 11 * s^2));
-           LegArrEx[6, 5] = 10395.0 * s * c^5);
-           LegArrEx[6, 6] = 10395.0 * Math.Pow(c * c, 3);
-
-           LegArrEx[7, 0] = 1.0 / 16 * (-35 * s + 315 * s^3) - 693 * s^5) + 429 * s^7));
-           LegArrEx[7, 1] = (7.0 / 16) * c * (-5 + 135 * s^2) - 495 * s^4) + 429 * s^6));
-           LegArrEx[7, 2] = (63.0 / 8) * c * c * (15 * s - 110 * s^3) + 143 * s^5));
-           LegArrEx[7, 3] = (315.0 / 8) * c^3) * (3 - 66 * s^2) + 143 * s^4));
-           LegArrEx[7, 4] = 3465.0 / 2 * Math.Pow(c * c, 2) * (-3 * s + 13 * s^3));
-           LegArrEx[7, 5] = (10395.0 / 2) * c^5) * (-1 + 13 * s^2));
-           LegArrEx[7, 6] = 135135.0 * s * Math.Pow(c * c, 3);
-           LegArrEx[7, 7] = 135135.0 * c^7);
-
-           LegArrEx[8, 0] = 1.0 / 128 * (35 - 1260 * s^2) + 6930 * s^4) - 12012 * s^6) + 6435 * s^8));
-           LegArrEx[8, 1] = (9.0 / 16) * c * (-35 * s + 385 * s^3) - 1001 * s^5) + 715 * s^7));
-           LegArrEx[8, 2] = (315.0 / 16) * c * c * (-1 + 33 * s^2) - 143 * s^4) + 143 * s^6));
-           LegArrEx[8, 3] = (3465.0 / 8) * c^3) * (3 * s - 26 * s^3) + 39 * s^5));
-           LegArrEx[8, 4] = 10395.0 / 8 * Math.Pow(c * c, 2) * (1 - 26 * s^2) + 65 * s^4));
-           LegArrEx[8, 5] = (135135.0 / 2) * c^5) * (-s + 5 * s^3));
-           LegArrEx[8, 6] = (135135.0 / 2) * Math.Pow(c * c, 3) * (-1 + 15 * s^2));
-           LegArrEx[8, 7] = 2027025.0 * s * c^7);
-           LegArrEx[8, 8] = 2027025.0 * Math.Pow(c * c, 4);
-
-           LegArrEx[9, 0] = 1.0 / 128 * (315 * s - 4620 * s^3) + 18018 * s^5) - 25740 * s^7) + 12155 * s^9));
-           LegArrEx[9, 1] = (45.0 / 128) * c * (7 - 308 * s^2) + 2002 * s^4) - 4004 * s^6) + 2431 * s^8));
-           LegArrEx[9, 2] = (495.0 / 16) * c * c * (-7 * s + 91 * s^3) - 273 * s^5) + 221 * s^7));
-           LegArrEx[9, 3] = (3465.0 / 16) * c^3) * (-1 + 39 * s^2) - 195 * s^4) + 221 * s^6));
-           LegArrEx[9, 4] = 135135.0 / 8 * Math.Pow(c * c, 2) * (s - 10 * s^3) + 17 * s^5));
-           LegArrEx[9, 5] = (135135.0 / 8) * c^5) * (1 - 30 * s^2) + 85 * s^4));
-           LegArrEx[9, 6] = (675675.0 / 2) * Math.Pow(c * c, 3) * (-3 * s + 17 * s^3));
-           LegArrEx[9, 7] = (2027025.0 / 2) * c^7) * (-1 + 17 * s^2));
-           LegArrEx[9, 8] = 34459425.0 * s * Math.Pow(c * c, 4);
-           LegArrEx[9, 9] = 34459425.0 * c^9);
-
-           LegArrEx[10, 0] = 1.0 / 256 * (-63 + 3465 * s^2) - 30030 * s^4) + 90090 * s^6) - 109395 * s^8) + 46189 * s^10));
-           LegArrEx[10, 1] = (55.0 / 128) * c * (63 * s - 1092 * s^3) + 4914 * s^5) - 7956 * s^7) + 4199 * s^9));
-           LegArrEx[10, 2] = (495.0 / 128) * c * c * (7 - 364 * s^2) + 2730 * s^4) - 6188 * s^6) + 4199 * s^8));
-           LegArrEx[10, 3] = (6435.0 / 16) * c^3) * (-7 * s + 105 * s^3) - 357 * s^5) + 323 * s^7));
-           LegArrEx[10, 4] = 45045.0 / 16 * Math.Pow(c * c, 2) * (-1 + 45 * s^2) - 255 * s^4) + 323 * s^6));
-           LegArrEx[10, 5] = (135135.0 / 8) * c^5) * (15 * s - 170 * s^3) + 323 * s^5));
-           LegArrEx[10, 6] = (675675.0 / 8) * Math.Pow(c * c, 3) * (3 - 102 * s^2) + 323 * s^4));
-           LegArrEx[10, 7] = (11486475.0 / 2) * c^7) * (-3 * s + 19 * s^3));
-           LegArrEx[10, 8] = 34459425.0 / 2 * Math.Pow(c * c, 4) * (-1 + 19 * s^2));
-           LegArrEx[10, 9] = 654729075.0 * s * c^9);
-           LegArrEx[10, 10] = 654729075.0 * Math.Pow(c * c, 5);
-
-           LegArrEx[11, 0] = 1.0 / 256 * (-693 * s + 15015 * s^3) - 90090 * s^5) + 218790 * s^7) - 230945 * s^9) + 88179 * s^11));
-           LegArrEx[11, 1] = (33.0 / 256) * c * (-21 + 1365 * s^2) - 13650 * s^4) + 46410 * s^6) - 62985 * s^8) + 29393 * s^10));
-           LegArrEx[11, 2] = (2145.0 / 128) * c * c * (21 * s - 420 * s^3) + 2142 * s^5) - 3876 * s^7) + 2261 * s^9));
-           LegArrEx[11, 3] = (45045.0 / 128) * c^3) * (1 - 60 * s^2) + 510 * s^4) - 1292 * s^6) + 969 * s^8));
-           LegArrEx[11, 4] = 135135.0 / 16 * Math.Pow(c * c, 2) * (-5 * s + 85 * s^3) - 323 * s^5) + 323 * s^7));
-           LegArrEx[11, 5] = (135135.0 / 16) * c^5) * (-5 + 255 * s^2) - 1615 * s^4) + 2261 * s^6));
-           LegArrEx[11, 6] = (2297295.0 / 8) * Math.Pow(c * c, 3) * (15 * s - 190 * s^3) + 399 * s^5));
-           LegArrEx[11, 7] = (34459425.0 / 8) * c^7) * (1 - 38 * s^2) + 133 * s^4));
-           LegArrEx[11, 8] = 654729075.0 / 2 * Math.Pow(c * c, 4) * (-s + 7 * s^3));
-           LegArrEx[11, 9] = (654729075.0 / 2) * c^9) * (-1 + 21 * s^2));
-           LegArrEx[11, 10] = 13749310575.0 * s * Math.Pow(c * c, 5);
-           LegArrEx[11, 11] = 13749310575.0 * c^11);
-
-           LegArrEx[12, 0] = (231.0 - 18018 * s^2) + 225225 * s^4) - 1021020 * s^6) + 2078505 * s^8) - 1939938 * s^10) + 676039 * s^12)) / 1024;
-           LegArrEx[12, 1] = (39.0 / 256) * c * (-231 * s + 5775 * s^3) - 39270 * s^5) + 106590 * s^7) - 124355 * s^9) + 52003 * s^11));
-           LegArrEx[12, 2] = (3003.0 / 256) * c * c * (-3 + 225 * s^2) - 2550 * s^4) + 9690 * s^6) - 14535 * s^8) + 7429 * s^10));
-           LegArrEx[12, 3] = (15015.0 / 128) * c^3) * (45 * s - 1020 * s^3) + 5814 * s^5) - 11628 * s^7) + 7429 * s^9));
-           LegArrEx[12, 4] = 135135.0 / 128 * Math.Pow(c * c, 2) * (5 - 340 * s^2) + 3230 * s^4) - 9044 * s^6) + 7429 * s^8));
-           LegArrEx[12, 5] = (2297295.0 / 16) * c^5) * (-5 * s + 95 * s^3) - 399 * s^5) + 437 * s^7));
-           LegArrEx[12, 6] = (2297295.0 / 16) * Math.Pow(c * c, 3) * (-5 + 285 * s^2) - 1995 * s^4) + 3059 * s^6));
-           LegArrEx[12, 7] = (130945815.0 / 8) * c^7) * (5 * s - 70 * s^3) + 161 * s^5));
-           LegArrEx[12, 8] = 654729075.0 / 8 * Math.Pow(c * c, 4) * (1 - 42 * s^2) + 161 * s^4));
-           LegArrEx[12, 9] = (4583103525.0 / 2) * c^9) * (-3 * s + 23 * s^3));
-           LegArrEx[12, 10] = (13749310575.0 / 2) * Math.Pow(c * c, 5) * (-1 + 23 * s^2));
-           LegArrEx[12, 11] = 316234143225.0 * s * c^11);
-           LegArrEx[12, 12] = 316234143225.0 * Math.Pow(c * c, 6);
-
-           LegArrEx[13, 0] = (3003.0 * s - 90090 * s^3) + 765765 * s^5) - 2771340 * s^7) + 4849845 * s^9) - 4056234 * s^11) + 1300075 * s^13)) / 1024;
-           LegArrEx[13, 1] = ((91.0 * c * (33 - 2970 * s^2) + 42075 * s^4) - 213180 * s^6) + 479655 * s^8) - 490314 * s^10) + 185725 * s^12)) / 1024));
-           LegArrEx[13, 2] = (1365.0 / 256) * c * c * (-99 * s + 2805 * s^3) - 21318 * s^5) + 63954 * s^7) - 81719 * s^9) + 37145 * s^11));
-           LegArrEx[13, 3] = (15015.0 / 256) * c^3) * (-9 + 765 * s^2) - 9690 * s^4) + 40698 * s^6) - 66861 * s^8) + 37145 * s^10));
-           LegArrEx[13, 4] = 255255.0 / 128 * Math.Pow(c * c, 2) * (45 * s - 1140 * s^3) + 7182 * s^5) - 15732 * s^7) + 10925 * s^9));
-           LegArrEx[13, 5] = (2297295.0 / 128) * c^5) * (5 - 380 * s^2) + 3990 * s^4) - 12236 * s^6) + 10925 * s^8));
-           LegArrEx[13, 6] = (43648605.0 / 16) * Math.Pow(c * c, 3) * (-5 * s + 105 * s^3) - 483 * s^5) + 575 * s^7));
-           LegArrEx[13, 7] = (218243025.0 / 16) * c^7) * (-1 + 63 * s^2) - 483 * s^4) + 805 * s^6));
-           LegArrEx[13, 8] = 4583103525.0 / 8 * Math.Pow(c * c, 4) * (3 * s - 46 * s^3) + 115 * s^5));
-           LegArrEx[13, 9] = (4583103525.0 / 8) * c^9) * (3 - 138 * s^2) + 575 * s^4));
-           LegArrEx[13, 10] = (105411381075.0 / 2) * Math.Pow(c * c, 5) * (-3 * s + 25 * s^3));
-           LegArrEx[13, 11] = (316234143225.0 / 2) * c^11) * (-1 + 25 * s^2));
-           LegArrEx[13, 12] = 7905853580625.0 * s * Math.Pow(c * c, 6);
-           LegArrEx[13, 13] = 7905853580625.0 * c^13);
-
-           LegArrEx[14, 0] = (-429.0 + 45045 * s^2) - 765765 * s^4) + 4849845 * s^6) - 14549535 * s^8) + 22309287 * s^10) - 16900975 * s^12) + 5014575 * s^14)) / 2048;
-           LegArrEx[14, 1] = ((105.0 * c * (429 * s - 14586 * s^3) + 138567 * s^5) - 554268 * s^7) + 1062347 * s^9) - 965770 * s^11) + 334305 * s^13)) / 1024));
-           LegArrEx[14, 2] = ((1365.0 * c * c * (33 - 3366 * s^2) + 53295 * s^4) - 298452 * s^6) + 735471 * s^8) - 817190 * s^10) + 334305 * s^12)) / 1024));
-           LegArrEx[14, 3] = (23205.0 / 256) * c^3) * (-99 * s + 3135 * s^3) - 26334 * s^5) + 86526 * s^7) - 120175 * s^9) + 58995 * s^11));
-           LegArrEx[14, 4] = 2297295.0 / 256 * Math.Pow(c * c, 2) * (-1 + 95 * s^2) - 1330 * s^4) + 6118 * s^6) - 10925 * s^8) + 6555 * s^10));
-           LegArrEx[14, 5] = (43648605.0 / 128) * c^5) * (5 * s - 140 * s^3) + 966 * s^5) - 2300 * s^7) + 1725 * s^9));
-           LegArrEx[14, 6] = (218243025.0 / 128) * Math.Pow(c * c, 3) * (1 - 84 * s^2) + 966 * s^4) - 3220 * s^6) + 3105 * s^8));
-           LegArrEx[14, 7] = (654729075.0 / 16) * c^7) * (-7 * s + 161 * s^3) - 805 * s^5) + 1035 * s^7));
-           LegArrEx[14, 8] = 4583103525.0 / 16 * Math.Pow(c * c, 4) * (-1 + 69 * s^2) - 575 * s^4) + 1035 * s^6));
-           LegArrEx[14, 9] = (105411381075.0 / 8) * c^9) * (3 * s - 50 * s^3) + 135 * s^5));
-           LegArrEx[14, 10] = (316234143225.0 / 8) * Math.Pow(c * c, 5) * (1 - 50 * s^2) + 225 * s^4));
-           LegArrEx[14, 11] = (7905853580625.0 / 2) * c^11) * (-s + 9 * s^3));
-           LegArrEx[14, 12] = 7905853580625.0 / 2 * Math.Pow(c * c, 6) * (-1 + 27 * s^2));
-           LegArrEx[14, 13] = 213458046676875.0 * s * c^13);
-           LegArrEx[14, 14] = 213458046676875.0 * Math.Pow(c * c, 7);
-
-           LegArrEx[15, 0] = (-6435.0 * s + 255255 * s^3) - 2909907 * s^5) + 14549535 * s^7) - 37182145 * s^9) + 50702925 * s^11) - 35102025 * s^13) + 9694845 * s^15)) / 2048;
-           LegArrEx[15, 1] = ((15.0 * c * (-429 + 51051 * s^2) - 969969 * s^4) + 6789783 * s^6) - 22309287 * s^8) + 37182145 * s^10) - 30421755 * s^12) + 9694845 * s^14)) / 2048));
-           LegArrEx[15, 2] = ((1785.0 * c * c * (429 * s - 16302 * s^3) + 171171 * s^5) - 749892 * s^7) + 1562275 * s^9) - 1533870 * s^11) + 570285 * s^13)) / 1024));
-           LegArrEx[15, 3] = ((69615.0 * c^3) * (11 - 1254 * s^2) + 21945 * s^4) - 134596 * s^6) + 360525 * s^8) - 432630 * s^10) + 190095 * s^12)) / 1024));
-           LegArrEx[15, 4] = 3968055.0 / 256 * Math.Pow(c * c, 2) * (-11 * s + 385 * s^3) - 3542 * s^5) + 12650 * s^7) - 18975 * s^9) + 10005 * s^11));
-           LegArrEx[15, 5] = (43648605.0 / 256) * c^5) * (-1 + 105 * s^2) - 1610 * s^4) + 8050 * s^6) - 15525 * s^8) + 10005 * s^10));
-           LegArrEx[15, 6] = (218243025.0 / 128) * Math.Pow(c * c, 3) * (21 * s - 644 * s^3) + 4830 * s^5) - 12420 * s^7) + 10005 * s^9));
-           LegArrEx[15, 7] = (654729075.0 / 128) * c^7) * (7 - 644 * s^2) + 8050 * s^4) - 28980 * s^6) + 30015 * s^8));
-           LegArrEx[15, 8] = 15058768725.0 / 16 * Math.Pow(c * c, 4) * (-7 * s + 175 * s^3) - 945 * s^5) + 1305 * s^7));
-           LegArrEx[15, 9] = (105411381075.0 / 16) * c^9) * (-1 + 75 * s^2) - 675 * s^4) + 1305 * s^6));
-           LegArrEx[15, 10] = (1581170716125.0 / 8) * Math.Pow(c * c, 5) * (5 * s - 90 * s^3) + 261 * s^5));
-           LegArrEx[15, 11] = (7905853580625.0 / 8) * c^11) * (1 - 54 * s^2) + 261 * s^4));
-           LegArrEx[15, 12] = 71152682225625.0 / 2 * Math.Pow(c * c, 6) * (-3 * s + 29 * s^3));
-           LegArrEx[15, 13] = (213458046676875.0 / 2) * c^13) * (-1 + 29 * s^2));
-           LegArrEx[15, 14] = 6190283353629375.0 * s * Math.Pow(c * c, 7);
-           LegArrEx[15, 15] = 6190283353629375.0 * c^15);
-
-           LegArrEx[16, 0] = (6435.0 - 875160 * s^2) + 19399380 * s^4) - 162954792 * s^6) + 669278610 * s^8) - 1487285800 * s^10) + 1825305300 * s^12) - 1163381400 * s^14) + 300540195 * s^16)) / 32768;
-           LegArrEx[16, 1] = ((17.0 * c * (-6435 * s + 285285 * s^3) - 3594591 * s^5) + 19684665 * s^7) - 54679625 * s^9) + 80528175 * s^11) - 59879925 * s^13) + 17678835 * s^15)) / 2048));
-           LegArrEx[16, 2] = ((765.0 * c * c * (-143 + 19019 * s^2) - 399399 * s^4) + 3062059 * s^6) - 10935925 * s^8) + 19684665 * s^10) - 17298645 * s^12) + 5892945 * s^14)) / 2048));
-           LegArrEx[16, 3] = ((101745.0 * c^3) * (143 * s - 6006 * s^3) + 69069 * s^5) - 328900 * s^7) + 740025 * s^9) - 780390 * s^11) + 310155 * s^13)) / 1024));
-           LegArrEx[16, 4] = (1322685.0 * Math.Pow(c * c, 2) * (11 - 1386 * s^2) + 26565 * s^4) - 177100 * s^6) + 512325 * s^8) - 660330 * s^10) + 310155 * s^12)) / 1024);
-           LegArrEx[16, 5] = (3968055.0 / 256) * c^5) * (-231 * s + 8855 * s^3) - 88550 * s^5) + 341550 * s^7) - 550275 * s^9) + 310155 * s^11));
-           LegArrEx[16, 6] = (43648605.0 / 256) * Math.Pow(c * c, 3) * (-21 + 2415 * s^2) - 40250 * s^4) + 217350 * s^6) - 450225 * s^8) + 310155 * s^10));
-           LegArrEx[16, 7] = (5019589575.0 / 128) * c^7) * (21 * s - 700 * s^3) + 5670 * s^5) - 15660 * s^7) + 13485 * s^9));
-           LegArrEx[16, 8] = 15058768725.0 / 128 * Math.Pow(c * c, 4) * (7 - 700 * s^2) + 9450 * s^4) - 36540 * s^6) + 40455 * s^8));
-           LegArrEx[16, 9] = (75293843625.0 / 16) * c^9) * (-35 * s + 945 * s^3) - 5481 * s^5) + 8091 * s^7));
-           LegArrEx[16, 10] = (527056905375.0 / 16) * Math.Pow(c * c, 5) * (-5 + 405 * s^2) - 3915 * s^4) + 8091 * s^6));
-           LegArrEx[16, 11] = (14230536445125.0 / 8) * c^11) * (15 * s - 290 * s^3) + 899 * s^5));
-           LegArrEx[16, 12] = 71152682225625.0 / 8 * Math.Pow(c * c, 6) * (3 - 174 * s^2) + 899 * s^4));
-           LegArrEx[16, 13] = (2063427784543125.0 / 2) * c^13) * (-3 * s + 31 * s^3));
-           LegArrEx[16, 14] = (6190283353629375.0 / 2) * Math.Pow(c * c, 7) * (-1 + 31 * s^2));
-           LegArrEx[16, 15] = 191898783962510625.0 * s * c^15);
-           LegArrEx[16, 16] = 191898783962510625.0 * Math.Pow(c * c, 8);
-
-           LegArrEx[17, 0] = (109395.0 * s - 5542680 * s^3) + 81477396 * s^5) - 535422888 * s^7) + 1859107250 * s^9) - 3650610600 * s^11) + 4071834900 * s^13) - 2404321560 * s^15) + 583401555 * s^17)) / 32768;
-           LegArrEx[17, 1] = ((153.0 * c * (715 - 108680 * s^2) + 2662660 * s^4) - 24496472 * s^6) + 109359250 * s^8) - 262462200 * s^10) + 345972900 * s^12) - 235717800 * s^14) + 64822395 * s^16)) / 32768));
-           LegArrEx[17, 2] = ((2907.0 * c * c * (-715 * s + 35035 * s^3) - 483483 * s^5) + 2877875 * s^7) - 8633625 * s^9) + 13656825 * s^11) - 10855425 * s^13) + 3411705 * s^15)) / 2048));
-           LegArrEx[17, 3] = ((14535.0 * c^3) * (-143 + 21021 * s^2) - 483483 * s^4) + 4029025 * s^6) - 15540525 * s^8) + 30045015 * s^10) - 28224105 * s^12) + 10235115 * s^14)) / 2048));
-           LegArrEx[17, 4] = (305235.0 * Math.Pow(c * c, 2) * (1001 * s - 46046 * s^3) + 575575 * s^5) - 2960100 * s^7) + 7153575 * s^9) - 8064030 * s^11) + 3411705 * s^13)) / 1024);
-           LegArrEx[17, 5] = ((43648605.0 * c^5) * (7 - 966 * s^2) + 20125 * s^4) - 144900 * s^6) + 450225 * s^8) - 620310 * s^10) + 310155 * s^12)) / 1024));
-           LegArrEx[17, 6] = (1003917915.0 / 256) * Math.Pow(c * c, 3) * (-21 * s + 875 * s^3) - 9450 * s^5) + 39150 * s^7) - 67425 * s^9) + 40455 * s^11));
-           LegArrEx[17, 7] = (3011753745.0 / 256) * c^7) * (-7 + 875 * s^2) - 15750 * s^4) + 91350 * s^6) - 202275 * s^8) + 148335 * s^10));
-           LegArrEx[17, 8] = 75293843625.0 / 128 * Math.Pow(c * c, 4) * (35 * s - 1260 * s^3) + 10962 * s^5) - 32364 * s^7) + 29667 * s^9));
-           LegArrEx[17, 9] = (75293843625.0 / 128) * c^9) * (35 - 3780 * s^2) + 54810 * s^4) - 226548 * s^6) + 267003 * s^8));
-           LegArrEx[17, 10] = (2032933777875.0 / 16) * Math.Pow(c * c, 5) * (-35 * s + 1015 * s^3) - 6293 * s^5) + 9889 * s^7));
-           LegArrEx[17, 11] = (14230536445125.0 / 16) * c^11) * (-5 + 435 * s^2) - 4495 * s^4) + 9889 * s^6));
-           LegArrEx[17, 12] = 412685556908625.0 / 8 * Math.Pow(c * c, 6) * (15 * s - 310 * s^3) + 1023 * s^5));
-           LegArrEx[17, 13] = (6190283353629375.0 / 8) * c^13) * (1 - 62 * s^2) + 341 * s^4));
-           LegArrEx[17, 14] = (191898783962510625.0 / 2) * Math.Pow(c * c, 7) * (-s + 11 * s^3));
-           LegArrEx[17, 15] = (191898783962510625.0 / 2) * c^15) * (-1 + 33 * s^2));
-           LegArrEx[17, 16] = 6332659870762850625.0 * s * Math.Pow(c * c, 8);
-           LegArrEx[17, 17] = 6332659870762850625.0 * c^17);
-
-           LegArrEx[18, 0] = (-12155.0 + 2078505 * s^2) - 58198140 * s^4) + 624660036 * s^6) - 3346393050 * s^8) + 10039179150 * s^10) - 17644617900 * s^12) + 18032411700 * s^14) - 9917826435 * s^16) + 2268783825 * s^18)) / 65536;
-           LegArrEx[18, 1] = ((171.0 * c * (12155 * s - 680680 * s^3) + 10958948 * s^5) - 78278200 * s^7) + 293543250 * s^9) - 619109400 * s^11) + 738168900 * s^13) - 463991880 * s^15) + 119409675 * s^17)) / 32768));
-           LegArrEx[18, 2] = ((14535.0 * c * c * (143 - 24024 * s^2) + 644644 * s^4) - 6446440 * s^6) + 31081050 * s^8) - 80120040 * s^10) + 112896420 * s^12) - 81880920 * s^14) + 23881935 * s^16)) / 32768));
-           LegArrEx[18, 3] = ((101745.0 * c^3) * (-429 * s + 23023 * s^3) - 345345 * s^5) + 2220075 * s^7) - 7153575 * s^9) + 12096045 * s^11) - 10235115 * s^13) + 3411705 * s^15)) / 2048));
-           LegArrEx[18, 4] = (3357585.0 * Math.Pow(c * c, 2) * (-13 + 2093 * s^2) - 52325 * s^4) + 470925 * s^6) - 1950975 * s^8) + 4032015 * s^10) - 4032015 * s^12) + 1550775 * s^14)) / 2048);
-           LegArrEx[18, 5] = ((77224455.0 * c^5) * (91 * s - 4550 * s^3) + 61425 * s^5) - 339300 * s^7) + 876525 * s^9) - 1051830 * s^11) + 471975 * s^13)) / 1024));
-           LegArrEx[18, 6] = ((1003917915.0 * Math.Pow(c * c, 3) * (7 - 1050 * s^2) + 23625 * s^4) - 182700 * s^6) + 606825 * s^8) - 890010 * s^10) + 471975 * s^12)) / 1024));
-           LegArrEx[18, 7] = (75293843625.0 / 256) * c^7) * (-7 * s + 315 * s^3) - 3654 * s^5) + 16182 * s^7) - 29667 * s^9) + 18879 * s^11));
-           LegArrEx[18, 8] = 75293843625.0 / 256 * Math.Pow(c * c, 4) * (-7 + 945 * s^2) - 18270 * s^4) + 113274 * s^6) - 267003 * s^8) + 207669 * s^10));
-           LegArrEx[18, 9] = (225881530875.0 / 128) * c^9) * (315 * s - 12180 * s^3) + 113274 * s^5) - 356004 * s^7) + 346115 * s^9));
-           LegArrEx[18, 10] = (14230536445125.0 / 128) * Math.Pow(c * c, 5) * (5 - 580 * s^2) + 8990 * s^4) - 39556 * s^6) + 49445 * s^8));
-           LegArrEx[18, 11] = (412685556908625.0 / 16) * c^11) * (-5 * s + 155 * s^3) - 1023 * s^5) + 1705 * s^7));
-           LegArrEx[18, 12] = 2063427784543125.0 / 16 * Math.Pow(c * c, 6) * (-1 + 93 * s^2) - 1023 * s^4) + 2387 * s^6));
-           LegArrEx[18, 13] = (191898783962510625.0 / 8) * c^13) * (s - 22 * s^3) + 77 * s^5));
-           LegArrEx[18, 14] = (191898783962510625.0 / 8) * Math.Pow(c * c, 7) * (1 - 66 * s^2) + 385 * s^4));
-           LegArrEx[18, 15] = (2110886623587616875.0 / 2) * c^15) * (-3 * s + 35 * s^3));
-           LegArrEx[18, 16] = 6332659870762850625.0 / 2 * Math.Pow(c * c, 8) * (-1 + 35 * s^2));
-           LegArrEx[18, 17] = 221643095476699771875.0 * s * c^17);
-           LegArrEx[18, 18] = 221643095476699771875.0 * Math.Pow(c * c, 9);
-
-           LegArrEx[19, 0] = (-230945.0 * s + 14549535 * s^3) - 267711444 * s^5) + 2230928700 * s^7) - 10039179150 * s^9) + 26466926850 * s^11) - 42075627300 * s^13) + 39671305740 * s^15) - 20419054425 * s^17) + 4418157975 * s^19)) / 65536;
-           LegArrEx[19, 1] = ((95.0 * c * (-2431 + 459459 * s^2) - 14090076 * s^4) + 164384220 * s^6) - 951080130 * s^8) + 3064591530 * s^10) - 5757717420 * s^12) + 6263890380 * s^14) - 3653936055 * s^16) + 883631595 * s^18)) / 65536));
-           LegArrEx[19, 2] = ((5985.0 * c * c * (7293 * s - 447304 * s^3) + 7827820 * s^5) - 60386040 * s^7) + 243221550 * s^9) - 548354040 * s^11) + 695987820 * s^13) - 463991880 * s^15) + 126233085 * s^17)) / 32768));
-           LegArrEx[19, 3] = ((1119195.0 * c^3) * (39 - 7176 * s^2) + 209300 * s^4) - 2260440 * s^6) + 11705850 * s^8) - 32256120 * s^10) + 48384180 * s^12) - 37218600 * s^14) + 11475735 * s^16)) / 32768));
-           LegArrEx[19, 4] = (25741485.0 * Math.Pow(c * c, 2) * (-39 * s + 2275 * s^3) - 36855 * s^5) + 254475 * s^7) - 876525 * s^9) + 1577745 * s^11) - 1415925 * s^13) + 498945 * s^15)) / 2048);
-           LegArrEx[19, 5] = ((77224455.0 * c^5) * (-13 + 2275 * s^2) - 61425 * s^4) + 593775 * s^6) - 2629575 * s^8) + 5785065 * s^10) - 6135675 * s^12) + 2494725 * s^14)) / 2048));
-           LegArrEx[19, 6] = ((1930611375.0 * Math.Pow(c * c, 3) * (91 * s - 4914 * s^3) + 71253 * s^5) - 420732 * s^7) + 1157013 * s^9) - 1472562 * s^11) + 698523 * s^13)) / 1024));
-           LegArrEx[19, 7] = ((25097947875.0 * c^7) * (7 - 1134 * s^2) + 27405 * s^4) - 226548 * s^6) + 801009 * s^8) - 1246014 * s^10) + 698523 * s^12)) / 1024));
-           LegArrEx[19, 8] = 225881530875.0 / 256 * Math.Pow(c * c, 4) * (-63 * s + 3045 * s^3) - 37758 * s^5) + 178002 * s^7) - 346115 * s^9) + 232841 * s^11));
-           LegArrEx[19, 9] = (1581170716125.0 / 256) * c^9) * (-9 + 1305 * s^2) - 26970 * s^4) + 178002 * s^6) - 445005 * s^8) + 365893 * s^10));
-           LegArrEx[19, 10] = (45853950767625.0 / 128) * Math.Pow(c * c, 5) * (45 * s - 1860 * s^3) + 18414 * s^5) - 61380 * s^7) + 63085 * s^9));
-           LegArrEx[19, 11] = (2063427784543125.0 / 128) * c^11) * (1 - 124 * s^2) + 2046 * s^4) - 9548 * s^6) + 12617 * s^8));
-           LegArrEx[19, 12] = 63966261320836875.0 / 16 * Math.Pow(c * c, 6) * (-s + 33 * s^3) - 231 * s^5) + 407 * s^7));
-           LegArrEx[19, 13] = (63966261320836875.0 / 16) * c^13) * (-1 + 99 * s^2) - 1155 * s^4) + 2849 * s^6));
-           LegArrEx[19, 14] = (2110886623587616875.0 / 8) * Math.Pow(c * c, 7) * (3 * s - 70 * s^3) + 259 * s^5));
-           LegArrEx[19, 15] = (2110886623587616875.0 / 8) * c^15) * (3 - 210 * s^2) + 1295 * s^4));
-           LegArrEx[19, 16] = 73881031825566590625.0 / 2 * Math.Pow(c * c, 8) * (-3 * s + 37 * s^3));
-           LegArrEx[19, 17] = (221643095476699771875.0 / 2) * c^17) * (-1 + 37 * s^2));
-           LegArrEx[19, 18] = 8200794532637891559375.0 * s * Math.Pow(c * c, 9);
-           LegArrEx[19, 19] = 8200794532637891559375.0 * c^19);
-
-           LegArrEx[20, 0] = (1.0 / 262144) * (46189 - 9699690 * s^2) + 334639305 * s^4) - 4461857400 * s^6) + 30117537450 * s^8) - 116454478140 * s^10) + 273491577450 * s^12) - 396713057400 * s^14) + 347123925225 * s^16) - 167890003050 * s^18) + 34461632205 * s^20));
-           LegArrEx[20, 1] = ((105.0 * c * (-46189 * s + 3187041 * s^3) - 63740820 * s^5) + 573667380 * s^7) - 2772725670 * s^9) + 7814045070 * s^11) - 13223768580 * s^13) + 13223768580 * s^15) - 7195285845 * s^17) + 1641030105 * s^19)) / 65536));
-           LegArrEx[20, 2] = ((21945.0 * c * c * (-221 + 45747 * s^2) - 1524900 * s^4) + 19213740 * s^6) - 119399670 * s^8) + 411265530 * s^10) - 822531060 * s^12) + 949074300 * s^14) - 585262485 * s^16) + 149184555 * s^18)) / 65536));
-           LegArrEx[20, 3] = ((1514205.0 * c^3) * (663 * s - 44200 * s^3) + 835380 * s^5) - 6921720 * s^7) + 29801850 * s^9) - 71524440 * s^11) + 96282900 * s^13) - 67856520 * s^15) + 19458855 * s^17)) / 32768));
-           LegArrEx[20, 4] = (77224455.0 * Math.Pow(c * c, 2) * (13 - 2600 * s^2) + 81900 * s^4) - 950040 * s^6) + 5259150 * s^8) - 15426840 * s^10) + 24542700 * s^12) - 19957800 * s^14) + 6486285 * s^16)) / 32768);
-           LegArrEx[20, 5] = ((386122275.0 * c^5) * (-65 * s + 4095 * s^3) - 71253 * s^5) + 525915 * s^7) - 1928355 * s^9) + 3681405 * s^11) - 3492615 * s^13) + 1297257 * s^15)) / 2048));
-           LegArrEx[20, 6] = ((25097947875.0 * Math.Pow(c * c, 3) * (-1 + 189 * s^2) - 5481 * s^4) + 56637 * s^6) - 267003 * s^8) + 623007 * s^10) - 698523 * s^12) + 299367 * s^14)) / 2048));
-           LegArrEx[20, 7] = ((225881530875.0 * c^7) * (21 * s - 1218 * s^3) + 18879 * s^5) - 118668 * s^7) + 346115 * s^9) - 465682 * s^11) + 232841 * s^13)) / 1024));
-           LegArrEx[20, 8] = (1581170716125.0 * Math.Pow(c * c, 4) * (3 - 522 * s^2) + 13485 * s^4) - 118668 * s^6) + 445005 * s^8) - 731786 * s^10) + 432419 * s^12)) / 1024);
-           LegArrEx[20, 9] = (45853950767625.0 / 256) * c^9) * (-9 * s + 465 * s^3) - 6138 * s^5) + 30690 * s^7) - 63085 * s^9) + 44733 * s^11));
-           LegArrEx[20, 10] = (137561852302875.0 / 256) * Math.Pow(c * c, 5) * (-3 + 465 * s^2) - 10230 * s^4) + 71610 * s^6) - 189255 * s^8) + 164021 * s^10));
-           LegArrEx[20, 11] = (21322087106945625.0 / 128) * c^11) * (3 * s - 132 * s^3) + 1386 * s^5) - 4884 * s^7) + 5291 * s^9));
-           LegArrEx[20, 12] = 63966261320836875.0 / 128 * Math.Pow(c * c, 6) * (1 - 132 * s^2) + 2310 * s^4) - 11396 * s^6) + 15873 * s^8));
-           LegArrEx[20, 13] = (2110886623587616875.0 / 16) * c^13) * (-s + 35 * s^3) - 259 * s^5) + 481 * s^7));
-           LegArrEx[20, 14] = (2110886623587616875.0 / 16) * Math.Pow(c * c, 7) * (-1 + 105 * s^2) - 1295 * s^4) + 3367 * s^6));
-           LegArrEx[20, 15] = (14776206365113318125.0 / 8) * c^15) * (15 * s - 370 * s^3) + 1443 * s^5));
-           LegArrEx[20, 16] = 221643095476699771875.0 / 8 * Math.Pow(c * c, 8) * (1 - 74 * s^2) + 481 * s^4));
-           LegArrEx[20, 17] = (8200794532637891559375.0 / 2) * c^17) * (-s + 13 * s^3));
-           LegArrEx[20, 18] = (8200794532637891559375.0 / 2) * Math.Pow(c * c, 9) * (-1 + 39 * s^2));
-           LegArrEx[20, 19] = 319830986772877770815625.0 * s * c^19);
-           LegArrEx[20, 20] = 319830986772877770815625.0 * Math.Pow(c * c, 10);
-
-           LegArrEx[21, 0] = (1.0 / 262144) * (969969 * s - 74364290 * s^3) + 1673196525 * s^5) - 17210021400 * s^7) + 97045398450 * s^9) - 328189892940 * s^11) + 694247850450 * s^13) - 925663800600 * s^15) + 755505013725 * s^17) - 344616322050 * s^19) + 67282234305 * s^21));
-           LegArrEx[21, 1] = (1.0 / 262144) * 231 * c * (4199 - 965770 * s^2) + 36216375 * s^4) - 521515800 * s^6) + 3780989550 * s^8) - 15628090140 * s^10) + 39070225350 * s^12) - 60108039000 * s^14) + 55599936075 * s^16) - 28345065450 * s^18) + 6116566755 * s^20));
-           LegArrEx[21, 2] = ((26565.0 * c * c * (-4199 * s + 314925 * s^3) - 6802380 * s^5) + 65756340 * s^7) - 339741090 * s^9) + 1019223270 * s^11) - 1829375100 * s^13) + 1933910820 * s^15) - 1109154735 * s^17) + 265937685 * s^19)) / 65536));
-           LegArrEx[21, 3] = ((504735.0 * c^3) * (-221 + 49725 * s^2) - 1790100 * s^4) + 24226020 * s^6) - 160929990 * s^8) + 590076630 * s^10) - 1251677700 * s^12) + 1526771700 * s^14) - 992401605 * s^16) + 265937685 * s^18)) / 65536));
-           LegArrEx[21, 4] = (22713075.0 * Math.Pow(c * c, 2) * (1105 * s - 79560 * s^3) + 1615068 * s^5) - 14304888 * s^7) + 65564070 * s^9) - 166890360 * s^11) + 237497820 * s^13) - 176426952 * s^15) + 53187537 * s^17)) / 32768);
-           LegArrEx[21, 5] = ((5019589575.0 * c^5) * (5 - 1080 * s^2) + 36540 * s^4) - 453096 * s^6) + 2670030 * s^8) - 8306760 * s^10) + 13970460 * s^12) - 11974680 * s^14) + 4091349 * s^16)) / 32768));
-           LegArrEx[21, 6] = ((15058768725.0 * Math.Pow(c * c, 3) * (-45 * s + 3045 * s^3) - 56637 * s^5) + 445005 * s^7) - 1730575 * s^9) + 3492615 * s^11) - 3492615 * s^13) + 1363783 * s^15)) / 2048));
-           LegArrEx[21, 7] = ((225881530875.0 * c^7) * (-3 + 609 * s^2) - 18879 * s^4) + 207669 * s^6) - 1038345 * s^8) + 2561251 * s^10) - 3026933 * s^12) + 1363783 * s^14)) / 2048));
-           LegArrEx[21, 8] = (45853950767625.0 * Math.Pow(c * c, 4) * (3 * s - 186 * s^3) + 3069 * s^5) - 20460 * s^7) + 63085 * s^9) - 89466 * s^11) + 47027 * s^13)) / 1024);
-           LegArrEx[21, 9] = ((45853950767625.0 * c^9) * (3 - 558 * s^2) + 15345 * s^4) - 143220 * s^6) + 567765 * s^8) - 984126 * s^10) + 611351 * s^12)) / 1024));
-           LegArrEx[21, 10] = (4264417421389125.0 / 256) * Math.Pow(c * c, 5) * (-3 * s + 165 * s^3) - 2310 * s^5) + 12210 * s^7) - 26455 * s^9) + 19721 * s^11));
-           LegArrEx[21, 11] = (4264417421389125.0 / 256) * c^11) * (-3 + 495 * s^2) - 11550 * s^4) + 85470 * s^6) - 238095 * s^8) + 216931 * s^10));
-           LegArrEx[21, 12] = 234542958176401875.0 / 128 * Math.Pow(c * c, 6) * (9 * s - 420 * s^3) + 4662 * s^5) - 17316 * s^7) + 19721 * s^9));
-           LegArrEx[21, 13] = (2110886623587616875.0 / 128) * c^13) * (1 - 140 * s^2) + 2590 * s^4) - 13468 * s^6) + 19721 * s^8));
-           LegArrEx[21, 14] = (2110886623587616875.0 / 16) * Math.Pow(c * c, 7) * (-35 * s + 1295 * s^3) - 10101 * s^5) + 19721 * s^7));
-           LegArrEx[21, 15] = (14776206365113318125.0 / 16) * c^15) * (-5 + 555 * s^2) - 7215 * s^4) + 19721 * s^6));
-           LegArrEx[21, 16] = 1640158906527578311875.0 / 8 * Math.Pow(c * c, 8) * (5 * s - 130 * s^3) + 533 * s^5));
-           LegArrEx[21, 17] = (8200794532637891559375.0 / 8) * c^17) * (1 - 78 * s^2) + 533 * s^4));
-           LegArrEx[21, 18] = (106610328924292590271875.0 / 2) * Math.Pow(c * c, 9) * (-3 * s + 41 * s^3));
-           LegArrEx[21, 19] = (319830986772877770815625.0 / 2) * c^19) * (-1 + 41 * s^2));
-           LegArrEx[21, 20] = 13113070457687988603440625.0 * s * Math.Pow(c * c, 10);
-           LegArrEx[21, 21] = 13113070457687988603440625.0 * c^21);
-
-       end % LegPolyEx
-
-
-
-
-
-       % ----------------------------------------------------------------------------
-       % fukushima method (JG 2018)
-       %   for very large spherical harmonic expansions and calcs of unitalized associated
-       %   Legendre polynomials
-       %
-       %   Plm are converted to X-numbers
-       %   Clm, Slm treated as F-numbers
-       % -----------------------------------------------------------------------------
-
-       % initialize legendre function values
-       function pinit
-           (
-           Int32 n,
-           Int32 m,
-           ref p
-           )
-
-           p = new double[360];
-
-           if (n == 0)
-               p(1) = 1.0;
-           else if (n == 1)
-                   p(1) = 1.7320508075688773;
-           else if (n == 2)
-
-                   if (m == 0)
-
-                       p(1) = 0.5590169943749474;
-                       p(2) = 1.6770509831248423;
-                   end
-           else if (m == 1)
-
-                   p(1) = 0.0;
-                   p(2) = 1.9364916731037084;
-           end
-           else if (m == 2)
-
-                   p(1) = 0.9682458365518542;
-                   p(2) = -0.9682458365518542;
-           end
-           else if (n == 3)
-
-                   if (m == 0)
-
-                       p(1) = 0.9921567416492215;
-                       p(2) = 1.6535945694153691;
-                   end
-           else if (m == 1)
-
-                   p(1) = 0.4050462936504913;
-                   p(2) = 2.0252314682524563;
-           end
-           else if (m == 2)
-
-                   p(1) = 1.2808688457449498;
-                   p(2) = -1.2808688457449498;
-           end
-           else if (m == 3)
-
-                   p(1) = 1.5687375497513917;
-                   p(2) = -0.5229125165837972;
-           end
-           end
-           else if (n == 4)
-
-                   if (m == 0)
-
-                       p(1) = 0.421875;
-                       p(2) = 0.9375;
-                       p(3) = 1.640625;
-                   end
-           else if (m == 1)
-
-                   p(1) = 0.0;
-                   p(2) = 0.5929270612815711;
-                   p(3) = 2.0752447144854989;
-           end
-           else if (m == 2)
-
-                   p(1) = 0.6288941186718159;
-                   p(2) = 0.8385254915624211;
-                   p(3) = -1.4674196102342370;
-           end
-           else if (m == 3)
-
-                   p(1) = 0.0;
-                   p(2) = 1.5687375497513917;
-                   p(3) = -0.7843687748756958;
-           end
-           else if (m == 4)
-
-                   p(1) = 0.8319487194983835;
-                   p(2) = -1.1092649593311780;
-                   p(3) = 0.2773162398327945;
-           end
-           end
-           end
-           end  % pinit
-
-
-           /* ----------------------------------------------------------------------------
-           *      x2f
-           *
-           *      convert x to f number
-           *
-           ------------------------------------------------------------------------------*/
-           public double x2f
-           (
-           double x,
-           Int32 ix
-           )
-
-           double x2fv;
-           Int32 IND;
-           double BIG, BIGI;
-
-           IND = 960;
-           BIG = Math.Pow(2.0, IND);
-           BIGI = Math.Pow(2.0, -IND);
-
-           if (ix == 0)
-               x2fv = x;
-           else if (ix == -1)
-                   x2fv = x * BIGI;
-           else if (ix == 1)
-                   x2fv = x * BIG;
-           else if (ix < 0)
-                   x2fv = 0.0;
-           else if (x < 0)
-                   x2fv = -BIG;
-           else
-               x2fv = BIG;
-
-               return x2fv;
-           end
-
-
-           /* ----------------------------------------------------------------------------
-           *                                  xunit
-           *
-           * uses the 'x' factor approach - value and exponent
-           *
-           ------------------------------------------------------------------------------*/
-
-           function xunit
-               (
-               ref double x,
-               ref Int32 ix
-               )
-
-               Int32 IND = 960;
-               double w;
-
-               double BIG = Math.Pow(2, IND);
-               double BIGI = Math.Pow(2, -IND);
-               double BIGS = Math.Pow(2.0, 480);  % IND / 2
-               double BIGSI = Math.Pow(2.0, -480);  % IND / 2
-
-               w = abs(x);
-               if (w >= BIGS)
-
-                   x = x * BIGI;
-                   ix = ix + 1;
-               end
-           else if (w < BIGSI)
-
-                   x = x * BIG;
-                   ix = ix - 1;
-           end
-           end  % xunit
-
-
-           /* ----------------------------------------------------------------------------
-           *                                       xl2sum
-           *
-           * routine to compute the two-term linear sum of X-numbers
-           * with F-number coefficients
-           *
-           ---------------------------------------------------------------------------- */
-           function xlsum2
-               (
-               double f,
-               double g,
-               double x,
-               double y,
-               out double z,
-               Int32 ix,
-               Int32 iy,
-               out Int32 iz)
-
-               Int32 id;
-               Int32 IND = 960;
-               double BIGI = Math.Pow(2, -IND);
-
-               id = ix - iy;
-               if (id == 0)
-
-                   z = f * x + g * y;
-                   iz = ix;
-               end
-           else if (id == 1)
-
-                   z = f * x + g * (y * BIGI);
-                   iz = ix;
-           end
-           else if (id == -1)
-
-                   z = g * y + f * (x * BIGI);
-                   iz = iy;
-           end
-           else if (id > 1)
-
-                   z = f * x;
-                   iz = ix;
-           end
-           else
-
-               z = g * y;
-               iz = iy;
-           end
-
-           xunit(ref z, ref iz);
-           end  % xlsum2
-
-
-           /* ----------------------------------------------------------------------------
-           *                                  dpeven
-           *
-           * find Pnnj and Pn,n-1,j when degree n is even and n >= 6. the returned values are
-           * (xp(j), ip(j)) and (xp1(j), ip1(j)), double X-number vectors representing
-           * Pnnj and Pn,n-1,j, respectively. required initial values for Pn-2,n-2,j as
-           * (xpold(j), ipold(j)) are needed.
-           *
-           *  inputs          description                                  range / units
-           *    n           - degree
-           *
-           *
-           *
-           *  outputs       :
-           *    xp1         - value
-           *    ip1         - exponent
-           *
-           *  locals        :
-           *                -
-           *
-           *  coupling      :
-           *    xunit
-           *    xlsum2
-           *
-           *  references    :
-           * Fukushima (2012a)
-           ---------------------------------------------------------------------------- */
-
-           function dpeven
-               (
-               Int32 n,
-               xpold,
-               out xp,
-               out xp1,
-               Int32[] ipold,
-               out Int32[] ip,
-               out Int32[] ip1
-               )
-
-               xpold = new double[360];
-               xp = new double[360];
-               xp1 = new double[360];
-               ipold = new Int32[360];
-               ip = new Int32[360];
-               ip1 = new Int32[360];
-
-               Int32 jx, jxm2, jxm1, n2, j, itemp, jm1, jp1;
-               double gamma, gamma2, xtemp, alpha2;
-
-               jx = n / 2;
-               jxm2 = jx - 2;
-               jxm1 = jx - 1;
-               n2 = n * 2;
-               gamma = sqrt(str2num(n2 + 1) * str2num(n2 - 1) / (str2num(n) * str2num(n - 1))) * 0.125;
-               gamma2 = gamma * 2.0;
-               xlsum2(gamma2, xpold(1), -gamma, xpold(2), out xp(1), ipold(1), ipold(2), out ip(1));
-               xlsum2(-gamma2, xpold(1), gamma2, xpold(2), out xtemp, ipold(1), ipold(2), out itemp);
-               xlsum2(1.0, xtemp, -gamma, xpold(3), out xp(2), itemp, ipold(3), out ip(2));
-               j = 2;
-               while (j <= jxm2)
-
-                   jm1 = j - 1;
-                   jp1 = j + 1;
-                   xlsum2(-gamma, xpold[jm1], gamma2, xpold(j), out xtemp, ipold[jm1], ipold(j), out itemp);
-                   xlsum2(1.0, xtemp, -gamma, xpold[jp1], out xp(j), itemp, ipold[jp1], out ip(j));
-                   j = j + 1;
-               end
-               xlsum2(-gamma, xpold[jxm2], gamma2, xpold[jxm1], out xp[jxm1], ipold[jxm2], ipold[jxm1], out ip[jxm1]);
-               xp[jx] = -gamma * xpold[jxm1];
-               ip[jx] = ipold[jxm1];
-               xunit(ref xp[jx], ref ip[jx]);
-               alpha2 = sqrt(2.0 / str2num(n)) * 2.0;
-               xp1(1) = 0.0;
-               ip1(1) = 0;
-               j = 1;
-               while (j <= jx)
-
-                   xp1(j) = -str2num(j) * alpha2 * xp(j);
-                   ip1(j) = ip(j);
-                   xunit(ref xp1(j), ref ip1(j));
-                   j = j + 1;
-               end
-           end   % dpeven
-
-
-           /* ----------------------------------------------------------------------------
-           *                                 dpodd
-           *
-           *  routine to return Pnnj and Pn,n-1,j when n is odd and n >= 5. Same as Table 4
-           *  but when n is odd and n >= 5.
-           ---------------------------------------------------------------------------- */
+           %  routine to return Pnnj and Pn,n-1,j when n is odd and n >= 5. Same as Table 4
+           %  but when n is odd and n >= 5.
+           %---------------------------------------------------------------------------- */
            function dpodd
                (
                Int32 n,
@@ -6450,13 +5385,13 @@ end
 
 
            % ----------------------------------------------------------------------------
-           *                             gpeven
-           *
-           * routine to return Pnmj when n is even. The returned values are (xp0(j), ip0(j)),
-           * a double X-number vector representing Pnmj. We assume that Pn,m+1,j and Pn,m+2,j are
-           * externally provided as (xp1(j), ip1(j)) and (xp2(j), ip2(j)), respectively.
-           * The routine internally calls xunit and xlsum2 provided in Tables 7 and 8 of
-           * Fukushima (2012a).
+           %                             gpeven
+           %
+           % routine to return Pnmj when n is even. The returned values are (xp0(j), ip0(j)),
+           % a double X-number vector representing Pnmj. We assume that Pn,m+1,j and Pn,m+2,j are
+           % externally provided as (xp1(j), ip1(j)) and (xp2(j), ip2(j)), respectively.
+           % The routine internally calls xunit and xlsum2 provided in Tables 7 and 8 of
+           % Fukushima (2012a).
            % ---------------------------------------------------------------------------- */
 
            function gpeven
@@ -6516,12 +5451,12 @@ end
            end  % gpeven
 
 
-           /* ----------------------------------------------------------------------------
-           *                                 gpodd
-           *
-           * Table 7: Fortran routine to return Pnmj when n is odd. Same as
-           * Table 6 but when n is odd.
-           ---------------------------------------------------------------------------- */
+           % ----------------------------------------------------------------------------
+           %                                 gpodd
+           %
+           % Table 7: Fortran routine to return Pnmj when n is odd. Same as
+           % Table 6 but when n is odd.
+           % --------------------------------------------------------------------------- */
            function gpodd
                (
                Int32 jmax,
@@ -6577,53 +5512,40 @@ end
 
 
 
-           % Fukushima combined approach to find matrix of unitalized Legendre polynomials
-           %
-           %
+% Fukushima combined approach to find matrix of unitalized Legendre polynomials
+%
+%
 
-           function LegPolyFF
-               (
-               recef,
-               double latgc,
-               Int32 order,
-               char unitalized,
-               double[,,] unitArr,
-               AstroLib.gravityConst gravData,
-               out double[,] ALFArr
-               )
+function [ALFArr] = LegPolyFF(recef, latgc, order, unitalized, unitArr)
+    constastro;
 
-               Int32 L, m;
-               double x, y, z, f, g;
+    magr = mag(recef);
 
-               ALFArr = new double[order + 2, order + 2];
-               double magr = mag(recef);
+    % initial values
+    ALFArr(1, 1) = 1.0;
+    ALFArr(1, 2) = 0.0;
+    ALFArr(2, 1) = sin(latgc);
+    ALFArr(2, 2) = cos(latgc);
+    m = 2;
+    L = m + 1;
+    x = ALFArr(2, 1);
+    y = ALFArr(2, 2);
 
-               % initial values
-               ALFArr(1, 1) = 1.0;
-               ALFArr(1, 2) = 0.0;
-               ALFArr(2, 1) = sin(latgc);
-               ALFArr(2, 2) = cos(latgc);
-               m = 2;
-               L = m + 1;
-               x = ALFArr(2, 1);
-               y = ALFArr(2, 2);
+    % find zonal terms
+    for (L = 2; L <= order + 1; L++)
 
-               % find zonal terms
-               for (L = 2; L <= order + 1; L++)
+        % find tesseral and sectoral terms
+        %               for (m = 0; m <= order + 1; m++)
 
-                   % find tesseral and sectoral terms
-                   %               for (m = 0; m <= order + 1; m++)
+        f = unitArr[L, m, 0] * sin(latgc);
+        g = -unitArr[L, m, 1];
+        z = f * x + g * y;
+        ALFArr[L, m] = z;
+        y = x;
+        x = z;
+    end
 
-                   f = unitArr[L, m, 0] * sin(latgc);
-                   g = -unitArr[L, m, 1];
-                   z = f * x + g * y;
-                   ALFArr[L, m] = z;
-                   y = x;
-                   x = z;
-               end
-           end
-
-           end  % LegPolyFF
+end  % LegPolyFF
 
 
 
@@ -6658,21 +5580,6 @@ end
                %     double[,] pja = new double[NX, NX];  % test to see the values
                jmax = 0;
 
-               Int32[] ipold, ip, ip0;
-               Int32[] ip1, ip2;
-               xpold, xp, xp0;
-               xp1, xp2;
-               double pj;
-               xpold = new double[NX];
-               xp = new double[NX];
-               xp0 = new double[NX];
-               xp1 = new double[NX];
-               xp2 = new double[NX];
-               ipold = new Int32[NX];
-               ip = new Int32[NX];
-               ip0 = new Int32[NX];
-               ip1 = new Int32[NX];
-               ip2 = new Int32[NX];
 
                % initialize all to 0
                for (m = 0; m <= nmax; m++)
@@ -8283,494 +7190,474 @@ File.WriteAllText(directory + 'legpoly.txt', strbuildall);
 File.WriteAllText(directory + 'legendreAcc.txt', strbuildplot);
 
 end
-
-function testhill()
-
-r, v, rh, vh, rint, vint;
-double alt, dts;
-r = new double(4);
-v = new double(4);
-rh = new double(4);
-vh = new double(4);
-% StringBuilder strbuild = new StringBuilder();
-
-dts = 1400.0; % sec
-
-% circular orbit
-alt = 590.0;
-r(1) = re + alt;
-r(2) = 0.0;
-r(3) = 0.0;
-v(1) = 0.0;
-v(2) = sqrt(mu / mag(r));
-v(3) = 0.0;
-
-rh(1) = 0.0;
-rh(2) = 0.0;
-rh(3) = 0.0;
-vh(1) = -0.1;
-vh(2) = -0.04;
-vh(3) = -0.02;
-
-for (i = 1; i <= 50; i++)
-
-dts = i * 60.0;  % sec
-hillsr(rh, vh, alt, dts, out rint, out vint);
-fprintf(1,dts, rint(1), rint(2), rint(3),
-' ' + vint(1), vint(2), vint(3));
+                                       end
+                                   end
+                               end
+                           end
+                       end
+                   end
+               end
+           end
+    end
 end
 
 
-hillsv(r, alt, dts, out vint);
 
+function testhill()
+    dts = 1400.0; % sec
 
+    % circular orbit
+    alt = 590.0;
+    r(1) = re + alt;
+    r(2) = 0.0;
+    r(3) = 0.0;
+    v(1) = 0.0;
+    v(2) = sqrt(mu / mag(r));
+    v(3) = 0.0;
+
+    rh(1) = 0.0;
+    rh(2) = 0.0;
+    rh(3) = 0.0;
+    vh(1) = -0.1;
+    vh(2) = -0.04;
+    vh(3) = -0.02;
+
+    for i = 1:50
+        dts = i * 60.0;  % sec
+        [rint, vint] = hillsr(rh, vh, alt, dts);
+        fprintf(1,'rint %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \n', dts, rint(1), rint(2), rint(3), vint(1), vint(2), vint(3));
+    end
+
+    [vint] = hillsv(r, alt, dts);
 
 end  % test hill
 
 
-/* ----------------------------------------------------------------------------
-*
-*                                 function printcov
-*
-* this function prints a covariance matrix
-*
-* author        : david vallado                  719 - 573 - 2600   23 may 2003
-*
-* revisions
-*
-* inputs description range / units
-*   covin     - 6x6 input covariance matrix
-*   covtype   - type of covariance             'cl','ct','fl','sp','eq',
-*   cu        - covariance units(deg or rad)  't' or 'm'
-*   anom      - anomaly                        'mean' or 'true' or 'tau'
-*
-* outputs       :
-*
-* locals        :
-*
-* references    :
-* none
-*
-* printcov(covin, covtype, cu, anom)
-* ----------------------------------------------------------------------------*/
+% ----------------------------------------------------------------------------
+%
+%                                 function printcov
+%
+    % this function prints a covariance matrix
+        %
+        % author        : david vallado                  719 - 573 - 2600   23 may 2003
+%
+% revisions
+%
+% inputs description range / units
+%   covin     - 6x6 input covariance matrix
+%   covtype   - type of covariance             'cl','ct','fl','sp','eq',
+%   cu        - covariance units(deg or rad)  't' or 'm'
+%   anom      - anomaly                        'mean' or 'true' or 'tau'
+%
+% outputs       :
+%
+% locals        :
+%
+% references    :
+% none
+%
+% [strout] = printcov(covin, covtype, cu, anom)
+% ----------------------------------------------------------------------------*/
 
-function printcov(double[,] covin, string covtype, char cu, string anom, out string strout)
+function [strout] = printcov(covin, covtype, cu, anom)
 
-i;
-string semi = '';
-strout = '';
+    if (anom.Equals('truea') || anom.Equals('meana'))
+        semi = 'a m  ';
+    else
 
-if (anom.Equals('truea') || anom.Equals('meana'))
-semi = 'a m  ';
-else
+        if (anom.Equals('truen') || anom.Equals('meann'))
+            semi = 'n rad';
+        end
 
-if (anom.Equals('truen') || anom.Equals('meann'))
-semi = 'n rad';
+        if (covtype.Equals('ct'))
+
+            strout = 'cartesian covariance \n';
+            strout = strout + '        x  m            y m             z  m           xdot  m/s       ydot  m/s       zdot  m/s  \n';
+        end
+
+        if (covtype.Equals('cl'))
+
+            strout = strout + 'classical covariance \n';
+            if (cu == 'm')
+
+                strout = strout + '          ' + semi + '          ecc           incl rad      raan rad         argp rad        ';
+                if (anom.Contains('mean')) % 'meana' 'meann'
+                    strout = strout + 'm rad \n';
+                else     % 'truea' 'truen'
+                    strout = strout + ' nu rad \n';
+                end
+            else
+
+                strout = strout + '          ' + semi + '           ecc           incl deg      raan deg         argp deg        ';
+                if (anom.Contains('mean')) % 'meana' 'meann'
+                    strout = strout + ' m deg \n';
+                else     % 'truea' 'truen'
+                    strout = strout + ' nu deg \n';
+                end
+            end
+
+            if (covtype.Equals('eq'))
+
+                strout = strout + 'equinoctial covariance \n';
+                %            if (cu == 'm')
+                if (anom.Contains('mean')) % 'meana' 'meann'
+                    strout = strout + '         ' + semi + '           af              ag           chi             psi         meanlonM rad\n';
+                else     % 'truea' 'truen'
+                    strout = strout + '         ' + semi + '           af              ag           chi             psi         meanlonNu rad\n';
+                end
+
+                if (covtype.Equals('fl'))
+                    strout = strout + 'flight covariance \n';
+                    strout = strout + '       lon  rad      latgc rad        fpa rad         az rad           r  m           v  m/s  \n';
+                end
+
+                if (covtype.Equals('sp'))
+                    strout = strout + 'spherical covariance \n';
+                    strout = strout + '      rtasc deg       decl deg        fpa deg         az deg           r  m           v  m/s  \n';
+                end
+
+                % format strings to show signs 'and' to not round off if trailing 0!!
+                string fmt = '+#.#########0E+00;-#.#########0E+00';
+                for i=1:6
+                    strout = strout + covin(i, 1)], covin(i, 2), covin(i, 3),...
+                    covin(i, 4), covin(i, 5), covin(i, 6),'\n';
+                end  % printcov
+            end
+        end
+    end
 end
 
-if (covtype.Equals('ct'))
 
-strout = 'cartesian covariance \n';
-strout = strout + '        x  m            y m             z  m           xdot  m/s       ydot  m/s       zdot  m/s  \n';
-end
+%----------------------------------------------------------------------------
+%
+%                                  function printdiff
+%
+% this function prints a covariance matrix difference
+%
+% author        : david vallado                  719 - 573 - 2600   23 may 2003
+%
+% revisions
+%
+% inputs description range / units
+%   strin    - title
+%   mat1     - 6x6 input matrix
+%   mat2     - 6x6 input matrix
+%
+% outputs       :
+%
+% locals        :
+%
+% ----------------------------------------------------------------------------*/
 
-if (covtype.Equals('cl'))
+function [strout] = printdiff(string strin, mat1, mat2)
 
-strout = strout + 'classical covariance \n';
-if (cu == 'm')
+    double small = 1e-18;
 
-strout = strout + '          ' + semi + '          ecc           incl rad      raan rad         argp rad        ';
-if (anom.Contains('mean')) % 'meana' 'meann'
-strout = strout + 'm rad \n';
-else     % 'truea' 'truen'
-strout = strout + ' nu rad \n';
-end
-else
+    % format strings to show signs 'and' to not round off if trailing 0!!
+    string fmt = '+#.#########0E+00;-#.#########0E+00';
 
-strout = strout + '          ' + semi + '           ecc           incl deg      raan deg         argp deg        ';
-if (anom.Contains('mean')) % 'meana' 'meann'
-strout = strout + ' m deg \n';
-else     % 'truea' 'truen'
-strout = strout + ' nu deg \n';
-end
-end
+    strout = 'diff ' + strin + '\n';
+    for (i = 0; i < 6; i++)
 
-if (covtype.Equals('eq'))
+        for j=1:6
+            dr(i, j) = mat1(i, j) - mat2(i, j);
+            strout = strout + dr(i, 1), dr(i, 2), dr(i, 3),
+            dr(i, 4), dr(i, 5), dr(i, 6),'\n';
+        end
 
-strout = strout + 'equinoctial covariance \n';
-%            if (cu == 'm')
-if (anom.Contains('mean')) % 'meana' 'meann'
-strout = strout + '         ' + semi + '           af              ag           chi             psi         meanlonM rad\n';
-else     % 'truea' 'truen'
-strout = strout + '         ' + semi + '           af              ag           chi             psi         meanlonNu rad\n';
-end
+        strout = strout + 'pctdiff % ' + strin + ' pct over 1e-18  \n';
+        % fprintf(1, '%14.4f%14.4f%14.4f%14.4f%14.4f%14.4f \n', 100.0 * ((mat1' - mat2') / mat1'));
+        % fprintf(1, 'Check consistency of both approaches tmct2cl-inv(tmcl2ct) diff pct over 1e-18 \n');
+        % fprintf(1, '-------- accuracy of tm comparing ct2cl and cl2ct --------- \n');
+        %tm1 = mat1';
+        %tm2 = mat2';
+        fmt = '+0.###0;-0.###0';
+        for (i = 0; i < 6; i++)
 
-if (covtype.Equals('fl'))
+            for (j = 0; j < 6; j++)
 
-strout = strout + 'flight covariance \n';
-strout = strout + '       lon  rad      latgc rad        fpa rad         az rad           r  m           v  m/s  \n';
-end
-
-if (covtype.Equals('sp'))
-
-strout = strout + 'spherical covariance \n';
-strout = strout + '      rtasc deg       decl deg        fpa deg         az deg           r  m           v  m/s  \n';
-end
-
-% format strings to show signs 'and' to not round off if trailing 0!!
-string fmt = '+#.#########0E+00;-#.#########0E+00';
-for (i = 0; i < 6; i++)
-strout = strout + covin[i, 0], covin[i, 1], covin[i, 2],
-covin[i, 3], covin[i, 4], covin[i, 5],'\n';
-end  % printcov
-
-
-/* ----------------------------------------------------------------------------
-*
-*                                  function printdiff
-*
-* this function prints a covariance matrix difference
-*
-* author        : david vallado                  719 - 573 - 2600   23 may 2003
-*
-* revisions
-*
-* inputs description range / units
-*   strin    - title
-*   mat1     - 6x6 input matrix
-*   mat2     - 6x6 input matrix
-*
-* outputs       :
-*
-* locals        :
-*
-* ----------------------------------------------------------------------------*/
-
-function printdiff(string strin, double[,] mat1, double[,] mat2, out string strout)
-
-double small = 1e-18;
-double[,] dr = new double[6, 6];
-double[,] diffmm = new double[6, 6];
-i, j;
-
-% format strings to show signs 'and' to not round off if trailing 0!!
-string fmt = '+#.#########0E+00;-#.#########0E+00';
-
-strout = 'diff ' + strin + '\n';
-for (i = 0; i < 6; i++)
-
-for (j = 0; j < 6; j++)
-dr[i, j] = mat1[i, j] - mat2[i, j];
-strout = strout + dr[i, 0], dr[i, 1], dr[i, 2],
-dr[i, 3], dr[i, 4], dr[i, 5],'\n';
-end
-
-strout = strout + 'pctdiff % ' + strin + ' pct over 1e-18  \n';
-% fprintf(1, '%14.4f%14.4f%14.4f%14.4f%14.4f%14.4f \n', 100.0 * ((mat1' - mat2') / mat1'));
-% fprintf(1, 'Check consistency of both approaches tmct2cl-inv(tmcl2ct) diff pct over 1e-18 \n');
-% fprintf(1, '-------- accuracy of tm comparing ct2cl and cl2ct --------- \n');
-%tm1 = mat1';
-%tm2 = mat2';
-fmt = '+0.###0;-0.###0';
-for (i = 0; i < 6; i++)
-
-for (j = 0; j < 6; j++)
-
-   if (abs(dr[i, j]) < small || abs(mat1[i, j]) < small)
-       diffmm[i, j] = 0.0;
-   else
-       diffmm[i, j] = 100.0 * (dr[i, j] / mat1[i, j]);
-   end
-   strout = strout + diffmm[i, 0], diffmm[i, 1], diffmm[i, 2],
-   diffmm[i, 3], diffmm[i, 4], diffmm[i, 5],'\n';
-end
+                if (abs(dr[i, j]) < small || abs(mat1[i, j]) < small)
+                    diffmm[i, j] = 0.0;
+                else
+                    diffmm[i, j] = 100.0 * (dr[i, j] / mat1[i, j]);
+                end
+                strout = strout + diffmm(i, 1), diffmm(i, 2), diffmm(i, 3),
+                diffmm(i, 4), diffmm(i, 5), diffmm(i, 6),'\n';
+            end
+        end
+    end
 
 end  % printdiff
 
 
-
 function testcovct2rsw()
- anom = 'meana';  % truea/n, meana/n
- anomflt = 'latlon'; % latlon  radec
+    anom = 'meana';  % truea/n, meana/n
+    anomflt = 'latlon'; % latlon  radec
 
 
-reci = [ -605.79221660, -5870.22951108, 3493.05319896 ];
-veci = [ -1.56825429, -3.70234891, -6.47948395 ];
-aeci = [ 0.001, 0.002, 0.003 ];
+    reci = [ -605.79221660, -5870.22951108, 3493.05319896 ];
+    veci = [ -1.56825429, -3.70234891, -6.47948395 ];
+    aeci = [ 0.001, 0.002, 0.003 ];
 
-% StringBuilder strbuild = new StringBuilder();
-% strbuild.Clear();
+    % StringBuilder strbuild = new StringBuilder();
+    % strbuild.Clear();
 
-fileLoc = 'D:\Codes\LIBRARY\DataLib\';
-[iau80arr] = iau80in(fileLoc);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
 
-year = 2000;
-mon = 12;
-day = 15;
-hr = 16;
-minute = 58;
-sec = 50.208;
-dut1 = 0.10597;
-dat = 32;
-timezone = 0;
-xp = 0.0;
-yp = 0.0;
-lod = 0.0;
-terms = 2;
-timezone = 0;
-ddpsi = 0.0;
-ddeps = 0.0;
-ddx = 0.0;
-ddy = 0.0;
+    year = 2000;
+    mon = 12;
+    day = 15;
+    hr = 16;
+    minute = 58;
+    second = 50.208;
+    dut1 = 0.10597;
+    dat = 32;
+    timezone = 0;
+    xp = 0.0;
+    yp = 0.0;
+    lod = 0.0;
+    terms = 2;
+    timezone = 0;
+    ddpsi = 0.0;
+    ddeps = 0.0;
+    ddx = 0.0;
+    ddy = 0.0;
 
-[ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
-   = convtime ( year, mon, day, hr, min, sec, timezone, dut1, dat );
+    [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
+        = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
 
-year = 2004;
-mon  =   5;
-day  =  14;
-hr   =  10;
-min  =  43;
-sec  =   0.0;
-dut1 = -0.463326;
-dat  = 32;
-xp   =  0.0;
-yp   =  0.0;
-lod  =  0.0;
-timezone= 6;
+    year = 2004;
+    mon  =   5;
+    day  =  14;
+    hr   =  10;
+    minute  =  43;
+    second  =   0.0;
+    dut1 = -0.463326;
+    dat  = 32;
+    xp   =  0.0;
+    yp   =  0.0;
+    lod  =  0.0;
+    timezone= 6;
 
-% -------- convtime    - convert time from utc to all the others
-%, tcg, jdtcg,jdtcgfrac, tcb, jdtcb,jdtcbfrac
-[ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
-   = convtime ( year, mon, day, hr, min, sec, timezone, dut1, dat );
+    % -------- convtime    - convert time from utc to all the others
+    %, tcg, jdtcg,jdtcgfrac, tcb, jdtcb,jdtcbfrac
+    [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
+        = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
 
-fprintf(1,'ut1 %8.6f tut1 %16.12f jdut1 %18.11f\n',ut1,tut1,jdut1+jdut1frac );
-fprintf(1,'utc %8.6f\n',utc );
-fprintf(1,'tai %8.6f\n',tai );
-fprintf(1,'tt  %8.6f ttt  %16.12f jdtt  %18.11f\n',tt,ttt,jdtt + jdttfrac );
-fprintf(1,'tdb %8.6f ttdb %16.12f jdtdb %18.11f\n',tdb,ttdb,jdtdb + jdtdbfrac );
-
-
-% ---convert the eci state into the various other state formats(classical, equinoctial, etc)
-cartcov = [ ...
-   100.0, 1.0e-2, 1.0e-2, 1.0e-4, 1.0e-4, 1.0e-4 ;...
-   1.0e-2, 100.0,  1.0e-2, 1.0e-4,   1.0e-4,   1.0e-4;...
-   1.0e-2, 1.0e-2, 100.0,  1.0e-4,   1.0e-4,   1.0e-4;...
-   1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6;...
-   1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6;...
-   1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001];
-cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
+    fprintf(1,'ut1 %8.6f tut1 %16.12f jdut1 %18.11f\n',ut1,tut1,jdut1+jdut1frac );
+    fprintf(1,'utc %8.6f\n',utc );
+    fprintf(1,'tai %8.6f\n',tai );
+    fprintf(1,'tt  %8.6f ttt  %16.12f jdtt  %18.11f\n',tt,ttt,jdtt + jdttfrac );
+    fprintf(1,'tdb %8.6f ttdb %16.12f jdtdb %18.11f\n',tdb,ttdb,jdtdb + jdtdbfrac );
 
 
-% test position and velocity going back
-avec = [ 0.0, 0.0, 0.0 ];
+    % ---convert the eci state into the various other state formats(classical, equinoctial, etc)
+    cartcov = [ ...
+        100.0, 1.0e-2, 1.0e-2, 1.0e-4, 1.0e-4, 1.0e-4 ;...
+        1.0e-2, 100.0,  1.0e-2, 1.0e-4,   1.0e-4,   1.0e-4;...
+        1.0e-2, 1.0e-2, 100.0,  1.0e-4,   1.0e-4,   1.0e-4;...
+        1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6;...
+        1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6;...
+        1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001];
+    cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
 
-eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-AstroLib.EOpt.e80, iau80arr, iau06arr,
-jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
 
-fprintf(1,'==================== do the sensitivity tests \n');
-fprintf(1,'1.  Cartesian Covariance \n');
-printcov(cartcov, 'ct', 'm', anom, out strout);
-fprintf(1,strout);
+    % test position and velocity going back
+    avec = [ 0.0, 0.0, 0.0 ];
 
-fprintf(1,'2.  RSW Covariance from Cartesian #1 above  ------------------- \n');
-covct_rsw(ref cartcov, cartstate, MathTimeLib.Edirection.eto, ref cartcovrsw, out tmct2cl);
-printcov(cartcovrsw, 'ct', 'm', anom, out strout);
-fprintf(1,strout);
+    [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    fprintf(1,'==================== do the sensitivity tests \n');
+    fprintf(1,'1.  Cartesian Covariance \n');
+    printcov(cartcov, 'ct', 'm', anom, out strout);
+    fprintf(1,strout);
 
-fprintf(1,'2.  NTW Covariance from Cartesian #1 above  ------------------- \n');
-covct_ntw(ref cartcov, cartstate, MathTimeLib.Edirection.eto, ref cartcovntw, out tmct2cl);
-printcov(cartcovntw, 'ct', 'm', anom, out strout);
-fprintf(1,strout);
-fprintf(1,'\n');
+    fprintf(1,'2.  RSW Covariance from Cartesian #1 above  ------------------- \n');
+    [cartcovrsw, tmct2cl] = covct2rsw(cartcov, cartstate);
+    printcov(cartcovrsw, 'ct', 'm', anom, out strout);
+    fprintf(1,strout);
+
+    fprintf(1,'2.  NTW Covariance from Cartesian #1 above  ------------------- \n');
+    [cartcovntw, tmct2cl] = covct2ntw(cartcov, cartstate);
+    printcov(cartcovntw, 'ct', 'm', anom, out strout);
+    fprintf(1,strout);
 end
 
 
 function testcovct2ntw()
-
-
+    % done above
 end
 
 
 % test eci_ecef too
 function testcovct2clmean()
- anom = 'meana';  % truea/n, meana/n
- anomflt = 'latlon'; % latlon  radec
+    anom = 'meana';  % truea/n, meana/n
+    anomflt = 'latlon'; % latlon  radec
+
+    reci = [ -605.79221660, -5870.22951108, 3493.05319896 ];
+    veci = [ -1.56825429, -3.70234891, -6.47948395 ];
+    aeci = [ 0.001, 0.002, 0.003 ];
+
+    % StringBuilder strbuild = new StringBuilder();
+    % strbuild.Clear();
+
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
+
+    year = 2000;
+    mon = 12;
+    day = 15;
+    hr = 16;
+    minute = 58;
+    second = 50.208;
+    dut1 = 0.10597;
+    dat = 32;
+    timezone = 0;
+    xp = 0.0;
+    yp = 0.0;
+    lod = 0.0;
+    terms = 2;
+    timezone = 0;
+    ddpsi = 0.0;
+    ddeps = 0.0;
+    ddx = 0.0;
+    ddy = 0.0;
+
+    [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
+        = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
+
+    % ---convert the eci state into the various other state formats(classical, equinoctial, etc)
+    cartcov = [
+        100.0, 1.0e-2, 1.0e-2, 1.0e-4, 1.0e-4, 1.0e-4 ; ...
+        1.0e-2, 100.0,  1.0e-2, 1.0e-4,   1.0e-4,   1.0e-4; ...
+        1.0e-2, 1.0e-2, 100.0,  1.0e-4,   1.0e-4,   1.0e-4; ...
+        1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6; ...
+        1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6; ...
+        1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001 ];
+    cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
+
+    % --------convert to a classical orbit state
+    [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (reci, veci);
+    classstate(1) = a;   % km
+    classstate(2) = ecc;
+    classstate(3) = incl;
+    classstate(4) = raan;
+    classstate(5) = argp;
+    if (contains(anom, 'mean')) % meann or meana
+        classstate(6) = m;
+    else  % truea or truen
+        classstate(6) = nu;
+    end
+    % -------- convert to an equinoctial orbit state
+    [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq(reci, veci);
+    if (strcmp(anom,'meana')) == 1 || (strcmp(anom,'truea') == 1 )
+        eqstate(1) = a;  % km
+    else % meann or truen
+        eqstate(1) = n;
+    end
+    eqstate(2) = af;
+    eqstate(3) = ag;
+    eqstate(4) = chi;
+    eqstate(5) = psi;
+    if (contains(anom, 'mean')) %  meana or meann
+        eqstate(6) = meanlonM;
+    else % truea or truen
+        eqstate(6) = meanlonNu;
+    end
+    % --------convert to a flight orbit state
+    [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+        ( reci', veci', iau80arr, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps );
+    if (anomflt =='radec')
+
+        fltstate(1) = rtasc;
+        fltstate(2) = decl;
+    else
+        if (anomflt=='latlon')
+
+            fltstate(1) = lon;
+            fltstate(2) = latgc;
+        end
+    end
+    fltstate(3) = fpa;
+    fltstate(4) = az;
+    fltstate(5) = magr;  % km
+    fltstate(6) = magv;
+
+    % test position and velocity going back
+    aeci = [ 0.0, 0.0, 0.0 ];
+
+    [recef, vecef, aecef] = eci2ecef(reci', veci', aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
+    %vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );
+    %vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
+    %% correct:
+    %ve1 = magv* ( -cos(rtasc)*sin(decl)*cos(az)*cos(fpa) - sin(rtasc)*sin(az)*cos(fpa) + cos(rtasc)*cos(decl)*sin(fpa) ); % m/s
+    % ve2 = magv* (-sin(rtasc) * sin(decl) * cos(az) * cos(fpa) + cos(rtasc) * sin(az) * cos(fpa) + sin(rtasc) * cos(decl) * sin(fpa));
+    %ve3 = magv* (sin(decl) * sin(fpa) + cos(decl)*cos(az)*cos(fpa) );
+
+    fprintf(1,'==================== do the sensitivity tests \n');
+
+    fprintf(1,'1.  Cartesian Covariance \n');
+    printcov(cartcov, 'ct', 'm', anom);
+
+    fprintf(1,'2.  Classical Covariance from Cartesian #1 above (%s) ------------------- \n', anom);
+
+    [classcovmeana, tmct2cl] = covct2cl(cartcov, cartstate, anom);
+    printcov(classcovmeana, 'cl', 'm', anom);
+
+    fprintf(1,'  Cartesian Covariance from Classical #2 above \n');
+    [cartcovmeanarev, tmcl2ct] = covcl2ct(classcovmeana, classstate, anom);
+    printcov(cartcovmeanarev, 'ct', 'm', anom);
+    fprintf(1,'\n');
+
+    printdiff(' cartcov - cartcovmeanarev \n', cartcov, cartcovmeanarev);
+
+    %coveci_ecef(ref cartcov, cartstate, MathTimeLib.Edirection.eto,  ref ecefcartcov, out tm, iau80arr,
+    %            ttt, jdut1, lod, xp, yp, 2, ddpsi, ddeps, AstroLib.EOpt.e80);
+    %printcov(cartcovmeanarev, 'ct', 'm', anom, out strout);
+    %fprintf(1,strout);
+    %fprintf(1,'\n');
+
+end  % testcovct2clmean
 
 
-reci = [ -605.79221660, -5870.22951108, 3493.05319896 ];
-veci = [ -1.56825429, -3.70234891, -6.47948395 ];
-aeci = [ 0.001, 0.002, 0.003 ];
+function testcovct2cltrue()
+    anom = 'truea';  % truea/n, meana/n
+    anomflt = 'latlon'; % latlon  radec
 
-% StringBuilder strbuild = new StringBuilder();
-% strbuild.Clear();
+    reci = [ -605.79221660, -5870.22951108, 3493.05319896 ];
+    veci = [ -1.56825429, -3.70234891, -6.47948395 ];
+    aeci = [ 0.001, 0.002, 0.003 ];
 
-fileLoc = 'D:\Codes\LIBRARY\DataLib\';
-[iau80arr] = iau80in(fileLoc);
+    %StringBuilder strbuild = new StringBuilder();
+    %strbuild.Clear();
 
-year = 2000;
-mon = 12;
-day = 15;
-hr = 16;
-minute = 58;
-sec = 50.208;
-dut1 = 0.10597;
-dat = 32;
-timezone = 0;
-xp = 0.0;
-yp = 0.0;
-lod = 0.0;
-terms = 2;
-timezone = 0;
-ddpsi = 0.0;
-ddeps = 0.0;
-ddx = 0.0;
-ddy = 0.0;
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
 
-[ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
-   = convtime ( year, mon, day, hr, min, sec, timezone, dut1, dat );
+    year = 2000;
+    mon = 12;
+    day = 15;
+    hr = 16;
+    minute = 58;
+    sec = 50.208;
+    dut1 = 0.10597;
+    dat = 32;
+    timezone = 0;
+    xp = 0.0;
+    yp = 0.0;
+    lod = 0.0;
+    terms = 2;
+    timezone = 0;
+    ddpsi = 0.0;
+    ddeps = 0.0;
+    ddx = 0.0;
+    ddy = 0.0;
 
-% ---convert the eci state into the various other state formats(classical, equinoctial, etc)
-cartcov = [
-100.0, 1.0e-2, 1.0e-2, 1.0e-4, 1.0e-4, 1.0e-4 ; ...
-1.0e-2, 100.0,  1.0e-2, 1.0e-4,   1.0e-4,   1.0e-4; ...
-1.0e-2, 1.0e-2, 100.0,  1.0e-4,   1.0e-4,   1.0e-4; ...
-1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6; ...
-1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6; ...
-1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001 ];
-cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
+    [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
+        = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
 
-% --------convert to a classical orbit state
-                [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (reci, veci);
-classstate(1) = a;   % km
-classstate(2) = ecc;
-classstate(3) = incl;
-classstate(4) = raan;
-classstate(5) = argp;
-if (anom.Contains('mean')) % meann or meana
-classstate(6) = m;
-else  % truea or truen
-classstate(6) = nu;
-
-% -------- convert to an equinoctial orbit state
-rv2eq(reci, veci, out a, out n, out af, out ag, out chi, out psi, out meanlonM, out meanlonNu, out fr);
-if (anom.Equals('meana') || anom.Equals('truea'))
-   eqstate(1) = a;  % km
-else % meann or truen
-   eqstate(1) = n;
-   eqstate(2) = af;
-   eqstate(3) = ag;
-   eqstate(4) = chi;
-   eqstate(5) = psi;
-   if (anom.Contains('mean')) %  meana or meann
-       eqstate(6) = meanlonM;
-   else % truea or truen
-       eqstate(6) = meanlonNu;
-
-       % --------convert to a flight orbit state
-       rv2flt(reci, veci, jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, terms, ddpsi, ddeps, ddx, ddy,
-       iau80arr, iau06arr,
-       out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
-       if (anomflt.Equals('radec'))
-
-           fltstate(1) = rtasc;
-           fltstate(2) = decl;
-       end
-   else
-       if (anomflt.Equals('latlon'))
-
-           fltstate(1) = lon;
-           fltstate(2) = latgc;
-       end
-       fltstate(3) = fpa;
-       fltstate(4) = az;
-       fltstate(5) = magr;  % km
-       fltstate(6) = magv;
-
-       % test position and velocity going back
-       avec = [ 0.0, 0.0, 0.0 ];
-
-       eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-       AstroLib.EOpt.e80, iau80arr, iau06arr,
-       jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
-       %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
-       %vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );
-       %vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
-       %% correct:
-       %ve1 = magv* ( -cos(rtasc)*sin(decl)*cos(az)*cos(fpa) - sin(rtasc)*sin(az)*cos(fpa) + cos(rtasc)*cos(decl)*sin(fpa) ); % m/s
-       % ve2 = magv* (-sin(rtasc) * sin(decl) * cos(az) * cos(fpa) + cos(rtasc) * sin(az) * cos(fpa) + sin(rtasc) * cos(decl) * sin(fpa));
-       %ve3 = magv* (sin(decl) * sin(fpa) + cos(decl)*cos(az)*cos(fpa) );
-
-       fprintf(1,'==================== do the sensitivity tests \n');
-
-       fprintf(1,'1.  Cartesian Covariance \n');
-       printcov(cartcov, 'ct', 'm', anom, out strout);
-       fprintf(1,strout);
-
-       fprintf(1,'2.  Classical Covariance from Cartesian #1 above (' + anom + ') ------------------- \n');
-
-       covct2cl(cartcov, cartstate, anom, out classcovmeana, out tmct2cl);
-       printcov(classcovmeana, 'cl', 'm', anom, out strout);
-       fprintf(1,strout);
-
-       fprintf(1,'  Cartesian Covariance from Classical #2 above \n');
-       covcl2ct(classcovmeana, classstate, anom, out cartcovmeanarev, out tmcl2ct);
-       printcov(cartcovmeanarev, 'ct', 'm', anom, out strout);
-       fprintf(1,strout);
-       fprintf(1,'\n');
-
-       printdiff(' cartcov - cartcovmeanarev \n', cartcov, cartcovmeanarev, out strout);
-       fprintf(1,strout);
-
-       double[,] ecefcartcov = new double[6, 6];
-
-       %coveci_ecef(ref cartcov, cartstate, MathTimeLib.Edirection.eto,  ref ecefcartcov, out tm, iau80arr,
-       %            ttt, jdut1, lod, xp, yp, 2, ddpsi, ddeps, AstroLib.EOpt.e80);
-       %printcov(cartcovmeanarev, 'ct', 'm', anom, out strout);
-       %fprintf(1,strout);
-       %fprintf(1,'\n');
-
-  end  % testcovct2clmean
-
-
-  function testcovct2cltrue()
-   anom = 'truea';  % truea/n, meana/n
-   anomflt = 'latlon'; % latlon  radec
-
-  reci = [ -605.79221660, -5870.22951108, 3493.05319896 ];
-  veci = [ -1.56825429, -3.70234891, -6.47948395 ];
-  aeci = [ 0.001, 0.002, 0.003 ];
-
-  %StringBuilder strbuild = new StringBuilder();
-  %strbuild.Clear();
-
-  fileLoc = 'D:\Codes\LIBRARY\DataLib\';
-  [iau80arr] = iau80in(fileLoc);
-
-  year = 2000;
-  mon = 12;
-  day = 15;
-  hr = 16;
-  minute = 58;
-  sec = 50.208;
-  dut1 = 0.10597;
-  dat = 32;
-  timezone = 0;
-  xp = 0.0;
-  yp = 0.0;
-  lod = 0.0;
-  terms = 2;
-  timezone = 0;
-  ddpsi = 0.0;
-  ddeps = 0.0;
-  ddx = 0.0;
-  ddy = 0.0;
-
-[ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
-   = convtime ( year, mon, day, hr, min, sec, timezone, dut1, dat );
-
-  % ---convert the eci state into the various other state formats(classical, equinoctial, etc)
+    % ---convert the eci state into the various other state formats(classical, equinoctial, etc)
   cartcov = [ ...
   100.0, 1.0e-2, 1.0e-2, 1.0e-4, 1.0e-4, 1.0e-4; ...
   1.0e-2, 100.0,  1.0e-2, 1.0e-4,   1.0e-4,   1.0e-4; ...
@@ -8793,7 +7680,7 @@ else % meann or truen
       classstate(6) = nu;
 
       % -------- convert to an equinoctial orbit state
-      rv2eq(reci, veci, out a, out n, out af, out ag, out chi, out psi, out meanlonM, out meanlonNu, out fr);
+        [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq(reci, veci);
       if (anom.Equals('meana') || anom.Equals('truea'))
           eqstate(1) = a;  % km
       else % meann or truen
@@ -8830,9 +7717,7 @@ else % meann or truen
               % test position and velocity going back
               avec = [ 0.0, 0.0, 0.0 ];
 
-              eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-              AstroLib.EOpt.e80, iau80arr, iau06arr,
-              jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+    [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
               %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
               %vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );
               %vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -8903,7 +7788,7 @@ ddx = 0.0;
 ddy = 0.0;
 
 [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
-   = convtime ( year, mon, day, hr, min, sec, timezone, dut1, dat );
+   = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
 
 % ---convert the eci state into the various other state formats(classical, equinoctial, etc)
   cartcov = [ ...
@@ -8928,7 +7813,7 @@ else  % truea or truen
     classstate(6) = nu;
 
     % -------- convert to an equinoctial orbit state
-    rv2eq(reci, veci, out a, out n, out af, out ag, out chi, out psi, out meanlonM, out meanlonNu, out fr);
+        [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq(reci, veci);
     if (anom.Equals('meana') || anom.Equals('truea'))
         eqstate(1) = a;  % km
     else % meann or truen
@@ -8965,9 +7850,7 @@ else  % truea or truen
             % test position and velocity going back
             avec = [ 0.0, 0.0, 0.0 ];
 
-            eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-            AstroLib.EOpt.e80, iau80arr, iau06arr,
-            jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+    [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
             %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
             %vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );
             %vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -9037,7 +7920,7 @@ else  % truea or truen
         ddy = 0.0;
 
 [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
-   = convtime ( year, mon, day, hr, min, sec, timezone, dut1, dat );
+   = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
 
         % ---convert the eci state into the various other state formats(classical, equinoctial, etc)
   cartcov = [ ...
@@ -9062,7 +7945,7 @@ else  % truea or truen
             classstate(6) = nu;
 
             % -------- convert to an equinoctial orbit state
-            rv2eq(reci, veci, out a, out n, out af, out ag, out chi, out psi, out meanlonM, out meanlonNu, out fr);
+        [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq(reci, veci);
             if (anom.Equals('meana') || anom.Equals('truea'))
                 eqstate(1) = a;  % km
             else % meann or truen
@@ -9099,9 +7982,7 @@ else  % truea or truen
                     % test position and velocity going back
                     avec = [ 0.0, 0.0, 0.0 ];
 
-                    eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                    AstroLib.EOpt.e80, iau80arr, iau06arr,
-                    jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+    [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
                     %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
                     %vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );
                     %vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -9172,7 +8053,7 @@ else  % truea or truen
                 ddy = 0.0;
 
 [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
-   = convtime ( year, mon, day, hr, min, sec, timezone, dut1, dat );
+   = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
 
                 % ---convert the eci state into the various other state formats(classical, equinoctial, etc)
   cartcov = [ ...
@@ -9197,7 +8078,7 @@ else  % truea or truen
                     classstate(6) = nu;
 
                     % -------- convert to an equinoctial orbit state
-                    rv2eq(reci, veci, out a, out n, out af, out ag, out chi, out psi, out meanlonM, out meanlonNu, out fr);
+        [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq(reci, veci);
                     if (anom.Equals('meana') || anom.Equals('truea'))
                         eqstate(1) = a;  % km
                     else % meann or truen
@@ -9234,9 +8115,7 @@ else  % truea or truen
                             % test position and velocity going back
                             avec = [ 0.0, 0.0, 0.0 ];
 
-                            eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                            AstroLib.EOpt.e80, iau80arr, iau06arr,
-                            jdtt, jdttfrac, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
+     [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
                             %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
                             %vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );
                             %vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );

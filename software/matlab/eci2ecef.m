@@ -1,4 +1,4 @@
-%
+
 % ----------------------------------------------------------------------------
 %
 %                           function eci2ecef
@@ -51,7 +51,7 @@
 %  references    :
 %    vallado       2013, 223-229
 %
-% [recef,vecef,aecef] = eci2ecef  ( reci,veci,aeci,iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+% [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 % ----------------------------------------------------------------------------
 
 function [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
@@ -79,5 +79,5 @@ function [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1
     temp  = cross(omegaearth,rpef);
 
     % two additional terms not needed if satellite is not on surface of the Earth
-    aecef = pm'*(st'*nut'*prec'*aeci)- cross(omegaearth,temp) - 2.0*cross(omegaearth,vpef);
+    aecef = pm'*(st'*nut'*prec'*aeci') - cross(omegaearth,temp) - 2.0*cross(omegaearth,vpef);
 

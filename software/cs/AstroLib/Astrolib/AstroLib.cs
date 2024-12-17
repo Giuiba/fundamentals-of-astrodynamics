@@ -8065,7 +8065,6 @@ namespace AstroLibMethods
         *    de          - orbital energy                       'L', 'H'
         *                  only affects nrev >= 1 upper/lower bounds
         *    dtsec       - time between r1 and r2               sec
-        *    dtwait      - time to wait before starting         sec
         *    nrev        - number of revs to complete           0, 1, 2, 3,  
         *    kbi         - psi value for min                     
         *    altpad      - altitude pad for hitearth calc       km
@@ -8606,7 +8605,6 @@ namespace AstroLibMethods
         *    de          - orbital energy                            'L', 'H'
         *                  only affects nrev >= 1 solutions
         *    dtsec       - time between r1 and r2                     sec
-        *    dtwait      - time to wait before starting               sec
         *    nrev        - number of revs to complete                 0, 1, 2, 3,  
         *    altpad      - altitude pad for hitearth calc             km
         *    show        - control output don't output for speed      'y', 'n'
@@ -15056,7 +15054,7 @@ namespace AstroLibMethods
         *    llon        - start longitude (west -)               0.0  to 2pi rad
         *    tlat        - end geocentric latitude               -pi/2 to pi/2 rad
         *    tlon        - end longitude(west -)                  0.0  to 2pi rad
-        *    tof         - time of flight if icbm, or             0.0 sec
+        *    tof         - time of flight if icbm, or             0.0 min
         *
         *  outputs       :
         *    range       - range between points km
@@ -15079,7 +15077,8 @@ namespace AstroLibMethods
         {
             double twopi = 2.0 * Math.PI;
             double small = 0.00000001;
-            double omegaearth = gravConst.earthrot;
+            double omegaearth = 0.05883359221938136;
+            // fix units on tof and omegaearth
 
             // -------------------------  implementation   -------------------------
             range = Math.Acos(Math.Sin(llat) * Math.Sin(tlat) +
