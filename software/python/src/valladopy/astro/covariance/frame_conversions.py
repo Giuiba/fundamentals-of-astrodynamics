@@ -838,8 +838,8 @@ def coveq2ct(
 def covcl2eq(
     classcov: np.ndarray, classstate: np.ndarray, fr: int, anom: AnomalyType
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Transforms a six by six covariance matrix expressed in classical elements into one
-    expressed in equinoctial elements.
+    """Transforms a six by six covariance matrix expressed in classical elements into
+    one expressed in equinoctial elements.
 
     Args:
         classcov: 6x6 classical covariance matrix.
@@ -854,6 +854,7 @@ def covcl2eq(
     """
     # Parse the orbit state
     a, ecc, incl, omega, argp = classstate[:5]
+    a *= KM2M
 
     # Initialize transformation matrix
     tm = np.zeros((6, 6))
