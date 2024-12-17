@@ -836,21 +836,25 @@ def coveq2ct(
 
 
 def covcl2eq(
-    classcov: np.ndarray, classstate: np.ndarray, fr: int, anom: AnomalyType
+    classcov: ArrayLike, classstate: ArrayLike, fr: int, anom: AnomalyType
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Transforms a six by six covariance matrix expressed in classical elements into
-    one expressed in equinoctial elements.
+    """Transforms a 6x6 covariance matrix from classical to equinoctial elements.
+
+    References:
+        Vallado and Alfano 2015
 
     Args:
-        classcov: 6x6 classical covariance matrix.
-        classstate: 6x1 classical orbit state (a, e, i, O, w, nu/m).
-        anom: Anomaly type (mean anomaly or true anomaly).
-        fr: Retrograde factor (+1 or -1).
+        classcov (array_like): 6x6 Classical orbital elements covariance matrix
+                               in m and m/s
+        classstate (array_like): 6x1 Classical orbital elements in km and radians
+                                (a, ecc, incl, node, argp, nu or m)
+        fr (int): Retrograde factor (+1 or -1)
+        anom (AnomalyType): Anomaly type (MEAN_A, TRUE_A, MEAN_N, TRUE_N)
 
     Returns:
-        Tuple containing:
-            eqcov: 6x6 equinoctial covariance matrix.
-            tm: Transformation matrix.
+        tuple: (eqcov, tm)
+            eqcov (np.ndarray): 6x6 Equinoctial covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
     """
     # Parse the orbit state
     a, ecc, incl, omega, argp = classstate[:5]
@@ -876,32 +880,17 @@ def covcl2eq(
     tm[2, 4] = ecc * np.cos(fr * omega + argp)
 
     # Partials of chi wrt (a, ecc, incl, node, argp, nu/M)
-    tm[3, 2] = (
-        np.sin(omega)
-        * (0.5 * np.tan(incl * 0.5) ** 2 + 0.5)
-        * fr
-        * np.tan(incl * 0.5) ** (fr - 1)
-    )
+    mult = (0.5 * np.tan(incl * 0.5) ** 2 + 0.5) * fr * np.tan(incl * 0.5) ** (fr - 1)
+    tm[3, 2] = np.sin(omega) * mult
     tm[3, 3] = np.tan(incl * 0.5) ** fr * np.cos(omega)
 
     # Partials of psi wrt (a, ecc, incl, node, argp, nu/M)
-    tm[4, 2] = (
-        np.cos(omega)
-        * (0.5 * np.tan(incl * 0.5) ** 2 + 0.5)
-        * fr
-        * np.tan(incl * 0.5) ** (fr - 1)
-    )
+    tm[4, 2] = np.cos(omega) * mult
     tm[4, 3] = -np.tan(incl * 0.5) ** fr * np.sin(omega)
 
     # Partials of meanlonM/meanlonNu wrt (a, ecc, incl, node, argp, nu/M)
-    if anom in {AnomalyType.TRUE_A, AnomalyType.TRUE_N}:
-        tm[5, 3] = fr
-        tm[5, 4] = 1.0
-        tm[5, 5] = 1.0
-    elif anom in {AnomalyType.MEAN_A, AnomalyType.MEAN_N}:
-        tm[5, 3] = fr
-        tm[5, 4] = 1.0
-        tm[5, 5] = 1.0
+    tm[5, 3] = fr
+    tm[5, 4] = tm[5, 5] = 1.0
 
     # Calculate the output covariance matrix
     eqcov = tm @ classcov @ tm.T
