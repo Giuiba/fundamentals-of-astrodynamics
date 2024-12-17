@@ -1022,8 +1022,8 @@ def _compute_partials_az(reci_m, veci_m):
 
 
 def covct2fl(
-    cartcov: np.ndarray,
-    cartstate: np.ndarray,
+    cartcov: ArrayLike,
+    cartstate: ArrayLike,
     ttt: float,
     jdut1: float,
     lod: float,
@@ -1040,8 +1040,8 @@ def covct2fl(
         Vallado and Alfano 2015
 
     Args:
-        cartcov (np.ndarray): 6x6 Cartesian covariance matrix in m and m/s
-        cartstate (np.ndarray): 6x1 Cartesian state vector in km and km/s
+        cartcov (array_like): 6x6 Cartesian covariance matrix in m and m/s
+        cartstate (array_like): 6x1 Cartesian state vector in km and km/s
                                 (rx, ry, rz, vx, vy, vz)
         ttt (float): Julian centuries of TT
         jdut1 (float): Julian date of UT1 (days from 4713 BC)
