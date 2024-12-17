@@ -68,7 +68,6 @@ def class_cov_mean():
         -26.219712037129213, -3096.0677824371114, 3127.4269467985023,
     ]
     return make_cov(class_cov_base(), last_row)
-# fmt: on
 
 
 def class_state_base():
@@ -87,6 +86,23 @@ def class_state_true():
 
 def class_state_mean():
     return [*class_state_base(), 1.55837880318832]
+
+
+def eq_state_true_n():
+    return [
+        7.3119964730756e-05,
+        0.0295519718827463,
+        -0.00965778499699359,
+        0.000431250387454424,
+        -0.000277631038191127,
+        1.30467887435085
+    ]
+
+
+def eq_state_mean_a():
+    return [42087.7080574158, *eq_state_true_n()[1:5], 1.24251359546641]
+
+# fmt: on
 
 
 class TestClassicalCartesian:
@@ -248,15 +264,6 @@ class TestEquinoctialCartesian:
         [0, 0, 0, 0, 0, 0]
     ]
 
-    eq_state_true_n = [
-        7.3119964730756e-05,
-        0.0295519718827463,
-        -0.00965778499699359,
-        0.000431250387454424,
-        -0.000277631038191127,
-        1.30467887435085
-    ]
-
     eq_cov_mean_a = [
         [5331023186024117.0, 30776443.85466882, 123276149.59726484,
          -22785.846670808547, -6212.4130785819325, 11385265.073260155],
@@ -274,25 +281,15 @@ class TestEquinoctialCartesian:
          -4.887211160368268e-05, -1.3322454764827875e-05, 0.024315241765525693]
     ]
 
-    eq_state_mean_a = [42087.7080574158, *eq_state_true_n[1:5], 1.24251359546641]
-
     # fmt: on
 
     @pytest.fixture(name="eq_cov_true_n")
     def eq_cov_true_n_fix(self):
         return self.eq_cov_true_n
 
-    @pytest.fixture(name="eq_state_true_n")
-    def eq_state_true_n_fix(self):
-        return self.eq_state_true_n
-
     @pytest.fixture(name="eq_cov_mean_a")
     def eq_cov_mean_a_fix(self):
         return self.eq_cov_mean_a
-
-    @pytest.fixture(name="eq_state_mean_a")
-    def eq_state_mean_a_fix(self):
-        return self.eq_state_mean_a
 
     @pytest.mark.parametrize(
         # fmt: off
@@ -406,7 +403,7 @@ class TestEquinoctialCartesian:
         [
             (
                 eq_cov_true_n,
-                eq_state_true_n,
+                eq_state_true_n(),
                 1,
                 fc.AnomalyType.TRUE_N,
                 np.array(
@@ -444,7 +441,7 @@ class TestEquinoctialCartesian:
             ),
             (
                 eq_cov_mean_a,
-                eq_state_mean_a,
+                eq_state_mean_a(),
                 1,
                 fc.AnomalyType.MEAN_A,
                 np.array(
@@ -484,7 +481,7 @@ class TestEquinoctialCartesian:
             ),
             (
                 eq_cov_mean_a,
-                eq_state_mean_a,
+                eq_state_mean_a(),
                 -1,
                 fc.AnomalyType.MEAN_A,
                 np.array(
@@ -658,3 +655,6 @@ class TestEquinoctialClassical:
         eqcov, tm = fc.covcl2eq(class_cov, class_state, fr, anom_type)
         assert custom_allclose(eqcov, eqcov_exp)
         assert custom_allclose(tm, tm_exp)
+
+    def test_coveq2cl(self):
+        pass
