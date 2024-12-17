@@ -7,6 +7,8 @@
 # -----------------------------------------------------------------------------
 
 from enum import Enum
+from typing import Tuple
+
 import numpy as np
 from numpy.typing import ArrayLike
 
@@ -285,7 +287,7 @@ def _compute_partials_nu(
 
 def covct2cl(
     cartcov: ArrayLike, cartstate: ArrayLike, use_mean_anom: bool = False
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Transforms a 6x6 covariance matrix from Cartesian elements to classical orbital
     elements.
 
@@ -381,7 +383,7 @@ def covct2cl(
 
 def covcl2ct(
     classcov: ArrayLike, classstate: ArrayLike, use_mean_anom: bool = False
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Transforms a 6x6 covariance matrix from classical elements to Cartesian elements.
 
     References:
@@ -523,19 +525,20 @@ def covcl2ct(
 ########################################################################################
 
 
-def newton_mean_anomaly(meanlon_m, af, ag, tol=1e-8, max_iter=25):
-    """
-    Solves for the equinoctial anomaly (F) using Newton's method.
+def newton_mean_anomaly(
+    meanlon_m: float, af: float, ag: float, tol: float = 1e-8, max_iter: int = 25
+) -> float:
+    """Solves for the equinoctial anomaly (F) using Newton's method.
 
     Args:
-        meanlon_m (float): Mean longitude (mean anomaly + mean argument of latitude).
-        af (float): Component of the eccentricity vector in equinoctial elements.
-        ag (float): Component of the eccentricity vector in equinoctial elements.
-        tol (float, optional): Convergence tolerance. Defaults to 1e-8.
-        max_iter (int, optional): Maximum number of iterations. Defaults to 25.
+        meanlon_m (float): Mean longitude (mean anomaly + mean argument of latitude)
+        af (float): Component of the eccentricity vector in equinoctial elements
+        ag (float): Component of the eccentricity vector in equinoctial elements
+        tol (float, optional): Convergence tolerance (defaults to 1e-8)
+        max_iter (int, optional): Maximum number of iterations (default is 25)
 
     Returns:
-        float: The solved equinoctial anomaly (F).
+        float: The solved equinoctial anomaly (F)
     """
     # Initial guess
     f0 = meanlon_m
@@ -558,7 +561,7 @@ def newton_mean_anomaly(meanlon_m, af, ag, tol=1e-8, max_iter=25):
 
 def covct2eq(
     cartcov: ArrayLike, cartstate: ArrayLike, fr: int, use_mean_anom: bool = False
-):
+) -> Tuple[np.ndarray, np.ndarray]:
     """Transforms a 6x6 covariance matrix from Cartesian to equinoctial elements.
 
     References:
@@ -702,7 +705,9 @@ def covct2eq(
     return eqcov, tm
 
 
-def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyType):
+def coveq2ct(
+    eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyType
+) -> Tuple[np.ndarray, np.ndarray]:
     """Transforms a 6x6 covariance matrix from equinoctial to cartesian elements.
 
     References:
@@ -823,3 +828,149 @@ def coveq2ct(eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom_type: AnomalyTy
     cartcov = tm @ eqcov @ tm.T
 
     return cartcov, tm
+
+
+########################################################################################
+# Equinoctial <-> Classical Elements
+########################################################################################
+
+
+def covcl2eq(
+    classcov: ArrayLike, classstate: ArrayLike, fr: int, anom: AnomalyType
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Transforms a 6x6 covariance matrix from classical to equinoctial elements.
+
+    References:
+        Vallado and Alfano 2015
+
+    Args:
+        classcov (array_like): 6x6 Classical orbital elements covariance matrix
+                               in m and m/s
+        classstate (array_like): 6x1 Classical orbital elements in km and radians
+                                (a, ecc, incl, node, argp, nu or m)
+        fr (int): Retrograde factor (+1 or -1)
+        anom (AnomalyType): Anomaly type (MEAN_A, TRUE_A, MEAN_N, TRUE_N)
+
+    Returns:
+        tuple: (eqcov, tm)
+            eqcov (np.ndarray): 6x6 Equinoctial covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+    """
+    # Parse the orbit state
+    a, ecc, incl, omega, argp = classstate[:5]
+    a *= KM2M
+
+    # Initialize transformation matrix
+    tm = np.zeros((6, 6))
+
+    # Partials of a/n wrt (a, ecc, incl, node, argp, nu/M)
+    if anom in {AnomalyType.TRUE_A, AnomalyType.MEAN_A}:
+        tm[0, 0] = 1.0
+    else:
+        tm[0, 0] = -(3.0 * np.sqrt(MUM / a**3)) / (2.0 * a)
+
+    # Partials of af wrt (a, ecc, incl, node, argp, nu/M)
+    tm[1, 1] = np.cos(fr * omega + argp)
+    tm[1, 3] = -ecc * fr * np.sin(fr * omega + argp)
+    tm[1, 4] = -ecc * np.sin(fr * omega + argp)
+
+    # Partials of ag wrt (a, ecc, incl, node, argp, nu/M)
+    tm[2, 1] = np.sin(fr * omega + argp)
+    tm[2, 3] = ecc * fr * np.cos(fr * omega + argp)
+    tm[2, 4] = ecc * np.cos(fr * omega + argp)
+
+    # Partials of chi wrt (a, ecc, incl, node, argp, nu/M)
+    mult = (0.5 * np.tan(incl * 0.5) ** 2 + 0.5) * fr * np.tan(incl * 0.5) ** (fr - 1)
+    tm[3, 2] = np.sin(omega) * mult
+    tm[3, 3] = np.tan(incl * 0.5) ** fr * np.cos(omega)
+
+    # Partials of psi wrt (a, ecc, incl, node, argp, nu/M)
+    tm[4, 2] = np.cos(omega) * mult
+    tm[4, 3] = -np.tan(incl * 0.5) ** fr * np.sin(omega)
+
+    # Partials of meanlonM/meanlonNu wrt (a, ecc, incl, node, argp, nu/M)
+    tm[5, 3] = fr
+    tm[5, 4] = tm[5, 5] = 1.0
+
+    # Calculate the output covariance matrix
+    eqcov = tm @ classcov @ tm.T
+
+    return eqcov, tm
+
+
+def coveq2cl(
+    eqcov: ArrayLike, eqstate: ArrayLike, fr: int, anom: AnomalyType
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Transforms a 6x6 covariance matrix from equinoctial to classical elements.
+
+    References:
+        Vallado and Alfano 2015
+
+    Args:
+        eqcov (array_like): 6x6 Equinoctial covariance matrix in m and m/s
+        eqstate (array_like): 6x1 Equinoctial orbital state in km and radians
+                              (a/n, af, ag, chi, psi, lm/ln)
+        fr (int): Retrograde factor (+1 or -1)
+        anom (AnomalyType): Anomaly type (MEAN_A, TRUE_A, MEAN_N, TRUE_N)
+
+    Returns:
+        tuple: (classcov, tm)
+            classcov (np.ndarray): 6x6 Classical covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+    """
+    # Parse the equinoctial state
+    if anom in {AnomalyType.TRUE_A, AnomalyType.MEAN_A}:
+        a = eqstate[0]
+        n = np.sqrt(MUM / a**3)
+    else:
+        n = eqstate[0]
+
+    # Get the equinoctial elements
+    af, ag, chi, psi = eqstate[1:5]
+
+    # Initialize transformation matrix
+    tm = np.zeros((6, 6))
+
+    # Partials for semi-major axis or mean motion
+    if anom in {AnomalyType.TRUE_A, AnomalyType.MEAN_A}:
+        tm[0, 0] = 1.0
+    else:
+        tm[0, 0] = -2.0 / (3 * n) * (MUM / n**2) ** (1 / 3)
+
+    # Partials for eccentricity
+    p0 = 1.0 / np.sqrt(af**2 + ag**2)
+    tm[1, 1] = p0 * af
+    tm[1, 2] = p0 * ag
+
+    # Partials for inclination
+    p1 = 2.0 * fr / ((1.0 + chi**2 + psi**2) * np.sqrt(chi**2 + psi**2))
+    tm[2, 3] = p1 * chi
+    tm[2, 4] = p1 * psi
+
+    # Partials for RAAN (node)
+    p2 = 1.0 / (chi**2 + psi**2)
+    tm[3, 3] = p2 * psi
+    tm[3, 4] = -p2 * chi
+
+    # Partials for argument of perigee
+    p3 = 1.0 / (af**2 + ag**2)
+    tm[4, 1] = -p3 * ag
+    tm[4, 2] = p3 * af
+    tm[4, 3] = -fr * p2 * psi
+    tm[4, 4] = fr * p2 * chi
+
+    # Partials for anomaly
+    if anom in {AnomalyType.TRUE_A, AnomalyType.TRUE_N}:
+        p4 = 1.0 / (af**2 + ag**2)
+        tm[5, 1] = p4 * ag
+        tm[5, 2] = -p4 * af
+    else:
+        tm[5, 1] = p3 * ag
+        tm[5, 2] = -p3 * af
+
+    tm[5, 5] = 1.0
+
+    # Compute the transformed covariance matrix
+    classcov = tm @ eqcov @ tm.T
+
+    return classcov, tm
