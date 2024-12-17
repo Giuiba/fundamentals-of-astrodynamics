@@ -908,7 +908,8 @@ def coveq2cl(
 
     Args:
         eqcov (array_like): 6x6 Equinoctial covariance matrix in m and m/s
-        eqstate (array_like): 6x1 Equinoctial orbital state (a/n, af, ag, chi, psi, lm/ln)
+        eqstate (array_like): 6x1 Equinoctial orbital state in km and radians
+                              (a/n, af, ag, chi, psi, lm/ln)
         fr (int): Retrograde factor (+1 or -1)
         anom (AnomalyType): Anomaly type (MEAN_A, TRUE_A, MEAN_N, TRUE_N)
 
