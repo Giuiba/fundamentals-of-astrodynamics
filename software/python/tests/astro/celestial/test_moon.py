@@ -31,7 +31,7 @@ def test_moonriset(lon, moonrise_expected, moonset_expected, moonphaseang_expect
     # Vallado 2007, Example 5-4
     jd = 2451046.5
     latgd = np.radians(40)
-    moonrise, moonset, moonphaseang, error = moon.moonriset(jd, latgd, lon)
+    moonrise, moonset, moonphaseang = moon.moonriset(jd, latgd, lon)
 
     # Expected values
     assert np.isclose(moonrise, moonrise_expected, rtol=DEFAULT_TOL)

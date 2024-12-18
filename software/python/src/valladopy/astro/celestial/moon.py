@@ -103,7 +103,7 @@ def position(jd: float) -> tuple[np.ndarray, float, float]:
     return rmoon * const.RE, rtasc, decl
 
 
-def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float, str]:
+def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]:
     """Finds the universal time for moonrise and moonset given the day and site
     location.
 
@@ -120,14 +120,12 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float,
             moonrise (float): Universal time of moonrise in hours
             moonset (float): Universal time of moonset in hours
             moonphaseang (float): Moon phase angle in degrees
-            error (str): Error message
     """
     # Normalize longitude to -π to π
     lon = (lon + np.pi) % const.TWOPI - np.pi
 
     # Initialize results
     results = {"moonrise": np.nan, "moonset": np.nan}
-    error = "ok"
     moongha, deltaut, ttdb, lha = 0.0, 0.0, 0.0, 0.0
 
     # Iteration parameters
@@ -216,7 +214,7 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float,
                 deltaut = (lhan - lha) / dgha
             else:
                 deltaut = 1.0
-                error = "error1 dgha is too small"
+                logger.warning("dgha is too small; setting deltaut to 1.0")
 
             t = tn
             if abs(deltaut) > 0.5:
@@ -225,7 +223,7 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float,
                         const.TWOPI / dgha if deltaut < 0 else -const.TWOPI / dgha
                     )
                     if abs(deltaut) > 0.51:
-                        i = 6
+                        i = 6  # exit
 
             tn = uttemp + deltaut
             jdtemp = jdtemp - uttemp + tn
@@ -233,22 +231,22 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float,
             i += 1
 
         # Convert UT to hours
-        uttemp = tn * 24.0 if i <= 5 else 9999.99
-        uttemp = uttemp % 24.0 if 0.0 <= uttemp < 9999.0 else uttemp
+        uttemp = tn * 24.0 if i <= 5 else 1e4
+        uttemp = uttemp % 24.0 if 0.0 <= uttemp < 1e4 else uttemp
 
         results[event] = uttemp
 
         # Update the iteration and check for solution
         try1 += 1
-        if i > 5 and try1 < 3:  # Retry if the first attempt fails
+        if i > 5 and try1 < 3:  # retry if the first attempt fails
             logger.debug(f"Retrying option {event} (attempt {try1})")
         else:
-            if i > 5 and try1 > 2:  # If all retries fail, set the error
+            if i > 5 and try1 > 2:  # if all retries fail, set the error
                 if event == "moonrise":
-                    error = "no rise"
+                    logger.error("Moonrise not found")
                     results[event] = np.inf
                 elif event == "moonset":
-                    error = "no set"
+                    logger.error("Moonset not found")
                     results[event] = np.inf
             try1 = 1
 
@@ -273,7 +271,7 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float,
     )
     moonphaseang = (meanlonmoon - loneclsun) % np.degrees(const.TWOPI)
 
-    return results["moonrise"], results["moonset"], moonphaseang, error
+    return results["moonrise"], results["moonset"], moonphaseang
 
 
 def illumination(f: float, elev: float) -> float:
