@@ -92,7 +92,7 @@ def get_geodetic_dir_cosines(ttdb: float) -> Tuple[float, float, float]:
     return l, m, n
 
 
-def position(jd: float) -> tuple[np.ndarray, float, float]:
+def position(jd: float) -> Tuple[np.ndarray, float, float]:
     """Calculates the geocentric equatorial position vector of the Moon.
 
     References:
@@ -138,7 +138,7 @@ def position(jd: float) -> tuple[np.ndarray, float, float]:
 
 def moonriset(
     jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float = 0.008
-) -> tuple[float, float, float]:
+) -> Tuple[float, float, float]:
     """Finds the universal time for moonrise and moonset given the day and site
     location.
 
@@ -259,12 +259,8 @@ def moonriset(
             logger.debug(f"Retrying option {event} (attempt {try1})")
         else:
             if i > n_iters and try1 > 2:  # if all retries fail, set the error
-                if event == "moonrise":
-                    logger.error("Moonrise not found")
-                    results[event] = np.inf
-                elif event == "moonset":
-                    logger.error("Moonset not found")
-                    results[event] = np.inf
+                logger.error(f"Failed to find {event} time")
+                results[event] = np.inf
             try1 = 1
 
     # Mean longitude of the Moon in radians

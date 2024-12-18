@@ -3,7 +3,25 @@ import pytest
 
 import src.valladopy.astro.celestial.moon as moon
 
-from ...conftest import DEFAULT_TOL, custom_isclose
+from ...conftest import DEFAULT_TOL, custom_isclose, custom_allclose
+
+
+@pytest.fixture
+def ttdb():
+    # Julian centuries from J2000
+    return -0.013641341546885694
+
+
+def test_moon_latlon(ttdb):
+    lon, lat = moon.get_moon_latlon(ttdb)
+    assert np.isclose(np.degrees(lon), 138.13542521014608, rtol=DEFAULT_TOL)
+    assert np.isclose(np.degrees(lat), 358.86697486371054, rtol=DEFAULT_TOL)
+
+
+def test_get_geodetic_dir_cosines(ttdb):
+    lmn = moon.get_geodetic_dir_cosines(ttdb)
+    lmn_exp = (-0.7445787078367155, 0.6200471059978293, 0.247273399661030)
+    assert custom_allclose(lmn, lmn_exp, rtol=DEFAULT_TOL)
 
 
 def test_position():
