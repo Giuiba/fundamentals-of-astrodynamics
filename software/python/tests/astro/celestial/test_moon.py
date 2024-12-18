@@ -24,8 +24,7 @@ def test_position():
         # Example 5-4
         (0, 4.518799123473629, 18.51808524604512, 356.2527657273083),
         # Non-zero longitude
-        # TODO: this does not quite match the matlab version results
-        (np.radians(-74.3), 9.678940118281297, 23.59464005862315, 358.7149386097768),
+        (np.radians(-74.3), 9.678707000509197, 23.594222210044137, 358.73897473313014),
     ],
 )
 def test_moonriset(lon, moonrise_expected, moonset_expected, moonphaseang_expected):

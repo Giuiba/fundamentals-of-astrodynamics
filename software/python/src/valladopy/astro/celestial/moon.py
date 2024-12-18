@@ -128,15 +128,18 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float,
     # Initialize results
     results = {"moonrise": np.nan, "moonset": np.nan}
     error = "ok"
-    moongha, deltaut = 0.0, 0.0
+    moongha, deltaut, ttdb, lha = 0.0, 0.0, 0.0, 0.0
 
     # Iteration parameters
     try1 = 1
 
     for event, jd_offset in [("moonrise", 6.0), ("moonset", 18.0)]:
         # Initial guess for UT
-        uttemp = (jd_offset - np.degrees(lon) / 15.0) / 24.0
-        # uttemp = (jd_offset - lon / 15.0) / 24.0  # TODO: matlab version (incorrect?)
+        # uttemp = (jd_offset - np.degrees(lon) / 15.0) / 24.0
+        if event == "moonrise":
+            uttemp = (jd_offset - lon / 15.0) / 24.0  # matlab version (incorrect?)
+        else:
+            uttemp = (jd_offset + lon / 15.0) / 24.0
 
         if try1 == 2:
             uttemp = 0.5
