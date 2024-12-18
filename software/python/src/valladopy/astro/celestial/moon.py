@@ -62,6 +62,36 @@ def get_moon_latlon(ttdb: float) -> Tuple[float, float]:
     return lon, lat
 
 
+def get_geodetic_dir_cosines(ttdb: float) -> Tuple[float, float, float]:
+    """Calculates the geocentric direction cosines of the Moon.
+
+    Args:
+        ttdb (float): Julian centuries from J2000
+
+    Returns:
+        tuple: (l, m, n)
+            l (float): Geocentric direction cosine
+            m (float): Geocentric direction cosine
+            n (float): Geocentric direction cosine
+    """
+    # Ecliptic longitude and latitude in radians
+    eclplong, eclplat = get_moon_latlon(ttdb)
+
+    # Obliquity of the ecliptic in radians
+    obliquity = obliquity_ecliptic(ttdb)
+
+    # Geocentric direction cosines
+    l = np.cos(eclplat) * np.cos(eclplong)  # noqa: E741
+    m = np.cos(obliquity) * np.cos(eclplat) * np.sin(eclplong) - np.sin(
+        obliquity
+    ) * np.sin(eclplat)
+    n = np.sin(obliquity) * np.cos(eclplat) * np.sin(eclplong) + np.cos(
+        obliquity
+    ) * np.sin(eclplat)
+
+    return l, m, n
+
+
 def position(jd: float) -> tuple[np.ndarray, float, float]:
     """Calculates the geocentric equatorial position vector of the Moon.
 
@@ -80,9 +110,6 @@ def position(jd: float) -> tuple[np.ndarray, float, float]:
     # Julian centuries from J2000
     ttdb = (jd - const.J2000) / const.CENT2DAY
 
-    # Ecliptic longitude (radians)
-    eclplong, eclplat = get_moon_latlon(ttdb)
-
     # Horizontal parallax (radians)
     hzparal = (
         np.radians(
@@ -95,23 +122,8 @@ def position(jd: float) -> tuple[np.ndarray, float, float]:
         % const.TWOPI
     )
 
-    # Obliquity of the ecliptic (radians)
-    obliquity = np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * ttdb)
-
-    # Intermediate values for debugging
-    logger.debug(f"Ecliptic longitude: {np.degrees(eclplong): .2f} deg")
-    logger.debug(f"Ecliptic latitude: {np.degrees(eclplat): .2f} deg")
-    logger.debug(f"Horizontal parallax: {np.degrees(hzparal): .2f} deg")
-    logger.debug(f"Obliquity: {np.degrees(obliquity): .2f} deg")
-
     # Geocentric direction cosines
-    l = np.cos(eclplat) * np.cos(eclplong)  # noqa: E741
-    m = np.cos(obliquity) * np.cos(eclplat) * np.sin(eclplong) - np.sin(
-        obliquity
-    ) * np.sin(eclplat)
-    n = np.sin(obliquity) * np.cos(eclplat) * np.sin(eclplong) + np.cos(
-        obliquity
-    ) * np.sin(eclplat)
+    l, m, n = get_geodetic_dir_cosines(ttdb)
 
     # Moon's position vector
     magr = 1.0 / np.sin(hzparal)
@@ -177,19 +189,10 @@ def moonriset(
             ttdb = (jdtemp - const.J2000) / const.CENT2DAY
 
             # Ecliptic longitude and latitude in radians
-            eclplong, eclplat = get_moon_latlon(ttdb)
-
-            # Obliquity of the ecliptic in radians
-            obliquity = obliquity_ecliptic(ttdb)
+            eclplong, _ = get_moon_latlon(ttdb)
 
             # Geocentric direction cosines
-            l = np.cos(eclplat) * np.cos(eclplong)  # noqa: E741
-            m = np.cos(obliquity) * np.cos(eclplat) * np.sin(eclplong) - np.sin(
-                obliquity
-            ) * np.sin(eclplat)
-            n = np.sin(obliquity) * np.cos(eclplat) * np.sin(eclplong) + np.cos(
-                obliquity
-            ) * np.sin(eclplat)
+            l, m, n = get_geodetic_dir_cosines(ttdb)
 
             # Right ascension and declination
             rtasc = np.arctan2(m, l)
