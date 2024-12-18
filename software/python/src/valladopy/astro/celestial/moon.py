@@ -160,8 +160,7 @@ def moonriset(
     for event, jd_offset in [("moonrise", 6.0), ("moonset", 18.0)]:
         # Initial guess for UT
         sign = -1 if event == "moonrise" else 1
-        uttemp = (jd_offset + sign * lon / const.DEG2HR) / const.DAY2HR
-        # uttemp = (jd_offset + sign * np.degrees(lon) / const.DEG2HR) / const.DAY2HR
+        uttemp = (jd_offset + sign * np.degrees(lon) / const.DEG2HR) / const.DAY2HR
 
         # Set if there's a problem
         if try1 == 2:
