@@ -1159,7 +1159,7 @@ def covfl2ct(
             tm (np.ndarray): 6x6 Transformation matrix
 
     TODO:
-        -
+        - The returned covariance for lat/lon seems incorrect - investigate
     """
     # Parse input flight state
     lon, latgc, fpa, az, magr, magv = flstate
