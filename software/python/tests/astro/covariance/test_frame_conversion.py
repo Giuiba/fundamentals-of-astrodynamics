@@ -3,7 +3,7 @@ import pytest
 
 import src.valladopy.astro.covariance.frame_conversions as fc
 
-from ...conftest import custom_allclose, DEFAULT_TOL
+from ...conftest import custom_allclose
 
 
 def cartcov():
@@ -934,7 +934,7 @@ class TestFlightCartesian:
 
         # Compare results
         # Use higher absolute tolerance due to machine precision errors
-        assert custom_allclose(cartcov_out, cartcov_exp, atol=1e-3)
+        assert custom_allclose(cartcov_out, cartcov_exp, atol=1e-6)
         assert custom_allclose(tm, tm_exp)
 
 
