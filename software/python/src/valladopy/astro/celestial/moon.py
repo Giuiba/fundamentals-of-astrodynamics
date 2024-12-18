@@ -12,6 +12,7 @@ import numpy as np
 
 from ... import constants as const
 from ..time.sidereal import lstime
+from .utils import sun_ecliptic_parameters
 
 
 # Set up logging
@@ -276,20 +277,10 @@ def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float 
     ) % np.degrees(const.TWOPI)
 
     # Mean longitude of the Sun in radians (TODO: put in utils)
-    meanlon = (280.4606184 + 36000.77005361 * ttdb) % np.degrees(const.TWOPI)
-
-    # Mean anomaly of the Sun in radians (TODO: put in utils)
-    meananomaly = np.radians((357.5277233 + 35999.05034 * ttdb)) % const.TWOPI
-
-    # Ecliptic longitude of the sun in radians (TODO: put in utils)
-    loneclsun = (
-        meanlon
-        + 1.914666471 * np.sin(meananomaly)
-        + 0.019994643 * np.sin(2.0 * meananomaly)
-    )
+    *_, loneclsun = sun_ecliptic_parameters(ttdb)
 
     # Moon phase angle
-    moonphaseang = (meanlonmoon - loneclsun) % np.degrees(const.TWOPI)
+    moonphaseang = (meanlonmoon - np.degrees(loneclsun)) % np.degrees(const.TWOPI)
 
     return results["moonrise"], results["moonset"], moonphaseang
 

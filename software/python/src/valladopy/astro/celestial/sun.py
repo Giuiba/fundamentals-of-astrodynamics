@@ -15,7 +15,7 @@ from numpy.typing import ArrayLike
 
 from ... import constants as const
 from ..time.sidereal import lstime
-from .utils import EarthModel, in_sight
+from .utils import EarthModel, in_sight, sun_ecliptic_parameters
 
 
 # Set up logging
@@ -56,20 +56,7 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
     tut1 = (jd - const.J2000) / const.CENT2DAY
 
     # Mean longitude of the Sun (degrees)
-    meanlong = 280.460 + 36000.77 * tut1
-    meanlong %= np.degrees(const.TWOPI)
-
-    # Mean anomaly of the Sun (radians)
-    meananomaly = 357.5277233 + 35999.05034 * tut1
-    meananomaly = np.radians(meananomaly) % const.TWOPI
-
-    # Ecliptic longitude of the Sun (degrees)
-    eclplong = (
-        meanlong
-        + 1.914666471 * np.sin(meananomaly)
-        + 0.019994643 * np.sin(2.0 * meananomaly)
-    )
-    eclplong = np.radians(eclplong) % const.TWOPI
+    _, meananomaly, eclplong = sun_ecliptic_parameters(tut1)
 
     # Obliquity of the ecliptic (radians)
     obliquity = np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * tut1)
@@ -159,22 +146,7 @@ def sunriset(
         tut1 = (jdtemp - const.J2000) / const.CENT2DAY
 
         # Mean longitude of the Sun (degrees)
-        meanlonsun = (280.4606184 + 36000.77005361 * tut1) % np.degrees(const.TWOPI)
-
-        # Mean anomaly of the Sun (radians)
-        meananomalysun = np.radians((357.5277233 + 35999.05034 * tut1)) % const.TWOPI
-
-        # Ecliptic longitude of the Sun (radians)
-        lonecliptic = (
-            np.radians(
-                (
-                    meanlonsun
-                    + 1.914666471 * np.sin(meananomalysun)
-                    + 0.019994643 * np.sin(2.0 * meananomalysun)
-                )
-            )
-            % const.TWOPI
-        )
+        *_, lonecliptic = sun_ecliptic_parameters(tut1)
 
         # Obliquity of the ecliptic (radians)
         obliquity = np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * tut1)

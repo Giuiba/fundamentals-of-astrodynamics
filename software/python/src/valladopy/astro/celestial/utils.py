@@ -8,6 +8,7 @@
 
 import logging
 from enum import Enum
+from typing import Tuple
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -72,3 +73,26 @@ def in_sight(
     else:
         distsqrd = ((1.0 - tmin) * asqrd + adotb * tmin) / const.RE**2
         return True if distsqrd > 1.0 else False
+
+
+def sun_ecliptic_parameters(t: float) -> Tuple[float, float, float]:
+    """Compute the mean longitude, mean anomaly, and ecliptic longitude of the Sun.
+
+    Args:
+        t (float): Time since J2000 in Julian centuries (e.g. 'tut1' or 'ttdb')
+
+    Returns:
+        tuple: (mean_lon, mean_anomaly, ecliptic_lon)
+            mean_lon (float): Mean longitude of the Sun in radians
+            mean_anomaly (float): Mean anomaly of the Sun in radians
+            ecliptic_lon (float): Ecliptic longitude of the Sun in radians
+    """
+    mean_lon = np.radians(280.4606184 + 36000.77005361 * t) % const.TWOPI
+    mean_anomaly = np.radians(357.5277233 + 35999.05034 * t) % const.TWOPI
+    ecliptic_lon = np.radians(
+        np.degrees(mean_lon)
+        + 1.914666471 * np.sin(mean_anomaly)
+        + 0.019994643 * np.sin(2.0 * mean_anomaly)
+    ) % const.TWOPI
+
+    return float(mean_lon), float(mean_anomaly), ecliptic_lon
