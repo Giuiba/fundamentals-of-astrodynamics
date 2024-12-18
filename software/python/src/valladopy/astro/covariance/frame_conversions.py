@@ -14,7 +14,7 @@ from numpy.typing import ArrayLike
 
 from ..twobody import frame_conversions as fc
 from ..twobody.newton import newtonnu
-from ...constants import KM2M, MUM, TWOPI
+from ...constants import KM2M, MUM, SMALL, TWOPI
 from ...mathtime.vector import unit
 
 
@@ -978,6 +978,289 @@ def coveq2cl(
 
 
 ########################################################################################
+# Cartesian <-> Flight Parameters
+########################################################################################
+
+
+def _compute_partials_az(reci_m, veci_m):
+    """Compute partial derivatives of azimuth w.r.t. (rx, ry, rz, vx, vy, vz)."""
+    rx, ry, rz = reci_m
+    vx, vy, vz = veci_m
+    magr = np.linalg.norm(reci_m)
+    magv = np.linalg.norm(veci_m)
+    rdotv = np.dot(reci_m, veci_m)
+
+    # Sal from mathcad methoc
+    p2 = 1.0 / ((magv**2 - (rdotv / magr) ** 2) * (rx**2 + ry**2))
+    k1 = np.linalg.norm(reci_m) * np.cross(reci_m[:2], veci_m[:2])
+    k2 = ry * (ry * vz - rz * vy) + rx * (rx * vz - rz * vx)
+    k12_sq = k1**2 + k2**2
+
+    # Construct the transformation matrix
+    tm_az = np.zeros(6)
+    tm_az[0] = p2 * (
+        vy * (magr * vz - rz * rdotv / magr)
+        - (rx * vy - ry * vx) / magr * (rx * vz - rz * vx + rx * rdotv / magr)
+    )
+    p2 = 1.0 / (magr * k12_sq)
+    tm_az[0] = p2 * (
+        k1 * magr * (rz * vx - 2 * rx * vz)
+        + k2 * (-ry * vx * rx + vy * rx**2 + vy * magr**2)
+    )
+    tm_az[1] = p2 * (
+        k1 * magr * (rz * vy - 2 * ry * vz)
+        + k2 * (rx * vy * ry - vx * ry**2 - vx * magr**2)
+    )
+    p2 = k1 / (magr**2 * k12_sq)
+    tm_az[2] = p2 * (k2 * rz + (rx * vx + ry * vy) * magr**2)
+    p2 = 1.0 / k12_sq
+    tm_az[3] = p2 * (k1 * rx * rz - k2 * ry * magr)
+    tm_az[4] = p2 * (k1 * ry * rz + k2 * rx * magr)
+    tm_az[5] = -p2 * (k1 * (rx**2 + ry**2))
+
+    return tm_az
+
+
+def covct2fl(
+    cartcov: ArrayLike,
+    cartstate: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+    use_latlon: bool = True,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Transforms a 6x6 covariance matrix from Cartesian to flight parameters.
+
+    References:
+        Vallado and Alfano 2015
+
+    Args:
+        cartcov (array_like): 6x6 Cartesian covariance matrix in m and m/s
+        cartstate (array_like): 6x1 Cartesian state vector in km and km/s
+                                (rx, ry, rz, vx, vy, vz)
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+        use_latlon (bool, optional): Flag to use lat/lon instead of ra/dec
+                                     (default True)
+
+    Returns:
+        tuple: (flcov, tm)
+            flcov (np.ndarray): 6x6 Flight parameters covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+    """
+    # Parse input state into cartesian components (in meters and m/s)
+    reci_m = np.array(cartstate[:3]) * KM2M
+    veci_m = np.array(cartstate[3:]) * KM2M
+
+    # Convert to ECEF coordinates if using lat/lon
+    r = reci_m
+    if use_latlon:
+        aeci = np.array([0, 0, 0])
+        recef, *_ = fc.eci2ecef(
+            reci_m / KM2M,
+            veci_m / KM2M,
+            aeci,
+            ttt,
+            jdut1,
+            lod,
+            xp,
+            yp,
+            ddpsi,
+            ddeps,
+            eqeterms,
+        )
+        r = recef * KM2M
+
+    # Calculate common quantities
+    magr = np.linalg.norm(reci_m)
+    magv = np.linalg.norm(veci_m)
+    h = np.linalg.norm(np.cross(reci_m, veci_m))
+
+    # Initialize transformation matrix
+    tm = np.zeros((6, 6))
+
+    # Transformation matrix components for latlon or radec
+    r_xy2 = np.sum(r[:2] ** 2)
+    r_xy = np.sqrt(r_xy2)
+
+    p0 = 1.0 / r_xy2
+    tm[0, 0:2] = [-p0 * r[1], p0 * r[0]]
+
+    p0 = 1.0 / (magr**2 * r_xy)
+    tm[1, 0:2] = -p0 * r[:2] * r[2]
+    tm[1, 2] = r_xy / magr**2
+
+    # Partial of flight path angle (fpa) wrt (x, y, z, vx, vy, vz)
+    p0 = 1.0 / (magr**2 * h)
+    p1 = 1.0 / (magv**2 * h)
+    tm[2, :3] = p0 * (veci_m * np.sum(reci_m**2) - reci_m * np.sum(reci_m * veci_m))
+    tm[2, 3:] = p1 * (reci_m * np.sum(veci_m**2) - veci_m * np.sum(reci_m * veci_m))
+
+    # Partial of azimuth (az) wrt (x, y, z, vx, vy, vz)
+    tm[3, :] = _compute_partials_az(reci_m, veci_m)
+
+    # Partial of r and v wrt (x, y, z, vx, vy, vz)
+    tm[4, :3] = reci_m / magr
+    tm[5, 3:] = veci_m / magv
+
+    # Calculate the output covariance matrix
+    flcov = tm @ cartcov @ tm.T
+
+    return flcov, tm
+
+
+def covfl2ct(
+    flcov: ArrayLike,
+    flstate: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+    use_latlon: bool = True,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Transforms a 6x6 covariance matrix from flight parameters to Cartesian elements.
+
+    References:
+        Vallado and Alfano 2015
+
+    Args:
+        flcov (array_like): 6x6 Flight parameters covariance matrix in m and m/s
+        flstate (array_like): 6x1 Flight parameters state vector in km, km/s and radians
+                              (lon or ra, latgc or dec, fpa, az, r, v)
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+        use_latlon (bool, optional): Flag to use lat/lon instead of ra/dec
+                                     (default True)
+
+    Returns:
+        tuple: (cartcov, tm)
+            cartcov (np.ndarray): 6x6 Cartesian covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+
+    TODO:
+        - The returned covariance for lat/lon seems incorrect - investigate
+    """
+    # Parse input flight state
+    lon, latgc, fpa, az, magr, magv = flstate
+    magr *= KM2M  # convert to meters
+    magv *= KM2M
+
+    # fpa/az trigonometric terms
+    cfpa, sfpa = np.cos(fpa), np.sin(fpa)
+    caz, saz = np.cos(az), np.sin(az)
+
+    # Initialize transformation matrix
+    tm = np.zeros((6, 6))
+
+    # Decide which coordinates to use
+    craf, sraf, cdf, sdf = 0, 0, 0, 0
+    if use_latlon:
+        # Compute ECEF coordinates
+        craf, sraf = np.cos(lon), np.sin(lon)
+        cdf, sdf = np.cos(latgc), np.sin(latgc)
+
+        # Get ECEF vectors in km and km/s
+        recef = np.array([magr * cdf * craf, magr * cdf * sraf, magr * sdf]) / KM2M
+        vecef = (
+            magv
+            / KM2M
+            * np.array(
+                [
+                    -craf * sdf * caz * cfpa - sraf * saz * cfpa + craf * cdf * sfpa,
+                    -sraf * sdf * caz * cfpa + craf * saz * cfpa + sraf * cdf * sfpa,
+                    sdf * sfpa + cdf * caz * cfpa,
+                ]
+            )
+        )
+
+        # Convert to ECI
+        aecef = np.zeros(3)
+        reci, veci, _ = fc.ecef2eci(
+            recef, vecef, aecef, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+        )
+        reci *= KM2M  # now in meters
+        veci *= KM2M
+
+        # Compute RA/dec from ECI vectors
+        temp = np.sqrt(reci[0] ** 2 + reci[1] ** 2)
+        rtasc = (
+            np.arctan2(reci[1], reci[0])
+            if temp >= SMALL
+            else np.arctan2(veci[1], veci[0])
+        )
+        decl = np.arcsin(reci[2] / magr)
+    else:
+        # Use RA/dec directly
+        rtasc, decl = lon, latgc
+
+    # ra/dec trigonometric terms
+    cra, sra = np.cos(rtasc), np.sin(rtasc)
+    cd, sd = np.cos(decl), np.sin(decl)
+
+    # Reusable variables
+    if use_latlon:
+        s1, c1 = sraf, craf
+        s2, c2 = sdf, cdf
+    else:
+        s1, c1 = sra, cra
+        s2, c2 = sd, cd
+
+    # Position partials w.r.t. (lon latgc fpa az r v)
+    tm[0, :2] = [-magr * c2 * s1, -magr * s2 * c1]  # rx
+    tm[0, 4] = cd * cra
+    tm[1, :2] = [magr * c2 * c1, -magr * s2 * s1]  # ry
+    tm[1, 4] = cd * sra
+    tm[2, 1] = magr * c2  # rz
+    tm[2, 4] = sd
+
+    # Partial of vx wrt (lon, latgc, fpa, az, r, v)
+    tm[3, 0] = -magv * (-s1 * caz * s2 * cfpa + c1 * saz * cfpa + c2 * s1 * sfpa)
+    tm[3, 1] = -c1 * magv * (s2 * sfpa + c2 * caz * cfpa)
+    tm[3, 2] = magv * (cra * caz * sd * sfpa + sra * saz * sfpa + cd * cra * cfpa)
+    tm[3, 3] = magv * (cra * saz * sd * cfpa - sra * caz * cfpa)
+    tm[3, 5] = -cra * caz * sd * cfpa - sra * saz * cfpa + cd * cra * sfpa
+
+    # Partial of vy wrt (lon, latgc, fpa, az, r, v)
+    tm[4, 0] = magv * (-c1 * caz * s2 * cfpa - s1 * saz * cfpa + c2 * c1 * sfpa)
+    tm[4, 1] = -s1 * magv * (s2 * sfpa + c2 * caz * cfpa)
+    tm[4, 2] = magv * (sra * caz * sd * sfpa - cra * saz * sfpa + cd * sra * cfpa)
+    tm[4, 3] = magv * (sra * saz * sd * cfpa + cra * caz * cfpa)
+    tm[4, 5] = -sra * caz * sd * cfpa + cra * saz * cfpa + cd * sra * sfpa
+
+    # Partial of vz wrt (lon, latgc, fpa, az, r, v)
+    tm[5, 1] = magv * (c2 * sfpa - s2 * caz * cfpa)
+    tm[5, 2] = magv * (sd * cfpa - cd * caz * sfpa)
+    tm[5, 3] = -magv * cd * saz * cfpa
+    tm[5, 5] = sd * sfpa + cd * caz * cfpa
+
+    # Compute Cartesian covariance
+    cartcov = tm @ flcov @ tm.T
+
+    return cartcov, tm
+
+
+########################################################################################
 # Satellite Coordinate Systems
 ########################################################################################
 
@@ -998,9 +1281,8 @@ def covct2rsw(
             tm (np.ndarray): 6x6 Transformation matrix
     """
     # Extract position and velocity vectors
-    x, y, z, vx, vy, vz = cartstate
-    r = np.array([x, y, z])
-    v = np.array([vx, vy, vz])
+    r = np.array(cartstate[:3])
+    v = np.array(cartstate[3:])
 
     # Define RSW unit vectors
     rv = unit(r)  # along the position vector (radial direction)
