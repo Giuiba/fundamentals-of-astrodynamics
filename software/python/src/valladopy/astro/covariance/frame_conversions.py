@@ -14,7 +14,7 @@ from numpy.typing import ArrayLike
 
 from ..twobody import frame_conversions as fc
 from ..twobody.newton import newtonnu
-from ...constants import KM2M, MUM, TWOPI
+from ...constants import KM2M, MUM, SMALL, TWOPI
 from ...mathtime.vector import unit
 
 
@@ -1133,8 +1133,7 @@ def covfl2ct(
     eqeterms: bool = True,
     use_latlon: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Transforms a 6x6 covariance matrix from flight parameters to Cartesian elements.
+    """Transforms a 6x6 covariance matrix from flight parameters to Cartesian elements.
 
     References:
         Vallado and Alfano 2015
@@ -1159,13 +1158,12 @@ def covfl2ct(
             cartcov (np.ndarray): 6x6 Cartesian covariance matrix in m and m/s
             tm (np.ndarray): 6x6 Transformation matrix
     """
-    small = 1e-8
-
     # Parse input flight state
     lon, latgc, fpa, az, magr, magv = flstate
     magr *= KM2M  # convert to meters
     magv *= KM2M
 
+    # fpa/az trigonometric terms
     cfpa, sfpa = np.cos(fpa), np.sin(fpa)
     caz, saz = np.cos(az), np.sin(az)
 
@@ -1179,23 +1177,18 @@ def covfl2ct(
         craf, sraf = np.cos(lon), np.sin(lon)
         cdf, sdf = np.cos(latgc), np.sin(latgc)
 
+        # Get ECEF vectors in km and km/s
         recef = np.array([magr * cdf * craf, magr * cdf * sraf, magr * sdf]) / KM2M
-
         vecef = (
-            np.array(
+            magv
+            / KM2M
+            * np.array(
                 [
-                    magv
-                    * (
-                        -craf * sdf * caz * cfpa - sraf * saz * cfpa + craf * cdf * sfpa
-                    ),
-                    magv
-                    * (
-                        -sraf * sdf * caz * cfpa + craf * saz * cfpa + sraf * cdf * sfpa
-                    ),
-                    magv * (sdf * sfpa + cdf * caz * cfpa),
+                    -craf * sdf * caz * cfpa - sraf * saz * cfpa + craf * cdf * sfpa,
+                    -sraf * sdf * caz * cfpa + craf * saz * cfpa + sraf * cdf * sfpa,
+                    sdf * sfpa + cdf * caz * cfpa,
                 ]
             )
-            / KM2M
         )
 
         # Convert to ECI
@@ -1203,13 +1196,14 @@ def covfl2ct(
         reci, veci, _ = fc.ecef2eci(
             recef, vecef, aecef, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
         )
-        reci *= KM2M
+        reci *= KM2M  # now in meters
         veci *= KM2M
 
+        # Compute RA/dec from ECI vectors
         temp = np.sqrt(reci[0] ** 2 + reci[1] ** 2)
         rtasc = (
             np.arctan2(reci[1], reci[0])
-            if temp >= small
+            if temp >= SMALL
             else np.arctan2(veci[1], veci[0])
         )
         decl = np.arcsin(reci[2] / magr)
@@ -1217,29 +1211,11 @@ def covfl2ct(
         # Use RA/dec directly
         rtasc, decl = lon, latgc
 
-    # Precompute trigonometric terms
+    # ra/dec trigonometric terms
     cra, sra = np.cos(rtasc), np.sin(rtasc)
     cd, sd = np.cos(decl), np.sin(decl)
 
-    # Position partials
-    tm[0, :2] = (
-        [-magr * cd * sra, -magr * sd * cra]
-        if not use_latlon
-        else [-magr * cdf * sraf, -magr * sdf * craf]
-    )
-    tm[0, 4] = cd * cra
-
-    tm[1, :2] = (
-        [magr * cd * cra, -magr * sd * sra]
-        if not use_latlon
-        else [magr * cdf * craf, -magr * sdf * sraf]
-    )
-    tm[1, 4] = cd * sra
-
-    tm[2, 1] = magr * cd if not use_latlon else magr * cdf
-    tm[2, 4] = sd
-
-    # Precompute reusable variables
+    # Reusable variables
     if use_latlon:
         s1, c1 = sraf, craf
         s2, c2 = sdf, cdf
@@ -1247,9 +1223,13 @@ def covfl2ct(
         s1, c1 = sra, cra
         s2, c2 = sd, cd
 
-    # Common terms
-    cfpa, sfpa = np.cos(fpa), np.sin(fpa)
-    caz, saz = np.cos(az), np.sin(az)
+    # Position partials w.r.t. (lon latgc fpa az r v)
+    tm[0, :2] = [-magr * c2 * s1, -magr * s2 * c1]  # rx
+    tm[0, 4] = cd * cra
+    tm[1, :2] = [magr * c2 * c1, -magr * s2 * s1]  # ry
+    tm[1, 4] = cd * sra
+    tm[2, 1] = magr * c2  # rz
+    tm[2, 4] = sd
 
     # Partial of vx wrt (lon, latgc, fpa, az, r, v)
     tm[3, 0] = -magv * (-s1 * caz * s2 * cfpa + c1 * saz * cfpa + c2 * s1 * sfpa)
