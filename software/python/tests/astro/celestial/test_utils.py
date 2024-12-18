@@ -1,7 +1,17 @@
 import logging
 import pytest
 
+import numpy as np
+
 import src.valladopy.astro.celestial.utils as utils
+
+from ...conftest import DEFAULT_TOL
+
+
+@pytest.fixture
+def t():
+    # Julian centuries from J2000
+    return -0.013641341546885694
 
 
 @pytest.mark.parametrize(
@@ -41,3 +51,15 @@ def test_in_sight(r2, earth_model, los, tmin, caplog):
     with caplog.at_level(logging.DEBUG):
         assert utils.in_sight(r1, r2, earth_model) == los
         assert f"Minimum parametric value (tmin): {tmin}" in caplog.messages[0]
+
+
+def test_sun_ecliptic_parameters(t):
+    mean_lon, mean_anomaly, ecliptic_lon = utils.sun_ecliptic_parameters(t)
+    assert np.isclose(np.degrees(mean_lon), 149.36181814781156, rtol=DEFAULT_TOL)
+    assert np.isclose(np.degrees(mean_anomaly), 226.4523822485284, rtol=DEFAULT_TOL)
+    assert np.isclose(np.degrees(ecliptic_lon), 147.9940329397011, rtol=DEFAULT_TOL)
+
+
+def test_obliquity_ecliptic(t):
+    obliquity = utils.obliquity_ecliptic(t)
+    assert np.isclose(np.degrees(obliquity), 23.439468394733744, rtol=DEFAULT_TOL)
