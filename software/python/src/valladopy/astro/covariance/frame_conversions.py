@@ -1179,26 +1179,39 @@ def covfl2ct(
         craf, sraf = np.cos(lon), np.sin(lon)
         cdf, sdf = np.cos(latgc), np.sin(latgc)
 
-        recef = np.array([
-            magr * cdf * craf,
-            magr * cdf * sraf,
-            magr * sdf
-        ]) / KM2M
+        recef = np.array([magr * cdf * craf, magr * cdf * sraf, magr * sdf]) / KM2M
 
-        vecef = np.array([
-            magv * (-craf * sdf * caz * cfpa - sraf * saz * cfpa + craf * cdf * sfpa),
-            magv * (-sraf * sdf * caz * cfpa + craf * saz * cfpa + sraf * cdf * sfpa),
-            magv * (sdf * sfpa + cdf * caz * cfpa)
-        ]) / KM2M
+        vecef = (
+            np.array(
+                [
+                    magv
+                    * (
+                        -craf * sdf * caz * cfpa - sraf * saz * cfpa + craf * cdf * sfpa
+                    ),
+                    magv
+                    * (
+                        -sraf * sdf * caz * cfpa + craf * saz * cfpa + sraf * cdf * sfpa
+                    ),
+                    magv * (sdf * sfpa + cdf * caz * cfpa),
+                ]
+            )
+            / KM2M
+        )
 
         # Convert to ECI
         aecef = np.zeros(3)
-        reci, veci, _ = fc.ecef2eci(recef, vecef, aecef, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms)
+        reci, veci, _ = fc.ecef2eci(
+            recef, vecef, aecef, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms
+        )
         reci *= KM2M
         veci *= KM2M
 
         temp = np.sqrt(reci[0] ** 2 + reci[1] ** 2)
-        rtasc = np.arctan2(reci[1], reci[0]) if temp >= small else np.arctan2(veci[1], veci[0])
+        rtasc = (
+            np.arctan2(reci[1], reci[0])
+            if temp >= small
+            else np.arctan2(veci[1], veci[0])
+        )
         decl = np.arcsin(reci[2] / magr)
     else:
         # Use RA/dec directly
@@ -1209,10 +1222,18 @@ def covfl2ct(
     cd, sd = np.cos(decl), np.sin(decl)
 
     # Position partials
-    tm[0, :2] = [-magr * cd * sra, -magr * sd * cra] if not use_latlon else [-magr * cdf * sraf, -magr * sdf * craf]
+    tm[0, :2] = (
+        [-magr * cd * sra, -magr * sd * cra]
+        if not use_latlon
+        else [-magr * cdf * sraf, -magr * sdf * craf]
+    )
     tm[0, 4] = cd * cra
 
-    tm[1, :2] = [magr * cd * cra, -magr * sd * sra] if not use_latlon else [magr * cdf * craf, -magr * sdf * sraf]
+    tm[1, :2] = (
+        [magr * cd * cra, -magr * sd * sra]
+        if not use_latlon
+        else [magr * cdf * craf, -magr * sdf * sraf]
+    )
     tm[1, 4] = cd * sra
 
     tm[2, 1] = magr * cd if not use_latlon else magr * cdf

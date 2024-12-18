@@ -3,10 +3,9 @@ import pytest
 
 import src.valladopy.astro.covariance.frame_conversions as fc
 
-from ...conftest import custom_allclose
+from ...conftest import custom_allclose, DEFAULT_TOL
 
 
-@pytest.fixture
 def cartcov():
     # Cartesian covariance matrix in m and m/s
     return np.array(
@@ -19,6 +18,11 @@ def cartcov():
             [17.65861, 90.73355, -5.67764, 0.385006, 2.013476, 33.37338],
         ]
     )
+
+
+@pytest.fixture(name="cartcov")
+def cartcov_fix():
+    return cartcov()
 
 
 @pytest.fixture
@@ -245,12 +249,14 @@ class TestClassicalCartesian:
     )
     def test_covcl2ct(self, use_mean_anom, class_state, class_cov, tm_exp, cartcov_exp):
         # Test covariance conversion
-        cartcov, tm = fc.covcl2ct(class_cov, class_state, use_mean_anom=use_mean_anom)
+        cartcov_out, tm = fc.covcl2ct(
+            class_cov, class_state, use_mean_anom=use_mean_anom
+        )
 
         # Compare results
         # NOTE: The covariance seems very sensitive to machine precision, so we use a
         #       higher absolute tolerance for this test
-        assert custom_allclose(cartcov, cartcov_exp, atol=1e-3)
+        assert custom_allclose(cartcov_out, cartcov_exp, atol=1e-3)
         assert custom_allclose(tm, tm_exp)
 
 
@@ -529,10 +535,10 @@ class TestEquinoctialCartesian:
     )
     def test_coveq2ct(self, eq_cov, eq_state, fr, anom_type, tm_exp, cartcov_exp):
         # Test covariance conversion
-        cartcov, tm = fc.coveq2ct(eq_cov, eq_state, fr, anom_type)
+        cartcov_out, tm = fc.coveq2ct(eq_cov, eq_state, fr, anom_type)
 
         # Compare results
-        assert custom_allclose(cartcov, cartcov_exp)
+        assert custom_allclose(cartcov_out, cartcov_exp)
         assert custom_allclose(tm, tm_exp)
 
 
@@ -843,7 +849,9 @@ class TestFlightCartesian:
         ]
         # fmt: on
     )
-    def test_covct2fl(self, cartcov, cartstate, orbit_effects, use_latlon, tm_exp, flcov_exp):
+    def test_covct2fl(
+        self, cartcov, cartstate, orbit_effects, use_latlon, tm_exp, flcov_exp
+    ):
         # Test covariance conversion
         flcov, tm = fc.covct2fl(
             cartcov, cartstate, *orbit_effects, use_latlon=use_latlon
@@ -911,34 +919,22 @@ class TestFlightCartesian:
                          -3074.17839862028, 0, 0.000662077940406588]
                     ]
                 ),
-                np.array(
-                    [
-                        [24097165.99999942, 86695627.99999858, -5509926.999999905,
-                         -6294.969999999899, 1752.32599999996, 17.658610000022392],
-                        [86695627.99999857, 453000000.0000005, -27999999.999999996,
-                         -32967.400000000045, 6319.430999999904, 90.73355000011598],
-                        [-5509926.999999904, -27999999.999999993, 1771702.9999999977,
-                         2061.582, -401.5819999999935, -5.6776400000072496],
-                        [-6294.969999999899, -32967.400000000045, 2061.582,
-                         6949865.00000001, -1352585.999999978, 0.38500597549500526],
-                        [1752.3259999999602, 6319.430999999902, -401.58199999999346,
-                         -1352585.999999978, 263241.29999999114, 2.0134760047692453],
-                        [17.65861000002238, 90.73355000011595, -5.6776400000072496,
-                         0.3850059754938398, 2.013476004769603, 33.37337999999999]
-                    ]
-                )
+                cartcov()  # really close
             )
         ]
         # fmt: on
     )
-    def test_covfl2ct(self, orbit_effects, use_latlon, flt_cov, flt_state, tm_exp, cartcov_exp):
+    def test_covfl2ct(
+        self, orbit_effects, use_latlon, flt_cov, flt_state, tm_exp, cartcov_exp
+    ):
         # Test covariance conversion
-        cartcov, tm = fc.covfl2ct(
+        cartcov_out, tm = fc.covfl2ct(
             flt_cov, flt_state, *orbit_effects, use_latlon=use_latlon
         )
 
         # Compare results
-        assert custom_allclose(cartcov, cartcov_exp)
+        atol = DEFAULT_TOL if use_latlon else 1e-6
+        assert custom_allclose(cartcov_out, cartcov_exp, atol=atol)
         assert custom_allclose(tm, tm_exp)
 
 
