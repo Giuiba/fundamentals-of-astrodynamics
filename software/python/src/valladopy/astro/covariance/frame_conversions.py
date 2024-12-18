@@ -1050,7 +1050,6 @@ def covct2fl(
         yp (float): Polar motion coefficient in radians
         ddpsi (float): Delta psi correction to GCRF in radians
         ddeps (float): Delta epsilon correction to GCRF in radians
-        eqeterms (bool): Flag to use long-term precession (default is True)
         eqeterms (bool, optional): Add terms for ast calculation (default True)
         use_latlon (bool, optional): Flag to use lat/lon instead of ra/dec
                                      (default True)
@@ -1119,6 +1118,142 @@ def covct2fl(
     flcov = tm @ cartcov @ tm.T
 
     return flcov, tm
+
+
+def covfl2ct(
+    flcov: ArrayLike,
+    flstate: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+    ddpsi: float,
+    ddeps: float,
+    eqeterms: bool = True,
+    use_latlon: bool = True,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Transforms a 6x6 covariance matrix from flight parameters to Cartesian elements.
+
+    References:
+        Vallado and Alfano 2015
+
+    Args:
+        flcov (array_like): 6x6 Flight parameters covariance matrix in m and m/s
+        flstate (array_like): 6x1 Flight parameters state vector in km, km/s and radians
+                              (lon or ra, latgc or dec, fpa, az, r, v)
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta epsilon correction to GCRF in radians
+        eqeterms (bool, optional): Add terms for ast calculation (default True)
+        use_latlon (bool, optional): Flag to use lat/lon instead of ra/dec
+                                     (default True)
+
+    Returns:
+        tuple: (cartcov, tm)
+            cartcov (np.ndarray): 6x6 Cartesian covariance matrix in m and m/s
+            tm (np.ndarray): 6x6 Transformation matrix
+    """
+    small = 1e-8
+
+    # Parse input flight state
+    lon, latgc, fpa, az, magr, magv = flstate
+    magr *= KM2M  # convert to meters
+    magv *= KM2M
+
+    cfpa, sfpa = np.cos(fpa), np.sin(fpa)
+    caz, saz = np.cos(az), np.sin(az)
+
+    # Initialize transformation matrix
+    tm = np.zeros((6, 6))
+
+    # Decide which coordinates to use
+    craf, sraf, cdf, sdf = 0, 0, 0, 0
+    if use_latlon:
+        # Compute ECEF coordinates
+        craf, sraf = np.cos(lon), np.sin(lon)
+        cdf, sdf = np.cos(latgc), np.sin(latgc)
+
+        recef = np.array([
+            magr * cdf * craf,
+            magr * cdf * sraf,
+            magr * sdf
+        ]) / KM2M
+
+        vecef = np.array([
+            magv * (-craf * sdf * caz * cfpa - sraf * saz * cfpa + craf * cdf * sfpa),
+            magv * (-sraf * sdf * caz * cfpa + craf * saz * cfpa + sraf * cdf * sfpa),
+            magv * (sdf * sfpa + cdf * caz * cfpa)
+        ]) / KM2M
+
+        # Convert to ECI
+        aecef = np.zeros(3)
+        reci, veci, _ = fc.ecef2eci(recef, vecef, aecef, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, eqeterms)
+        reci *= KM2M
+        veci *= KM2M
+
+        temp = np.sqrt(reci[0] ** 2 + reci[1] ** 2)
+        rtasc = np.arctan2(reci[1], reci[0]) if temp >= small else np.arctan2(veci[1], veci[0])
+        decl = np.arcsin(reci[2] / magr)
+    else:
+        # Use RA/dec directly
+        rtasc, decl = lon, latgc
+
+    # Precompute trigonometric terms
+    cra, sra = np.cos(rtasc), np.sin(rtasc)
+    cd, sd = np.cos(decl), np.sin(decl)
+
+    # Position partials
+    tm[0, :2] = [-magr * cd * sra, -magr * sd * cra] if not use_latlon else [-magr * cdf * sraf, -magr * sdf * craf]
+    tm[0, 4] = cd * cra
+
+    tm[1, :2] = [magr * cd * cra, -magr * sd * sra] if not use_latlon else [magr * cdf * craf, -magr * sdf * sraf]
+    tm[1, 4] = cd * sra
+
+    tm[2, 1] = magr * cd if not use_latlon else magr * cdf
+    tm[2, 4] = sd
+
+    # Precompute reusable variables
+    if use_latlon:
+        s1, c1 = sraf, craf
+        s2, c2 = sdf, cdf
+    else:
+        s1, c1 = sra, cra
+        s2, c2 = sd, cd
+
+    # Common terms
+    cfpa, sfpa = np.cos(fpa), np.sin(fpa)
+    caz, saz = np.cos(az), np.sin(az)
+
+    # Partial of vx wrt (lon, latgc, fpa, az, r, v)
+    tm[3, 0] = -magv * (-s1 * caz * s2 * cfpa + c1 * saz * cfpa + c2 * s1 * sfpa)
+    tm[3, 1] = -c1 * magv * (s2 * sfpa + c2 * caz * cfpa)
+    tm[3, 2] = magv * (cra * caz * sd * sfpa + sra * saz * sfpa + cd * cra * cfpa)
+    tm[3, 3] = magv * (cra * saz * sd * cfpa - sra * caz * cfpa)
+    tm[3, 5] = -cra * caz * sd * cfpa - sra * saz * cfpa + cd * cra * sfpa
+
+    # Partial of vy wrt (lon, latgc, fpa, az, r, v)
+    tm[4, 0] = magv * (-c1 * caz * s2 * cfpa - s1 * saz * cfpa + c2 * c1 * sfpa)
+    tm[4, 1] = -s1 * magv * (s2 * sfpa + c2 * caz * cfpa)
+    tm[4, 2] = magv * (sra * caz * sd * sfpa - cra * saz * sfpa + cd * sra * cfpa)
+    tm[4, 3] = magv * (sra * saz * sd * cfpa + cra * caz * cfpa)
+    tm[4, 5] = -sra * caz * sd * cfpa + cra * saz * cfpa + cd * sra * sfpa
+
+    # Partial of vz wrt (lon, latgc, fpa, az, r, v)
+    tm[5, 1] = magv * (c2 * sfpa - s2 * caz * cfpa)
+    tm[5, 2] = magv * (sd * cfpa - cd * caz * sfpa)
+    tm[5, 3] = -magv * cd * saz * cfpa
+    tm[5, 5] = sd * sfpa + cd * caz * cfpa
+
+    # Compute Cartesian covariance
+    cartcov = tm @ flcov @ tm.T
+
+    return cartcov, tm
 
 
 ########################################################################################
