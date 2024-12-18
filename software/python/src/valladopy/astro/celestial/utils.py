@@ -89,11 +89,14 @@ def sun_ecliptic_parameters(t: float) -> Tuple[float, float, float]:
     """
     mean_lon = np.radians(280.4606184 + 36000.77005361 * t) % const.TWOPI
     mean_anomaly = np.radians(357.5277233 + 35999.05034 * t) % const.TWOPI
-    ecliptic_lon = np.radians(
-        np.degrees(mean_lon)
-        + 1.914666471 * np.sin(mean_anomaly)
-        + 0.019994643 * np.sin(2.0 * mean_anomaly)
-    ) % const.TWOPI
+    ecliptic_lon = (
+        np.radians(
+            np.degrees(mean_lon)
+            + 1.914666471 * np.sin(mean_anomaly)
+            + 0.019994643 * np.sin(2.0 * mean_anomaly)
+        )
+        % const.TWOPI
+    )
 
     return float(mean_lon), float(mean_anomaly), ecliptic_lon
 
