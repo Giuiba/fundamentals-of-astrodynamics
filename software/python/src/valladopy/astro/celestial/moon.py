@@ -7,6 +7,7 @@
 # -----------------------------------------------------------------------------
 
 import logging
+from typing import Tuple
 
 import numpy as np
 
@@ -17,6 +18,48 @@ from .utils import sun_ecliptic_parameters, obliquity_ecliptic
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+
+def get_moon_latlon(ttdb: float) -> Tuple[float, float]:
+    """Calculates the ecliptic/mean longitude of the Moon.
+
+    Args:
+        ttdb (float): Julian centuries from J2000
+
+    Returns:
+        tuple: (lon, lat)
+            lon (float): Ecliptic longitude of the Moon in radians
+            lat (float): Ecliptic latitude of the Moon in radians
+    """
+    lon = (
+        float(
+            np.radians(
+                218.32
+                + 481267.8813 * ttdb
+                + 6.29 * np.sin(np.radians(134.9 + 477198.85 * ttdb))
+                - 1.27 * np.sin(np.radians(259.2 - 413335.38 * ttdb))
+                + 0.66 * np.sin(np.radians(235.7 + 890534.23 * ttdb))
+                + 0.21 * np.sin(np.radians(269.9 + 954397.70 * ttdb))
+                - 0.19 * np.sin(np.radians(357.5 + 35999.05 * ttdb))
+                - 0.11 * np.sin(np.radians(186.6 + 966404.05 * ttdb))
+            )
+        )
+        % const.TWOPI
+    )
+
+    lat = (
+        float(
+            np.radians(
+                5.13 * np.sin(np.radians(93.3 + 483202.03 * ttdb))
+                + 0.28 * np.sin(np.radians(228.2 + 960400.87 * ttdb))
+                - 0.28 * np.sin(np.radians(318.3 + 6003.18 * ttdb))
+                - 0.17 * np.sin(np.radians(217.6 - 407332.20 * ttdb))
+            )
+        )
+        % const.TWOPI
+    )
+
+    return lon, lat
 
 
 def position(jd: float) -> tuple[np.ndarray, float, float]:
@@ -38,30 +81,7 @@ def position(jd: float) -> tuple[np.ndarray, float, float]:
     ttdb = (jd - const.J2000) / const.CENT2DAY
 
     # Ecliptic longitude (radians)
-    eclplong = (
-        np.radians(
-            218.32
-            + 481267.8813 * ttdb
-            + 6.29 * np.sin(np.radians(134.9 + 477198.85 * ttdb))
-            - 1.27 * np.sin(np.radians(259.2 - 413335.38 * ttdb))
-            + 0.66 * np.sin(np.radians(235.7 + 890534.23 * ttdb))
-            + 0.21 * np.sin(np.radians(269.9 + 954397.70 * ttdb))
-            - 0.19 * np.sin(np.radians(357.5 + 35999.05 * ttdb))
-            - 0.11 * np.sin(np.radians(186.6 + 966404.05 * ttdb))
-        )
-        % const.TWOPI
-    )
-
-    # Ecliptic latitude (radians)
-    eclplat = (
-        np.radians(
-            5.13 * np.sin(np.radians(93.3 + 483202.03 * ttdb))
-            + 0.28 * np.sin(np.radians(228.2 + 960400.87 * ttdb))
-            - 0.28 * np.sin(np.radians(318.3 + 6003.18 * ttdb))
-            - 0.17 * np.sin(np.radians(217.6 - 407332.20 * ttdb))
-        )
-        % const.TWOPI
-    )
+    eclplong, eclplat = get_moon_latlon(ttdb)
 
     # Horizontal parallax (radians)
     hzparal = (
@@ -104,7 +124,9 @@ def position(jd: float) -> tuple[np.ndarray, float, float]:
     return rmoon * const.RE, rtasc, decl
 
 
-def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float = 0.008) -> tuple[float, float, float]:
+def moonriset(
+    jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float = 0.008
+) -> tuple[float, float, float]:
     """Finds the universal time for moonrise and moonset given the day and site
     location.
 
@@ -123,7 +145,7 @@ def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float 
         tuple: (moonrise, moonset, moonphaseang)
             moonrise (float): Universal time of moonrise in hours
             moonset (float): Universal time of moonset in hours
-            moonphaseang (float): Moon phase angle in degrees
+            moonphaseang (float): Moon phase angle in radians
     """
     # Normalize longitude to -π to π
     lon = (lon + np.pi) % const.TWOPI - np.pi
@@ -139,7 +161,7 @@ def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float 
         # Initial guess for UT
         sign = -1 if event == "moonrise" else 1
         uttemp = (jd_offset + sign * lon / const.DEG2HR) / const.DAY2HR
-        # uttemp = (jd_offset - np.degrees(lon) / const.DEG2HR) / const.DAY2HR  # fix
+        # uttemp = (jd_offset + sign * np.degrees(lon) / const.DEG2HR) / const.DAY2HR
 
         # Set if there's a problem
         if try1 == 2:
@@ -156,28 +178,7 @@ def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float 
             ttdb = (jdtemp - const.J2000) / const.CENT2DAY
 
             # Ecliptic longitude and latitude in radians
-            eclplong = (
-                np.radians(
-                    218.32
-                    + 481267.8813 * ttdb
-                    + 6.29 * np.sin(np.radians(134.9 + 477198.85 * ttdb))
-                    - 1.27 * np.sin(np.radians(259.2 - 413335.38 * ttdb))
-                    + 0.66 * np.sin(np.radians(235.7 + 890534.23 * ttdb))
-                    + 0.21 * np.sin(np.radians(269.9 + 954397.70 * ttdb))
-                    - 0.19 * np.sin(np.radians(357.5 + 35999.05 * ttdb))
-                    - 0.11 * np.sin(np.radians(186.6 + 966404.05 * ttdb))
-                )
-                % const.TWOPI
-            )
-            eclplat = (
-                np.radians(
-                    5.13 * np.sin(np.radians(93.3 + 483202.03 * ttdb))
-                    + 0.28 * np.sin(np.radians(228.2 + 960400.87 * ttdb))
-                    - 0.28 * np.sin(np.radians(318.3 + 6003.18 * ttdb))
-                    - 0.17 * np.sin(np.radians(217.6 - 407332.20 * ttdb))
-                )
-                % const.TWOPI
-            )
+            eclplong, eclplat = get_moon_latlon(ttdb)
 
             # Obliquity of the ecliptic in radians
             obliquity = obliquity_ecliptic(ttdb)
@@ -264,23 +265,14 @@ def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float 
                     results[event] = np.inf
             try1 = 1
 
-    # Mean longitude of the Moon in degrees
-    meanlonmoon = (
-        218.32
-        + 481267.8813 * ttdb
-        + 6.29 * np.sin(np.radians(134.9 + 477198.85 * ttdb))
-        - 1.27 * np.sin(np.radians(259.2 - 413335.38 * ttdb))
-        + 0.66 * np.sin(np.radians(235.7 + 890534.23 * ttdb))
-        + 0.21 * np.sin(np.radians(269.9 + 954397.70 * ttdb))
-        - 0.19 * np.sin(np.radians(357.5 + 35999.05 * ttdb))
-        - 0.11 * np.sin(np.radians(186.6 + 966404.05 * ttdb))
-    ) % np.degrees(const.TWOPI)
+    # Mean longitude of the Moon in radians
+    meanlonmoon, _ = get_moon_latlon(ttdb)
 
     # Ecliptic longitude of the Sun in radians
     *_, loneclsun = sun_ecliptic_parameters(ttdb)
 
     # Moon phase angle
-    moonphaseang = (meanlonmoon - np.degrees(loneclsun)) % np.degrees(const.TWOPI)
+    moonphaseang = (meanlonmoon - loneclsun) % const.TWOPI
 
     return results["moonrise"], results["moonset"], moonphaseang
 
