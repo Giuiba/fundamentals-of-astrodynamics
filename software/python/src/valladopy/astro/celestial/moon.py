@@ -12,7 +12,7 @@ import numpy as np
 
 from ... import constants as const
 from ..time.sidereal import lstime
-from .utils import sun_ecliptic_parameters
+from .utils import sun_ecliptic_parameters, obliquity_ecliptic
 
 
 # Set up logging
@@ -155,7 +155,7 @@ def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float 
             # Update the Julian date
             ttdb = (jdtemp - const.J2000) / const.CENT2DAY
 
-            # Ecliptic longitude and latitude (radians)
+            # Ecliptic longitude and latitude in radians
             eclplong = (
                 np.radians(
                     218.32
@@ -179,8 +179,8 @@ def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float 
                 % const.TWOPI
             )
 
-            # Obliquity of the ecliptic (radians)
-            obliquity = np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * ttdb)
+            # Obliquity of the ecliptic in radians
+            obliquity = obliquity_ecliptic(ttdb)
 
             # Geocentric direction cosines
             l = np.cos(eclplat) * np.cos(eclplong)  # noqa: E741
@@ -264,7 +264,7 @@ def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float 
                     results[event] = np.inf
             try1 = 1
 
-    # Mean longitude of the Moon
+    # Mean longitude of the Moon in degrees
     meanlonmoon = (
         218.32
         + 481267.8813 * ttdb
@@ -276,7 +276,7 @@ def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float 
         - 0.11 * np.sin(np.radians(186.6 + 966404.05 * ttdb))
     ) % np.degrees(const.TWOPI)
 
-    # Mean longitude of the Sun in radians (TODO: put in utils)
+    # Ecliptic longitude of the Sun in radians
     *_, loneclsun = sun_ecliptic_parameters(ttdb)
 
     # Moon phase angle

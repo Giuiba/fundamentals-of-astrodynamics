@@ -15,7 +15,7 @@ from numpy.typing import ArrayLike
 
 from ... import constants as const
 from ..time.sidereal import lstime
-from .utils import EarthModel, in_sight, sun_ecliptic_parameters
+from .utils import EarthModel, in_sight, sun_ecliptic_parameters, obliquity_ecliptic
 
 
 # Set up logging
@@ -55,13 +55,13 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
     # Julian centuries from J2000
     tut1 = (jd - const.J2000) / const.CENT2DAY
 
-    # Mean longitude of the Sun (degrees)
+    # Mean anomaly and ecliptic longitude of the sun in radians
     _, meananomaly, eclplong = sun_ecliptic_parameters(tut1)
 
-    # Obliquity of the ecliptic (radians)
-    obliquity = np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * tut1)
+    # Obliquity of the ecliptic in radians
+    obliquity = obliquity_ecliptic(tut1)
 
-    # Magnitude of the Sun vector (AU)
+    # Magnitude of the Sun vector in AU
     magr = (
         1.000140612
         - 0.016708617 * np.cos(meananomaly)
@@ -77,7 +77,7 @@ def position(jd: float) -> Tuple[np.ndarray, float, float]:
         ]
     )
 
-    # Right ascension (radians)
+    # Right ascension in radians
     rtasc = np.arctan(np.cos(obliquity) * np.tan(eclplong))
 
     # Ensure right ascension is in the same quadrant as ecliptic longitude
@@ -145,13 +145,13 @@ def sunriset(
         # Julian centuries from J2000.0
         tut1 = (jdtemp - const.J2000) / const.CENT2DAY
 
-        # Mean longitude of the Sun (degrees)
+        # Ecliptic longitude of the Sun in radians
         *_, lonecliptic = sun_ecliptic_parameters(tut1)
 
-        # Obliquity of the ecliptic (radians)
-        obliquity = np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * tut1)
+        # Obliquity of the ecliptic in radians
+        obliquity = obliquity_ecliptic(tut1)
 
-        # Right ascension and declination (radians)
+        # Right ascension and declination in radians
         ra = np.arctan(np.cos(obliquity) * np.tan(lonecliptic))
         decl = np.arcsin(np.sin(obliquity) * np.sin(lonecliptic))
 

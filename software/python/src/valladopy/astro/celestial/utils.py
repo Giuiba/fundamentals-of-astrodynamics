@@ -96,3 +96,15 @@ def sun_ecliptic_parameters(t: float) -> Tuple[float, float, float]:
     ) % const.TWOPI
 
     return float(mean_lon), float(mean_anomaly), ecliptic_lon
+
+
+def obliquity_ecliptic(t: float) -> float:
+    """Compute the obliquity of the ecliptic.
+
+    Args:
+        t (float): Time since J2000 in Julian centuries (e.g. 'tut1' or 'ttdb')
+
+    Returns:
+        float: Obliquity of the ecliptic in radians
+    """
+    return float(np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * t))
