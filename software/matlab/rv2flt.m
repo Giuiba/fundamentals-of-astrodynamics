@@ -1,4 +1,3 @@
-%
 % ----------------------------------------------------------------------------
 %
 %                           function rv2flt.m
@@ -40,50 +39,52 @@
 %  references    :
 %    vallado       2001, xx
 %
-% [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ( r,v,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+% [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+%        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 % ----------------------------------------------------------------------------
 
-function [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ( reci,veci,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+function [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 
-        twopi = 2.0*pi;
+    twopi = 2.0*pi;
 
-        small = 0.00000001;
+    small = 0.00000001;
 
-        magr = mag(reci);
-        magv = mag(veci);
+    magr = mag(reci);
+    magv = mag(veci);
 
-        % -------- convert r to ecef for lat/lon calculation
-        avec = [0;0;0];
-        [recef,vecef,aecef] = eci2ecef(reci,veci,avec,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps);
+    % -------- convert r to ecef for lat/lon calculation
+    aeci = [0.0, 0.0, 0.0];
+    [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
 
-        % ----------------- find longitude value  ----------------- uses ecef
-        temp = sqrt( recef(1)*recef(1) + recef(2)*recef(2) );
-        if ( temp < small )
-            lon= atan2( vecef(2), vecef(1) );
-          else
-            lon= atan2( recef(2), recef(1) );
-        end
+    % ----------------- find longitude value  ----------------- uses ecef
+    temp = sqrt( recef(1)*recef(1) + recef(2)*recef(2) );
+    if ( temp < small )
+        lon= atan2( vecef(2), vecef(1) );
+    else
+        lon= atan2( recef(2), recef(1) );
+    end
 
-        %latgc = atan2( recef(3) , sqrt(recef(1)^2 + recef(2)^2) )
-        latgc = asin( recef(3) / magr );
+    %latgc = atan2( recef(3) , sqrt(recef(1)^2 + recef(2)^2) )
+    latgc = asin( recef(3) / magr );
 
-        % ------------- calculate rtasc and decl ------------------ uses eci
-        temp= sqrt( reci(1)*reci(1) + reci(2)*reci(2) );
-        if ( temp < small )
-            rtasc= atan2( veci(2) , veci(1) );
-          else
-            rtasc= atan2( reci(2) , reci(1) );
-        end
-        %decl = atan2( reci(3) , sqrt(reci(1)^2 + reci(2)^2) )
-        decl = asin( reci(3)/magr );
+    % ------------- calculate rtasc and decl ------------------ uses eci
+    temp= sqrt( reci(1)*reci(1) + reci(2)*reci(2) );
+    if ( temp < small )
+        rtasc= atan2( veci(2) , veci(1) );
+    else
+        rtasc= atan2( reci(2) , reci(1) );
+    end
+    %decl = atan2( reci(3) , sqrt(reci(1)^2 + reci(2)^2) )
+    decl = asin( reci(3)/magr );
 
-        h = cross(reci,veci);
-        hmag = mag(h);
-        rdotv= dot(reci,veci);
-        fpav= atan2(hmag,rdotv);
-        fpa = pi*0.5 - fpav;
+    h = cross(reci,veci);
+    hmag = mag(h);
+    rdotv= dot(reci,veci);
+    fpav= atan2(hmag,rdotv);
+    fpa = pi*0.5 - fpav;
 
-        hcrossr = cross(h,reci);
+    hcrossr = cross(h,reci);
 
-        az = atan2( reci(1)*hcrossr(2) - reci(2)*hcrossr(1), hcrossr(3)*magr );
-
+    az = atan2( reci(1)*hcrossr(2) - reci(2)*hcrossr(1), hcrossr(3)*magr );
+end

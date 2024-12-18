@@ -2,7 +2,8 @@
 %
 %                           function readeop.m
 %
-%  this function reads the eop coefficients.
+%  this function reads the eop coefficients. the start mjd is contained in
+%  mjd(1).
 %
 %  author        : david vallado                  719-573-2600   12 dec 2002
 %
@@ -16,15 +17,6 @@
 %    eoparr      - array of eop values
 %
 %  locals        :
-%    ta,
-%    a, b, c1, c2, d1, d2,      xp coefficients
-%    p1, p2,
-%    e, f, g1, g2, h1, h2,      yp coefficients
-%    q1, q2, tb, ii, jj,
-%    k1, k2, k3, k4, l1, l2, l3, l4,  dut1 coefficients
-%    r1, r2, r3, r4,
-%    annualper, chandper, sannualper, deltat, deltatb
-%    eoppweek, effdate,       gendate
 %
 %  coupling      :
 %    none.
@@ -32,7 +24,7 @@
 %  references    :
 %    none.
 %
-% [eoparr, mjdeopstart, ktrActObs, updDate] = readeop(eopFileName);
+% [eoparr] = readeop(eopFileName)
 % -----------------------------------------------------------------------------
 
 function [eoparr] = readeop(eopFileName)
@@ -43,25 +35,25 @@ function [eoparr] = readeop(eopFileName)
         'lod',zeros(25000), ...
         'ddpsi',zeros(25000), 'ddeps',zeros(25000), ...
         'dx',zeros(25000), 'dy',zeros(25000), ...
-        'mjd',zeros(25000), 'dat',zeros(25000) ...
-        'mjdeopstart', zeros(1), 'updDate', [] );
-    
+        'mjd',zeros(25000), 'dat',zeros(25000) );
+
     infile = fopen(eopFileName, 'r');
-    
+
     while (~feof(infile))
         longstr = fgets(infile);
+
         while ( (longstr(1) == '#') && (feof(infile) == 0) )
             longstr = fgets(infile);
-    
-            if (contains(longstr, 'UPDATED'))
-                eoparr.updDate = longstr(8:end);
-            end
-    
+
+            % if (contains(longstr, 'UPDATED'))
+            %     eoparr.updDate = longstr(8:end);
+            % end
+
             if (contains(longstr, 'NUM_OBSERVED_POINTS'))
                 numrecsobs = str2double(longstr(20:end));
                 longstr = fgets(infile);
                 % ---- process observed records only
-                % 1962 01 01 37665 -0.012700  0.213000  0.0326338  0.0017230  0.064261  0.006067  0.000000  0.000000   2 
+                % 1962 01 01 37665 -0.012700  0.213000  0.0326338  0.0017230  0.064261  0.006067  0.000000  0.000000   2
                 for ktr = 1: numrecsobs
                     longstr = fgets(infile);
                     %eoparr(ktr).year = str2double(longstr(1:4));
@@ -80,22 +72,22 @@ function [eoparr] = readeop(eopFileName)
                     eoparr(ktr).dx = str2double(longstr(79:89));
                     eoparr(ktr).dy = str2double(longstr(89:99));
                     eoparr(ktr).dat = str2double(longstr(99:103));
-    
+
                     % ---- find epoch date
-                    if (ktr == 1)
-                         eoparr.mjdeopstart = eoparr(ktr).mjd;
-                    end
+                    % if (ktr == 1)
+                    %      eoparr.mjdeopstart = eoparr(ktr).mjd;
+                    % end
                 end  % for through observed
-                
+
                 ktrActObs = ktr;
             end
-       
+
             % ---- process predicted records
             if (contains(longstr, 'NUM_PREDICTED_POINTS'))
                 numrecsobs = str2double(longstr(20:end));
                 longstr = fgets(infile);
                 % ---- process predicted records only
-                % 1962 01 01 37665 -0.012700  0.213000  0.0326338  0.0017230  0.064261  0.006067  0.000000  0.000000   2 
+                % 1962 01 01 37665 -0.012700  0.213000  0.0326338  0.0017230  0.064261  0.006067  0.000000  0.000000   2
                 for i = 1: numrecsobs
                     longstr = fgets(infile);
                     %eoparr(ktr+i).year = str2double(longstr(1:4));
@@ -114,13 +106,12 @@ function [eoparr] = readeop(eopFileName)
                     eoparr(ktr+i).dx = str2double(longstr(79:89));
                     eoparr(ktr+i).dy = str2double(longstr(89:99));
                     eoparr(ktr+i).dat = str2double(longstr(99:103));
-        
-                end  % for through observed
-               
+
+                end  % for through predicted
+
             end
-    
-        end  % while through file
 
+        end  % while through data portion of file
 
-    end
+    end % while not eof 
 

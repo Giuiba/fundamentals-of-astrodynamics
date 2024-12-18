@@ -5,27 +5,25 @@
 %  this function solves the problem of orbit determination using three
 %    optical sightings and the method of laplace.
 %
-%  author        : david vallado                  719-573-2600   24 apr 2003
+%  author        : david vallado                         719-573-2600   24 apr 2003
 %
-%  inputs          description                    range / units
-%    re           - radius earth, sun, etc        km
-%    mu           - grav param earth, sun etc     km3/s2
-%    rtasc1       - right ascension #1                          rad
-%    rtasc2       - right ascension #2                          rad
-%    rtasc3       - right ascension #3                          rad
-%    decl1        - declination #1                              rad
-%    decl2        - declination #2                              rad
-%    decl3        - declination #3                              rad
-%    jd1, jdf1    - julian date of 1st sighting                 days from 4713 bc
-%    jd2, jdf2    - julian date of 2nd sighting                 days from 4713 bc
-%    jd3, jdf3    - julian date of 3rd sighting                 days from 4713 bc
-%    rsite1       - eci site position vector                    km
-%    rsite2       - eci site position vector                    km
-%    rsite3       - eci site position vector                    km
+%  inputs          description                                range / units
+%    decl1        - declination #1                                rad
+%    decl2        - declination #2                                rad
+%    decl3        - declination #3                                rad
+%    rtasc1       - right ascension #1                            rad
+%    rtasc2       - right ascension #2                            rad
+%    rtasc3       - right ascension #3                            rad
+%    jd1, jdf1    - julian date of 1st sighting                   days from 4713 bc
+%    jd2, jdf2    - julian date of 2nd sighting                   days from 4713 bc
+%    jd3, jdf3    - julian date of 3rd sighting                   days from 4713 bc
+%    rseci1       - eci site1 position vector                     km
+%    rseci2       - eci site2 position vector                     km
+%    rseci3       - eci site3 position vector                     km
 %
 %  outputs        :
-%    r            - ijk position vector           km
-%    v            - ijk velocity vector           km / s
+%    r            - eci position vector                           km
+%    v            - eci velocity vector                           km / s
 %
 %  locals         :
 %    l1           - line of sight vector for 1st
@@ -69,11 +67,12 @@
 %  references     :
 %    vallado       2001, 413-417
 %
-% [r2,v2] = anglesl ( decl1,decl2,decl3,rtasc1,rtasc2,rtasc3,jd1,jdf1, jd2,jdf2, jd3, jdf3,rs1,rs2,rs3 );
+% [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
+%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3)
 % ------------------------------------------------------------------------------
 
-    function [r2, v2] = anglesl ( decl1,decl2,decl3,rtasc1,rtasc2, ...
-        rtasc3,jd1,jdf1,jd2,jdf2,jd3,jdf3,diffsites, rs1,rs2,rs3);
+function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
+        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3)
 
     constastro;
     % -------------------------  implementation   -------------------------
@@ -88,7 +87,6 @@
     % need to switch these for interplanetary
 
     %        constant;
-
     small = 0.00000001;
     rad = 180.0 / pi;
 
@@ -98,17 +96,15 @@
     %      los1= [-0.425365 0.777650 0.462953];  % just in km
     %      los2 =[-0.825702 0.259424 0.500914];
     %      los3 = [ -0.947067 -0.129576 0.293725];
-
     % los1 =[-0.425364592304 ,0.777650239833, 0.462952554914];
     % los2=[ -0.825702365309, 0.259423566604, 0.500914181287];
     % los3 =[-0.947067028031, -0.129575647726, 0.2937246941];
-
-    t1=-1200;  % sec
-    t2=0;
-    t3=1200;
-    tau12 = t1-t2;
-    tau13 = t1-t3;
-    tau32 = t3-t2;
+    % t1=-1200;  % sec
+    % t2=0;
+    % t3=1200;
+    % tau12 = t1-t2;
+    % tau13 = t1-t3;
+    % tau32 = t3-t2;
     % test problem///////////////////////////////////////////////////////
 
     tau12 = (jd1 - jd2) * 86400.0 + (jdf1 - jdf2) * 86400.0; % days to sec

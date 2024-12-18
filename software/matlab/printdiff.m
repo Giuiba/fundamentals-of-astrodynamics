@@ -26,14 +26,14 @@
 function printdiff( strin, mat1, mat2 )
 
     small = 1e-18;
-    
+
     fprintf(1,'diff %s \n', strin);
-    fprintf(1,'%20.10e%20.10e%20.10e%20.10e%20.10e%20.10e \n', mat1' - mat2');
-    
+    fprintf(1,'%20.10e %20.10e %20.10e %20.10e %20.10e %20.10e \n', mat1' - mat2');
+
     fprintf(1,'pctdiff %s pct over 1e-18  \n', strin);
-%    fprintf(1,'%14.4f%14.4f%14.4f%14.4f%14.4f%14.4f \n',100.0*((mat1' - mat2')/mat1'));
-%    fprintf(1,'Check consistency of both approaches tmct2cl-inv(tmcl2ct) diff pct over 1e-18 \n');
-%    fprintf(1,'-------- accuracy of tm comparing ct2cl and cl2ct --------- \n');
+    %    fprintf(1,'%14.4f%14.4f%14.4f%14.4f%14.4f%14.4f \n',100.0*((mat1' - mat2')/mat1'));
+    %    fprintf(1,'Check consistency of both approaches tmct2cl-inv(tmcl2ct) diff pct over 1e-18 \n');
+    %    fprintf(1,'-------- accuracy of tm comparing ct2cl and cl2ct --------- \n');
     tm1 = mat1';
     tm2 = mat2';
     for i=1:6
@@ -42,12 +42,10 @@ function printdiff( strin, mat1, mat2 )
                 diffmm(i,j) = 0.0;
             else
                 diffmm(i,j) = 100.0*( (tm1(i,j)-tm2(i,j)) / tm1(i,j));
-            end;
-        end;
-    end;
-    fprintf(1,'%14.4f%14.4f%14.4f%14.4f%14.4f%14.4f\n', diffmm );
-    
-    
-    
-    
-    
+            end
+        end
+    end
+    fprintf(1,'%14.4f %14.4f %14.4f %14.4f %14.4f %14.4f \n', diffmm );
+
+end
+

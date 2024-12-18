@@ -54,19 +54,49 @@
     dm = 'S';
     de = 'L';
     nrev = 0;
-    [ tbidu, tbiru] = lambgettbiu(r1, r2, 5);
+            [kbi, tof] = lambertumins( r1, r2, 1, 'S' ) ;   
+    tbiSu(1, 1) = kbi;
+    tbiSu(1, 2) = tof;
+            [kbi, tof] = lambertumins( r1, r2, 2, 'S' ) ;   
+    tbiSu(2, 1) = kbi;
+    tbiSu(2, 2) = tof;
+            [kbi, tof] = lambertumins( r1, r2, 3, 'S' ) ;   
+    tbiSu(3, 1) = kbi;
+    tbiSu(3, 2) = tof;
+            [kbi, tof] = lambertumins( r1, r2, 4, 'S' ) ;   
+    tbiSu(4, 1) = kbi;
+    tbiSu(4, 2) = tof;
+            [kbi, tof] = lambertumins( r1, r2, 5, 'S' ) ;   
+    tbiSu(5, 1) = kbi;
+    tbiSu(5, 2) = tof;
+
+            [kbi, tof] = lambertumins( r1, r2, 1, 'L' ) ;   
+    tbiLu(1, 1) = kbi;
+    tbiLu(1, 2) = tof;
+            [kbi, tof] = lambertumins( r1, r2, 2, 'L' ) ;   
+    tbiLu(2, 1) = kbi;
+    tbiLu(2, 2) = tof;
+           [kbi, tof] = lambertumins( r1, r2, 3, 'L' ) ;   
+    tbiLu(3, 1) = kbi;
+    tbiLu(3, 2) = tof;
+            [kbi, tof] = lambertumins( r1, r2, 4, 'L' ) ;   
+    tbiLu(4, 1) = kbi;
+    tbiLu(4, 2) = tof;
+            [kbi, tof] = lambertumins( r1, r2, 5, 'L' ) ;   
+    tbiLu(5, 1) = kbi;
+    tbiLu(5, 2) = tof;
     fprintf(1,' r1 %16.8f%16.8f%16.8f\n',r1 );
     fprintf(1,' r2 %16.8f%16.8f%16.8f\n',r2 );
-    fprintf(1,'From universal variables \n%11.7f %11.7f s \n',tbidu(1,1),tbidu(1,2));
-    fprintf(1,'%11.7f %11.7f s \n',tbidu(2,1),tbidu(2,2));
-    fprintf(1,'%11.7f %11.7f s \n',tbidu(3,1),tbidu(3,2));
-    fprintf(1,'%11.7f %11.7f s \n',tbidu(4,1),tbidu(4,2));
-    fprintf(1,'%11.7f %11.7f s \n\n',tbidu(5,1),tbidu(5,2));
-    fprintf(1,'%11.7f %11.7f s \n',tbiru(1,1),tbiru(1,2));
-    fprintf(1,'%11.7f %11.7f s \n',tbiru(2,1),tbiru(2,2));
-    fprintf(1,'%11.7f %11.7f s \n',tbiru(3,1),tbiru(3,2));
-    fprintf(1,'%11.7f %11.7f s \n',tbiru(4,1),tbiru(4,2));
-    fprintf(1,'%11.7f %11.7f s \n',tbiru(5,1),tbiru(5,2));
+    fprintf(1,'From universal variables \n%11.7f %11.7f s \n',tbiSu(1,1),tbiSu(1,2));
+    fprintf(1,'%11.7f %11.7f s \n',tbiSu(2,1),tbiSu(2,2));
+    fprintf(1,'%11.7f %11.7f s \n',tbiSu(3,1),tbiSu(3,2));
+    fprintf(1,'%11.7f %11.7f s \n',tbiSu(4,1),tbiSu(4,2));
+    fprintf(1,'%11.7f %11.7f s \n\n',tbiSu(5,1),tbiSu(5,2));
+    fprintf(1,'%11.7f %11.7f s \n',tbiLu(1,1),tbiLu(1,2));
+    fprintf(1,'%11.7f %11.7f s \n',tbiLu(2,1),tbiLu(2,2));
+    fprintf(1,'%11.7f %11.7f s \n',tbiLu(3,1),tbiLu(3,2));
+    fprintf(1,'%11.7f %11.7f s \n',tbiLu(4,1),tbiLu(4,2));
+    fprintf(1,'%11.7f %11.7f s \n',tbiLu(5,1),tbiLu(5,2));
 
     [minenergyv, aminenergy, tminenergy, tminabs] = lambertmin ( r1, r2, 'L', 0 );
     fprintf(1,' minenergyv %16.8f %16.8f %16.8f a %11.7f  dt %11.7f  %11.7f \n', minenergyv, aminenergy, tminenergy, tminabs );
@@ -77,7 +107,7 @@
 
     dtwait = 0.0;
     fprintf(1,'\n-------- lambertu test \n' );
-    [v1t, v2t, errorl] = lambertu ( r1, v1, r2, dm, de,nrev, dtwait, dtsec, tbidu, fid );
+    [v1t, v2t, errorl] = lambertu ( r1, r2, v1, 'S', de, nrev, dtsec, 0.0, fid );
     fprintf(1,' v1t %16.8f%16.8f%16.8f\n',v1t );
     fprintf(1,' v2t %16.8f%16.8f%16.8f\n',v2t );
 
@@ -87,37 +117,41 @@
     fprintf(1,' ------------- new time to accomodate 1 rev \n');
     dtsec = 21000.0;
     fprintf(1,' TEST ------------------ S  L  0 rev \n');
-    [v1t, v2t, errorl] = lambertu ( r1, v1, r2, 'S', 'L', 0, dtwait, dtsec, tbidu, fid );
+    [v1t, v2t, errorl] = lambertu ( r1,  r2, v1, 'S', 'L', 0, dtsec, 0.0, fid );
     fprintf(1,' v1t %16.8f%16.8f%16.8f\n',v1t );
     fprintf(1,' v2t %16.8f%16.8f%16.8f\n',v2t );
 
     fprintf(1,' TEST ------------------ L  H  0 rev \n');
-    [v1t, v2t, errorl] = lambertu ( r1, v1, r2, 'L', 'H', 0, dtwait, dtsec, tbiru, fid );
+    [v1t, v2t, errorl] = lambertu ( r1,  r2, v1, 'L', 'H', 0, dtsec, 0.0, fid );
     fprintf(1,' v1t %16.8f%16.8f%16.8f\n',v1t );
     fprintf(1,' v2t %16.8f%16.8f%16.8f\n',v2t );
 
     fprintf(1,' TEST ------------------ S  L  1 rev \n');
-    [v1t, v2t, errorl] = lambertu ( r1, v1, r2, 'S', 'L', 1, dtwait, dtsec, tbidu, fid );
-    fprintf(1,'uv1t %16.8f%16.8f%16.8f\n',v1t );
+    [kbi, tof] = lambertumins( r1, r2, 1, 'S' ) ;   
+    [v1t, v2t, errorl] = lambertu ( r1,  r2, v1, 'S', 'L', 1, dtsec, kbi, fid );
+    fprintf(1,' v1t %16.8f%16.8f%16.8f\n',v1t );
     fprintf(1,' v2t %16.8f%16.8f%16.8f\n',v2t );
 
     fprintf(1,' TEST ------------------ S  H  1 rev \n');
-    [v1t, v2t, errorl] = lambertu ( r1, v1, r2, 'S', 'H', 1, dtwait, dtsec, tbiru, fid );
-    fprintf(1,'uv1t %16.8f%16.8f%16.8f\n',v1t );
+    [kbi, tof] = lambertumins( r1, r2, 1, 'S' ) ;   
+    [v1t, v2t, errorl] = lambertu ( r1,  r2, v1, 'S', 'H', 1, dtsec, kbi, fid );
+    fprintf(1,' v1t %16.8f%16.8f%16.8f\n',v1t );
     fprintf(1,' v2t %16.8f%16.8f%16.8f\n',v2t );
 
     fprintf(1,' TEST ------------------ L  L  1 rev \n');
-    [v1t, v2t, errorl] = lambertu ( r1, v1, r2, 'L', 'L', 1, dtwait, dtsec, tbidu, fid );
-    fprintf(1,'uv1t %16.8f%16.8f%16.8f\n',v1t );
+    [kbi, tof] = lambertumins( r1, r2, 1, 'L' ) ;   
+    [v1t, v2t, errorl] = lambertu ( r1,  r2, v1, 'L', 'L', 1, dtsec, kbi, fid );
+    fprintf(1,' v1t %16.8f%16.8f%16.8f\n',v1t );
     fprintf(1,' v2t %16.8f%16.8f%16.8f\n',v2t );
 
     fprintf(1,' TEST ------------------ L  H  1 rev \n');
-    [v1t, v2t, errorl] = lambertu ( r1, v1, r2, 'L', 'H', 1, dtwait, dtsec, tbiru, fid );
-    fprintf(1,'uv1t %16.8f%16.8f%16.8f\n',v1t );
+    [kbi, tof] = lambertumins( r1, r2, 1, 'L' ) ;   
+    [v1t, v2t, errorl] = lambertu ( r1,  r2, v1, 'L', 'H', 1, dtsec, kbi, fid );
+    fprintf(1,' v1t %16.8f%16.8f%16.8f\n',v1t );
     fprintf(1,' v2t %16.8f%16.8f%16.8f\n',v2t );
 
     fprintf(1,'\n-------- lambertb test \n' );
-    [v1t, v2t, errorl] = lambertb ( r1, v1, r2, 'L', 'L', 1, dtsec );
+    [v1t, v2t, errorl] = lambertb ( r1,  r2, v1, 'L', 'L', 1, dtsec );
     fprintf(1,' v1dv %16.8f%16.8f%16.8f\n',v1t );
     fprintf(1,' v2dv %16.8f%16.8f%16.8f\n',v2t );
 

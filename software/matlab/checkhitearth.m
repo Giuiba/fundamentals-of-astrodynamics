@@ -36,7 +36,7 @@
 %  references    :
 %    vallado       2013, 503, alg 60
 %
-% [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nrev );
+% [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nrev )
 % ------------------------------------------------------------------------------
 
 function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nrev )
@@ -91,7 +91,7 @@ function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nre
                 rp = a * (1.0 - ecc);
                 if (rp < rpad)
                     hitearth = 'y';
-                    hitearthstr = strcat(hitearth, ' Sub_Earth_nrev');
+                    hitearthstr = hitearth + 'Sub_Earth_nrev';
                 end
                 % nrev = 0, 3 cases:
                 % heading to perigee and ending after perigee

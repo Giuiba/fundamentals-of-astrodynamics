@@ -8065,7 +8065,6 @@ namespace AstroLibMethods
         *    de          - orbital energy                       'L', 'H'
         *                  only affects nrev >= 1 upper/lower bounds
         *    dtsec       - time between r1 and r2               sec
-        *    dtwait      - time to wait before starting         sec
         *    nrev        - number of revs to complete           0, 1, 2, 3,  
         *    kbi         - psi value for min                     
         *    altpad      - altitude pad for hitearth calc       km
@@ -8108,7 +8107,7 @@ namespace AstroLibMethods
 
         public void lambertuniv
                (
-               double[] r1, double[] r2, double[] v1, char dm, char de, Int32 nrev, double dtwait, double dtsec, double kbi,
+               double[] r1, double[] r2, double[] v1, char dm, char de, Int32 nrev, double dtsec, double kbi,
                double altpad, char show,
                out double[] v1t, out double[] v2t, out char hitearth, out string errorsum, out string errorout
                )
@@ -8340,7 +8339,7 @@ namespace AstroLibMethods
                 errorstr = "impossible180";
                 // use battin and hodograph
                 string errorsumb, erroroutb;
-                lambertbattin(r1, r2, v1, dm, de, nrev, 0.0, dtsec, altpad, show, out v1t, out v2t, out hitearth, out errorsumb, out erroroutb);
+                lambertbattin(r1, r2, v1, dm, de, nrev, dtsec, altpad, show, out v1t, out v2t, out hitearth, out errorsumb, out erroroutb);
             }
 
             double dnu;
@@ -8356,7 +8355,7 @@ namespace AstroLibMethods
             if (show == 'y')
                 errorsum = errorstr;
             else
-                errorsum = errorstr + " " + nrev.ToString().PadLeft(3) + "   " + dm + "  " + de + "  " + dtwait.ToString("0.0000000").PadLeft(12) + " " +
+                errorsum = errorstr + " " + nrev.ToString().PadLeft(3) + "   " + dm + "  " + de + " " +
                 dtsec.ToString("0.000000").PadLeft(15) + " " + psinew.ToString("0.000000").PadLeft(15) +
                 v1t[0].ToString("0.0000000").PadLeft(15) + v1t[1].ToString("0.0000000").PadLeft(15) + v1t[2].ToString("0.0000000").PadLeft(15) +
                 v2t[0].ToString("0.0000000").PadLeft(15) + v2t[1].ToString("0.0000000").PadLeft(15) + v2t[2].ToString("0.0000000").PadLeft(15) +
@@ -8606,7 +8605,6 @@ namespace AstroLibMethods
         *    de          - orbital energy                            'L', 'H'
         *                  only affects nrev >= 1 solutions
         *    dtsec       - time between r1 and r2                     sec
-        *    dtwait      - time to wait before starting               sec
         *    nrev        - number of revs to complete                 0, 1, 2, 3,  
         *    altpad      - altitude pad for hitearth calc             km
         *    show        - control output don't output for speed      'y', 'n'
@@ -8656,7 +8654,7 @@ namespace AstroLibMethods
 
         public void lambertbattin
                (
-               double[] r1, double[] r2, double[] v1, char dm, char de, Int32 nrev, double dtwait, double dtsec,
+               double[] r1, double[] r2, double[] v1, char dm, char de, Int32 nrev, double dtsec,
                double altpad, char show,
                out double[] v1t, out double[] v2t, out char hitearth, out string errorsum, out string errorout
                )
@@ -8758,7 +8756,7 @@ namespace AstroLibMethods
                     // output to show all iterations, and also uncomment errorsum in show == 'n'
                     if (show == 'y')
                         errorout = errorout + "\n       ok " + loops.ToString().PadLeft(4) + nrev.ToString().PadLeft(3) + "   " + dm + "  " + de +
-                            (Math.Acos(cosdeltanu) * 180.0 / Math.PI).ToString("0.0000000").PadLeft(15) + "  " + dtwait.ToString("0.0000000").PadLeft(12) + " " +
+                            (Math.Acos(cosdeltanu) * 180.0 / Math.PI).ToString("0.0000000").PadLeft(15) + " " +
                              dtsec.ToString("0.######").PadLeft(15) + " yh " + y.ToString("0.#######").PadLeft(11) + " x " + x.ToString("0.#######").PadLeft(11) +
                              " h1 " + h1.ToString("0.#######").PadLeft(11) + " h2 " + h2.ToString("0.#######").PadLeft(11) +
                              " b " + b.ToString("0.#######").PadLeft(11) + " f " + f.ToString("0.#######").PadLeft(11) +
@@ -8775,7 +8773,7 @@ namespace AstroLibMethods
                 lambhodograph(r1, r2, v1, p, ecc, dnu, dtsec, out v1t, out v2t);
 
                 if (show == 'y')
-                    errorsum = errorstr + "high " + nrev.ToString().PadLeft(3) + "   " + dm + "  " + de + "  " + dtwait.ToString("0.0000000").PadLeft(12) + " " +
+                    errorsum = errorstr + "high " + nrev.ToString().PadLeft(3) + "   " + dm + "  " + de + "  " +
                         dtsec.ToString("0.#######").PadLeft(15) + " " + x.ToString("0.#######").PadLeft(15) + " " +
                         v1t[0].ToString("0.0000000").PadLeft(15) + v1t[1].ToString("0.0000000").PadLeft(15) + v1t[2].ToString("0.0000000").PadLeft(15) +
                         v2t[0].ToString("0.0000000").PadLeft(15) + v2t[1].ToString("0.0000000").PadLeft(15) + v2t[2].ToString("0.0000000").PadLeft(15) +
@@ -8831,7 +8829,7 @@ namespace AstroLibMethods
                     // output to show all iterations, and also uncomment errorsum in show == 'n'
                     if (show == 'y')
                         errorout = errorout + "\n       ok " + loops.ToString().PadLeft(4) + nrev.ToString().PadLeft(3) + "   " + dm + "  " + de +
-                            (Math.Acos(cosdeltanu) * 180.0 / Math.PI).ToString("0.0000000").PadLeft(15) + "  " + dtwait.ToString("0.0000000").PadLeft(12) + " " +
+                            (Math.Acos(cosdeltanu) * 180.0 / Math.PI).ToString("0.0000000").PadLeft(15) + " " +
                             dtsec.ToString("0.######").PadLeft(15) + " yb " + y.ToString("0.######").PadLeft(11) + " x " + x.ToString("0.######").PadLeft(11) +
                             " k2 " + k2.ToString("0.######").PadLeft(11) + " b " + b.ToString("0.######").PadLeft(11) +
                             " u " + u.ToString("0.######").PadLeft(11) + " y1 " + y1.ToString("0.######").PadLeft(11);
@@ -8846,7 +8844,7 @@ namespace AstroLibMethods
                     lambhodograph(r1, r2, v1, p, ecc, dnu, dtsec, out v1t, out v2t);
 
                     if (show == 'y')
-                        errorsum = errorstr + "low " + nrev.ToString().PadLeft(3) + "   " + dm + "  " + de + "  " + dtwait.ToString("0.00000").PadLeft(12) + " " +
+                        errorsum = errorstr + "low " + nrev.ToString().PadLeft(3) + "   " + dm + "  " + de + " " +
                             dtsec.ToString("0.00000").PadLeft(15) + " " + x.ToString("0.000000").PadLeft(15) + " " +
                             v1t[0].ToString("0.0000000").PadLeft(15) + v1t[1].ToString("0.0000000").PadLeft(15) + v1t[2].ToString("0.0000000").PadLeft(15) +
                             v2t[0].ToString("0.0000000").PadLeft(15) + v2t[1].ToString("0.0000000").PadLeft(15) + v2t[2].ToString("0.0000000").PadLeft(15) +
@@ -11825,9 +11823,9 @@ namespace AstroLibMethods
             errstr = errstr + "r3 " + r3[0].ToString() + " " + r3[1].ToString() + " " + r3[2].ToString()
                 + tau13.ToString() + "\n";
 
-            lambertuniv(r1, r3, v1, dm, de, nrev, 0.0, tau13, 0.0, altpadc, 'y',
+            lambertuniv(r1, r3, v1, dm, de, nrev, 0.0, 0.0, altpadc, 'y',
                 out v1t, out v2t, out hitearth, out detailSum, out detailAll);
-            lambertbattin(r1, r3, v1, dm, de, nrev, 0.0, tau13, altpadc, 'y',
+            lambertbattin(r1, r3, v1, dm, de, nrev, 0.0, altpadc, 'y',
                 out v1t, out v2t, out hitearth, out detailSum, out detailAll);
 
             errstr = errstr + "Lambert " + hitearth + " " + detailSum + "\n";
@@ -15056,7 +15054,7 @@ namespace AstroLibMethods
         *    llon        - start longitude (west -)               0.0  to 2pi rad
         *    tlat        - end geocentric latitude               -pi/2 to pi/2 rad
         *    tlon        - end longitude(west -)                  0.0  to 2pi rad
-        *    tof         - time of flight if icbm, or             0.0 sec
+        *    tof         - time of flight if icbm, or             0.0 min
         *
         *  outputs       :
         *    range       - range between points km
@@ -15079,7 +15077,8 @@ namespace AstroLibMethods
         {
             double twopi = 2.0 * Math.PI;
             double small = 0.00000001;
-            double omegaearth = gravConst.earthrot;
+            double omegaearth = 0.05883359221938136;
+            // fix units on tof and omegaearth
 
             // -------------------------  implementation   -------------------------
             range = Math.Acos(Math.Sin(llat) * Math.Sin(tlat) +
