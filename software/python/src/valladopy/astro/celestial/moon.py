@@ -103,7 +103,7 @@ def position(jd: float) -> tuple[np.ndarray, float, float]:
     return rmoon * const.RE, rtasc, decl
 
 
-def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]:
+def moonriset(jd: float, latgd: float, lon: float, n_iters: int = 5, tol: float = 0.008) -> tuple[float, float, float]:
     """Finds the universal time for moonrise and moonset given the day and site
     location.
 
@@ -114,9 +114,12 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]
         jd (float): Julian date (days from 4713 BC)
         latgd (float): Geodetic latitude of the site in radians (-65 deg to 65 deg)
         lon (float): Longitude of the site in radians (-2pi to 2pi) (west is negative)
+        n_iters (int, optional): Number of iterations to attempt to find the moon
+                                 rise/set times (defaults to 5)
+        tol (float, optional): Tolerance for the iteration (defaults to 0.008)
 
     Returns:
-        tuple: (moonrise, moonset, moonphaseang, error)
+        tuple: (moonrise, moonset, moonphaseang)
             moonrise (float): Universal time of moonrise in hours
             moonset (float): Universal time of moonset in hours
             moonphaseang (float): Moon phase angle in degrees
@@ -124,7 +127,7 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]
     # Normalize longitude to -π to π
     lon = (lon + np.pi) % const.TWOPI - np.pi
 
-    # Initialize results
+    # Initialize results and variables
     results = {"moonrise": np.nan, "moonset": np.nan}
     moongha, deltaut, ttdb, lha = 0.0, 0.0, 0.0, 0.0
 
@@ -134,19 +137,22 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]
     for event, jd_offset in [("moonrise", 6.0), ("moonset", 18.0)]:
         # Initial guess for UT
         sign = -1 if event == "moonrise" else 1
-        uttemp = (jd_offset + sign * lon / 15.0) / 24.0
-        # uttemp = (jd_offset - np.degrees(lon) / 15.0) / 24.0  # fix
+        uttemp = (jd_offset + sign * lon / const.DEG2HR) / const.DAY2HR
+        # uttemp = (jd_offset - np.degrees(lon) / const.DEG2HR) / const.DAY2HR  # fix
 
+        # Set if there's a problem
         if try1 == 2:
             uttemp = 0.5
 
+        # Initialize variables for iteration
         i = 0
         tn = uttemp
         t = tn + 10.0
         jdtemp = jd + uttemp
 
-        while abs(tn - t) >= 0.008 and i <= 5:
-            ttdb = (jdtemp - 2451545.0) / 36525.0
+        while abs(tn - t) >= tol and i <= n_iters:
+            # Update the Julian date
+            ttdb = (jdtemp - const.J2000) / const.CENT2DAY
 
             # Ecliptic longitude and latitude (radians)
             eclplong = (
@@ -162,7 +168,6 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]
                 )
                 % const.TWOPI
             )
-
             eclplat = (
                 np.radians(
                     5.13 * np.sin(np.radians(93.3 + 483202.03 * ttdb))
@@ -173,7 +178,8 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]
                 % const.TWOPI
             )
 
-            obliquity = np.radians(23.439291 - 0.0130042 * ttdb)
+            # Obliquity of the ecliptic (radians)
+            obliquity = np.radians(np.degrees(const.OBLIQUITYEARTH) - 0.0130042 * ttdb)
 
             # Geocentric direction cosines
             l = np.cos(eclplat) * np.cos(eclplong)  # noqa: E741
@@ -184,24 +190,27 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]
                 obliquity
             ) * np.sin(eclplat)
 
+            # Right ascension and declination
             rtasc = np.arctan2(m, l)
             decl = np.arcsin(n)
 
+            # Correction for right ascension
             if abs(eclplong - rtasc) > np.pi * 0.5:
                 rtasc += 0.5 * np.pi * round(0.5 + (eclplong - rtasc) / (0.5 * np.pi))
 
             # Local sidereal time
             lst, _ = lstime(lon, jdtemp)
 
+            # Calculat hour angles
             moonghan = lst - lon - rtasc
             if i == 0:
                 lha = moonghan + lon
                 dgha = np.radians(347.81)
             else:
                 dgha = (moonghan - moongha) / deltaut
-
             dgha = dgha + const.TWOPI / abs(deltaut) if dgha < 0 else dgha
 
+            # Local hour angle at moonrise and moonset
             lhan = (0.00233 - np.sin(latgd) * np.sin(decl)) / (
                 np.cos(latgd) * np.cos(decl)
             )
@@ -210,38 +219,42 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]
             if event == "moonrise":
                 lhan = const.TWOPI - lhan
 
-            if abs(dgha) > 0.0001:
+            # Time adjustment
+            if abs(dgha) > 1e-4:
                 deltaut = (lhan - lha) / dgha
             else:
                 deltaut = 1.0
                 logger.warning("dgha is too small; setting deltaut to 1.0")
 
+            # Adjust deltaut for convergence and handle wrap-around cases
             t = tn
             if abs(deltaut) > 0.5:
-                if abs(dgha) > 0.001:
+                if abs(dgha) > 1e-3:
                     deltaut += (
                         const.TWOPI / dgha if deltaut < 0 else -const.TWOPI / dgha
                     )
                     if abs(deltaut) > 0.51:
-                        i = 6  # exit
+                        break
 
+            # Update variables
             tn = uttemp + deltaut
             jdtemp = jdtemp - uttemp + tn
             moongha = moonghan
             i += 1
 
         # Convert UT to hours
-        uttemp = tn * 24.0 if i <= 5 else 1e4
-        uttemp = uttemp % 24.0 if 0.0 <= uttemp < 1e4 else uttemp
+        uttemp = tn * const.DAY2HR if i <= n_iters else 1e4
+        uttemp = uttemp % const.DAY2HR if 0.0 <= uttemp < 1e4 else uttemp
 
+        # Assign to results
         results[event] = uttemp
 
         # Update the iteration and check for solution
         try1 += 1
-        if i > 5 and try1 < 3:  # retry if the first attempt fails
+        if i > n_iters and try1 < 3:  # retry if the first attempt fails
             logger.debug(f"Retrying option {event} (attempt {try1})")
         else:
-            if i > 5 and try1 > 2:  # if all retries fail, set the error
+            if i > n_iters and try1 > 2:  # if all retries fail, set the error
                 if event == "moonrise":
                     logger.error("Moonrise not found")
                     results[event] = np.inf
@@ -250,7 +263,7 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]
                     results[event] = np.inf
             try1 = 1
 
-    # Compute Moon phase angle
+    # Mean longitude of the Moon
     meanlonmoon = (
         218.32
         + 481267.8813 * ttdb
@@ -262,13 +275,20 @@ def moonriset(jd: float, latgd: float, lon: float) -> tuple[float, float, float]
         - 0.11 * np.sin(np.radians(186.6 + 966404.05 * ttdb))
     ) % np.degrees(const.TWOPI)
 
+    # Mean longitude of the Sun in radians (TODO: put in utils)
     meanlon = (280.4606184 + 36000.77005361 * ttdb) % np.degrees(const.TWOPI)
+
+    # Mean anomaly of the Sun in radians (TODO: put in utils)
     meananomaly = np.radians((357.5277233 + 35999.05034 * ttdb)) % const.TWOPI
+
+    # Ecliptic longitude of the sun in radians (TODO: put in utils)
     loneclsun = (
         meanlon
         + 1.914666471 * np.sin(meananomaly)
         + 0.019994643 * np.sin(2.0 * meananomaly)
     )
+
+    # Moon phase angle
     moonphaseang = (meanlonmoon - loneclsun) % np.degrees(const.TWOPI)
 
     return results["moonrise"], results["moonset"], moonphaseang
