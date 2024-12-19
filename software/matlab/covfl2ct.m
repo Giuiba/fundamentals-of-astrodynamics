@@ -12,13 +12,13 @@
 %
 %  inputs          description                    range / units
 %    flcov       - 6x6 flight covariance matrix
-%    flstate     - 6x1 flight orbit state         (r v latgc lon fpa az)
+%    flstate     - 6x1 flight orbit state         (lon latgc fpa az r v)
 %    anom        - anomaly                        'latlon', 'radec'
 %    ttt         - julian centuries of tt         centuries
 %    jdut1       - julian date of ut1             days from 4713 bc
 %    lod         - excess length of day           sec
-%    xp          - polar motion coefficient       arc sec
-%    yp          - polar motion coefficient       arc sec
+%    xp          - polar motion coefficient       rad
+%    yp          - polar motion coefficient       rad
 %    terms       - number of terms for ast calculation 0,2
 %
 %  outputs       :

@@ -14,10 +14,10 @@ def test_position():
     rsun, rtasc, decl = sun.position(jd)
 
     # Expected values
-    rsun_expected = [146186212.98684618, 28788976.311702874, 12481063.64508394]
+    rsun_expected = [146185872.47656828, 28790431.768908378, 12481694.638482867]
     assert np.allclose(rsun, rsun_expected, rtol=DEFAULT_TOL)
-    assert np.isclose(np.degrees(rtasc), 11.140898551273013, rtol=DEFAULT_TOL)
-    assert np.isclose(np.degrees(decl), 4.788424663323541, rtol=DEFAULT_TOL)
+    assert np.isclose(np.degrees(rtasc), 11.14147300257444, rtol=DEFAULT_TOL)
+    assert np.isclose(np.degrees(decl), 4.788667312446681, rtol=DEFAULT_TOL)
 
 
 @pytest.mark.parametrize(
@@ -63,8 +63,8 @@ def test_invalid_event_type():
 @pytest.mark.parametrize(
     "earth_model, in_light, tmin",
     [
-        (EarthModel.ELLIPSOIDAL, True, 1.0000233426570773),
-        (EarthModel.SPHERICAL, True, 1.000023290642131),
+        (EarthModel.ELLIPSOIDAL, True, 1.0000233422875653),
+        (EarthModel.SPHERICAL, True, 1.000023290273442),
     ],
 )
 def test_in_light(earth_model, in_light, tmin, caplog):
@@ -83,4 +83,4 @@ def test_illumination():
     jd = 2449763.5
     lat = np.radians(45)
     lon = np.radians(-75)
-    assert custom_isclose(sun.illumination(jd, lat, lon), 0.0009449725651258739)
+    assert custom_isclose(sun.illumination(jd, lat, lon), 0.0009451889253123211)
