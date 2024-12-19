@@ -70,10 +70,10 @@ function [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, ttt, jdut1
     thetasa= earthrot * (1.0  - lod/86400.0 );
     omegaearth = [0; 0; thetasa;];
 
-    rpef = pm*recef';
+    rpef = pm*recef;
     reci = prec*nut*st*rpef;
     %prec*nut*st*pm
-    vpef = pm*vecef';
+    vpef = pm*vecef;
     veci = prec*nut*st*(vpef + cross(omegaearth,rpef));
 
     % veci1 = prec*nut * (stdot*recef + st*pm*vecef')  % alt approach using sidereal rate
@@ -81,6 +81,6 @@ function [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, ttt, jdut1
     temp = cross(omegaearth,rpef);
     % two additional terms not needed if satellite is not on surface
     % of the Earth
-    aeci = prec*nut*st*( pm*aecef' ) ...
+    aeci = prec*nut*st*( pm*aecef ) ...
         + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef);
 

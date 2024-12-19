@@ -1,113 +1,31 @@
-﻿/*     -------------------------------------------------------------------------
-*
-*                                MathTimeLib.cs
-*
-* this library contains various math and basic time routines.
-*
-*                            companion code for
-*               fundamentals of astrodynamics and applications
-*                                    2022
-*                              by david vallado
-*
-*               email dvallado@comspoc.com, davallado@gmail.com
-*
-*    current :
-*               6 nov 23  david vallado
-*                           misc updates
-*    changes :
-*              13 mar 18  david vallado
-*                           split up to be more functional
-*              29 nov 17  david vallado
-*                           fixes to teme, new routines, etc
-*              19 mar 14  david vallado
-*                           original baseline 
-*   
-*   uses
-*       nothing
-*   
-*   defines
-*       infinite     - infinite value                                 999999.9
-*       undefined    - undefied value                                 999999.1  
-*       edirection   - direction for operation in a method            efrom, eto
-* 
-*   methods
-*       public double cot (double xval)
-*       public double acosh (double xval)
-*       public double asinh (double xval)
-*       public double dot (double[] x, double[] y)
-*       public double mag (double[] x)
-*       public void cross (double[] vec1, double[] vec2, out double[] outvec)
-*       public double[] norm (double[] vec1)
-*       public double angle (double[] vec1, double[] vec2)
-*       public double[] rot1 (double[] vec, double xval)
-*       public double[] rot2 (double[] vec,double xval)
-*       public double[] rot3 (double[] vec,double xval)
-*       public double[,] rot1mat (double xval)
-*       public double[,] rot2mat (double xval)
-*       public double[,] rot3mat (double xval)
-*       public void addvec (double a1, double[] vec1, double a2, double[] vec2, out double[] vec3)
-*       public void addvec3 (double a1, double[] vec1, double a2, double[] vec2, double a3, double[] vec3, out double[] vec4)
-*       public double[] matvecmult (double[,] mat, double[] vec, int order)
-*       public double[,] vecouter (double[] vec1, double[] vec2, int order)
-*       public double[,] matequal (double[,] mat1, int matr)
-*       public double[,] matscale (double[,] mat1, int matr, int matc, double scale)
-*       public double[,] matadd (double[,] mat1, double[,] mat2, int mat1r, int mat1c)
-*       public double[,] matsub (double[,] mat1, double[,] mat2, int mat1r, int mat1c)
-*       public double[,] matmult (double[,] mat1, double[,] mat2, int mat1r, int mat1c, int mat2c)
-*       public double[,] mattrans (double[,] mat1, int matr)
-*       public double[,] mattransx (double[,] mat1, int matr, int matc)
-*       private void ludecomp (ref double[,] lu, out int[] indexx, int order)
-*       private void lubksub (double[,] lu, int[] indexx, int order, ref double[] b)
-*       public void matinverse (double[,] mat, int order, out double[,] matinv)
-*       public double determinant (double[,] mat1, int order)
-*       public void getCofactor (double[,] mat, out double[,] temp, int p, int q, int n)
-*       public void adjoint (double[,] mat, out double[,] adj)
-*       public double determ (double[,] mat, int n)
-*       public bool mat33inverse (double[,] mat, out double[,] matinv)
-*       public void writemat (string matname, double[,] mat, int row, int col, out string outstr)
-*       public void writeexpmat (string matname, double[,] mat, int row, int col, out string outstr)
-*       public double[,] cholesky (double[,] a)
-*       public void DMulRSub (ref double[] ALPR, ref double[] ALPI, double[] BETR, double[] BETI)
-*       public void factor (double[] Poly, int nRoots, out double[,] RootS)
-*       public void quadratic (double a, double b, double c, char opt,
-*                              out double r1r, out double r1i, out double r2r, out double r2i)
-*       public void parabolicspl (double p1, double p2, double p3, double t1, double t2, double t3,
-*                                 out double ap0, out double ap1, out double ap2)
-*       public void cubicspl (double p1, double p2, double p3, double p4,
-*                             out double acu0, out double acu1, out double acu2, out double acu3)
-*       public void cubic (double a3, double b2, double c1, double d0, char opt,
-*                          out double r1r, out double r1i, out double r2r, out double r2i, out double r3r, out double r3i)
-*       public double cubicinterp (double p1a, double p1b, double p1c, double p1d, double p2a, double p2b,
-*                                  double p2c, double p2d, double valuein)
-*       public double Percentile (double[] sequence, double excelPercentile, Int32 arrSize)
-*       public double factorial (int n)
-*       public void linearfit (double p1, double p2, double t1, double t2, out double al0, out double al1)
-*       public int getIntMonth (string monthstr)
-*       public void JD2STKtime (double JD, double JDF, out string epoch)
-*       public void STKtime2JD (string epoch, out double JD, out double JDF)
-*       public void getTimeFromGPS (Int32 weeknumber, Int32 gpstime, Int32 numrollover,
-*                                   out Int32 year, out Int32 mon, out Int32 day, out Int32 hr, out Int32 minute, out double second)
-*       public DateTime getTimeFromGPS1 (Int32 weeknumber, Int32 gpstime, Int32 numrollover)
-*       public void getGPSFromTime (Int32 year, Int32 month, Int32 day, out Int32 GPSWeek, out Int32 GPSWeekF)
-*       public void jday (int year, int mon, int day, int hr, int minute, double second, out double jd, out double jdFrac)
-*       public void days2mdhms (int year, double days,
-*                               out int mon, out int day, out int hr, out int minute, out double second)
-*       public void findDays (int year, int month, int day, int hr, int min, double second, out int dayofyr)
-*       public void invjday (double jd, double jdFrac,
-*                            out int year, out int mon, out int day, out int hr, out int minute, out double second)
-*       public void hms_sec (ref int hr, ref int minute, ref double second, Enum direct, ref double utsec)
-*       public void hms_ut (ref int hr, ref int minute, ref double second, Enum direct, ref double ut)
-*       public void hms_rad (ref int hr, ref int minute, ref double second, Enum direct, ref double hms)
-*       public void dms_rad (ref int deg, ref int minute, ref double second, Enum direct, ref double dms)
-*       public void convtime (int year, int mon, int day, int hr, int minute, double second, int timezone, double dut1, int dat,
-*                             out double ut1, out double tut1, out double jdut1, out double jdut1frac, out double utc, out double tai,
-*                             out double tt, out double ttt, out double jdtt, out double jdttfrac,
-*                             out double tdb, out double ttdb, out double jdtdb, out double jdtdbfrac)
-*       ----------------------------------------------------------------      */
+﻿// ----------------------------------------------------------------------------
+//
+//                                   MathTimeLib.cs
+//
+// this library contains various mathematical routines.
+//
+//                               companion code for
+//                  fundamentals of astrodynamics and applications
+//                                      2022
+//                                by david vallado
+//
+//                  email dvallado@comspoc.com, davallado@gmail.com
+//
+//   current :
+//              20 jan 2025  david vallado
+//                           original baseline
+//                           
+//   changes :
+//   
+//   defines
+//     infinite     - infinite value                                 999999.9
+//     undefined    - undefined value                                999999.1  
+//     edirection   - direction for operation in a method            efrom, eto
+//
+// ----------------------------------------------------------------------------      
 
 using System;
-using System.Numerics;  // add reference in for this
-
+using System.Numerics;  
 
 
 namespace MathTimeMethods
@@ -116,7 +34,7 @@ namespace MathTimeMethods
     // -----------------------------------------------------------------------------
     public class MathTimeLib
     {
-        public string MathTimeLibVersion = "MathTimeLib Version 2023-11-06";
+        public string MathTimeLibVersion = "MathTimeLib Version 2025-01-20";
 
         // if needed...
         public Complex ComplexLibr = new Complex();
@@ -130,47 +48,28 @@ namespace MathTimeMethods
 
         public enum Edirection { efrom, eto };
 
-        // -----------------------------------------------------------------------------
-        public double radians
-            (
-            double degrees
-            )
-        {
-            return degrees * Math.PI / 180.0;
-        } // radians
-
-
-        // -----------------------------------------------------------------------------
-        public double degrees
-            (
-            double radians
-            )
-        {
-            return radians / Math.PI * 180.0;
-        } // degrees
-
 
         // ==============================================================================
         //                              Trigonometric routines  
         // ==============================================================================
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           function cot
-        *
-        *  this function finds the cotangent of an input in radians.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 Mar 2001
-        *
-        *  inputs          description                    range / units
-        *    xval        - input to take cotangent of        rad
-        *
-        *  outputs       :
-        *    cot         - result
-        *
-        *  locals        :
-        *    temp        - temporary real variable
-         ---------------------------------------------------------------------------- */
+        // -------------------------------------------------------------------------------
+        //
+        //                               function cot
+        //
+        //  this function finds the cotangent of an input in radians.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    xval        - input to take cotangent of        rad
+        //
+        //  outputs       :
+        //    cot         - result
+        //
+        //  locals        :
+        //    temp        - temporary real variable
+        // ----------------------------------------------------------------------------
 
         public double cot (double xval)
         {
@@ -184,52 +83,52 @@ namespace MathTimeMethods
         }  //  cot
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function acosh
-        *
-        *  this function evaluates the inverse hyperbolic cosine function.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    xval        - angle value                                  1.0 to infinity
-        *
-        *  outputs       :
-        *    acosh       - result                                       any real
-        *
-        *  locals        :
-        *    temp        - temporary value
-        *
-        *  coupling      :
-        *    none.
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function acosh
+        //
+        //  this function evaluates the inverse hyperbolic cosine function.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    xval        - angle value                                  1.0 to infinity
+        //
+        //  outputs       :
+        //    acosh       - result                                       any real
+        //
+        //  locals        :
+        //    temp        - temporary value
+        //
+        //  coupling      :
+        //    none.
+        // -----------------------------------------------------------------------------
 
         public double acosh (double xval)
         {
             return Math.Log(xval + Math.Sqrt(xval * xval - 1.0));
         }  // end acosh
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function asinh
-        *
-        *  this function evaluates the inverse hyperbolic sine function.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                               range / units
-        *    xval        - angle value                                  any real
-        *
-        *  outputs       :
-        *    asinh       - result                                       any real
-        *
-        *  locals        :
-        *    none.
-        *
-        *  coupling      :
-        *    none.
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function asinh
+        //
+        //  this function evaluates the inverse hyperbolic sine function.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    xval        - angle value                                  any real
+        //
+        //  outputs       :
+        //    asinh       - result                                       any real
+        //
+        //  locals        :
+        //    none.
+        //
+        //  coupling      :
+        //    none.
+        // -----------------------------------------------------------------------------
 
         public double asinh (double xval)
         {
@@ -241,24 +140,24 @@ namespace MathTimeMethods
         //                                 Vector routines 
         // ==============================================================================
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function dot
-        *
-        *  this function finds the dot product of two vectors.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    vec1        - vector number 1
-        *    vec2        - vector number 2
-        *
-        *  outputs       :
-        *    dot         - result
-        *
-        *  locals        :
-        *    none.
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function dot
+        //
+        //  this function finds the dot product of two vectors.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    vec1        - vector number 1
+        //    vec2        - vector number 2
+        //
+        //  outputs       :
+        //    dot         - result
+        //
+        //  locals        :
+        //    none.
+        // -----------------------------------------------------------------------------
 
         public double dot (double[] x, double[] y)
         {
@@ -266,26 +165,26 @@ namespace MathTimeMethods
         }  //  dot
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function mag
-        *
-        *  this procedure finds the magnitude of a vector.  
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    vec         - vector
-        *
-        *  outputs       :
-        *    vec         - answer stored in fourth component
-        *
-        *  locals        :
-        *    none.
-        *
-        *  coupling      :
-        *    none.
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function mag
+        //
+        //  this procedure finds the magnitude of a vector.  
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    vec         - vector
+        //
+        //  outputs       :
+        //    vec         - answer stored in fourth component
+        //
+        //  locals        :
+        //    none.
+        //
+        //  coupling      :
+        //    none.
+        // -----------------------------------------------------------------------------
 
         public double mag (double[] x)
         {
@@ -294,27 +193,27 @@ namespace MathTimeMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure cross
-        *
-        *  this procedure crosses two vectors.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    vec1        - vector number 1
-        *    vec2        - vector number 2
-        *
-        *  outputs       :
-        *    outvec      - vector result of a x b
-        *
-        *  locals        :
-        *    none.
-        *
-        *  coupling      :
-        *    none
-         ---------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure cross
+        //
+        //  this procedure crosses two vectors.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    vec1        - vector number 1
+        //    vec2        - vector number 2
+        //
+        //  outputs       :
+        //    outvec      - vector result of a x b
+        //
+        //  locals        :
+        //    none.
+        //
+        //  coupling      :
+        //    none
+        // ----------------------------------------------------------------------------
 
         public void cross (double[] vec1, double[] vec2, out double[] outvec)
         {
@@ -326,29 +225,29 @@ namespace MathTimeMethods
         }  //  cross
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure norm
-        *
-        *  this procedure calculates a unit vector given the original vector.  if a
-        *  zero vector is input, the vector is set to zero.
-        *
-        * author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    vec        - vector
-        *
-        * outputs       :
-        *    outvec     - unit vector
-        *
-        *  locals       :
-        *    i          - index
-        *    small      - value defining a small value
-        *    magv       - magnitude of the vector
-        *
-        *  coupling     :
-        *    mag        magnitude of a vector
-         -----------------------------------------------------------------------------*/
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure norm
+        //
+        //  this procedure calculates a unit vector given the original vector.  if a
+        //  zero vector is input, the vector is set to zero.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    vec        - vector
+        //
+        // outputs       :
+        //    outvec     - unit vector
+        //
+        //  locals       :
+        //    i          - index
+        //    small      - value defining a small value
+        //    magv       - magnitude of the vector
+        //
+        //  coupling     :
+        //    mag        magnitude of a vector
+        // ---------------------------------------------------------------------------*/
 
         public double[] norm (double[] vec1)
         {
@@ -363,33 +262,33 @@ namespace MathTimeMethods
         }  // norm 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure angle
-        *
-        *  this procedure calculates the angle between two vectors.  the output is
-        *    set to 999999.1 to indicate an undefined value.  be sure to check for
-        *    this at the output phase.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    vec1        - vector number 1
-        *    vec2        - vector number 2
-        *
-        *  outputs       :
-        *    theta       - angle between the two vectors  -Math.PI to Math.PI
-        *    magv1       - magnitude of vec1
-        *    magv2       - magnitude of vec2
-        *    small       - value defining a small value
-        *    undefined   - large number to use in place of a not defined number 
-        *
-        *  locals        :
-        *    temp        - temporary real variable
-        *
-        *  coupling      :
-        *    dot           dot product of two vectors
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure angle
+        //
+        //  this procedure calculates the angle between two vectors.  the output is
+        //    set to 999999.1 to indicate an undefined value.  be sure to check for
+        //    this at the output phase.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    vec1        - vector number 1
+        //    vec2        - vector number 2
+        //
+        //  outputs       :
+        //    theta       - angle between the two vectors  -Math.PI to Math.PI
+        //    magv1       - magnitude of vec1
+        //    magv2       - magnitude of vec2
+        //    small       - value defining a small value
+        //    undefined   - large number to use in place of a not defined number 
+        //
+        //  locals        :
+        //    temp        - temporary real variable
+        //
+        //  coupling      :
+        //    dot           dot product of two vectors
+        // -----------------------------------------------------------------------------
 
         public double angle (double[] vec1, double[] vec2)
         {
@@ -412,31 +311,31 @@ namespace MathTimeMethods
         }  //  angle
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure roti
-        *
-        *  this procedure performs a rotation about the ith axis. i is specified
-        *    for each operation.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    vec         - input vector
-        *    xval        - angle of rotation              rad
-        *
-        *  outputs       :
-        *    outvec      - vector result
-        *
-        *  locals        :
-        *    c           - cosine of the angle xval
-        *    s           - sine of the angle xval
-        *    temp        - temporary extended value
-        *
-        *  coupling      :
-        *    none.
-        *
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure roti
+        //
+        //  this procedure performs a rotation about the ith axis. i is specified
+        //    for each operation.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    vec         - input vector
+        //    xval        - angle of rotation              rad
+        //
+        //  outputs       :
+        //    outvec      - vector result
+        //
+        //  locals        :
+        //    c           - cosine of the angle xval
+        //    s           - sine of the angle xval
+        //    temp        - temporary extended value
+        //
+        //  coupling      :
+        //    none.
+        //
+        // -----------------------------------------------------------------------------
 
         public double[] rot1 (double[] vec, double xval)
         {
@@ -489,31 +388,28 @@ namespace MathTimeMethods
         }  // rot3 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                                  rotimat
-        *
-        *  this function sets up a rotation matrix for an input angle about the first
-        *    axis.
-        *
-        *  author        : david vallado           davallado@gmail.com   10 jan 2003
-        *
-        *  revisions
-        *                -
-        *
-        *  inputs          description                    range / units
-        *    xval        - angle of rotation              rad
-        *
-        *  outputs       :
-        *    outmat      - matrix result
-        *
-        *  locals        :
-        *    c           - cosine of the angle xval
-        *    s           - sine of the angle xval
-        *
-        *  coupling      :
-        *    none.
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                                      rotimat
+        //
+        //  this function sets up a rotation matrix for an input angle about the first
+        //    axis.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    xval        - angle of rotation              rad
+        //
+        //  outputs       :
+        //    outmat      - matrix result
+        //
+        //  locals        :
+        //    c           - cosine of the angle xval
+        //    s           - sine of the angle xval
+        //
+        //  coupling      :
+        //    none.
+        // -----------------------------------------------------------------------------
 
         public double[,] rot1mat(double xval)
         {
@@ -584,29 +480,29 @@ namespace MathTimeMethods
         }  // rot3mat
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure addvec
-        *
-        *  this procedure adds two vectors possibly multiplied by a constant.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    a1          - constant multiplier
-        *    a2          - constant multiplier
-        *    vec1        - vector number 1
-        *    vec2        - vector number 2
-        *
-        *  outputs       :
-        *    outvec      - vector result of a + b
-        *
-        *  locals        :
-        *    row         - index
-        *
-        *  coupling      :
-        *     none
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure addvec
+        //
+        //  this procedure adds two vectors possibly multiplied by a constant.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    a1          - constant multiplier
+        //    a2          - constant multiplier
+        //    vec1        - vector number 1
+        //    vec2        - vector number 2
+        //
+        //  outputs       :
+        //    outvec      - vector result of a + b
+        //
+        //  locals        :
+        //    row         - index
+        //
+        //  coupling      :
+        //     none
+        // -----------------------------------------------------------------------------
 
         public void addvec(double a1, double[] vec1, double a2, double[] vec2, out double[] vec3)
         {
@@ -622,31 +518,31 @@ namespace MathTimeMethods
         } // addvec
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure addvec3
-        *
-        *  this procedure adds three vectors possibly multiplied by a constant.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    a1          - constant multiplier
-        *    a2          - constant multiplier
-        *    a3          - constant multiplier
-        *    vec1        - vector number 1
-        *    vec2        - vector number 2
-        *    vec3        - vector number 3
-        *
-        *  outputs       :
-        *    outvec      - vector result of a + b + c
-        *
-        *  locals        :
-        *    row         - index
-        *
-        *  coupling      :
-        *     none
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure addvec3
+        //
+        //  this procedure adds three vectors possibly multiplied by a constant.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    a1          - constant multiplier
+        //    a2          - constant multiplier
+        //    a3          - constant multiplier
+        //    vec1        - vector number 1
+        //    vec2        - vector number 2
+        //    vec3        - vector number 3
+        //
+        //  outputs       :
+        //    outvec      - vector result of a + b + c
+        //
+        //  locals        :
+        //    row         - index
+        //
+        //  coupling      :
+        //     none
+        // -----------------------------------------------------------------------------
 
         public void addvec3(double a1, double[] vec1, double a2, double[] vec2, double a3, double[] vec3, out double[] vec4)
         {
@@ -661,29 +557,29 @@ namespace MathTimeMethods
             }
         } // addvec3
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure matvecmult
-        *
-        *  this procedure multiplies a 3x3 matrix and a 3x1 vector together.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    mat         - order x order matrix
-        *    vec         - vector
-        *    order       - square size of the mat and the size of the vector which must be the same
-        *
-        *  outputs       :
-        *    vecout      - vector result of mat * vec
-        *
-        *  locals        :
-        *    row         - row index
-        *    col         - column index
-        *    ktr         - index
-        *
-        *  coupling      :
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure matvecmult
+        //
+        //  this procedure multiplies a 3x3 matrix and a 3x1 vector together.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    mat         - order x order matrix
+        //    vec         - vector
+        //    order       - square size of the mat and the size of the vector which must be the same
+        //
+        //  outputs       :
+        //    vecout      - vector result of mat * vec
+        //
+        //  locals        :
+        //    row         - row index
+        //    col         - column index
+        //    ktr         - index
+        //
+        //  coupling      :
+        // -----------------------------------------------------------------------------
 
         public double[] matvecmult(double[,] mat, double[] vec, int order)
         {
@@ -791,31 +687,31 @@ namespace MathTimeMethods
         } // matsub  
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure matmult
-        *
-        *  this procedure multiplies two matricies up to 10x10 together.
-        *
-        *  author        : david vallado           davallado@gmail.com    7 dec 2007
-        *
-        *  inputs          description                    range / units
-        *    mat1        - matrix number 1
-        *    mat2        - matrix number 2
-        *    mat1r       - matrix number 1 rows
-        *    mat1c       - matrix number 1 columns
-        *    mat2c       - matrix number 2 columns
-        *
-        *  outputs       :
-        *    mat3        - matrix result of mat1 * mat2 of size mat1r x mat2c
-        *
-        *  locals        :
-        *    row         - row index
-        *    col         - column index
-        *    ktr         - index
-        *
-        *  coupling      :
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure matmult
+        //
+        //  this procedure multiplies two matricies up to 10x10 together.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    mat1        - matrix number 1
+        //    mat2        - matrix number 2
+        //    mat1r       - matrix number 1 rows
+        //    mat1c       - matrix number 1 columns
+        //    mat2c       - matrix number 2 columns
+        //
+        //  outputs       :
+        //    mat3        - matrix result of mat1 * mat2 of size mat1r x mat2c
+        //
+        //  locals        :
+        //    row         - row index
+        //    col         - column index
+        //    ktr         - index
+        //
+        //  coupling      :
+        // -----------------------------------------------------------------------------
 
         public double[,] matmult(double[,] mat1, double[,] mat2, int mat1r, int mat1c, int mat2c)
         {
@@ -871,37 +767,37 @@ namespace MathTimeMethods
         }  // mattransx
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           procedure ludecomp
-        *
-        *  this procedure decomposes a matrix into an lu form.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    order       - order of matrix
-        *
-        *  outputs       :
-        *    lu          - lu decomposition matrix
-        *    index       - index vector for pivoting
-        *
-        *  locals        :
-        *    i           - index
-        *    j           - index
-        *    k           - index
-        *    imax        - pivot row pointer
-        *    scale       - scale factor vector
-        *    sum         - temporary variables
-        *    amax        - temporary variables
-        *    dum         - temporary variables
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    numerical recipes - flannery
-         ----------------------------------------------------------------------------- */
+        // -------------------------------------------------------------------------------
+        //
+        //                               procedure ludecomp
+        //
+        //  this procedure decomposes a matrix into an lu form.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    order       - order of matrix
+        //
+        //  outputs       :
+        //    lu          - lu decomposition matrix
+        //    index       - index vector for pivoting
+        //
+        //  locals        :
+        //    i           - index
+        //    j           - index
+        //    k           - index
+        //    imax        - pivot row pointer
+        //    scale       - scale factor vector
+        //    sum         - temporary variables
+        //    amax        - temporary variables
+        //    dum         - temporary variables
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    numerical recipes - flannery
+        // -----------------------------------------------------------------------------
 
         private void ludecomp(ref double[,] lu, out int[] indexx, int order)
         {
@@ -974,35 +870,35 @@ namespace MathTimeMethods
 
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           procedure lubksub
-        *
-        *  this procedure finds the inverse of a matrix using lu decomposition.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    order       - order of matrix
-        *    lu          - lu decomposition matrix
-        *    index       - index vector for pivoting
-        *
-        *  outputs       :
-        *    b           - solution vector
-        *
-        *  locals        :
-        *    i           - index
-        *    j           - index
-        *    i0          - pointer to non-zero element
-        *    iptr        - pivot rwo pointer
-        *    sum         - temporary variables
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    numerical recipes - flannery
-         ----------------------------------------------------------------------------- */
+        // -------------------------------------------------------------------------------
+        //
+        //                               procedure lubksub
+        //
+        //  this procedure finds the inverse of a matrix using lu decomposition.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    order       - order of matrix
+        //    lu          - lu decomposition matrix
+        //    index       - index vector for pivoting
+        //
+        //  outputs       :
+        //    b           - solution vector
+        //
+        //  locals        :
+        //    i           - index
+        //    j           - index
+        //    i0          - pointer to non-zero element
+        //    iptr        - pivot rwo pointer
+        //    sum         - temporary variables
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    numerical recipes - flannery
+        // -----------------------------------------------------------------------------
 
         private void lubksub(double[,] lu, int[] indexx, int order, ref double[] b)
         {
@@ -1038,35 +934,35 @@ namespace MathTimeMethods
         }  // lubksub
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           procedure matinverse
-        *
-        *  this procedure finds the inverse of a matrix using lu decomposition.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    mat         - matrix to invert, 0 array starts
-        *    order       - order of matrix
-        *
-        *  outputs       :
-        *    matinv      - inverted matrix, 0 array starts
-        *
-        *  locals        :
-        *    i           - index
-        *    j           - index
-        *    index       - index vector for pivoting
-        *    lu          - lu decomposition matrix
-        *    b           - operational vector to form matinv
-        *
-        *  coupling      :
-        *    ludecomp    -
-        *    lubksub     -
-        *
-        *  references    :
-        *    numerical recipes - flannery
-         ----------------------------------------------------------------------------- */
+        // -------------------------------------------------------------------------------
+        //
+        //                               procedure matinverse
+        //
+        //  this procedure finds the inverse of a matrix using lu decomposition.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    mat         - matrix to invert, 0 array starts
+        //    order       - order of matrix
+        //
+        //  outputs       :
+        //    matinv      - inverted matrix, 0 array starts
+        //
+        //  locals        :
+        //    i           - index
+        //    j           - index
+        //    index       - index vector for pivoting
+        //    lu          - lu decomposition matrix
+        //    b           - operational vector to form matinv
+        //
+        //  coupling      :
+        //    ludecomp    -
+        //    lubksub     -
+        //
+        //  references    :
+        //    numerical recipes - flannery
+        // -----------------------------------------------------------------------------
 
         public void matinverse(double[,] mat, int order, out double[,] matinv)
         {
@@ -1105,41 +1001,41 @@ namespace MathTimeMethods
 
 
 
-        /* ---------------------------------------------------------------------------- 
-        *
-        *                           procedure determinant
-        *
-        *  This function calculates the determinant value using L - U decompisition.
-        *    The formula must have a non-zero number in the 0, 0 position. if the
-        *    function senses a non-zero number in row 0, it exchanges row0 for a row
-        *    with a non-zero number.
-        *    has trouble with this??? 
-        *    double[,] mat =  { { 3, 0, 2.0},
-        *                       { 2, 0, -2},
-        *                       { 0, 1.0, 1} };
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    mat1        - matrix to find determinant of
-        *    order       - order of matrix
-        *
-        *  outputs       :
-        *    determinant - determinant of mat1
-        *
-        *  locals        :
-        *    i, j, k, n  - index
-        *    index       - index vector for pivoting
-        *    lu          - lu decomposition matrix
-        *    b           - operational vector to form matinv
-        *
-        *  coupling      :
-        *    ludecomp    -
-        *    lubksub     -
-        *
-        *  references    :
-        *    Marion        pg. 168 - 172, 126 - 127
-         ---------------------------------------------------------------------------- - */
+        // ----------------------------------------------------------------------------- 
+        //
+        //                               procedure determinant
+        //
+        //  This function calculates the determinant value using L - U decompisition.
+        //    The formula must have a non-zero number in the 0, 0 position. if the
+        //    function senses a non-zero number in row 0, it exchanges row0 for a row
+        //    with a non-zero number.
+        //    has trouble with this??? 
+        //    double[,] mat =  { { 3, 0, 2.0},
+        //                           { 2, 0, -2},
+        //                           { 0, 1.0, 1} };
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    mat1        - matrix to find determinant of
+        //    order       - order of matrix
+        //
+        //  outputs       :
+        //    determinant - determinant of mat1
+        //
+        //  locals        :
+        //    i, j, k, n  - index
+        //    index       - index vector for pivoting
+        //    lu          - lu decomposition matrix
+        //    b           - operational vector to form matinv
+        //
+        //  coupling      :
+        //    ludecomp    -
+        //    lubksub     -
+        //
+        //  references    :
+        //    Marion        pg. 168 - 172, 126 - 127
+        // -------------------------------------------------------------------------- - */
 
         public double determinant(double[,] mat1, int order)
         {
@@ -1310,31 +1206,31 @@ namespace MathTimeMethods
         }  // determ
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           procedure mat33inverse
-        *
-        *  this procedure finds the inverse of a 3x3 matrix using determinants.
-        *
-        *  author        : david vallado           davallado@gmail.com    4 aug 2022
-        *
-        *  inputs          description                    range / units
-        *    mat         - matrix to invert, 0 array starts
-        *
-        *  outputs       :
-        *    matinv      - inverted matrix, 0 array starts
-        *
-        *  locals        :
-        *    i           - index
-        *    j           - index
-        *
-        *  coupling      :
-        *     determinant- determinant of a matrix
-        *     adjoint    - adjoint of a matrix
-        *     
-        *  references    :
-        *    https://www.geeksforgeeks.org/adjoint-inverse-matrix/
-         ----------------------------------------------------------------------------- */
+        // -------------------------------------------------------------------------------
+        //
+        //                               procedure mat33inverse
+        //
+        //  this procedure finds the inverse of a 3x3 matrix using determinants.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    mat         - matrix to invert, 0 array starts
+        //
+        //  outputs       :
+        //    matinv      - inverted matrix, 0 array starts
+        //
+        //  locals        :
+        //    i           - index
+        //    j           - index
+        //
+        //  coupling      :
+        //     determinant- determinant of a matrix
+        //     adjoint    - adjoint of a matrix
+        //     
+        //  references    :
+        //    https://www.geeksforgeeks.org/adjoint-inverse-matrix/
+        // -----------------------------------------------------------------------------
 
         public bool mat33inverse(double[,] mat, out double[,] matinv)
         {
@@ -1443,18 +1339,18 @@ namespace MathTimeMethods
         //                                 Polynomial routines 
         // ==============================================================================
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function DMulRSub
-        *
-        * called by factor to find roots of a polynomial.
-        *
-        * the original code had several places with a double = 0.0
-        * The values here seem particularly touchy, values of 1e-45 may not even be enough
-        * so implement a try-catch in several places.
-        * 
-        * 
-        * ----------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function DMulRSub
+        //
+        // called by factor to find roots of a polynomial.
+        //
+        // the original code had several places with a double = 0.0
+        // The values here seem particularly touchy, values of 1e-45 may not even be enough
+        // so implement a try-catch in several places.
+        // 
+        // 
+        // -------------------------------------------------------------------------------
 
         public void DMulRSub(ref double[] ALPR, ref double[] ALPI, double[] BETR, double[] BETI)
         {
@@ -1504,18 +1400,18 @@ namespace MathTimeMethods
             //Console.WriteLine(Te7 + " " + Te8 + " " + Te9 + " " + Te10 + " " + Te11);
             //Console.WriteLine(Te12 + " " + Te13 + " " + Te14 + " " + Te15 + " " + Te16);
 
-            /* --------------------------------------------------------------------
-            *   Sometimes, for stiff systems(the roots vary widely in order
-            *   of magnitude), Te1 and Te2 get large enough to have their
-            *   squares overflow the floating point range.To prevent this,
-            *   when either one is large, they are scaled by 10**10 for the
-            *   purpose of finding TeM.  The scale is restored when the
-            *   magnitude computation is completed.This should not affect
-            *   the accuracy of the computations, since the mantissa is not
-            *   affected, only the exponent.
-            *   this doesn't appear to be necessary with "modern" computers where e308
-            *   is the limit of doubles and the check could move to e150 or so.
-            * -------------------------------------------------------------------- */
+            // ---------------------------------------------------------------------
+            //   Sometimes, for stiff systems(the roots vary widely in order
+            //   of magnitude), Te1 and Te2 get large enough to have their
+            //   squares overflow the floating point range.To prevent this,
+            //   when either one is large, they are scaled by 10**10 for the
+            //   purpose of finding TeM.  The scale is restored when the
+            //   magnitude computation is completed.This should not affect
+            //   the accuracy of the computations, since the mantissa is not
+            //   affected, only the exponent.
+            //   this doesn't appear to be necessary with "modern" computers where e308
+            //   is the limit of doubles and the check could move to e150 or so.
+            // ----------------------------------------------------------------------
 
             if ((Te1 > 1.0e15) || (Te2 > 1.0e15))
             {
@@ -1596,40 +1492,40 @@ namespace MathTimeMethods
 
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                              factor
-        *
-        *  This method is a root finding algorithm. It takes the polynomial and
-        *    returns the roots (real and imaginary) in the RootS array. it works in "most" 
-        *    cases however it misses the correct postive root in some of the angles-only 
-        *    cases so don't use it there, use a Halley iteration.
-        *
-        *  Author        : David Vallado           davallado@gmail.com    1 Mar 2001
-        *
-        *  Inputs Description                                       Range / Units
-        *    Poly        - Array of 16 coefficients
-        *                    representing the polynomial
-        *                    [1] is x^8th, [2] is x^7th, ...
-        *                    others are zero
-        *    nRoots      - Number of roots
-        *
-        *  OutPuts       :
-        *    Roots       - Array[,] containing roots(real, imag)
-        *
-        *  Locals        :
-        *                -
-        *                -
-        *                -
-        *
-        *  Coupling      :
-        *    DMulRSub    -
-        *
-        *  References    :
-        *    Original FORTRAN code from USAFA/DFAS MiniTotal program, author unknown
-        *    This is Bairstows method?
-        *
-         ----------------------------------------------------------------------------- */
+        // -------------------------------------------------------------------------------
+        //
+        //                                  factor
+        //
+        //  This method is a root finding algorithm. It takes the polynomial and
+        //    returns the roots (real and imaginary) in the RootS array. it works in "most" 
+        //    cases however it misses the correct postive root in some of the angles-only 
+        //    cases so don't use it there, use a Halley iteration.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    Poly        - Array of 16 coefficients
+        //                        representing the polynomial
+        //                        [1] is x^8th, [2] is x^7th, ...
+        //                        others are zero
+        //    nRoots      - Number of roots
+        //
+        //  OutPuts       :
+        //    Roots       - Array[,] containing roots(real, imag)
+        //
+        //  Locals        :
+        //                    -
+        //                    -
+        //                    -
+        //
+        //  Coupling      :
+        //    DMulRSub    -
+        //
+        //  References    :
+        //    Original FORTRAN code from USAFA/DFAS MiniTotal program, author unknown
+        //    This is Bairstows method?
+        //
+        // -----------------------------------------------------------------------------
 
         public void factor(double[] Poly, int nRoots, out double[,] RootS)
         {
@@ -1861,46 +1757,46 @@ namespace MathTimeMethods
         } // factor 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function quadratic
-        *
-        *  this function solves for the two roots of a quadratic equation.  there are
-        *    no restrictions on the coefficients, and imaginary results are passed
-        *    out as separate values.  the general form is y = ax2 + bx + c.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    a           - coefficient of x squared term
-        *    b           - coefficient of x term
-        *    c           - constant
-        *    opt         - option for output              I all roots including imaginary
-        *                                                 R only real roots
-        *                                                 U only unique real roots (no repeated)
-        *
-        *  outputs       :
-        *    r1r         - real portion of root 1
-        *    r1i         - imaginary portion of root 1
-        *    r2r         - real portion of root 2
-        *    r2i         - imaginary portion of root 2
-        *
-        *  locals        :
-        *    discrim     - discriminate b2 - 4ac
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 1027
-        * ----------------------------------------------------------------------------*/
+        // ------------------------------------------------------------------------------
+        //
+        //                               function quadratic
+        //
+        //  this function solves for the two roots of a quadratic equation.  there are
+        //    no restrictions on the coefficients, and imaginary results are passed
+        //    out as separate values.  the general form is y = ax2 + bx + c.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    a           - coefficient of x squared term
+        //    b           - coefficient of x term
+        //    c           - constant
+        //    opt         - option for output              I all roots including imaginary
+        //                                                     R only real roots
+        //                                                     U only unique real roots (no repeated)
+        //
+        //  outputs       :
+        //    r1r         - real portion of root 1
+        //    r1i         - imaginary portion of root 1
+        //    r2r         - real portion of root 2
+        //    r2i         - imaginary portion of root 2
+        //
+        //  locals        :
+        //    discrim     - discriminate b2 - 4ac
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 1027
+        // ----------------------------------------------------------------------------*/
 
         public void quadratic(double a, double b, double c, char opt,
                               out double r1r, out double r1i, out double r2r, out double r2i)
         {
             const double small = 0.0000001;
             double discrim;
-            // --------------------  implementation   ----------------------
+            // --------------------  implementation   // --------------------
             r1r = 0.0;
             r1i = 0.0;
             r2r = 0.0;
@@ -1908,7 +1804,7 @@ namespace MathTimeMethods
 
             discrim = b * b - 4.0 * a * c;
 
-            // ---------------------  real roots  --------------------------
+            // ---------------------  real roots  // ------------------------
             if (Math.Abs(discrim) < small)
             {
                 r1r = -b / (2.0 * a);
@@ -1948,32 +1844,30 @@ namespace MathTimeMethods
         }  // quadratic
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function parabolicspl
-        *
-        *  this function performs parabolic splining of an 3 input data points. 
-        *  the points do not need to be equally spaced. 
-        *
-        *  author        : david vallado           davallado@gmail.com     20 Oct 2021
-        *
-        *  revisions
-        *                -
-        *  inputs          description                          range / units
-        *    p0,p1,p2    - function values used for splining
-        *    t0,t1,t2    - time values used for splining
-        *
-        *  outputs       :
-        *    ap0..ap2    - splined polynomial coefficients.     ap2 * t1 * t1 + ap1 * t1 + ap0
-        *
-        *  locals        : none
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    vallado       2013, 1034
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function parabolicspl
+        //
+        //  this function performs parabolic splining of an 3 input data points. 
+        //  the points do not need to be equally spaced. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    p0,p1,p2    - function values used for splining
+        //    t0,t1,t2    - time values used for splining
+        //
+        //  outputs       :
+        //    ap0..ap2    - splined polynomial coefficients.     ap2 * t1 * t1 + ap1 * t1 + ap0
+        //
+        //  locals        : none
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    vallado       2013, 1034
+        // -----------------------------------------------------------------------------
 
         public void parabolicspl(double p1, double p2, double p3, double t1, double t2, double t3,
                                  out double ap0, out double ap1, out double ap2)
@@ -1998,32 +1892,30 @@ namespace MathTimeMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function cubicspl
-        *
-        *  this function performs cubic splining of an input zero crossing
-        *  function in order to find function values.
-        *
-        *  author        : david vallado           davallado@gmail.com     7 aug 2005
-        *
-        *  revisions
-        *                -
-        *  inputs          description                    range / units
-        *    p0,p1,p2,p3 - function values used for splining
-        *    t0,t1,t2,t3 - time values used for splining
-        *
-        *  outputs       :
-        *    acu0..acu3  - splined polynomial coefficients. acu3 t^3, etc
-        *
-        *  locals        : none
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    vallado       2013, 1034
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function cubicspl
+        //
+        //  this function performs cubic splining of an input zero crossing
+        //  function in order to find function values.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    p0,p1,p2,p3 - function values used for splining
+        //    t0,t1,t2,t3 - time values used for splining
+        //
+        //  outputs       :
+        //    acu0..acu3  - splined polynomial coefficients. acu3 t^3, etc
+        //
+        //  locals        : none
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    vallado       2013, 1034
+        // -----------------------------------------------------------------------------
 
         public void cubicspl(double p1, double p2, double p3, double p4,
                              out double acu0, out double acu1, out double acu2, out double acu3)
@@ -2035,52 +1927,52 @@ namespace MathTimeMethods
         }  // cubicspl
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function cubic
-        *
-        *  this function solves for the three roots of a cubic equation.  there are
-        *    no restrictions on the coefficients, and imaginary results are passed
-        *    out as separate values.  the general form is y = a3x3 + b2x2 + c1x + d0.  note
-        *    that r1i will always be zero Math.Since there is always at least one real root.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    a3          - coefficient of x cubed term
-        *    b2          - coefficient of x squared term
-        *    c1          - coefficient of x term
-        *    d0          - constant
-        *    opt         - option for output              I all roots including imaginary
-        *                                                 R only real roots
-        *                                                 U only unique real roots (no repeated)
-        *
-        *  outputs       :
-        *    r1r         - real portion of root 1
-        *    r1i         - imaginary portion of root 1
-        *    r2r         - real portion of root 2
-        *    r2i         - imaginary portion of root 2
-        *    r3r         - real portion of root 3
-        *    r3i         - imaginary portion of root 3
-        *
-        *  locals        :
-        *    temp1       - temporary value
-        *    temp2       - temporary value
-        *    p           - coefficient of x squared term where x cubed term is 1.0
-        *    q           - coefficient of x term where x cubed term is 1.0
-        *    r           - coefficient of constant term where x cubed term is 1.0
-        *    delta       - discriminator for use with cardans formula
-        *    e0          - angle holder for trigonometric solution
-        *    phi         - angle used in trigonometric solution
-        *    cosphi      - cosine of phi
-        *    sinphi      - sine of phi
-        *
-        *  coupling      :
-        *    quadric     - quadratic roots
-        *
-        *  references    :
-        *    vallado       2013, 1027
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function cubic
+        //
+        //  this function solves for the three roots of a cubic equation.  there are
+        //    no restrictions on the coefficients, and imaginary results are passed
+        //    out as separate values.  the general form is y = a3x3 + b2x2 + c1x + d0.  note
+        //    that r1i will always be zero Math.Since there is always at least one real root.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    a3          - coefficient of x cubed term
+        //    b2          - coefficient of x squared term
+        //    c1          - coefficient of x term
+        //    d0          - constant
+        //    opt         - option for output              I all roots including imaginary
+        //                                                     R only real roots
+        //                                                     U only unique real roots (no repeated)
+        //
+        //  outputs       :
+        //    r1r         - real portion of root 1
+        //    r1i         - imaginary portion of root 1
+        //    r2r         - real portion of root 2
+        //    r2i         - imaginary portion of root 2
+        //    r3r         - real portion of root 3
+        //    r3i         - imaginary portion of root 3
+        //
+        //  locals        :
+        //    temp1       - temporary value
+        //    temp2       - temporary value
+        //    p           - coefficient of x squared term where x cubed term is 1.0
+        //    q           - coefficient of x term where x cubed term is 1.0
+        //    r           - coefficient of constant term where x cubed term is 1.0
+        //    delta       - discriminator for use with cardans formula
+        //    e0          - angle holder for trigonometric solution
+        //    phi         - angle used in trigonometric solution
+        //    cosphi      - cosine of phi
+        //    sinphi      - sine of phi
+        //
+        //  coupling      :
+        //    quadric     - quadratic roots
+        //
+        //  references    :
+        //    vallado       2013, 1027
+        // -----------------------------------------------------------------------------
 
         public void cubic(double a3, double b2, double c1, double d0, char opt,
                           out double r1r, out double r1i, out double r2r, out double r2i, out double r3r, out double r3i)
@@ -2089,7 +1981,7 @@ namespace MathTimeMethods
             const double onethird = 1.0 / 3.0;
             const double small = 0.00000001;
             double temp1, temp2, p, q, r, delta, e0, cosphi, sinphi, phi;
-            // ------------------------  implementation   --------------------------
+            // ------------------------  implementation   // ------------------------
             r1r = 0.0;
             r1i = 0.0;
             r2r = 0.0;
@@ -2167,29 +2059,29 @@ namespace MathTimeMethods
         }  // cubic
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function cubicinterp
-        *
-        *  this function performs a cubic spline. four points are needed.
-        *
-        *  author        : david vallado           davallado@gmail.com   1 dec  2005
-        *
-        *  inputs          description                    range / units
-        *    valuein     - kp
-        *
-        *  outputs       :
-        *    out         - ap
-        *
-        *  locals        :
-        *                -
-        *
-        *  coupling      :
-        *    cubicspl
-        *
-        *  references    :
-        *    vallado       2013, 1027
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function cubicinterp
+        //
+        //  this function performs a cubic spline. four points are needed.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    valuein     - kp
+        //
+        //  outputs       :
+        //    out         - ap
+        //
+        //  locals        :
+        //                    -
+        //
+        //  coupling      :
+        //    cubicspl
+        //
+        //  references    :
+        //    vallado       2013, 1027
+        // -----------------------------------------------------------------------------
 
         public double cubicinterp(double p1a, double p1b, double p1c, double p1d, double p2a, double p2b,
                                   double p2c, double p2d, double valuein)
@@ -2274,29 +2166,27 @@ namespace MathTimeMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function factorial
-        *
-        *  this function performs a factorial. note the use of double in the return as the 
-        *  numbers get huge quickly. this is good to about n = 170. 
-        *
-        *  author        : david vallado           davallado@gmail.com   11 feb 2016
-        *
-        *  revisions
-        *
-        *  inputs          description                    range / units
-        *    n           - order in
-        *
-        *  outputs       :
-        *    factorial   - result
-        *
-        *  locals        :
-        *                -
-        *
-        *  coupling      :
-        *    none
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function factorial
+        //
+        //  this function performs a factorial. note the use of double in the return as the 
+        //  numbers get huge quickly. this is good to about n = 170. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    n           - order in
+        //
+        //  outputs       :
+        //    factorial   - result
+        //
+        //  locals        :
+        //                    -
+        //
+        //  coupling      :
+        //    none
+        // -----------------------------------------------------------------------------
 
         public double factorial (int n)
         {
@@ -2309,31 +2199,29 @@ namespace MathTimeMethods
         }  // factorial 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function linearfit
-        *
-        *  this function fits a line to 2 input data points. 
-        *
-        *  author        : david vallado           davallado@gmail.com     21 Oct 2021
-        *
-        *  revisions
-        *                -
-        *  inputs          description                        range / units
-        *    p0,p1       - function values used for fit
-        *    t0,t1       - time values used for fit
-        *
-        *  outputs       :
-        *    al0, al1    - lienar coefficients.                 al0 + al1 * t
-        *
-        *  locals        : none
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    vallado       2013, 1034
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               function linearfit
+        //
+        //  this function fits a line to 2 input data points. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    p0,p1       - function values used for fit
+        //    t0,t1       - time values used for fit
+        //
+        //  outputs       :
+        //    al0, al1    - lienar coefficients.                 al0 + al1 * t
+        //
+        //  locals        : none
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    vallado       2013, 1034
+        // -----------------------------------------------------------------------------
 
         public void linearfit(double p1, double p2, double t1, double t2, out double al0, out double al1)
         {
@@ -2347,73 +2235,7 @@ namespace MathTimeMethods
             //Console.WriteLine(al0 + " " + al1 + " " + (ans1 - p1).ToString() + " a " + (ans2 - p2).ToString() );
         }  // linearfit
 
-        /*
-             // polynomial roots from numerical recipes in f and c 1986
-             public void laguer(double[] poly, int m, ref double[,] rootEst, int its)
-             {
-                 rootEst = new double[2, 2];
-                 int iter, j;
-                 double abx, abp, abm, err;
-                 double[,] dx = new double[2, 2];
-                 double[,] x1 = new double[2, 2];
-                 double[,] b = new double[2, 2];
-                 double[,] d = new double[2, 2];
-                 double[,] f = new double[2, 2];
-                 double[,] g = new double[2, 2];
-                 double[,] h = new double[2, 2];
-                 double[,] sq = new double[2, 2];
-                 double[,] gp = new double[2, 2];
-                 double[,] gm = new double[2, 2];
-                 double[,] g2 = new double[2,2];
-                 double[] frac = new double[] { 0.0, 0.5, 0.25, 0.75, 0.13, 0.38, 0.62, 0.88, 1.0 };
-                 int MAXIT = 80;
-                 int EPSS = 2;
-                 for (iter = 1; iter <= MAXIT; iter++)
-                 {
-                     its = iter;
-                     b[1,1] = poly[m];
-                     err = Math.Abs(b);
-                     //d = f = new Complex ( 0.0, 0.0);
-                     abx = Math.Abs(rootEst);
-                     for (j = m - 1; j >= 0; j--)
-                     {
-                         f = Complex.Add(Complex.Multiply(rootEst, f), d);
-                         d = Complex.Add(Complex.Multiply(rootEst, d), b);
-                         b = Complex.Add(Complex.Multiply(rootEst, b), poly[j]);
-                         err = Complex.Abs(b) + abx * err;
-                     }
-                     err = EPSS * err;
-                     if (Complex.Abs(b) <= err)
-                         return;
-                     g = Complex.Divide(d, b);
-                     g2 = Complex.Multiply(g, g);
-                     h = Complex.Subtract(g2, 2.0 * Complex.Divide(f, b));
-                     sq = Complex.Sqrt((m - 1) * Complex.Subtract(m * h, g2));
-                     gp = Complex.Add(g, sq);
-                     gm = Complex.Subtract(g, sq);
-                     abp = Complex.Abs(gp);
-                     abm = Complex.Abs(gm);
-                     if (abp < abm)
-                         gp = gm;
-                     if (Math.Max(abp, abm) > 0.0)
-                         dx = m / gp;
-                     else
 
-                         dx = Math.Exp((Math.Log(1.0 + abx), iter));
-                     x1 = Complex.Subtract(rootEst, dx);
-                     if (Math.Abs(rootEst - x1.Real) < 0.00001 && Math.Abs(x1.Imaginary) < 0.00001)
-                         return;
-                     if ((iter % 10) != 0)
-                         rootEst = x1.Real;
-                     else
-                     {
-                         Int32 indx = (Int32)(10.0 * Math.Floor(iter / 10.0));
-                         rootEst = Complex.Subtract(rootEst, Complex.Multiply(frac[indx], dx));
-                     }
-                 }
-                 Console.WriteLine("too many iterations in laguer");
-             }  // numerical recipes laguer
-             */
 
 
         // ==============================================================================
@@ -2439,22 +2261,22 @@ namespace MathTimeMethods
         } // getIntMonth
 
 
-        /*------------------------------------------------------------------------------
-        *                                JD to STK time 
-        *
-        * converts a julian date into STK time string. use 2 factor julian date to 
-        * preserve milli-second accuracy. remove UTCG first if it's there
-        * 
-        *  author        : david vallado             davallado@gmail.com  10 oct 2019
-        *
-        *  inputs        description                                   range / units
-        *    JD          - julian date (integer part)                    24516800. days
-        *    JDF         - julian date (day fraction part)               0.37184856 days
-        *
-        *  outputs       :
-        *    epoch       - epoch time                                    14 Jul 2012 18:00:00.000 UTCG    
-        *    
-         ------------------------------------------------------------------------------ */
+        // ------------------------------------------------------------------------------
+        //                                    JD to STK time 
+        //
+        // converts a julian date into STK time string. use 2 factor julian date to 
+        // preserve milli-second accuracy. remove UTCG first if it's there
+        // 
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    JD          - julian date (integer part)                    24516800. days
+        //    JDF         - julian date (day fraction part)               0.37184856 days
+        //
+        //  outputs       :
+        //    epoch       - epoch time                                    14 Jul 2012 18:00:00.000 UTCG    
+        //    
+         // ------------------------------------------------------------------------------
 
         public void JD2STKtime(double JD, double JDF, out string epoch)
         {
@@ -2468,22 +2290,22 @@ namespace MathTimeMethods
         }  // JD2STKtime
 
 
-        /*------------------------------------------------------------------------------
-         *                                STK time to JD
-         *
-         * converts a STK string epoch time into a julian date. use 2 factor julian date to 
-         * preserve milli-second accuracy. remove UTCG first if it's there
-         * 
-         *  author        : david vallado             davallado@gmail.com  10 oct 2019
-         *
-         *  inputs        description                                   range / units
-         *    epoch       - epoch time                                    14 Jul 2012 18:00:00.000 UTCG    
-         *
-         *  outputs       :
-         *    JD          - julian date (integer part)                    24516800. days
-         *    JDF         - julian date (day fraction part)               0.37184856 days
-         *    
-          ------------------------------------------------------------------------------ */
+        // ------------------------------------------------------------------------------
+         //                                    STK time to JD
+         //
+         // converts a STK string epoch time into a julian date. use 2 factor julian date to 
+         // preserve milli-second accuracy. remove UTCG first if it's there
+         // 
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+         //    epoch       - epoch time                                    14 Jul 2012 18:00:00.000 UTCG    
+         //
+         //  outputs       :
+         //    JD          - julian date (integer part)                    24516800. days
+         //    JDF         - julian date (day fraction part)               0.37184856 days
+         //    
+          // ------------------------------------------------------------------------------
 
         public void STKtime2JD(string epoch, out double JD, out double JDF)
         {
@@ -2553,39 +2375,37 @@ namespace MathTimeMethods
         }
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure jday
-        *
-        *  this procedure finds the julian date given the year, month, day, and time.
-        *    the julian date is defined by each elapsed day since noon, jan 1, 4713 bc.
-        *    two values are passed back for improved accuracy
-        *
-        *  algorithm     : calculate the answer in one step for efficiency
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    year        - year                           1900 .. 2100
-        *    mon         - month                          1 .. 12
-        *    day         - day                            1 .. 28,29,30,31
-        *    hr          - universal time hour            0 .. 23
-        *    minute         - universal time minute             0 .. 59
-        *    second        - universal time second            0.0 .. 59.999
-        *
-        *  outputs       :
-        *    jd          - julian date (days only)           days from 4713 bc
-        *    jdFrac      - julian date (fraction of a day)   days from 0 hr of the day
-        *
-        *  locals        :
-        *    none.
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 183, alg 14, ex 3-14
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure jday
+        //
+        //  this procedure finds the julian date given the year, month, day, and time.
+        //    the julian date is defined by each elapsed day since noon, jan 1, 4713 bc.
+        //    two values are passed back for improved accuracy
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    year        - year                           1900 .. 2100
+        //    mon         - month                          1 .. 12
+        //    day         - day                            1 .. 28,29,30,31
+        //    hr          - universal time hour            0 .. 23
+        //    minute         - universal time minute             0 .. 59
+        //    second        - universal time second            0.0 .. 59.999
+        //
+        //  outputs       :
+        //    jd          - julian date (days only)           days from 4713 bc
+        //    jdFrac      - julian date (fraction of a day)   days from 0 hr of the day
+        //
+        //  locals        :
+        //    none.
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 183, alg 14, ex 3-14
+        // -----------------------------------------------------------------------------
 
         public void jday(int year, int mon, int day, int hr, int minute, double second, out double jd, out double jdFrac)
         {
@@ -2607,42 +2427,42 @@ namespace MathTimeMethods
         }  //  jday
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure days2mdhms
-        *
-        *  this procedure converts the day of the year, days, to the equivalent month
-        *    day, hour, minute and second.
-        *
-        *  algorithm     : set up array for the number of days per month
-        *                  find leap year - use 1900 because 2000 is a leap year
-        *                  loop through a temp value while the value is < the days
-        *                  perform int conversions to the correct day and month
-        *                  convert remainder into h m s using type conversions
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    year        - year                           1900 .. 2100
-        *    days        - julian day of the year         0.0  .. 366.0
-        *
-        *  outputs       :
-        *    mon         - month                          1 .. 12
-        *    day         - day                            1 .. 28,29,30,31
-        *    hr          - hour                           0 .. 23
-        *    minute         - minute                         0 .. 59
-        *    second      - second                         0.0 .. 59.999
-        *
-        *  locals        :
-        *    dayofyr     - day of year
-        *    temp        - temporary extended values
-        *    inttemp     - temporary int value
-        *    i           - index
-        *    lmonth[12]  - int array containing the number of days per month
-        *
-        *  coupling      :
-        *    none.
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure days2mdhms
+        //
+        //  this procedure converts the day of the year, days, to the equivalent month
+        //    day, hour, minute and second.
+        //
+        //  algorithm     : set up array for the number of days per month
+        //                      find leap year - use 1900 because 2000 is a leap year
+        //                      loop through a temp value while the value is < the days
+        //                      perform int conversions to the correct day and month
+        //                      convert remainder into h m s using type conversions
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    year        - year                           1900 .. 2100
+        //    days        - julian day of the year         0.0  .. 366.0
+        //
+        //  outputs       :
+        //    mon         - month                          1 .. 12
+        //    day         - day                            1 .. 28,29,30,31
+        //    hr          - hour                           0 .. 23
+        //    minute         - minute                         0 .. 59
+        //    second      - second                         0.0 .. 59.999
+        //
+        //  locals        :
+        //    dayofyr     - day of year
+        //    temp        - temporary extended values
+        //    inttemp     - temporary int value
+        //    i           - index
+        //    lmonth[12]  - int array containing the number of days per month
+        //
+        //  coupling      :
+        //    none.
+        // -----------------------------------------------------------------------------
 
         public void days2mdhms(int year, double days,
                                out int mon, out int day, out int hr, out int minute, out double second)
@@ -2652,7 +2472,7 @@ namespace MathTimeMethods
             int[] lmonth = new int[13] { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
             dayofyr = (int)Math.Floor(days);
-            /* ----------------- find month and day of month ---------------- */
+            // ------------------ find month and day of month ------------------
             if ((year % 4) == 0)
                 lmonth[2] = 29;
 
@@ -2666,7 +2486,7 @@ namespace MathTimeMethods
             mon = i;
             day = dayofyr - inttemp;
 
-            /* ----------------- find hours minutes and seconds ------------- */
+            // ------------------ find hours minutes and seconds ---------------
             temp = (days - dayofyr) * 24.0;
             hr = Convert.ToInt16(Math.Floor(temp));
             temp = (temp - hr) * 60.0;
@@ -2675,34 +2495,34 @@ namespace MathTimeMethods
         }  //  days2mdhms
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           function finddays
-        *
-        *  this function finds the fractional days through a year given the year,
-        *    month, day, hour, minute and second.
-        *
-        *  author        : david vallado                  719-573-2600   22 jun 2002
-        *
-        *  inputs description                                        range / units
-        *    year        - year                                     1900 .. 2100
-        *    month       - month                                    1 .. 12
-        *    day         - day                                      1 .. 28,29,30,31
-        *    hr          - hour                                     0 .. 23
-        *    min         - minute                                   0 .. 59
-        *    second      - second                                   0.0 .. 59.999
-        *
-        *  outputs       :
-        *    days        - day of year plus fraction of a
-        *                    day days
-        *
-        *  locals        :
-        *    lmonth      - length of months of year
-        *
-        *  references    :
-        *    vallado       2007, 207, ex 3-12
-        *
-        * ----------------------------------------------------------------------------- */
+        // -------------------------------------------------------------------------------
+        //
+        //                               function finddays
+        //
+        //  this function finds the fractional days through a year given the year,
+        //    month, day, hour, minute and second.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    year        - year                                     1900 .. 2100
+        //    month       - month                                    1 .. 12
+        //    day         - day                                      1 .. 28,29,30,31
+        //    hr          - hour                                     0 .. 23
+        //    min         - minute                                   0 .. 59
+        //    second      - second                                   0.0 .. 59.999
+        //
+        //  outputs       :
+        //    days        - day of year plus fraction of a
+        //                        day days
+        //
+        //  locals        :
+        //    lmonth      - length of months of year
+        //
+        //  references    :
+        //    vallado       2007, 207, ex 3-12
+        //
+        // -------------------------------------------------------------------------------
 
         public void findDays(int year, int month, int day, int hr, int min, double second, out int dayofyr)
         {
@@ -2739,47 +2559,47 @@ namespace MathTimeMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure invjday
-        *
-        *  this procedure finds the year, month, day, hour, minute and second
-        *  given the julian date. tu can be ut1, tdt, tdb, etc. jd is input
-        *  with two arguments for additional accuracy
-        *
-        *  algorithm     : set up starting values
-        *                  find leap year - use 1900 because 2000 is a leap year
-        *                  find the elapsed days through the year in a loop
-        *                  call routine to find each individual value
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    jd          - julian date (days only)           days from 4713 bc
-        *    jdFrac      - julian date (fraction of a day)   days from 0 hr of the day
-        *
-        *  outputs       :
-        *    year        - year                           1900 .. 2100
-        *    mon         - month                          1 .. 12
-        *    day         - day                            1 .. 28,29,30,31
-        *    hr          - hour                           0 .. 23
-        *    minute         - minute                         0 .. 59
-        *    second        - second                         0.0 .. 59.999
-        *
-        *  locals        :
-        *    days        - day of year plus fractional
-        *                  portion of a day               days
-        *    tu          - julian centuries from 0 h
-        *                  jan 0, 1900
-        *    temp        - temporary double values
-        *    leapyrs     - number of leap years from 1900
-        *
-        *  coupling      :
-        *    days2mdhms  - finds month, day, hour, minute and second given days and year
-        *
-        *  references    :
-        *    vallado       2013, 202, alg 22, ex 3-13
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure invjday
+        //
+        //  this procedure finds the year, month, day, hour, minute and second
+        //  given the julian date. tu can be ut1, tdt, tdb, etc. jd is input
+        //  with two arguments for additional accuracy
+        //
+        //  algorithm     : set up starting values
+        //                      find leap year - use 1900 because 2000 is a leap year
+        //                      find the elapsed days through the year in a loop
+        //                      call routine to find each individual value
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jd          - julian date (days only)           days from 4713 bc
+        //    jdFrac      - julian date (fraction of a day)   days from 0 hr of the day
+        //
+        //  outputs       :
+        //    year        - year                           1900 .. 2100
+        //    mon         - month                          1 .. 12
+        //    day         - day                            1 .. 28,29,30,31
+        //    hr          - hour                           0 .. 23
+        //    minute         - minute                         0 .. 59
+        //    second        - second                         0.0 .. 59.999
+        //
+        //  locals        :
+        //    days        - day of year plus fractional
+        //                      portion of a day               days
+        //    tu          - julian centuries from 0 h
+        //                      jan 0, 1900
+        //    temp        - temporary double values
+        //    leapyrs     - number of leap years from 1900
+        //
+        //  coupling      :
+        //    days2mdhms  - finds month, day, hour, minute and second given days and year
+        //
+        //  references    :
+        //    vallado       2013, 202, alg 22, ex 3-13
+        // -----------------------------------------------------------------------------
 
         public void invjday(double jd, double jdFrac,
                             out int year, out int mon, out int day, out int hr, out int minute, out double second)
@@ -2802,7 +2622,7 @@ namespace MathTimeMethods
                 jdFrac = jdFrac + dt;
             }
 
-            /* --------------- find year and days of the year --------------- */
+            // ---------------- find year and days of the year -----------------
             temp = jd - 2415019.5;
             tu = temp / 365.25;
             year = 1900 + Convert.ToInt16(Math.Floor(tu));
@@ -2810,7 +2630,7 @@ namespace MathTimeMethods
 
             days = Math.Floor(temp - ((year - 1900) * 365.0 + leapyrs));
 
-            /* ------------ check for case of beginning of a year ----------- */
+            // ------------- check for case of beginning of a year -------------
             if (days + jdFrac < 1.0)
             {
                 year = year - 1;
@@ -2818,45 +2638,42 @@ namespace MathTimeMethods
                 days = Math.Floor(temp - ((year - 1900) * 365.0 + leapyrs));
             }
 
-            /* ----------------- find remaining data  ----------------------- */
+            // ------------------ find remaining data  // -----------------------
             // now add the daily time in to preserve accuracy
             days2mdhms(year, days + jdFrac, out mon, out day, out hr, out minute, out second);
         }  // invjday
 
 
 
-        /* -----------------------------------------------------------------------------
-         *
-         *                           procedure hms_sec
-         *
-         *  this procedure converts hours, minutes and seconds to seconds from the
-         *  beginning of the day.
-         *
-         *  author        : david vallado           davallado@gmail.com   25 jun 2002
-         *
-         *  revisions
-         *                -
-         *
-         *  inputs          description                    range / units
-         *    utsecond    - seconds                        0.0 .. 86400.0
-         *
-         *  outputs       :
-         *    hr          - hours                          0 .. 24
-         *    minute      - minutes                        0 .. 59
-         *    second      - seconds                        0.0 .. 59.99
-         *
-         *  locals        :
-         *    temp        - temporary variable
-         *
-         *  coupling      :
-         *    none.
-         * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure hms_sec
+        //
+        //  this procedure converts hours, minutes and seconds to seconds from the
+        //  beginning of the day.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    utsecond    - seconds                        0.0 .. 86400.0
+        //
+        //  outputs       :
+        //    hr          - hours                          0 .. 24
+        //    minute      - minutes                        0 .. 59
+        //    second      - seconds                        0.0 .. 59.99
+        //
+        //  locals        :
+        //    temp        - temporary variable
+        //
+        //  coupling      :
+        //    none.
+        // -----------------------------------------------------------------------------
 
         public void hms_sec(ref int hr, ref int minute, ref double second, Enum direct, ref double utsec)
         {
             double temp;
 
-            // ------------------------  implementation   ------------------
+            // ------------------------  implementation   // ----------------
             if (direct.Equals(Edirection.eto))
                 utsec= hr * 3600.0 + minute * 60.0 + second;
             else
@@ -2869,36 +2686,36 @@ namespace MathTimeMethods
         }  // hms_sec
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure hms_ut
-        *
-        *  this procedure converts hours, minutes and seconds into universal time.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    hr          - hours                          0 .. 24
-        *    minute      - minutes                        0 .. 59
-        *    second      - seconds                        0.0 .. 59.99
-        *    direction   - which set of vars to output    from  too
-        *
-        *  outputs       :
-        *    ut          - universal time                 hrmin.sec
-        *
-        *  locals        :
-        *    none.
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 199, alg 21, ex 3-10
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure hms_ut
+        //
+        //  this procedure converts hours, minutes and seconds into universal time.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    hr          - hours                          0 .. 24
+        //    minute      - minutes                        0 .. 59
+        //    second      - seconds                        0.0 .. 59.99
+        //    direction   - which set of vars to output    from  too
+        //
+        //  outputs       :
+        //    ut          - universal time                 hrmin.sec
+        //
+        //  locals        :
+        //    none.
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 199, alg 21, ex 3-10
+        // -----------------------------------------------------------------------------
 
         public void hms_ut (ref int hr, ref int minute, ref double second, Enum direct, ref double ut)
         {
-            // ------------------------  implementation   ------------------
+            // ------------------------  implementation   // ----------------
             if (direct.Equals(Edirection.eto))
                 ut = hr * 100.0 + minute + second* 0.01;
             else
@@ -2910,39 +2727,39 @@ namespace MathTimeMethods
         }  // hms_ut
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure hms_rad
-        *
-        *  this procedure converts hours, minutes and seconds into radians.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    hr          - hours                          0 .. 24
-        *    minute      - minutes                        0 .. 59
-        *    second      - seconds                        0.0 .. 59.99
-        *    direction   - which set of vars to output    from  too
-        *
-        *  outputs       :
-        *    hms         - result                         rad
-        *
-        *  locals        :
-        *    temp        - conversion from hours to rad   0.261799
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 198, alg 19 alg 20, ex 3-9
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure hms_rad
+        //
+        //  this procedure converts hours, minutes and seconds into radians.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    hr          - hours                          0 .. 24
+        //    minute      - minutes                        0 .. 59
+        //    second      - seconds                        0.0 .. 59.99
+        //    direction   - which set of vars to output    from  too
+        //
+        //  outputs       :
+        //    hms         - result                         rad
+        //
+        //  locals        :
+        //    temp        - conversion from hours to rad   0.261799
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 198, alg 19 alg 20, ex 3-9
+        // -----------------------------------------------------------------------------
 
         public void hms_rad (ref int hr, ref int minute, ref double second, Enum direct, ref double hms)
         {
             const double rad2deg = 57.29577951308230;
             double temp;
 
-            // ------------------------  implementation   ------------------
+            // ------------------------  implementation   // ----------------
             temp = 15.0 / rad2deg;
             if (direct.Equals(Edirection.eto))
                 hms = (hr + minute / 60.0 + second/ 3600.0) * temp;
@@ -2956,39 +2773,39 @@ namespace MathTimeMethods
         }  // hms_rad
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure dms_rad
-        *
-        *  this procedure converts degrees, minutes and seconds into radians.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    deg         - degrees                        0 .. 360
-        *    minute      - minutes                        0 .. 59
-        *    second      - seconds                        0.0 .. 59.99
-        *    direction   - which set of vars to output    from  too
-        *
-        *  outputs       :
-        *    dms         - result                         rad
-        *
-        *  locals        :
-        *    temp        - temporary variable
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 197, alg 17 alg 18, ex 3-8
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                               procedure dms_rad
+        //
+        //  this procedure converts degrees, minutes and seconds into radians.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    deg         - degrees                        0 .. 360
+        //    minute      - minutes                        0 .. 59
+        //    second      - seconds                        0.0 .. 59.99
+        //    direction   - which set of vars to output    from  too
+        //
+        //  outputs       :
+        //    dms         - result                         rad
+        //
+        //  locals        :
+        //    temp        - temporary variable
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 197, alg 17 alg 18, ex 3-8
+        // -----------------------------------------------------------------------------
 
         public void dms_rad (ref int deg, ref int minute, ref double second, Enum direct, ref double dms)
         {
             const double rad2deg = 57.29577951308230;
             double temp;
 
-            // ------------------------  implementation   ------------------
+            // ------------------------  implementation   // ----------------
             if (direct.Equals(Edirection.eto))
                 dms = (deg + minute / 60.0 + second/ 3600.0) / rad2deg;
             else
@@ -3001,66 +2818,62 @@ namespace MathTimeMethods
         }  // dms_rad
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           function convtime
-        *
-        *  this function finds the time parameters and julian century values for inputs
-        *    of utc or ut1.numerous outputs are found as shown in the local variables.
-        *    because calucations are in utc, you must include timezone if (you enter a
-        *    local time, otherwise it should be zero.
-        *
-        *  author        : david vallado           davallado@gmail.com    4 jun 2002
-        *
-        *  revisions
-        *    vallado     - add tcg, tcb, etc                              6 oct 2005
-        *    vallado     - fix documentation for dut1                     8 oct 2002
-        *
-        *  inputs description                                          range / units
-        *    year        - year                                         1900 .. 2100
-        *    mon         - month                                        1 .. 12
-        *    day         - day                                          1 .. 28,29,30,31
-        *    hr          - universal time hour                          0 .. 23
-        *    minute      - universal time minute                           0 .. 59
-        *    second      - universal time second(utc)                     0.0  .. 59.999
-        *    timezone    - offset to utc from local site                0 .. 23 hr
-        *    dut1        - delta of ut1 - utc sec
-        *    dat         - delta of tai - utc sec
-        *
-        *  outputs       :
-        *    ut1         - universal time                               sec
-        *    tut1        - julian centuries of ut1
-        *    jdut1       - julian date (days only) days from 4713 bc
-        *    jdut1Frac   - julian date (fraction of a day)              days from 0 hr of the day
-        *    utc         - coordinated universal time                   sec
-        *    tai         - atomic time                                  sec
-        *    tdt         - terrestrial dynamical time                   sec
-        *    ttdt        - julian centuries of tdt
-        *    jdtt        - julian date(days only)                       days from 4713 bc
-        *    jdttFrac    - julian date(fraction of a day)               days from 0 hr of the day
-        *    tdb         - terrestrial barycentric time                 sec
-        *    ttdb        - julian centuries of tdb
-        *    jdtdb       - julian date of tdb                           days from 4713 bc
-        *    tcb         - celestial barycentric time                   sec
-        *    tcg         - celestial geocentric time                    sec
-        *    jdtdb       - julian date(days only)                       days from 4713 bc
-        *    jdtdbFrac   - julian date(fraction of a day)               days from 0 hr of the day
-        *
-        *  locals        :
-        *    hrtemp      - temporary hours                              hr
-        *    mintemp     - temporary minutes                            minute
-        *    sectemp     - temporary seconds                            sec
-        *    localhr     - difference to local time                     hr
-        *    jd          - julian date of request                       days from 4713 bc
-        *    me          - mean anomaly of the earth                    rad
-        *
-        *  coupling      :
-        *    hms_2_second  - conversion between hr-minute-sec.and.seconds
-        *    jday        - find the julian date
-        *
-        *  references    :
-        *    vallado       2013, 201, alg 16, ex 3-7
-        * ------------------------------------------------------------------------------*/
+        // -------------------------------------------------------------------------------
+        //
+        //                               function convtime
+        //
+        //  this function finds the time parameters and julian century values for inputs
+        //    of utc or ut1.numerous outputs are found as shown in the local variables.
+        //    because calucations are in utc, you must include timezone if (you enter a
+        //    local time, otherwise it should be zero.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    year        - year                                         1900 .. 2100
+        //    mon         - month                                        1 .. 12
+        //    day         - day                                          1 .. 28,29,30,31
+        //    hr          - universal time hour                          0 .. 23
+        //    minute      - universal time minute                           0 .. 59
+        //    second      - universal time second(utc)                     0.0  .. 59.999
+        //    timezone    - offset to utc from local site                0 .. 23 hr
+        //    dut1        - delta of ut1 - utc sec
+        //    dat         - delta of tai - utc sec
+        //
+        //  outputs       :
+        //    ut1         - universal time                               sec
+        //    tut1        - julian centuries of ut1
+        //    jdut1       - julian date (days only) days from 4713 bc
+        //    jdut1Frac   - julian date (fraction of a day)              days from 0 hr of the day
+        //    utc         - coordinated universal time                   sec
+        //    tai         - atomic time                                  sec
+        //    tdt         - terrestrial dynamical time                   sec
+        //    ttdt        - julian centuries of tdt
+        //    jdtt        - julian date(days only)                       days from 4713 bc
+        //    jdttFrac    - julian date(fraction of a day)               days from 0 hr of the day
+        //    tdb         - terrestrial barycentric time                 sec
+        //    ttdb        - julian centuries of tdb
+        //    jdtdb       - julian date of tdb                           days from 4713 bc
+        //    tcb         - celestial barycentric time                   sec
+        //    tcg         - celestial geocentric time                    sec
+        //    jdtdb       - julian date(days only)                       days from 4713 bc
+        //    jdtdbFrac   - julian date(fraction of a day)               days from 0 hr of the day
+        //
+        //  locals        :
+        //    hrtemp      - temporary hours                              hr
+        //    mintemp     - temporary minutes                            minute
+        //    sectemp     - temporary seconds                            sec
+        //    localhr     - difference to local time                     hr
+        //    jd          - julian date of request                       days from 4713 bc
+        //    me          - mean anomaly of the earth                    rad
+        //
+        //  coupling      :
+        //    hms_2_second  - conversion between hr-minute-sec.and.seconds
+        //    jday        - find the julian date
+        //
+        //  references    :
+        //    vallado       2013, 201, alg 16, ex 3-7
+        // ------------------------------------------------------------------------------*/
 
         public void convtime(int year, int mon, int day, int hr, int minute, double second, int timezone, double dut1, int dat,
                              out double ut1, out double tut1, out double jdut1, out double jdut1frac, out double utc, out double tai,
@@ -3077,7 +2890,7 @@ namespace MathTimeMethods
             mintemp = 0;
             sectemp = 0.0;
 
-            // ------------------------  implementation   ------------------
+            // ------------------------  implementation   // ----------------
             jday(year, mon, day, hr + timezone, minute, second, out jd, out jdfrac);
             mjd = jd + jdfrac - 2400000.5;
             mfme = hr * 60.0 + minute + second/ 60.0;

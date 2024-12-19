@@ -1,4 +1,4 @@
-%
+
 % ----------------------------------------------------------------------------
 %
 %                           function pef2ecef
@@ -26,9 +26,9 @@
 %    aecef       - acceleration vector earth fixedkm/s2
 %
 %  locals        :
-%    st          - matrix for pef - pef 
+%    st          - matrix for pef - pef
 %    stdot       - matrix for pef - pef rate
-%    pm          - matrix for ecef - pef 
+%    pm          - matrix for ecef - pef
 %
 %  coupling      :
 %   sidereal     - rotation for sidereal time     pef - pef
@@ -40,17 +40,17 @@
 % [recef,vecef,aecef] = pef2ecef  ( rpef, vpef, apef), opt, ttt, xp, yp);
 % ----------------------------------------------------------------------------
 
-function [recef,vecef,aecef] = pef2ecef  ( rpef, vpef, apef, opt, ttt, xp, yp);
-constastro;
+function [recef,vecef,aecef] = pef2ecef  ( rpef, vpef, apef, opt, ttt, xp, yp)
+    constastro;
 
-        [pm] = polarm(xp, yp, ttt, opt);
+    [pm] = polarm(xp, yp, ttt, opt);
 
-        recef = pm'*rpef;
+    recef = pm'*rpef;
 
-        vecef = pm'*vpef;
+    vecef = pm'*vpef;
 
 
-       % two additional terms not needed if satellite is not on surface
-       % of the Earth
-       aecef = pm'*apef;
+    % two additional terms not needed if satellite is not on surface
+    % of the Earth
+    aecef = pm'*apef;
 

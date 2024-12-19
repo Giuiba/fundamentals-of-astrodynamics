@@ -1,53 +1,45 @@
-    % ----------------------------------------------------------------------------
-    %
-    %                           function FullGeop
-    %
-    %   this function finds the acceleration for the gravity field.
-    %
-    %  author        : david vallado                    719-573-2600  10 oct 2019
-    %
-    %  inputs        description                                   range / units
-    %    recef       - position vector ECEF                          km
-    %    order       - size of gravity field                         1..360
-    %    normal      - normalized in file                            'y', 'n'
-    %    gravData.c  - gravitational coefficients (in gravData)
-    %    gravData.s  - gravitational coefficients (in gravData)
-    %
-    %  outputs       :
-    %    apert       - efc perturbation acceleration                  km / s^2
-    %
-    %  locals :
-    %    conv        - conversion to normalize
-    %    L, m        - degree and order indices
-    %    trigArr     - array of trigonometric terms
-    %    LegArr      - array of Legendre polynomials
-    %    VArr        - array of trig terms
-    %    WArr        - array of trig terms
-    %
-    %  coupling      :
-    %   LegPoly      - find the unnormalized Legendre polynomials through recursion
-    %   TrigPoly     - find the trigonmetric terms through recursion
-    %
-    %  references :
-    %    vallado       2013, 597, Eq 8-57
-    % ----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+%
+%                           function FullGeop
+%
+%   this function finds the acceleration for the gravity field.
+%
+%  author        : david vallado                    719-573-2600  10 oct 2019
+%
+%  inputs        description                                   range / units
+%    recef       - position vector ECEF                          km
+%    order       - size of gravity field                         1..360
+%    normal      - normalized in file                            'y', 'n'
+%    gravData.c  - gravitational coefficients (in gravData)
+%    gravData.s  - gravitational coefficients (in gravData)
+%
+%  outputs       :
+%    apert       - efc perturbation acceleration                  km / s^2
+%
+%  locals :
+%    conv        - conversion to normalize
+%    L, m        - degree and order indices
+%    trigArr     - array of trigonometric terms
+%    LegArr      - array of Legendre polynomials
+%    VArr        - array of trig terms
+%    WArr        - array of trig terms
+%
+%  coupling      :
+%   LegPoly      - find the unnormalized Legendre polynomials through recursion
+%   TrigPoly     - find the trigonmetric terms through recursion
+%
+%  references :
+%    vallado       2013, 597, Eq 8-57
+%
+%  [aPert, aPert1] = fullgeop ( recef, order, gravarr)
+% ----------------------------------------------------------------------------
 
-    function [aPert, aPert1] = fullgeop ( recef, order, gravData)
-    %             Int32 L, m;
-    %             double[,] legarrMU;  // unnormalized montenbruck
-    %             double[,] legarrGU; // unnormalized gtds
-    %             double[,] legarrMN;  // normalized montenbruck
-    %             double[,] legarrGN; // normalized gtds
-    %             double[,] trigArr;
-    %             double[,] VArr;
-    %             double[,] WArr;
-    %             double oordelta, temp, oor, sumM1, sumM2, sumM3, distPartR,
-    %             distPartPhi, distPartLon, RDelta, latgc, latgd, hellp, lon;
+function [aPert, aPert1] = fullgeop ( recef, order, gravarr)
+    constastro;
+
     aPert = zeros(order+3,order+3);
     aPert1 = zeros(order+3,order+3);
-   
-    constastro;
-    
+
     sumM1 = 0.0;
     sumM2 = 0.0;
     sumM3 = 0.0;
@@ -61,21 +53,21 @@
     % compare values
     %double[,] diff = new double[6, 6];
     %diff = legarrMU - legarrGU;
-  
+
     [trigarr, VArr, WArr] = trigpoly(recef, latgc, lon, order+3);
 
     magr = mag(recef);
-    
+
     % now do the partials
-%     temp0 = (recef(1)^2 + recef(2)^2);
-%     temp1 = 1.0 / magr;
-%     temp2 = recef(3) / (magr^2*sqrt(recef(1)^2 + recef(2)^2));
-%     temp3 = 1.0 / temp0;
-%     temp4 = sqrt(temp0)/magr^2;
-% 
-%     agrav(1) = (temp1* partrr - temp2*partrlat) * recef(1) - (temp3*partrlon)*recef(2);
-%     agrav(2) = (temp1* partrr - temp2*partrlat) * recef(2) - (temp3*partrlon)*recef(1);
-%     agrav(3) = (temp1* partrr) * recef(3) + temp4*partrlon;
+    %     temp0 = (recef(1)^2 + recef(2)^2);
+    %     temp1 = 1.0 / magr;
+    %     temp2 = recef(3) / (magr^2*sqrt(recef(1)^2 + recef(2)^2));
+    %     temp3 = 1.0 / temp0;
+    %     temp4 = sqrt(temp0)/magr^2;
+    %
+    %     agrav(1) = (temp1* partrr - temp2*partrlat) * recef(1) - (temp3*partrlon)*recef(2);
+    %     agrav(2) = (temp1* partrr - temp2*partrlat) * recef(2) - (temp3*partrlon)*recef(1);
+    %     agrav(3) = (temp1* partrr) * recef(3) + temp4*partrlon;
 
     oor = re / magr;
     distPartR = 0.0;
@@ -86,7 +78,7 @@
     for L = 2: order
         Li = L + 1;
 
-        % will do the power as each L is indexed }
+        % will do the power as each L is indexed 
         temp = temp * oor;
         sumM1 = 0.0;
         sumM2 = 0.0;
@@ -94,10 +86,10 @@
 
         for m = 0:L
             mi = m + 1;
-            sumM1 = sumM1 + legarrGU(Li, mi) * (gravData.cNor(Li, mi) * trigarr(mi, 1+1) + gravData.sNor(Li, mi) * trigarr(mi, 0+1));
+            sumM1 = sumM1 + legarrGU(Li, mi) * (gravarr.cNor(Li, mi) * trigarr(mi, 1+1) + gravarr.sNor(Li, mi) * trigarr(mi, 0+1));
             sumM2 = sumM2 + (legarrGU(Li, mi ++ 1) - trigarr(mi, 2+1) * legarrGU(Li, mi)) * ...
-                (gravData.cNor(Li, mi) * trigarr(mi, 1+1) + gravData.sNor(Li, mi) * trigarr(mi, 0+1));
-            sumM3 = sumM3 + m * legarrGU(Li, mi) * (gravData.sNor(Li, mi) * trigarr(mi, 1+1) - gravData.cNor(Li, mi) * trigarr(mi, 0+1));
+                (gravarr.cNor(Li, mi) * trigarr(mi, 1+1) + gravarr.sNor(Li, mi) * trigarr(mi, 0+1));
+            sumM3 = sumM3 + m * legarrGU(Li, mi) * (gravarr.sNor(Li, mi) * trigarr(mi, 1+1) - gravarr.cNor(Li, mi) * trigarr(mi, 0+1));
         end % for m
 
         distPartR = distPartR + temp * (Li) * sumM1;
@@ -145,15 +137,15 @@
 
             % normalized
             if (m == 0)
-               aPert1(1) = aPert1(1) + temp * (-gravData.cNor(Li, mi) * VArr(Li, 1));
-               aPert1(2) = aPert1(2) + temp * (-gravData.cNor(Li, mi) * WArr(Li, 1));
+                aPert1(1) = aPert1(1) + temp * (-gravarr.cNor(Li, mi) * VArr(Li, 1));
+                aPert1(2) = aPert1(2) + temp * (-gravarr.cNor(Li, mi) * WArr(Li, 1));
             else
-               aPert1(1) = aPert1(1) + 0.5 * temp * ((-gravData.cNor(Li, mi) * VArr(Li, mi) - gravData.sNor(Li, mi) * WArr(Li, mi)) + ...
-                   temp1 * (gravData.cNor(L, m) * VArr(Li, mi - 1) + gravData.sNor(Li, mi) * WArr(Li, mi - 1)));
-               aPert1(2) = aPert1(2) + 0.5 * temp * ((-gravData.cNor(Li, mi) * WArr(Li, mi) + gravData.sNor(Li, mi) * VArr(Li, mi)) + ...
-                   temp1 * (-gravData.cNor(Li, mi) * WArr(Li, mi - 1) + gravData.sNor(Li, mi) * VArr(Li, mi - 1)));
+                aPert1(1) = aPert1(1) + 0.5 * temp * ((-gravarr.cNor(Li, mi) * VArr(Li, mi) - gravarr.sNor(Li, mi) * WArr(Li, mi)) + ...
+                    temp1 * (gravarr.cNor(L, m) * VArr(Li, mi - 1) + gravarr.sNor(Li, mi) * WArr(Li, mi - 1)));
+                aPert1(2) = aPert1(2) + 0.5 * temp * ((-gravarr.cNor(Li, mi) * WArr(Li, mi) + gravarr.sNor(Li, mi) * VArr(Li, mi)) + ...
+                    temp1 * (-gravarr.cNor(Li, mi) * WArr(Li, mi - 1) + gravarr.sNor(Li, mi) * VArr(Li, mi - 1)));
             end
-            aPert1(3) = aPert1(3) + temp * ((L - m + 1) * (-gravData.cNor(Li, mi) * VArr(Li, mi) - gravData.sNor(Li, mi) * WArr(Li, mi)));
+            aPert1(3) = aPert1(3) + temp * ((L - m + 1) * (-gravarr.cNor(Li, mi) * VArr(Li, mi) - gravarr.sNor(Li, mi) * WArr(Li, mi)));
         end % for m
     end
 
@@ -208,20 +200,20 @@
             W(ni, mi) = ((2 * n - 1) * z0 * W(ni - 1, mi) - (n + m - 1) * rho * W(ni - 2, mi)) / (n - m);
         end
     end
-    
+
     % Calculate accelerations ax,ay,az
     for m = 0:order
         mi = m + 1;
         for (n = m:order)
             ni = n + 1;
             if (m == 0)
-                C = gravData.cNor(ni, 1);   % = C_n,0
+                C = gravarr.cNor(ni, 1);   % = C_n,0
                 aPert1(1) = aPert1(1) - C * V(ni, 1);
                 aPert1(2) = aPert1(2) - C * W(ni, 1);
                 aPert1(3) = aPert1(3) - (n + 1) * C * V(ni, 0+1);
             else
-                C = gravData.cNor(ni, mi);   % = C_n,m
-                S = gravData.sNor(mi - 1, ni); % = S_n,m
+                C = gravarr.cNor(ni, mi);   % = C_n,m
+                S = gravarr.sNor(mi - 1, ni); % = S_n,m
                 Fac = 0.5 * (n - m + 1) * (n - m + 2);
                 aPert1(1) = aPert1(1) + 0.5 * (-C * V(ni, mi) - S * W(ni, mi))...
                     + Fac * (+C * V(ni, mi - 1) + S * W(ni, mi - 1));
@@ -231,7 +223,7 @@
             end
         end
     end
-    
+
     % Body-fixed acceleration
     aPert2(1) = (mu / (re * re)) * aPert1(1);
     aPert2(2) = (mu / (re * re)) * aPert1(2);
@@ -240,4 +232,4 @@
     % Inertial acceleration
     %return Transp(E) * a_bf;
 
-    % FullGeop
+end  % FullGeop

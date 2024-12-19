@@ -11,6 +11,7 @@
 %    p        normalized alfs
 %
 function [p, accel] = gottliebnorm(mu, re, xin, c, s, nax, max, rnp)
+    constastro;
     
     for n = 2:nax+1 %RAE
         norm1(n) = sqrt((2*n+1) / (2*n-1)); % eq 3-1 RAE
@@ -123,4 +124,5 @@ function [p, accel] = gottliebnorm(mu, re, xin, c, s, nax, max, rnp)
     g(2,1) = -muor2*(lambda*yor - sumk);
     g(3,1) = -muor2*(lambda*zor - sumh);
     accel = rnp'*g; %RAE
-    return
+
+end
