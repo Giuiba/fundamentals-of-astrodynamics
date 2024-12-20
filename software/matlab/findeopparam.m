@@ -38,8 +38,8 @@
 %
 %  references    :
 %    vallado       2013,
-%  [rsun, xp, rmoon, dx] = findeopparam( jdtdb, jdtdbF, 'l', eoparr, jdeopstart)
-% --------------------------------------------------------------------------- */
+%  [dut1, dat, lod, xp, yp, ddpsi, ddeps, dx, dy] = findeopparam( jdtdb, jdtdbF, interp, eoparr)
+% --------------------------------------------------------------------------- 
 
 function [dut1, dat, lod, xp, yp, ddpsi, ddeps, dx, dy] = findeopparam( jdtdb, jdtdbF, interp, eoparr)
 
@@ -52,7 +52,7 @@ function [dut1, dat, lod, xp, yp, ddpsi, ddeps, dx, dy] = findeopparam( jdtdb, j
     end
 
     % ---- read data for day of interest
-    jdeopstarto = floor(jdtdb + jdtdbF - mjd(1) - 2400000.5);
+    jdeopstarto = floor(jdtdb + jdtdbF - eoparr(1).mjd - 2400000.5);
     recnum = floor(jdeopstarto);
 
     % check for out of bound values

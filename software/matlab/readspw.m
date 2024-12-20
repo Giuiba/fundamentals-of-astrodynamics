@@ -23,10 +23,10 @@
 %  references    :
 %    none.
 %
-% [spwarr, mjdspwstart, ktrActObs, updDate] = readspw(spwFileName);
+% [spwarr, updDate] = readspw(spwFileName)
 % -----------------------------------------------------------------------------
 
-function [spwarr, mjdspwstart, ktrActObs, updDate] = readspw(spwFileName)
+function [spwarr, updDate] = readspw(spwFileName)
 
     spwarr = struct('kparray',zeros(28000,8), 'sumkp',zeros(28000), ...
         'aparray',zeros(28000,8), 'avgap',zeros(28000), ...
@@ -163,3 +163,10 @@ function [spwarr, mjdspwstart, ktrActObs, updDate] = readspw(spwFileName)
 
     end
 
+
+%     opts = detectImportOptions('bigfile.txt'); 
+% opts.DataLines = [3 8];
+% opts.VariableNames = {'Timestamp','Temp',...
+%                       'Humidity','Wind','Weather'};
+% T_first = readtable('bigfile.txt',opts) 
+% 
