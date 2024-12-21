@@ -1,29 +1,34 @@
-﻿/*     -------------------------------------------------------------------------
-*
-*                                AstroLib.cs
-*
-* this library contains various astrodynamic routines.
-*
-*                            companion code for
-*               fundamentals of astrodynamics and applications
-*                                    2022
-*                              by david vallado
-*
-*               email dvallado@comspoc.com, davallado@gmail.com
-*
-*    current :
-*               5 aug 24  david vallado
-*                           misc fixes
-*    changes :
-*              15 jan 19  david vallado
-*                           combine with astiod etc
-*              11 jan 18  david vallado
-*                           misc cleanup
-*              30 sep 15  david vallado
-*                           fix jd, jdfrac
-*              19 mar 14  david vallado
-*                           original baseline
-*       ----------------------------------------------------------------      */
+﻿// ----------------------------------------------------------------------------
+//
+//                                   AstroLib.cs
+//
+// this library contains various astrodynamic routines.
+//
+//                               companion code for
+//                  fundamentals of astrodynamics and applications
+//                                      2022
+//                                by david vallado
+//
+//                  email dvallado@comspoc.com, davallado@gmail.com
+//
+//   current :
+//              20 jan 2025  david vallado
+//                           original baseline
+//                           
+//    changes :
+//           
+//   uses
+//           MathTimeMethods;  // Edirection, globals
+//           EOPSPWMethods;    // EOPDataClass, SPWDataClass, iau80Class, iau06Class
+//
+//   defines
+//      EOpt            - coordinate system options                      e80, e96, e06cio, etc
+//      gravityConst    - gravity field constants                        mu, re, etc
+//      astroConst      - astronmoical constants                         au, speedoflight, etc
+//      xysdataClass    - class for xys iau06 parameters
+//      jpldedataClass  - class for sun moon ephemerides for JPL DE
+//           
+// ----------------------------------------------------------------------------      
 
 using System;
 using System.IO;
@@ -33,20 +38,13 @@ using System.Text.RegularExpressions;
 
 using MathTimeMethods;  // Edirection, globals
 using EOPSPWMethods;    // EOPDataClass, SPWDataClass, iau80Class, iau06Class
-using System.Net.NetworkInformation;
-using System.Security.Policy;
-using System.Security.Cryptography;
-using System.Configuration;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Net;
-using static AstroLibMethods.AstroLib;
+
 
 namespace AstroLibMethods
 {
     public class AstroLib
     {
-        public string AstroLibVersion = "AstroLib Version 2021-06-03";
+        public string AstroLibVersion = "AstroLib Version 2025-01-20";
 
         // setup the class so methods can be called
         public MathTimeLib MathTimeLibr = new MathTimeLib();
@@ -120,7 +118,6 @@ namespace AstroLibMethods
         {
             public double[] rsun = new double[3];
             public double[] rmoon = new double[3];
-            public Int32 year, mon, day, hr;
             public double rsmag, rmmag, mjd;
         };
         // use a class for all the jpl data so it can be processed
@@ -128,35 +125,36 @@ namespace AstroLibMethods
 
         public char printopt = 'n';
 
+
         // -----------------------------------------------------------------------------------------
         //                      coordinate transformation functions
         // -----------------------------------------------------------------------------------------
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function gstime00
-        *
-        *  this function finds the greenwich sidereal time (iau-2006/2000).
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    jdut1       - julian date in ut1             days from 4713 bc
-        *
-        *  outputs       :
-        *    gstime      - greenwich sidereal time        0 to 2pi rad
-        *
-        *  locals        :
-        *    temp        - temporary variable for doubles   rad
-        *    tut1        - julian centuries from the
-        *                  jan 1, 2000 12 h epoch (ut1)
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    vallado       2022, 217, eq 3-71
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function gstime00
+        //
+        //  this function finds the greenwich sidereal time (iau-2006/2000).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jdut1       - julian date in ut1                       days from 4713 bc
+        //
+        //  outputs       :
+        //    gstime      - greenwich sidereal time                  0 to 2pi rad
+        //
+        //  locals        :
+        //    temp        - temporary variable for doubles           rad
+        //    tut1        - julian centuries from the
+        //                  jan 1, 2000 12 h epoch (ut1)
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    vallado       2022, 217, eq 3-71
+        // -----------------------------------------------------------------------------
 
         public double[,] gstime00
             (
@@ -241,31 +239,31 @@ namespace AstroLibMethods
         }  // gstime00 
 
 
-        /* -----------------------------------------------------------------------------
-          *
-          *                           function gstime
-          *
-          *  this function finds the greenwich sidereal time (iau-82).
-          *
-          *  author        : david vallado           davallado@gmail.com    1 mar 2001
-          *
-          *  inputs          description                    range / units
-          *    jdut1       - julian date in ut1             days from 4713 bc
-          *
-          *  outputs       :
-          *    gstime      - greenwich sidereal time        0 to 2pi rad
-          *
-          *  locals        :
-          *    temp        - temporary variable for doubles   rad
-          *    tut1        - julian centuries from the
-          *                  jan 1, 2000 12 h epoch (ut1)
-          *
-          *  coupling      :
-          *    none
-          *
-          *  references    :
-          *    vallado       2022, 189, eq 3-48
-          * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function gstime
+        //
+        //  this function finds the greenwich sidereal time (iau-82).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jdut1       - julian date in ut1             days from 4713 bc
+        //
+        //  outputs       :
+        //    gstime      - greenwich sidereal time        0 to 2pi rad
+        //
+        //  locals        :
+        //    temp        - temporary variable for doubles   rad
+        //    tut1        - julian centuries from the
+        //                  jan 1, 2000 12 h epoch (ut1)
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    vallado       2022, 189, eq 3-48
+        // -----------------------------------------------------------------------------
 
         public double gstime
             (
@@ -290,30 +288,30 @@ namespace AstroLibMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-	    *                           procedure lstime
-	    *
-	    *  this procedure finds the local sidereal time at a given location. gst is from iau-82.
-	    *
-	    *  author        : david vallado           davallado@gmail.com    1 mar 2001
-	    *
-	    *  inputs          description                    range / units
-	    *    lon         - site longitude (west -)        -2pi to 2pi rad
-	    *    jdut1       - julian date in ut1             days from 4713 bc
-	    *
-	    *  outputs       :
-	    *    lst         - local sidereal time            0.0 to 2pi rad
-	    *    gst         - greenwich sidereal time        0.0 to 2pi rad
-	    *
-	    *  locals        :
-	    *    none.
-	    *
-	    *  coupling      :
-	    *    gstime        finds the greenwich sidereal time
-	    *
-	    *  references    :
-        *    vallado       2022, 190, Alg 15, ex 3-5
-	    * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //                           procedure lstime
+        //
+        //  this procedure finds the local sidereal time at a given location. gst is from iau-82.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    lon         - site longitude (west -)        -2pi to 2pi rad
+        //    jdut1       - julian date in ut1             days from 4713 bc
+        //
+        //  outputs       :
+        //    lst         - local sidereal time            0.0 to 2pi rad
+        //    gst         - greenwich sidereal time        0.0 to 2pi rad
+        //
+        //  locals        :
+        //    none.
+        //
+        //  coupling      :
+        //    gstime        finds the greenwich sidereal time
+        //
+        //  references    :
+        //    vallado       2022, 190, Alg 15, ex 3-5
+        // -----------------------------------------------------------------------------
 
         public void lstime
             (
@@ -325,44 +323,52 @@ namespace AstroLibMethods
             gst = gstime(jdut1);
             lst = lon + gst;
 
-            /* ------------------------ check quadrants --------------------- */
+            // ------------------------ check quadrants -----------------------
             lst = (lst % twopi);
             if (lst < 0.0)
                 lst = lst + twopi;
         }  // lstime
 
 
-        /* -----------------------------------------------------------------------------
-         *
-         *                           function fundarg
-         *
-         *  this function calculates the delauany variables and planetary values for
-         *  several theories.
-         *
-         *  author        : david vallado           davallado@gmail.com   16 jul 2004
-         *
-         *  inputs          description                                  range / units
-         *    ttt         - julian centuries of tt   
-         *    opt         - method option                                e00cio, e00a, e96, e80
-         *
-         *  outputs       :
-         *    fArgs       - fundamental arguments in an array                 
-         *      l           - mean anomaly of the moon                          rad
-         *      l1          - mean anomaly of the Sun                           rad
-         *      f           - mean longitude of the Moon minus that of asc node rad
-         *      d           - mean elongation of the Moon from the Sun          rad
-         *      omega       - mean longitude of the ascending node of the Moon  rad
-         *      planetary longitudes                                            rad
-         *
-         *  locals        :
-         *    ttt2,ttt3,  - powers of ttt
-         *  
-         *  coupling      :
-         *    none        -
-         *
-         *  references    :
-         *    vallado       2022, 210-212, 226
-         * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function fundarg
+        //
+        //  this function calculates the delauany variables and planetary values for
+        //  several theories.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ttt         - julian centuries of tt   
+        //    opt         - method option                                  e00cio, e00a, e96, e80
+        //
+        //  outputs       :
+        //    fArgs       - fundamental arguments in an array[14]                 
+        //    1  l        - mean anomaly of the moon                              rad
+        //    2  l1       - mean anomaly of the Sun                               rad
+        //    3  f        - mean longitude of the Moon minus that of asc node     rad
+        //    4  d        - mean elongation of the Moon from the Sun              rad
+        //    5  omega    - mean longitude of the ascending node of the Moon      rad
+        //    6 lonmer    - longitude of mercury                                  rad
+        //    7 lonven    - longitude of venus                                    rad
+        //    8 lonear    - longitude of earth                                    rad
+        //    9 lonmar    - longitude of mars                                     rad
+        //    10 lonjup   - longitude of jupiter                                  rad
+        //    11 lonsat   - longitude of saturn                                   rad
+        //    12 lonurn   - longitude of uranus                                   rad
+        //    13 lonnep   - longitude of neptune                                  rad
+        //    14 precrate - prescession rate                                      rad
+        //
+        //  locals        :
+        //    ttt2,ttt3,  - powers of ttt
+        //  
+        //  coupling      :
+        //    none        -
+        //
+        //  references    :
+        //    vallado       2022, 210-212, 226
+        // -----------------------------------------------------------------------------
 
         public void fundarg
             (
@@ -540,50 +546,50 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function iau06xysS
-         *
-         *  this function calculates the XYS parameters for the iau2006 cio theory.
-         *
-         *  author        : david vallado           davallado@gmail.com   16 jul 2004
-         *
-         *  inputs description                                         range / units
-         *    ttt         - julian centuries of tt
-         *    fArgs       - fundamental arguments in an array                 
-         *      l           - mean anomaly of the moon                          rad
-         *      l1          - mean anomaly of the Sun                           rad
-         *      f           - mean longitude of the Moon minus that of asc node rad
-         *      d           - mean elongation of the Moon from the Sun          rad
-         *      omega       - mean longitude of the ascending node of the Moon  rad
-         *      planetary longitudes                                            rad
-         *
-         *  outputs       :
-         *    x           - coordinate of cip                                rad
-         *    y           - coordinate of cip                                rad
-         *    s           - coordinate                                       rad
-         *
-         *  locals        :
-         *    axs0        - real coefficients for x                          rad
-         *    ax0i        - integer coefficients for x
-         *    ays0        - real coefficients for y                          rad
-         *    ay0i        - integer coefficients for y
-         *    ass0        - real coefficients for s                          rad
-         *    as0i        - integer coefficients for s
-         *    apn0         - real coefficients for nutation                  rad
-         *    apn0i        - integer coefficients for nutation
-         *    appl        - real coefficients for planetary nutation rad
-         *    appli       - integer coefficients for planetary nutation
-         *    ttt2,ttt3,  - powers of ttt
-         *    deltaeps    - change in obliquity                              rad
-         *    many others
-         *
-         *  coupling      :
-         *    iau06in     - initialize the arrays
-         *
-         *  references    : 
-         *    vallado       2022, 214-216
-         * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function iau06xysS
+        //
+        //  this function calculates the XYS parameters for the iau2006 cio theory.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ttt         - julian centuries of tt
+        //    fArgs       - fundamental arguments in an array                 
+        //      l           - mean anomaly of the moon                          rad
+        //      l1          - mean anomaly of the Sun                           rad
+        //      f           - mean longitude of the Moon minus that of asc node rad
+        //      d           - mean elongation of the Moon from the Sun          rad
+        //      omega       - mean longitude of the ascending node of the Moon  rad
+        //      planetary longitudes                                            rad
+        //
+        //  outputs       :
+        //    x           - coordinate of cip                                rad
+        //    y           - coordinate of cip                                rad
+        //    s           - coordinate                                       rad
+        //
+        //  locals        :
+        //    axs0        - real coefficients for x                          rad
+        //    ax0i        - integer coefficients for x
+        //    ays0        - real coefficients for y                          rad
+        //    ay0i        - integer coefficients for y
+        //    ass0        - real coefficients for s                          rad
+        //    as0i        - integer coefficients for s
+        //    apn0         - real coefficients for nutation                  rad
+        //    apn0i        - integer coefficients for nutation
+        //    appl        - real coefficients for planetary nutation rad
+        //    appli       - integer coefficients for planetary nutation
+        //    ttt2,ttt3,  - powers of ttt
+        //    deltaeps    - change in obliquity                              rad
+        //    many others
+        //
+        //  coupling      :
+        //    iau06in     - initialize the arrays
+        //
+        //  references    : 
+        //    vallado       2022, 214-216
+        // ------------------------------------------------------------------------------
 
         public void iau06xysS
             (
@@ -796,46 +802,44 @@ namespace AstroLibMethods
         }  // iau06xysS
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function iau06xys
-        *
-        *  this function calculates the transformation matrix that accounts for the
-        *    effects of precession-nutation in the iau2006 cio theory.
-        *
-        *  author        : david vallado           davallado@gmail.com   16 jul 2004
-        *
-        *  revisions
-        *    vallado     - consolidate with iau 2000                     14 feb 2005
-        *
-        *  inputs description                                           range / units
-	    *    jdtt        - julian date in tt                           days from 4713 bc
-        *    ttt         - julian centuries of tt
-        *    ddx         - delta x correction to gcrf                       rad
-        *    ddy         - delta y correction to gcrf                       rad
-        *    interp      - interpolation type (x for full series)           x, n, l, s
-        *                  none, linear, spline
-        *
-        *  outputs       :
-        *    nut         - transformation matrix for ire-gcrf
-        *    x           - coordinate of cip                                rad
-        *    y           - coordinate of cip                                rad
-        *    s           - coordinate                                       rad
-        *
-        *  locals        :
-        *    a           - 
-        *
-        *  coupling      :
-        *    iau06in     - initialize the arrays
-        *
-        *  references    : 
-        *    vallado       2022, 214, 221
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function iau06xys
+        //
+        //  this function calculates the transformation matrix that accounts for the
+        //    effects of precession-nutation in the iau2006 cio theory.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jdtt        - julian date in tt                           days from 4713 bc
+        //    ttt         - julian centuries of tt
+        //    ddx         - delta x correction to gcrf                       rad
+        //    ddy         - delta y correction to gcrf                       rad
+        //    interp      - interpolation type (x for full series)           x, n, l, s
+        //                  none, linear, spline
+        //
+        //  outputs       :
+        //    nut         - transformation matrix for ire-gcrf
+        //    x           - coordinate of cip                                rad
+        //    y           - coordinate of cip                                rad
+        //    s           - coordinate                                       rad
+        //
+        //  locals        :
+        //    a           - 
+        //
+        //  coupling      :
+        //    iau06in     - initialize the arrays
+        //
+        //  references    : 
+        //    vallado       2022, 214, 221
+        // ------------------------------------------------------------------------------
 
         public double[,] iau06xys
         (
         double jdtt, double jdftt, double ddx, double ddy, char interp,
-        EOPSPWLib.iau06Class iau06arr, double[] fArgs06, xysdataClass[] xysarr, out double x, out double y, out double s
+        EOPSPWLib.iau06Class iau06arr, double[] fArgs06, xysdataClass[] xysarr,
+        out double x, out double y, out double s
         )
         {
             double[,] nut1 = new double[3, 3];
@@ -851,7 +855,7 @@ namespace AstroLibMethods
                 findxysparam(jdtt, jdftt, interp, xysarr, out x, out y, out s);
 
             // add corrections if available
-            
+
             x = x + ddx;
             y = y + ddy;
 
@@ -888,36 +892,33 @@ namespace AstroLibMethods
         }  // iau06xys
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function createXYS
-        *
-        *  this function creates the xys data file. the iau-2006/2000 cio series is long
-        *  and can consume comutational time. this appraoches precalculates the xys parameters
-        *  and stores in a datafile for very fast efficient use. 
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jan 2018
-        *
-        *  revisions
-        *
-        *  inputs          description                           range / units
-        *    xysLoc      - location for xys data file  
-        *    infilename  - file name
-        *
-        *  outputs       :
-        *    xysarr      - array of xys data records
-        *    jdxysstart  - julian date of the start of the xysarr data
-        *    jdfxysstart - julian date fraction of the start of the xysarr data
-        *
-        *  locals        :
-        *                -
-        *
-        *  coupling      :
-        *
-        *  references    :
-        *
-        *  -------------------------------------------------------------------------- */
-
+        // -----------------------------------------------------------------------------
+        //
+        //                           function createXYS
+        //
+        //  this function creates the xys data file. the iau-2006/2000 cio series is long
+        //  and can consume comutational time. this appraoches precalculates the xys parameters
+        //  and stores in a datafile for very fast efficient use. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    xysLoc      - location for xys data file  
+        //    infilename  - file name
+        //
+        //  outputs       :
+        //    xysarr      - array of xys data records
+        //    jdxysstart  - julian date of the start of the xysarr data
+        //    jdfxysstart - julian date fraction of the start of the xysarr data
+        //
+        //  locals        :
+        //                -
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //
+        //  ----------------------------------------------------------------------------
 
         // create a file of XYS values for interpolation
         public void createXYS
@@ -958,31 +959,31 @@ namespace AstroLibMethods
         }  // create XYS
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function readXYS
-        *
-        *  this function initializes the xys iau2006 iau data. the input data files
-        *  are from processing the ascii files into a text file of xys calcualtion over
-        *  many years.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jan 2018
-        *
-        *  inputs          description                           range / units
-        *    xysLoc      - location for xys data file  
-        *    infilename  - file name
-        *
-        *  outputs       :
-        *    xysarr      - array of xys data records
-        *    jdxysstart  - julian date of the start of the xysarr data
-        *    jdfxysstart - julian date fraction of the start of the xysarr data
-        *
-        *  locals        :
-        *    pattern     - regex expression format
-        *
-        *  references    :
-        *
-        *  -------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function readXYS
+        //
+        //  this function initializes the xys iau2006 iau data. the input data files
+        //  are from processing the ascii files into a text file of xys calcualtion over
+        //  many years.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    xysLoc      - location for xys data file  
+        //    infilename  - file name
+        //
+        //  outputs       :
+        //    xysarr      - array of xys data records
+        //    jdxysstart  - julian date of the start of the xysarr data
+        //    jdfxysstart - julian date fraction of the start of the xysarr data
+        //
+        //  locals        :
+        //    pattern     - regex expression format
+        //
+        //  references    :
+        //
+        //  ----------------------------------------------------------------------------
 
         public void readXYS
             (
@@ -1024,41 +1025,39 @@ namespace AstroLibMethods
                 }
             }
 
-            xysdesize = i;  // global size of the data read in
         }  // readXYS
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function findxysparam
-        *
-        *  this routine finds the xys parameters for the iau 2006/2000 transformation. 
-        *  several types of interpolation are available. this allows you to use the full cio
-        *  series, but maintain very fast performance. 
-        *
-        *  author        : david vallado               davallado@gmail.com   12 dec 2005
-        *
-        *  inputs          description                               range / units
-        *    jdttt         - epoch julian date                     days from 4713 BC
-        *    jdftt         - epoch julian date fraction            day fraction from jdtt
-        *    interp        - interpolation                        n-none, l-linear, s-spline
-        *    xysarr        - array of xys data records
-        *    jdxysstart    - julian date of the start of the xysarr data (set in initxys)
-        *
-        *  outputs       :
-        *    x           - x component of cio                         rad
-        *    y           - y component of cio                         rad
-        *    s           -                                            rad
-        *
-        *  locals        :
-        *                -
-        *
-        *  coupling      :
-        *    none        -
-        *
-        *  references    :
-        *    vallado       2013,
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function findxysparam
+        //
+        //  this routine finds the xys parameters for the iau 2006/2000 transformation. 
+        //  several types of interpolation are available. this allows you to use the full cio
+        //  series, but maintain very fast performance. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jdttt         - epoch julian date                     days from 4713 BC
+        //    jdftt         - epoch julian date fraction            day fraction from jdtt
+        //    interp        - interpolation                        n-none, l-linear, s-spline
+        //    xysarr        - array of xys data records
+        //
+        //  outputs       :
+        //    x           - x component of cio                         rad
+        //    y           - y component of cio                         rad
+        //    s           -                                            rad
+        //
+        //  locals        :
+        //                -
+        //
+        //  coupling      :
+        //    none        -
+        //
+        //  references    :
+        //    vallado       2013,
+        // -----------------------------------------------------------------------------
 
         public void findxysparam
             (
@@ -1138,53 +1137,50 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function iau06pn
-         *
-         *  this function calculates the transformation matrix that accounts for the
-         *    effects of precession-nutation in the iau2010 theory.
-         *
-         *  author        : david vallado           davallado@gmail.com   16 jul 2004
-         *
-         *  revisions
-         *    vallado     - consolidate with iau 2000                     14 feb 2005
-         *
-         *  inputs description                                         range / units
-         *    ttt         - julian centuries of tt
-         *
-         *  outputs       :
-         *    nut         - transformation matrix for ire-gcrf
-         *    x           - coordinate of cip                                rad
-         *    y           - coordinate of cip                                rad
-         *    s           - coordinate                                       rad
-         *
-         *  locals        :
-         *    axs0        - real coefficients for x                          rad
-         *    ax0i        - integer coefficients for x
-         *    ays0        - real coefficients for y                          rad
-         *    ay0i        - integer coefficients for y
-         *    ass0        - real coefficients for s                          rad
-         *    as0i        - integer coefficients for s
-         *    apn0        - real coefficients for nutation                   rad
-         *    apn0i       - integer coefficients for nutation
-         *    appl        - real coefficients for planetary nutation         rad
-         *    appli       - integer coefficients for planetary nutation
-         *    ttt2,ttt3,  - powers of ttt
-         *    fArgs[0]    - delaunay element                                 rad
-         *    fArgs[1]    - delaunay element                                 rad
-         *    fArgs[2]    - delaunay element                                 rad
-         *    fArgs[3]    - delaunay element                                 rad
-         *    fArgs[4]    - delaunay element                                 rad
-         *    deltaeps    - change in obliquity                              rad
-         *    many others
-         *
-        *  coupling      :
-         *    iau06in     - initialize the arrays
-         *
-         *  references    : 
-         *    vallado       2013, 212-214
-         * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function iau06pn
+        //
+        //  this function calculates the transformation matrix that accounts for the
+        //    effects of precession-nutation in the iau2010 theory.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ttt         - julian centuries of tt
+        //
+        //  outputs       :
+        //    nut         - transformation matrix for ire-gcrf
+        //    x           - coordinate of cip                                rad
+        //    y           - coordinate of cip                                rad
+        //    s           - coordinate                                       rad
+        //
+        //  locals        :
+        //    axs0        - real coefficients for x                          rad
+        //    ax0i        - integer coefficients for x
+        //    ays0        - real coefficients for y                          rad
+        //    ay0i        - integer coefficients for y
+        //    ass0        - real coefficients for s                          rad
+        //    as0i        - integer coefficients for s
+        //    apn0        - real coefficients for nutation                   rad
+        //    apn0i       - integer coefficients for nutation
+        //    appl        - real coefficients for planetary nutation         rad
+        //    appli       - integer coefficients for planetary nutation
+        //    ttt2,ttt3,  - powers of ttt
+        //    fArgs[0]    - delaunay element                                 rad
+        //    fArgs[1]    - delaunay element                                 rad
+        //    fArgs[2]    - delaunay element                                 rad
+        //    fArgs[3]    - delaunay element                                 rad
+        //    fArgs[4]    - delaunay element                                 rad
+        //    deltaeps    - change in obliquity                              rad
+        //    many others
+        //
+        //  coupling      :
+        //    iau06in     - initialize the arrays
+        //
+        //  references    : 
+        //    vallado       2013, 212-214
+        // ------------------------------------------------------------------------------
 
         public double[,] iau06pn  // may not be needed now
             (
@@ -1246,39 +1242,39 @@ namespace AstroLibMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function precess
-        *
-        *  this function calculates the transformation matrix that accounts for the effects
-        *    of precession. both the 1980 and 2006 theories are handled. note that the
-        *    required parameters differ a little.
-        *
-        *  author        : david vallado           davallado@gmail.com   25 jun 2002
-        *
-        *  inputs          description                                 range / units
-        *    ttt         - julian centuries of tt
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *
-        *  outputs       :
-        *    psia        - cannonical precession angle                    rad    (00 only)
-        *    wa          - cannonical precession angle                    rad    (00 only)
-        *    epsa        - cannonical precession angle                    rad    (00 only)
-        *    chia        - cannonical precession angle                    rad    (00 only)
-        *    prec        - matrix converting from "mod" to gcrf
-        *
-        *  locals        :
-        *    zeta        - precession angle                               rad
-        *    z           - precession angle                               rad
-        *    theta       - precession angle                               rad
-        *    oblo        - obliquity value at j2000 epoch                  "
-        *
-        *  coupling      :
-        *    none        -
-        *
-        *  references    :
-        *    vallado       2022, 219, 227-229
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function precess
+        //
+        //  this function calculates the transformation matrix that accounts for the effects
+        //    of precession. both the 1980 and 2006 theories are handled. note that the
+        //    required parameters differ a little.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ttt         - julian centuries of tt
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //
+        //  outputs       :
+        //    psia        - cannonical precession angle                    rad    (00 only)
+        //    wa          - cannonical precession angle                    rad    (00 only)
+        //    epsa        - cannonical precession angle                    rad    (00 only)
+        //    chia        - cannonical precession angle                    rad    (00 only)
+        //    prec        - matrix converting from "mod" to gcrf
+        //
+        //  locals        :
+        //    zeta        - precession angle                               rad
+        //    z           - precession angle                               rad
+        //    theta       - precession angle                               rad
+        //    oblo        - obliquity value at j2000 epoch                  "
+        //
+        //  coupling      :
+        //    none        -
+        //
+        //  references    :
+        //    vallado       2022, 219, 227-229
+        // -----------------------------------------------------------------------------
 
         public double[,] precess
             (
@@ -1404,48 +1400,43 @@ namespace AstroLibMethods
         }  //  precess 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function nutation
-        *
-        *  this function calculates the transformation matrix that accounts for the
-        *    effects of nutation within iau-76/fk5.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 jun 2002
-        *
-        *  revisions
-        *    vallado     - consolidate with iau 2000                     14 feb 2005
-        *    vallado     - conversion to c++                             21 feb 2005
-        *    vallado     - conversion to c#                              16 Nov 2011
-        *
-        *  inputs          description                                 range / units
-        *    ttt         - julian centuries of tt
-        *    ddpsi       - delta psi correction to gcrf                      rad
-        *    ddeps       - delta eps correction to gcrf                      rad
-        *    iau80arr    - record containing the iau80 constants rad
-        *    opt         - method option                                 e00cio, e00a, e96, e80
-        *
-        *  outputs       :
-        *    deltapsi    - nutation in longitude angle                       rad
-        *    trueeps     - true obliquity of the ecliptic                    rad
-        *    meaneps     - mean obliquity of the ecliptic                    rad
-        *    nut         - transform matrix for tod - mod
-        *
-        *  locals        :
-        *    iar80       - integers for fk5 1980
-        *    rar80       - reals for fk5 1980                                rad
-         *    fArgs[0]    - delaunay element                                 rad
-         *    fArgs[1]    - delaunay element                                 rad
-         *    fArgs[2]    - delaunay element                                 rad
-         *    fArgs[3]    - delaunay element                                 rad
-         *    fArgs[4]    - delaunay element                                 rad
-        *    deltaeps    - change in obliquity                               rad
-        *
-        *  coupling      :
-        *
-        *  references    :
-        *    vallado       2013, 213, 224
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function nutation
+        //
+        //  this function calculates the transformation matrix that accounts for the
+        //    effects of nutation within iau-76/fk5.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ttt         - julian centuries of tt
+        //    ddpsi       - delta psi correction to gcrf                      rad
+        //    ddeps       - delta eps correction to gcrf                      rad
+        //    iau80arr    - record containing the iau80 constants rad
+        //    opt         - method option                                 e00cio, e00a, e96, e80
+        //
+        //  outputs       :
+        //    deltapsi    - nutation in longitude angle                       rad
+        //    trueeps     - true obliquity of the ecliptic                    rad
+        //    meaneps     - mean obliquity of the ecliptic                    rad
+        //    nut         - transform matrix for tod - mod
+        //
+        //  locals        :
+        //    iar80       - integers for fk5 1980
+        //    rar80       - reals for fk5 1980                                rad
+        //    fArgs[0]    - delaunay element                                 rad
+        //    fArgs[1]    - delaunay element                                 rad
+        //    fArgs[2]    - delaunay element                                 rad
+        //    fArgs[3]    - delaunay element                                 rad
+        //    fArgs[4]    - delaunay element                                 rad
+        //    deltaeps    - change in obliquity                               rad
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //    vallado       2013, 213, 224
+        // -----------------------------------------------------------------------------
 
         public double[,] nutation
             (
@@ -1510,54 +1501,51 @@ namespace AstroLibMethods
         }  //  nutation 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                        function precnutbias06a
-        *
-        *  this function calculates the transformation matrix that accounts for the
-        *    effects of precession-nutation-bias in the iau2006a equinox theory.
-        *
-        *  author        : david vallado           davallado@gmail.com   16 jul 2004
-        *
-        *  revisions
-        *    vallado     - consolidate with iau 2000                     14 feb 2005
-        *
-        *  inputs description                    range / units
-        *    ttt         - julian centuries of tt
-        *
-        *  outputs       :
-        *    nut         - transformation matrix for ire-gcrf
-        *    deltapsi    - change in longitude rad
-         *    fArgs[0]    - delaunay element                                 rad
-         *    fArgs[1]    - delaunay element                                 rad
-         *    fArgs[2]    - delaunay element                                 rad
-         *    fArgs[3]    - delaunay element                                 rad
-         *    fArgs[4]    - delaunay element                                 rad
-        *    many others for planetary values             rad
-        *
-        *  locals        :
-        *    x           - coordinate rad
-        *    y           - coordinate rad
-        *    s           - coordinate rad
-        *    ax0         - real coefficients for x rad
-        *    ax0i        - integer coefficients for x
-        *    ay0         - real coefficients for y rad
-        *    ay0i        - integer coefficients for y
-        *    as0         - real coefficients for s rad
-        *    as0i        - integer coefficients for s
-        *    apn0         - real coefficients for nutation rad
-        *    apn0i        - integer coefficients for nutation
-        *    appl        - real coefficients for planetary nutation rad
-        *    appli       - integer coefficients for planetary nutation
-        *    ttt2,ttt3,  - powers of ttt
-        *    deltaeps    - change in obliquity rad
-        *
-        *  coupling      :
-        *    precess     - find the precession quantities
-        *
-        *  references    :
-        *    vallado       2004, 212-214
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                        function precnutbias06a
+        //
+        //  this function calculates the transformation matrix that accounts for the
+        //    effects of precession-nutation-bias in the iau2006a equinox theory.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ttt         - julian centuries of tt
+        //
+        //  outputs       :
+        //    nut         - transformation matrix for ire-gcrf
+        //    deltapsi    - change in longitude rad
+        //    fArgs[0]    - delaunay element                                 rad
+        //    fArgs[1]    - delaunay element                                 rad
+        //    fArgs[2]    - delaunay element                                 rad
+        //    fArgs[3]    - delaunay element                                 rad
+        //    fArgs[4]    - delaunay element                                 rad
+        //    many others for planetary values             rad
+        //
+        //  locals        :
+        //    x           - coordinate rad
+        //    y           - coordinate rad
+        //    s           - coordinate rad
+        //    ax0         - real coefficients for x rad
+        //    ax0i        - integer coefficients for x
+        //    ay0         - real coefficients for y rad
+        //    ay0i        - integer coefficients for y
+        //    as0         - real coefficients for s rad
+        //    as0i        - integer coefficients for s
+        //    apn0         - real coefficients for nutation rad
+        //    apn0i        - integer coefficients for nutation
+        //    appl        - real coefficients for planetary nutation rad
+        //    appli       - integer coefficients for planetary nutation
+        //    ttt2,ttt3,  - powers of ttt
+        //    deltaeps    - change in obliquity rad
+        //
+        //  coupling      :
+        //    precess     - find the precession quantities
+        //
+        //  references    :
+        //    vallado       2004, 212-214
+        // ------------------------------------------------------------------------------
 
         public double[,] precnutbias00a
             (
@@ -1763,47 +1751,42 @@ namespace AstroLibMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function nutationqmod
-        *
-        *  this function calculates the transformation matrix that accounts for the
-        *    effects of nutation within the qmod paradigm. There are several assumptions
-        *    mentioned in the comments below. 
-        *
-        *  author        : david vallado           davallado@gmail.com   27 jun 2002
-        *
-        *  revisions
-        *    vallado     - consolidate with iau 2000                     14 feb 2005
-        *    vallado     - conversion to c++                             21 feb 2005
-        *    vallado     - conversion to c#                              16 Nov 2011
-        *
-        *  inputs          description                                range / units
-        *    ttt         - julian centuries of tt
-        *    iau80arr    - record containing the iau80 constants rad
-        *    opt         - method option                               e00a, e00cio, e96, e80
-        *
-        *  outputs       :
-        *    deltapsi    - nutation in longiotude angle                   rad
-        *    trueeps     - true obliquity of the ecliptic                 rad
-        *    meaneps     - mean obliquity of the ecliptic                 rad
-        *    nut         - transform matrix for tod - mod
-        *
-        *  locals        :
-        *    iar80       - integers for fk5 1980
-        *    rar80       - reals for fk5 1980                             rad
-        *    fArgs[0]    - delaunay element                                 rad
-        *    fArgs[1]    - delaunay element                                 rad
-        *    fArgs[2]    - delaunay element                                 rad
-        *    fArgs[3]    - delaunay element                                 rad
-        *    fArgs[4]    - delaunay element                                 rad
-        *    deltaeps    - change in obliquity                            rad
-        *
-        *  coupling      :
-        *
-        *  references    :
-        *    vallado       2013, 213, 224
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function nutationqmod
+        //
+        //  this function calculates the transformation matrix that accounts for the
+        //    effects of nutation within the qmod paradigm. There are several assumptions
+        //    mentioned in the comments below. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ttt         - julian centuries of tt
+        //    iau80arr    - record containing the iau80 constants rad
+        //    opt         - method option                               e00a, e00cio, e96, e80
+        //
+        //  outputs       :
+        //    deltapsi    - nutation in longiotude angle                   rad
+        //    trueeps     - true obliquity of the ecliptic                 rad
+        //    meaneps     - mean obliquity of the ecliptic                 rad
+        //    nut         - transform matrix for tod - mod
+        //
+        //  locals        :
+        //    iar80       - integers for fk5 1980
+        //    rar80       - reals for fk5 1980                             rad
+        //    fArgs[0]    - delaunay element                                 rad
+        //    fArgs[1]    - delaunay element                                 rad
+        //    fArgs[2]    - delaunay element                                 rad
+        //    fArgs[3]    - delaunay element                                 rad
+        //    fArgs[4]    - delaunay element                                 rad
+        //    deltaeps    - change in obliquity                            rad
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //    vallado       2013, 213, 224
+        // -----------------------------------------------------------------------------
 
         public double[,] nutationqmod
             (
@@ -1866,42 +1849,42 @@ namespace AstroLibMethods
         }  //  nutationqmod 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function sidereal
-        *
-        *  this function calculates the transformation matrix that accounts for the
-        *    effects of sidereal time. Notice that deltaspi should not be moded to a
-        *    positive number because it is multiplied rather than used in a
-        *    trigonometric argument.
-        *
-        *  author        : david vallado           davallado@gmail.com   25 jun 2002
-        *
-        *  inputs          description                                 range / units
-        *    jdut1       - julian centuries of ut1                           days
-        *    deltapsi    - nutation angle                                    rad
-        *    meaneps     - mean obliquity of the ecliptic                    rad
-        *    lod         - length of day                                     sec
-        *    eqeterms    - terms for ast calculation                         0,2
-        *
-        *  outputs       :
-        *    st          - transformation matrix for pef - tod
-        *    stdot       - transformation matrix for pef - tod rate
-        *
-        *  locals        :
-        *    gmst         - mean greenwich sidereal time                 0 to 2pi rad
-        *    ast         - apparent gmst                                 0 to 2pi rad
-        *    hr          - hour                                              hr
-        *    min         - minutes                                           min
-        *    sec         - seconds                                           sec
-        *    temp        - temporary vector
-        *    tempval     - temporary variable
-        *
-        *  coupling      :
-        *
-        *  references    :
-        *    vallado       2013, 212, 223
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function sidereal
+        //
+        //  this function calculates the transformation matrix that accounts for the
+        //    effects of sidereal time. Notice that deltaspi should not be moded to a
+        //    positive number because it is multiplied rather than used in a
+        //    trigonometric argument.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jdut1       - julian centuries of ut1                           days
+        //    deltapsi    - nutation angle                                    rad
+        //    meaneps     - mean obliquity of the ecliptic                    rad
+        //    lod         - length of day                                     sec
+        //    eqeterms    - terms for ast calculation                         0,2
+        //
+        //  outputs       :
+        //    st          - transformation matrix for pef - tod
+        //    stdot       - transformation matrix for pef - tod rate
+        //
+        //  locals        :
+        //    gmst         - mean greenwich sidereal time                 0 to 2pi rad
+        //    ast         - apparent gmst                                 0 to 2pi rad
+        //    hr          - hour                                              hr
+        //    min         - minutes                                           min
+        //    sec         - seconds                                           sec
+        //    temp        - temporary vector
+        //    tempval     - temporary variable
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //    vallado       2013, 212, 223
+        // -----------------------------------------------------------------------------
 
         public double[,] sidereal
             (
@@ -1975,34 +1958,34 @@ namespace AstroLibMethods
         }  //  sidereal 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function polarm
-        *
-        *  this function calculates the transformation matrix that accounts for polar
-        *    motion within the iau-76/fk5, iau-2000a, and iau2006/2000 equinox systems. 
-        *
-        *  author        : david vallado           davallado@gmail.com   25 jun 2002
-        *
-        *  inputs          description                                 range / units
-        *    xp          - polar motion coefficient                         rad
-        *    yp          - polar motion coefficient                         rad
-        *    ttt         - julian centuries of tt (00 theory only)
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *
-        *  outputs       :
-        *    pm          - transformation matrix for itrf - pef
-        *
-        *  locals        :
-        *    convrt      - conversion from arcsec to rad
-        *    sp          - s prime value (00 theory only)
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 212, 223
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function polarm
+        //
+        //  this function calculates the transformation matrix that accounts for polar
+        //    motion within the iau-76/fk5, iau-2000a, and iau2006/2000 equinox systems. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    xp          - polar motion coefficient                         rad
+        //    yp          - polar motion coefficient                         rad
+        //    ttt         - julian centuries of tt (00 theory only)
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //
+        //  outputs       :
+        //    pm          - transformation matrix for itrf - pef
+        //
+        //  locals        :
+        //    convrt      - conversion from arcsec to rad
+        //    sp          - s prime value (00 theory only)
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 212, 223
+        // -----------------------------------------------------------------------------
 
         public double[,] polarm
             (
@@ -2067,35 +2050,33 @@ namespace AstroLibMethods
         }  //  polarm 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function framebias
-        *
-        *  this function calculates the transformation matrix that accounts for frame
-        *    bias.
-        *
-        *  author        : david vallado           davallado@gmail.com   19 sep 05
-        *
-        *  revisions
-        *
-        *  inputs          description                                 range / units
-        *    opt         - frame bias method option                 'j' j2000, 'f' fk5
-        *
-        *  outputs       :
-        *    term1       - alpha delta o                                rad
-        *    term2       - psi deltab Math.Sin(eps deltao)                   rad
-        *    term3       - eps delta b                                  rad
-        *    fb          - frame bias matrix                            rad
-        *
-        *  locals        :
-        *    convrt      - conversion from arcsec to rad
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 217
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function framebias
+        //
+        //  this function calculates the transformation matrix that accounts for frame
+        //    bias.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    opt         - frame bias method option                 'j' j2000, 'f' fk5
+        //
+        //  outputs       :
+        //    term1       - alpha delta o                                rad
+        //    term2       - psi deltab Math.Sin(eps deltao)                   rad
+        //    term3       - eps delta b                                  rad
+        //    fb          - frame bias matrix                            rad
+        //
+        //  locals        :
+        //    convrt      - conversion from arcsec to rad
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 217
+        // -----------------------------------------------------------------------------
 
         public double[,] framebias
             (
@@ -2147,67 +2128,67 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function eci_ecef
-        *
-        *  this function transforms between the earth fixed (itrf) frame, and
-        *    the eci mean equator mean equinox (gcrf).
-        *
-        *  author        : david vallado           davallado@gmail.com    4 jun 2002
-        *
-        *  inputs          description                                  range / units
-        *    recef       - position vector earth fixed                   km
-        *    vecef       - velocity vector earth fixed                   km/s
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *    iau80arr    - iau76/fk5 eop constants
-        *    iau06arr    - iau2006 eop constants
-        *    jdtt        - julian date of tt                             days from 4713 bc
-        *    ttt         - julian centuries of tt                        centuries
-        *    jdut1       - julian date of ut1                            days from 4713 bc
-        *    lod         - excess length of day                          sec
-        *    xp          - polar motion coefficient                      rad
-        *    yp          - polar motion coefficient                      rad
-        *    ddpsi       - delta psi correction to gcrf                  rad
-        *    ddeps       - delta eps correction to gcrf                  rad
-        *
-        *  outputs       :
-        *    reci        - position vector eci                           km
-        *    veci        - velocity vector eci                           km/s
-        *
-        *  locals        :
-        *    eqeterms    - terms for ast calculation                     0,2
-        *    deltapsi    - nutation angle                                rad
-        *    trueeps     - true obliquity of the ecliptic                rad
-        *    meaneps     - mean obliquity of the ecliptic                rad
-        *    prec        - matrix for mod - eci 
-        *    nut         - matrix for tod - mod 
-        *    st          - matrix for pef - tod 
-        *    stdot       - matrix for pef - tod rate
-        *    pm          - matrix for ecef - pef 
-        *
-        *  coupling      :
-        *   precess      - rotation for precession       
-        *   nutation     - rotation for nutation          
-        *   sidereal     - rotation for sidereal time     
-        *   polarm       - rotation for polar motion      
-        *
-        *  references    :
-        *    vallado       2013, 223-231
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function eci_ecef
+        //
+        //  this function transforms between the earth fixed (itrf) frame, and
+        //    the eci mean equator mean equinox (gcrf).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector earth fixed                   km
+        //    vecef       - velocity vector earth fixed                   km/s
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau80arr    - iau76/fk5 eop constants
+        //    iau06arr    - iau2006 eop constants
+        //    jdtt        - julian date of tt                             days from 4713 bc
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //    lod         - excess length of day                          sec
+        //    xp          - polar motion coefficient                      rad
+        //    yp          - polar motion coefficient                      rad
+        //    ddpsi       - delta psi correction to gcrf                  rad
+        //    ddeps       - delta eps correction to gcrf                  rad
+        //
+        //  outputs       :
+        //    reci        - position vector eci                           km
+        //    veci        - velocity vector eci                           km/s
+        //
+        //  locals        :
+        //    eqeterms    - terms for ast calculation                     0,2
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    prec        - matrix for mod - eci 
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //    pm          - matrix for ecef - pef 
+        //
+        //  coupling      :
+        //   precess      - rotation for precession       
+        //   nutation     - rotation for nutation          
+        //   sidereal     - rotation for sidereal time     
+        //   polarm       - rotation for polar motion      
+        //
+        //  references    :
+        //    vallado       2013, 223-231
+        // ------------------------------------------------------------------------------
 
         public void eci_ecef
             (
             ref double[] reci, ref double[] veci,
             Enum direct,
             ref double[] recef, ref double[] vecef,
-            EOPSPWLib.iau80Class iau80arr, 
+            EOPSPWLib.iau80Class iau80arr,
             double jdtt, double jdftt, double jdut1, double lod,
             double xp, double yp, double ddpsi, double ddeps
             )
         {
             double[] fArgs = new double[14];
-            double psia, wa, epsa, chia, x, y, s, gst, ttt;
+            double psia, wa, epsa, chia, ttt;
             double meaneps, deltapsi, deltaeps, trueeps;
             double[] omegaearth = new double[3];
             double[] rpef = new double[3];
@@ -2234,7 +2215,6 @@ namespace AstroLibMethods
             double[,] trans = new double[3, 3];
 
             int eqeterms = 2;
-            char interp = 's';
             deltapsi = 0.0;
             meaneps = 0.0;
 
@@ -2244,10 +2224,10 @@ namespace AstroLibMethods
 
             //Console.WriteLine( "ttt " + ttt.ToString() + " jdut1 " + jdut1.ToString());
             // IAU-76/FK5 approach
-                prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
-                    out deltapsi, out deltaeps, out trueeps, out meaneps);
-                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, EOpt.e80);
+            prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
+            nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
+                out deltapsi, out deltaeps, out trueeps, out meaneps);
+            st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, EOpt.e80);
 
             pm = polarm(xp, yp, ttt, EOpt.e80);
 
@@ -2296,68 +2276,65 @@ namespace AstroLibMethods
             }
         }//  eci_ecef 
 
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function eci_pef
-         *
-         *  this function transforms between the eci mean equator mean equinox (gcrf), and
-         *    the pseudo earth fixed frame (pef).
-         *
-         *  author        : david vallado           davallado@gmail.com    4 jun 2002
-         *
-         *  revisions
-         *    vallado     - add terms for ast calculation                 30 sep 2002
-         *    vallado     - consolidate with iau 2000                     14 feb 2005
-         *
-         *  inputs          description                                  range / units
-         *    reci        - position vector eci                           km
-         *    veci        - velocity vector eci                           km/s
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-         *    iau80arr    - iau76/fk5 eop constants
-         *    iau06arr    - iau2006 eop constants
-         *    ttt         - julian centuries of tt                        centuries
-         *    jdut1       - julian date of ut1                            days from 4713 bc
-         *    lod         - excess length of day                          sec
-         *    ddpsi       - delta psi correction to gcrf                  rad
-         *    ddeps       - delta eps correction to gcrf                  rad
-         *    ddx         - delta x correction to gcrf                    rad
-         *    ddy         - delta y correction to gcrf                    rad
-         *
-         *  outputs       :
-         *    rpef       - position vector pef                            km
-         *    vpef       - velocity vector pef                            km/s
-         *
-         *  locals        :
-         *    eqeterms    - terms for ast calculation                     0,2
-         *    deltapsi    - nutation angle                                rad
-         *    trueeps     - true obliquity of the ecliptic                rad
-         *    meaneps     - mean obliquity of the ecliptic                rad
-         *    prec        - matrix for mod - eci 
-         *    nut         - matrix for tod - mod 
-         *    st          - matrix for pef - tod 
-         *    stdot       - matrix for pef - tod rate
-         *
-         *  coupling      :
-         *   precess      - rotation for precession       
-         *   nutation     - rotation for nutation          
-         *   sidereal     - rotation for sidereal time     
-         *
-         *  references    :
-         *    vallado       2013, 223-231
-         * ---------------------------------------------------------------------------- */
+
+        // ----------------------------------------------------------------------------
+        //
+        //                           function eci_pef
+        //
+        //  this function transforms between the eci mean equator mean equinox (gcrf), and
+        //    the pseudo earth fixed frame (pef).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    reci        - position vector eci                           km
+        //    veci        - velocity vector eci                           km/s
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau80arr    - iau76/fk5 eop constants
+        //    iau06arr    - iau2006 eop constants
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //    lod         - excess length of day                          sec
+        //    ddpsi       - delta psi correction to gcrf                  rad
+        //    ddeps       - delta eps correction to gcrf                  rad
+        //    ddx         - delta x correction to gcrf                    rad
+        //    ddy         - delta y correction to gcrf                    rad
+        //
+        //  outputs       :
+        //    rpef       - position vector pef                            km
+        //    vpef       - velocity vector pef                            km/s
+        //
+        //  locals        :
+        //    eqeterms    - terms for ast calculation                     0,2
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    prec        - matrix for mod - eci 
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //
+        //  coupling      :
+        //   precess      - rotation for precession       
+        //   nutation     - rotation for nutation          
+        //   sidereal     - rotation for sidereal time     
+        //
+        //  references    :
+        //    vallado       2013, 223-231
+        // ------------------------------------------------------------------------------
 
         public void eci_pef
         (
         ref double[] reci, ref double[] veci,
         Enum direct,
         ref double[] rpef, ref double[] vpef,
-        EOPSPWLib.iau80Class iau80arr, 
-        double jdtt, double jdftt, double jdut1, 
+        EOPSPWLib.iau80Class iau80arr,
+        double jdtt, double jdftt, double jdut1,
         double lod, double ddpsi, double ddeps
         )
         {
             double[] fArgs = new double[14];
-            double psia, wa, epsa, chia, x, y, s, gst, ttt;
+            double psia, wa, epsa, chia, ttt;
             double meaneps, deltapsi, deltaeps, trueeps;
             double[] omegaearth = new double[3];
             double[] crossr = new double[3];
@@ -2376,17 +2353,16 @@ namespace AstroLibMethods
 
             deltapsi = 0.0;
             meaneps = 0.0;
-            char interp = 's';
 
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
             fundarg(ttt, EOpt.e80, out fArgs);
 
-                prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
-                    out deltapsi, out deltaeps, out trueeps, out meaneps);
-                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, EOpt.e80);
- 
+            prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
+            nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
+                out deltapsi, out deltaeps, out trueeps, out meaneps);
+            st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, EOpt.e80);
+
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
             omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
@@ -2424,59 +2400,59 @@ namespace AstroLibMethods
         }  //  eci_pef 
 
 
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function eci_tod
-         *
-         *  this function transforms between the eci mean equator mean equinox (gcrf), and
-         *    the true of date frame (tod).
-         *
-         *  author        : david vallado           davallado@gmail.com    4 jun 2002
-         *
-         *  inputs          description                                  range / units
-         *    reci        - position vector eci                           km
-         *    veci        - velocity vector eci                           km/s
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-         *    iau80arr    - iau76/fk5 eop constants
-         *    ttt         - julian centuries of tt                        centuries
-         *    jdut1       - julian date of ut1                            days from 4713 bc
-         *    lod         - excess length of day                          sec
-         *    ddpsi       - delta psi correction to eci                  rad
-         *    ddeps       - delta eps correction to eci                  rad
-         *    ddx         - delta x correction to eci                    rad
-         *    ddy         - delta y correction to eci                    rad
-         *
-         *  outputs       :
-         *    rtod       - position vector tod                            km
-         *    vtod       - velocity vector tod                            km/s
-         *
-         *  locals        :
-         *    deltapsi    - nutation angle                                rad
-         *    trueeps     - true obliquity of the ecliptic                rad
-         *    meaneps     - mean obliquity of the ecliptic                rad
-         *    prec        - matrix for mod - eci 
-         *    nut         - matrix for tod - mod 
-         *
-         *  coupling      :
-         *   precess      - rotation for precession       
-         *   nutation     - rotation for nutation          
-         *
-         *  references    :
-         *    vallado       2013, 223-231
-         * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function eci_tod
+        //
+        //  this function transforms between the eci mean equator mean equinox (gcrf), and
+        //    the true of date frame (tod).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    reci        - position vector eci                           km
+        //    veci        - velocity vector eci                           km/s
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau80arr    - iau76/fk5 eop constants
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //    lod         - excess length of day                          sec
+        //    ddpsi       - delta psi correction to eci                  rad
+        //    ddeps       - delta eps correction to eci                  rad
+        //    ddx         - delta x correction to eci                    rad
+        //    ddy         - delta y correction to eci                    rad
+        //
+        //  outputs       :
+        //    rtod       - position vector tod                            km
+        //    vtod       - velocity vector tod                            km/s
+        //
+        //  locals        :
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    prec        - matrix for mod - eci 
+        //    nut         - matrix for tod - mod 
+        //
+        //  coupling      :
+        //   precess      - rotation for precession       
+        //   nutation     - rotation for nutation          
+        //
+        //  references    :
+        //    vallado       2013, 223-231
+        // ------------------------------------------------------------------------------
 
         public void eci_tod
             (
             ref double[] reci, ref double[] veci,
             Enum direct,
             ref double[] rtod, ref double[] vtod,
-            EOPSPWLib.iau80Class iau80arr, 
-            double jdtt, double jdftt, double jdut1, 
+            EOPSPWLib.iau80Class iau80arr,
+            double jdtt, double jdftt, double jdut1,
             double lod, double ddpsi, double ddeps
             )
         {
             double[] fArgs = new double[14];
-            double psia, wa, epsa, chia, x, y, s, ttt;
+            double psia, wa, epsa, chia, ttt;
             double meaneps, deltapsi, deltaeps, trueeps;
             double[,] tm = new double[3, 3];
             double[,] prec = new double[3, 3];
@@ -2488,14 +2464,13 @@ namespace AstroLibMethods
 
             deltapsi = 0.0;
             meaneps = 0.0;
-            char interp = 's';
 
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
             fundarg(ttt, EOpt.e80, out fArgs);
 
             prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
-                    out deltapsi, out deltaeps, out trueeps, out meaneps);
+            nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
+                out deltapsi, out deltaeps, out trueeps, out meaneps);
 
             if (direct.Equals(MathTimeLib.Edirection.eto))
             {
@@ -2516,41 +2491,37 @@ namespace AstroLibMethods
             }
         }  //  eci_tod 
 
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function eci_mod
-         *
-         *  this function transforms between the mean equator mean equinox (eci), and
-         *    the mean of date frame (mod).
-         *
-         *  author        : david vallado           davallado@gmail.com    4 jun 2002
-         *
-         *  revisions
-         *    vallado     - add terms for ast calculation                 30 sep 2002
-         *    vallado     - consolidate with iau 2000                     14 feb 2005
-         *
-         *  inputs          description                                  range / units
-         *    reci        - position vector eci                           km
-         *    veci        - velocity vector eci                           km/s
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-         *    iau80arr    - iau76/fk5 eop constants
-         *    iau06arr    - iau2006 eop constants
-         *    ttt         - julian centuries of tt                        centuries
-         *    jdut1       - julian date of ut1                            days from 4713 bc
-         *
-         *  outputs       :
-         *    rmod       - position vector mod                            km
-         *    vmod       - velocity vector mod                            km/s
-         *
-         *  locals        :
-         *    prec        - matrix for mod - eci 
-         *
-         *  coupling      :
-         *   precess      - rotation for precession       
-         *
-         *  references    :
-         *    vallado       2013, 223-231
-         * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function eci_mod
+        //
+        //  this function transforms between the mean equator mean equinox (eci), and
+        //    the mean of date frame (mod).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    reci        - position vector eci                           km
+        //    veci        - velocity vector eci                           km/s
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau80arr    - iau76/fk5 eop constants
+        //    iau06arr    - iau2006 eop constants
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //
+        //  outputs       :
+        //    rmod       - position vector mod                            km
+        //    vmod       - velocity vector mod                            km/s
+        //
+        //  locals        :
+        //    prec        - matrix for mod - eci 
+        //
+        //  coupling      :
+        //   precess      - rotation for precession       
+        //
+        //  references    :
+        //    vallado       2013, 223-231
+        // ------------------------------------------------------------------------------
 
         public void eci_mod
             (
@@ -2566,8 +2537,8 @@ namespace AstroLibMethods
             double[,] precp = new double[3, 3];
 
             // IAU-76/FK5 approach
-                prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
-        
+            prec = precess(ttt, EOpt.e80, out psia, out wa, out epsa, out chia);
+
             if (direct.Equals(MathTimeLib.Edirection.eto))
             {
                 // ---- perform transformations
@@ -2585,54 +2556,54 @@ namespace AstroLibMethods
         }  //  eci_mod 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function eci_ecef06
-        *
-        *  this function transforms between the earth fixed (itrf) frame, and
-        *    the eci mean equator mean equinox (gcrf).
-        *
-        *  author        : david vallado           davallado@gmail.com    4 jun 2002
-        *
-        *  inputs          description                                  range / units
-        *    recef       - position vector earth fixed                   km
-        *    vecef       - velocity vector earth fixed                   km/s
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *    iau80arr    - iau76/fk5 eop constants
-        *    iau06arr    - iau2006 eop constants
-        *    jdtt        - julian date of tt                             days from 4713 bc
-        *    ttt         - julian centuries of tt                        centuries
-        *    jdut1       - julian date of ut1                            days from 4713 bc
-        *    lod         - excess length of day                          sec
-        *    xp          - polar motion coefficient                      rad
-        *    yp          - polar motion coefficient                      rad
-        *    ddpsi       - delta psi correction to gcrf                  rad
-        *    ddeps       - delta eps correction to gcrf                  rad
-        *
-        *  outputs       :
-        *    reci        - position vector eci                           km
-        *    veci        - velocity vector eci                           km/s
-        *
-        *  locals        :
-        *    eqeterms    - terms for ast calculation                     0,2
-        *    deltapsi    - nutation angle                                rad
-        *    trueeps     - true obliquity of the ecliptic                rad
-        *    meaneps     - mean obliquity of the ecliptic                rad
-        *    prec        - matrix for mod - eci 
-        *    nut         - matrix for tod - mod 
-        *    st          - matrix for pef - tod 
-        *    stdot       - matrix for pef - tod rate
-        *    pm          - matrix for ecef - pef 
-        *
-        *  coupling      :
-        *   precess      - rotation for precession       
-        *   nutation     - rotation for nutation          
-        *   sidereal     - rotation for sidereal time     
-        *   polarm       - rotation for polar motion      
-        *
-        *  references    :
-        *    vallado       2013, 223-231
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function eci_ecef06
+        //
+        //  this function transforms between the earth fixed (itrf) frame, and
+        //    the eci mean equator mean equinox (gcrf).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector earth fixed                   km
+        //    vecef       - velocity vector earth fixed                   km/s
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau80arr    - iau76/fk5 eop constants
+        //    iau06arr    - iau2006 eop constants
+        //    jdtt        - julian date of tt                             days from 4713 bc
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //    lod         - excess length of day                          sec
+        //    xp          - polar motion coefficient                      rad
+        //    yp          - polar motion coefficient                      rad
+        //    ddpsi       - delta psi correction to gcrf                  rad
+        //    ddeps       - delta eps correction to gcrf                  rad
+        //
+        //  outputs       :
+        //    reci        - position vector eci                           km
+        //    veci        - velocity vector eci                           km/s
+        //
+        //  locals        :
+        //    eqeterms    - terms for ast calculation                     0,2
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    prec        - matrix for mod - eci 
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //    pm          - matrix for ecef - pef 
+        //
+        //  coupling      :
+        //   precess      - rotation for precession       
+        //   nutation     - rotation for nutation          
+        //   sidereal     - rotation for sidereal time     
+        //   polarm       - rotation for polar motion      
+        //
+        //  references    :
+        //    vallado       2013, 223-231
+        // ------------------------------------------------------------------------------
 
         public void eci_ecef06
             (
@@ -2640,14 +2611,14 @@ namespace AstroLibMethods
             Enum direct,
             ref double[] recef, ref double[] vecef,
             EOpt opt,
-            EOPSPWLib.iau06Class iau06arr, AstroLib.xysdataClass[] xysarr, 
+            EOPSPWLib.iau06Class iau06arr, AstroLib.xysdataClass[] xysarr,
             double jdtt, double jdftt, double jdut1, double lod,
             double xp, double yp, double ddx, double ddy
             )
         {
             double[] fArgs06 = new double[14];
-            double psia, wa, epsa, chia, x, y, s, gst, ttt;
-            double meaneps, deltapsi, deltaeps, trueeps;
+            double x, y, s, gst, ttt;
+            double deltapsi;
             double[] omegaearth = new double[3];
             double[] rpef = new double[3];
             double[] vpef = new double[3];
@@ -2672,10 +2643,8 @@ namespace AstroLibMethods
             double[,] temp = new double[3, 3];
             double[,] trans = new double[3, 3];
 
-            int eqeterms = 2;
             char interp = 's';
             deltapsi = 0.0;
-            meaneps = 0.0;
 
             ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
 
@@ -2690,7 +2659,7 @@ namespace AstroLibMethods
                 nut = iau06xys(jdtt, jdftt, ddx, ddy, 'x', iau06arr, fArgs06, xysarr, out x, out y, out s);
 
                 st = sidereal(jdut1, 0.0, 0.0, fArgs06, lod, 2, opt);
-               
+
                 if (printopt == 'y')
                     Console.WriteLine(String.Format("xys cl {0}  {1}  {2} ", x, y, s));
             }
@@ -2795,55 +2764,51 @@ namespace AstroLibMethods
             }
         }  //  eci_ecef06
 
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function eci_tirs
-         *
-         *  this function transforms between the eci mean equator mean equinox (gcrf), and
-         *    the pseudo earth fixed frame (pef).
-         *
-         *  author        : david vallado           davallado@gmail.com    4 jun 2002
-         *
-         *  revisions
-         *    vallado     - add terms for ast calculation                 30 sep 2002
-         *    vallado     - consolidate with iau 2000                     14 feb 2005
-         *
-         *  inputs          description                                  range / units
-         *    reci        - position vector eci                           km
-         *    veci        - velocity vector eci                           km/s
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-         *    iau80arr    - iau76/fk5 eop constants
-         *    iau06arr    - iau2006 eop constants
-         *    ttt         - julian centuries of tt                        centuries
-         *    jdut1       - julian date of ut1                            days from 4713 bc
-         *    lod         - excess length of day                          sec
-         *    ddpsi       - delta psi correction to gcrf                  rad
-         *    ddeps       - delta eps correction to gcrf                  rad
-         *    ddx         - delta x correction to gcrf                    rad
-         *    ddy         - delta y correction to gcrf                    rad
-         *
-         *  outputs       :
-         *    rpef       - position vector pef                            km
-         *    vpef       - velocity vector pef                            km/s
-         *
-         *  locals        :
-         *    eqeterms    - terms for ast calculation                     0,2
-         *    deltapsi    - nutation angle                                rad
-         *    trueeps     - true obliquity of the ecliptic                rad
-         *    meaneps     - mean obliquity of the ecliptic                rad
-         *    prec        - matrix for mod - eci 
-         *    nut         - matrix for tod - mod 
-         *    st          - matrix for pef - tod 
-         *    stdot       - matrix for pef - tod rate
-         *
-         *  coupling      :
-         *   precess      - rotation for precession       
-         *   nutation     - rotation for nutation          
-         *   sidereal     - rotation for sidereal time     
-         *
-         *  references    :
-         *    vallado       2013, 223-231
-         * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function eci_tirs
+        //
+        //  this function transforms between the eci mean equator mean equinox (gcrf), and
+        //    the pseudo earth fixed frame (pef).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    reci        - position vector eci                           km
+        //    veci        - velocity vector eci                           km/s
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau80arr    - iau76/fk5 eop constants
+        //    iau06arr    - iau2006 eop constants
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //    lod         - excess length of day                          sec
+        //    ddpsi       - delta psi correction to gcrf                  rad
+        //    ddeps       - delta eps correction to gcrf                  rad
+        //    ddx         - delta x correction to gcrf                    rad
+        //    ddy         - delta y correction to gcrf                    rad
+        //
+        //  outputs       :
+        //    rpef       - position vector pef                            km
+        //    vpef       - velocity vector pef                            km/s
+        //
+        //  locals        :
+        //    eqeterms    - terms for ast calculation                     0,2
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    prec        - matrix for mod - eci 
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //
+        //  coupling      :
+        //   precess      - rotation for precession       
+        //   nutation     - rotation for nutation          
+        //   sidereal     - rotation for sidereal time     
+        //
+        //  references    :
+        //    vallado       2013, 223-231
+        // ------------------------------------------------------------------------------
 
         public void eci_tirs
         (
@@ -2851,14 +2816,14 @@ namespace AstroLibMethods
         Enum direct,
         ref double[] rtirs, ref double[] vtirs,
         EOpt opt,
-        EOPSPWLib.iau06Class iau06arr, 
+        EOPSPWLib.iau06Class iau06arr,
         double jdtt, double jdftt, double jdut1,
         double lod, double ddx, double ddy
         )
         {
             double[] fArgs06 = new double[14];
-            double psia, wa, epsa, chia, x, y, s, gst, ttt;
-            double meaneps, deltapsi, deltaeps, trueeps;
+            double x, y, s, gst, ttt;
+            double meaneps, deltapsi;
             double[] omegaearth = new double[3];
             double[] crossr = new double[3];
             double[] tempvec1 = new double[3];
@@ -2871,8 +2836,6 @@ namespace AstroLibMethods
             double[,] stp = new double[3, 3];
             double[,] temp = new double[3, 3];
             double[,] trans = new double[3, 3];
-
-            int eqeterms = 2;
 
             deltapsi = 0.0;
             meaneps = 0.0;
@@ -2941,51 +2904,47 @@ namespace AstroLibMethods
         }  //  eci_tirs
 
 
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function eci_cirs
-         *
-         *  this function transforms between the eci mean equator mean equinox (gcrf), and
-         *    the true of date frame (tod).
-         *
-         *  author        : david vallado           davallado@gmail.com    4 jun 2002
-         *
-         *  revisions
-         *    vallado     - add terms for ast calculation                 30 sep 2002
-         *    vallado     - consolidate with iau 2000                     14 feb 2005
-         *
-         *  inputs          description                                  range / units
-         *    reci        - position vector eci                           km
-         *    veci        - velocity vector eci                           km/s
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-         *    iau80arr    - iau76/fk5 eop constants
-         *    iau06arr    - iau2006 eop constants
-         *    ttt         - julian centuries of tt                        centuries
-         *    jdut1       - julian date of ut1                            days from 4713 bc
-         *    lod         - excess length of day                          sec
-         *    ddpsi       - delta psi correction to eci                  rad
-         *    ddeps       - delta eps correction to eci                  rad
-         *    ddx         - delta x correction to eci                    rad
-         *    ddy         - delta y correction to eci                    rad
-         *
-         *  outputs       :
-         *    rtod       - position vector tod                            km
-         *    vtod       - velocity vector tod                            km/s
-         *
-         *  locals        :
-         *    deltapsi    - nutation angle                                rad
-         *    trueeps     - true obliquity of the ecliptic                rad
-         *    meaneps     - mean obliquity of the ecliptic                rad
-         *    prec        - matrix for mod - eci 
-         *    nut         - matrix for tod - mod 
-         *
-         *  coupling      :
-         *   precess      - rotation for precession       
-         *   nutation     - rotation for nutation          
-         *
-         *  references    :
-         *    vallado       2013, 223-231
-         * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function eci_cirs
+        //
+        //  this function transforms between the eci mean equator mean equinox (gcrf), and
+        //    the true of date frame (tod).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    reci        - position vector eci                           km
+        //    veci        - velocity vector eci                           km/s
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau80arr    - iau76/fk5 eop constants
+        //    iau06arr    - iau2006 eop constants
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //    lod         - excess length of day                          sec
+        //    ddpsi       - delta psi correction to eci                  rad
+        //    ddeps       - delta eps correction to eci                  rad
+        //    ddx         - delta x correction to eci                    rad
+        //    ddy         - delta y correction to eci                    rad
+        //
+        //  outputs       :
+        //    rtod       - position vector tod                            km
+        //    vtod       - velocity vector tod                            km/s
+        //
+        //  locals        :
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    prec        - matrix for mod - eci 
+        //    nut         - matrix for tod - mod 
+        //
+        //  coupling      :
+        //   precess      - rotation for precession       
+        //   nutation     - rotation for nutation          
+        //
+        //  references    :
+        //    vallado       2013, 223-231
+        // ------------------------------------------------------------------------------
 
         public void eci_cirs
             (
@@ -2993,8 +2952,8 @@ namespace AstroLibMethods
             Enum direct,
             ref double[] rcirs, ref double[] vcirs,
             EOpt opt,
-            EOPSPWLib.iau06Class iau06arr, 
-            double jdtt, double jdftt, double jdut1, 
+            EOPSPWLib.iau06Class iau06arr,
+            double jdtt, double jdftt, double jdut1,
             double lod, double ddx, double ddy
             )
         {
@@ -3055,63 +3014,59 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function ecef_mod
-        *
-        *  this function transforms a vector from earth fixed (itrf) frame to
-        *  mean of date (mod). 
-        *
-        *  author        : david vallado           davallado@gmail.com    4 jun 2002
-        *
-        *  revisions
-        *    vallado     - add terms for ast calculation                 30 sep 2002
-        *    vallado     - consolidate with iau 2000                     14 feb 2005
-        *
-        *  inputs          description                                   range / units
-        *    recef       - position vector earth fixed                   km
-        *    vecef       - velocity vector earth fixed                   km/s
-        *    direct      - direction of transfer                         eto, efrom
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *    ttt         - julian centuries of tt                        centuries
-        *    jdut1       - julian date of ut1                            days from 4713 bc
-        *    lod         - excess length of day                          sec
-        *    xp          - polar motion coefficient                      rad
-        *    yp          - polar motion coefficient                      rad
-        *    ddpsi       - delta psi correction to gcrf                  rad
-        *    ddeps       - delta eps correction to gcrf                  rad
-        *    ddx         - delta x correction to gcrf                    rad
-        *    ddy         - delta y correction to gcrf                    rad
-        *
-        *  outputs       :
-        *    rmod        - position vector mod                           km
-        *    vmod        - velocity vector mod                           km/s
-        *
-        *  locals        :
-        *    deltapsi    - nutation angle                                rad
-        *    trueeps     - true obliquity of the ecliptic                rad
-        *    meaneps     - mean obliquity of the ecliptic                rad
-        *    nut         - matrix for tod - mod 
-        *    st          - matrix for pef - tod 
-        *    stdot       - matrix for pef - tod rate
-        *    pm          - matrix for ecef - pef 
-        *
-        *  coupling      :
-        *   nutation     - rotation for nutation          
-        *   sidereal     - rotation for sidereal time     
-        *   polarm       - rotation for polar motion      
-        *
-        *  references    :
-        *    vallado       2013, 228-236
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function ecef_mod
+        //
+        //  this function transforms a vector from earth fixed (itrf) frame to
+        //  mean of date (mod). 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector earth fixed                   km
+        //    vecef       - velocity vector earth fixed                   km/s
+        //    direct      - direction of transfer                         eto, efrom
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //    lod         - excess length of day                          sec
+        //    xp          - polar motion coefficient                      rad
+        //    yp          - polar motion coefficient                      rad
+        //    ddpsi       - delta psi correction to gcrf                  rad
+        //    ddeps       - delta eps correction to gcrf                  rad
+        //    ddx         - delta x correction to gcrf                    rad
+        //    ddy         - delta y correction to gcrf                    rad
+        //
+        //  outputs       :
+        //    rmod        - position vector mod                           km
+        //    vmod        - velocity vector mod                           km/s
+        //
+        //  locals        :
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //    pm          - matrix for ecef - pef 
+        //
+        //  coupling      :
+        //   nutation     - rotation for nutation          
+        //   sidereal     - rotation for sidereal time     
+        //   polarm       - rotation for polar motion      
+        //
+        //  references    :
+        //    vallado       2013, 228-236
+        // ------------------------------------------------------------------------------
 
         public void ecef_mod
             (
             ref double[] recef, ref double[] vecef,
             Enum direct,
             ref double[] rmod, ref double[] vmod,
-            EOPSPWLib.iau80Class iau80arr, 
-            double jdtt, double jdftt, double jdut1, 
+            EOPSPWLib.iau80Class iau80arr,
+            double jdtt, double jdftt, double jdut1,
             double lod, double xp, double yp, double ddpsi, double ddeps
             )
         {
@@ -3140,10 +3095,10 @@ namespace AstroLibMethods
             fundarg(ttt, EOpt.e80, out fArgs);
 
             // IAU-76/FK5 approach
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
-                    out deltapsi, out deltaeps, out trueeps, out meaneps);
-                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, EOpt.e80);
- 
+            nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
+                out deltapsi, out deltaeps, out trueeps, out meaneps);
+            st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, EOpt.e80);
+
             pm = polarm(xp, yp, ttt, EOpt.e80);
 
             omegaearth[0] = 0.0;
@@ -3185,55 +3140,51 @@ namespace AstroLibMethods
         }  //  ecef_mod
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function ecef_tod
-        *
-        *  this function transforms a vector from earth fixed (itrf) frame to
-        *  true of date (tod). 
-        *
-        *  author        : david vallado           davallado@gmail.com    4 jun 2002
-        *
-        *  revisions
-        *    vallado     - add terms for ast calculation                 30 sep 2002
-        *    vallado     - consolidate with iau 2000                     14 feb 2005
-        *
-        *  inputs          description                                   range / units
-        *    recef       - position vector earth fixed                   km
-        *    vecef       - velocity vector earth fixed                   km/s
-        *    direct      - direction of transfer                         eto, efrom
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *    ttt         - julian centuries of tt                        centuries
-        *    jdut1       - julian date of ut1                            days from 4713 bc
-        *    lod         - excess length of day                          sec
-        *    xp          - polar motion coefficient                      rad
-        *    yp          - polar motion coefficient                      rad
-        *    ddpsi       - delta psi correction to gcrf                  rad
-        *    ddeps       - delta eps correction to gcrf                  rad
-        *    ddx         - delta x correction to gcrf                    rad
-        *    ddy         - delta y correction to gcrf                    rad
-        *
-        *  outputs       :
-        *    rtod        - position vector eci                           km
-        *    vtod        - velocity vector eci                           km/s
-        *
-        *  locals        :
-        *    deltapsi    - nutation angle                                rad
-        *    trueeps     - true obliquity of the ecliptic                rad
-        *    meaneps     - mean obliquity of the ecliptic                rad
-        *    nut         - matrix for tod - mod 
-        *    st          - matrix for pef - tod 
-        *    stdot       - matrix for pef - tod rate
-        *    pm          - matrix for ecef - pef 
-        *
-        *  coupling      :
-        *   nutation     - rotation for nutation          
-        *   sidereal     - rotation for sidereal time     
-        *   polarm       - rotation for polar motion      
-        *
-        *  references    :
-        *    vallado       2013, 228-236
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function ecef_tod
+        //
+        //  this function transforms a vector from earth fixed (itrf) frame to
+        //  true of date (tod). 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector earth fixed                   km
+        //    vecef       - velocity vector earth fixed                   km/s
+        //    direct      - direction of transfer                         eto, efrom
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //    lod         - excess length of day                          sec
+        //    xp          - polar motion coefficient                      rad
+        //    yp          - polar motion coefficient                      rad
+        //    ddpsi       - delta psi correction to gcrf                  rad
+        //    ddeps       - delta eps correction to gcrf                  rad
+        //    ddx         - delta x correction to gcrf                    rad
+        //    ddy         - delta y correction to gcrf                    rad
+        //
+        //  outputs       :
+        //    rtod        - position vector eci                           km
+        //    vtod        - velocity vector eci                           km/s
+        //
+        //  locals        :
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //    pm          - matrix for ecef - pef 
+        //
+        //  coupling      :
+        //   nutation     - rotation for nutation          
+        //   sidereal     - rotation for sidereal time     
+        //   polarm       - rotation for polar motion      
+        //
+        //  references    :
+        //    vallado       2013, 228-236
+        // ------------------------------------------------------------------------------
 
         public void ecef_tod
             (
@@ -3265,9 +3216,9 @@ namespace AstroLibMethods
             fundarg(ttt, EOpt.e80, out fArgs);
 
             // IAU-76/FK5 approach
-                nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
-                    out deltapsi, out deltaeps, out trueeps, out meaneps);
-                st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, EOpt.e80);
+            nut = nutation(ttt, ddpsi, ddeps, iau80arr, fArgs,
+                out deltapsi, out deltaeps, out trueeps, out meaneps);
+            st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, EOpt.e80);
 
             pm = polarm(xp, yp, ttt, EOpt.e80);
 
@@ -3307,55 +3258,51 @@ namespace AstroLibMethods
         }  //  ecef_tod
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function ecef_cirs
-        *
-        *  this function transforms a vector from earth fixed (itrf) frame to
-        *  true of date (tod). 
-        *
-        *  author        : david vallado           davallado@gmail.com    4 jun 2002
-        *
-        *  revisions
-        *    vallado     - add terms for ast calculation                 30 sep 2002
-        *    vallado     - consolidate with iau 2000                     14 feb 2005
-        *
-        *  inputs          description                                   range / units
-        *    recef       - position vector earth fixed                   km
-        *    vecef       - velocity vector earth fixed                   km/s
-        *    direct      - direction of transfer                         eto, efrom
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *    ttt         - julian centuries of tt                        centuries
-        *    jdut1       - julian date of ut1                            days from 4713 bc
-        *    lod         - excess length of day                          sec
-        *    xp          - polar motion coefficient                      rad
-        *    yp          - polar motion coefficient                      rad
-        *    ddpsi       - delta psi correction to gcrf                  rad
-        *    ddeps       - delta eps correction to gcrf                  rad
-        *    ddx         - delta x correction to gcrf                    rad
-        *    ddy         - delta y correction to gcrf                    rad
-        *
-        *  outputs       :
-        *    rtod        - position vector eci                           km
-        *    vtod        - velocity vector eci                           km/s
-        *
-        *  locals        :
-        *    deltapsi    - nutation angle                                rad
-        *    trueeps     - true obliquity of the ecliptic                rad
-        *    meaneps     - mean obliquity of the ecliptic                rad
-        *    nut         - matrix for tod - mod 
-        *    st          - matrix for pef - tod 
-        *    stdot       - matrix for pef - tod rate
-        *    pm          - matrix for ecef - pef 
-        *
-        *  coupling      :
-        *   nutation     - rotation for nutation          
-        *   sidereal     - rotation for sidereal time     
-        *   polarm       - rotation for polar motion      
-        *
-        *  references    :
-        *    vallado       2013, 228-236
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function ecef_cirs
+        //
+        //  this function transforms a vector from earth fixed (itrf) frame to
+        //  true of date (tod). 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector earth fixed                   km
+        //    vecef       - velocity vector earth fixed                   km/s
+        //    direct      - direction of transfer                         eto, efrom
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdut1       - julian date of ut1                            days from 4713 bc
+        //    lod         - excess length of day                          sec
+        //    xp          - polar motion coefficient                      rad
+        //    yp          - polar motion coefficient                      rad
+        //    ddpsi       - delta psi correction to gcrf                  rad
+        //    ddeps       - delta eps correction to gcrf                  rad
+        //    ddx         - delta x correction to gcrf                    rad
+        //    ddy         - delta y correction to gcrf                    rad
+        //
+        //  outputs       :
+        //    rtod        - position vector eci                           km
+        //    vtod        - velocity vector eci                           km/s
+        //
+        //  locals        :
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //    pm          - matrix for ecef - pef 
+        //
+        //  coupling      :
+        //   nutation     - rotation for nutation          
+        //   sidereal     - rotation for sidereal time     
+        //   polarm       - rotation for polar motion      
+        //
+        //  references    :
+        //    vallado       2013, 228-236
+        // ------------------------------------------------------------------------------
 
         public void ecef_cirs
             (
@@ -3439,48 +3386,44 @@ namespace AstroLibMethods
         }  //  ecef_cirs
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function ecef_pef
-        *
-        *  this function transforms a vector from earth fixed (itrf) frame to
-        *  pseudo earth fixed (pef). 
-        *
-        *  author        : david vallado           davallado@gmail.com    4 jun 2002
-        *
-        *  revisions
-        *    vallado     - add terms for ast calculation                 30 sep 2002
-        *    vallado     - consolidate with iau 2000                     14 feb 2005
-        *
-        *  inputs          description                                   range / units
-        *    recef       - position vector earth fixed                   km
-        *    vecef       - velocity vector earth fixed                   km/s
-        *    direct      - direction of transfer                         eto, efrom
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *    ttt         - julian centuries of tt                        centuries
-        *    lod         - excess length of day                          sec
-        *    xp          - polar motion coefficient                      rad
-        *    yp          - polar motion coefficient                      rad
-        *
-        *  outputs       :
-        *    rpef        - position vector pef                           km
-        *    vpef        - velocity vector pef                           km/s
-        *
-        *  locals        :
-        *    deltapsi    - nutation angle                                rad
-        *    trueeps     - true obliquity of the ecliptic                rad
-        *    meaneps     - mean obliquity of the ecliptic                rad
-        *    nut         - matrix for tod - mod 
-        *    st          - matrix for pef - tod 
-        *    stdot       - matrix for pef - tod rate
-        *    pm          - matrix for ecef - pef 
-        *
-        *  coupling      :
-        *   polarm       - rotation for polar motion      
-        *
-        *  references    :
-        *    vallado       2013, 228-236
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function ecef_pef
+        //
+        //  this function transforms a vector from earth fixed (itrf) frame to
+        //  pseudo earth fixed (pef). 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector earth fixed                   km
+        //    vecef       - velocity vector earth fixed                   km/s
+        //    direct      - direction of transfer                         eto, efrom
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    ttt         - julian centuries of tt                        centuries
+        //    lod         - excess length of day                          sec
+        //    xp          - polar motion coefficient                      rad
+        //    yp          - polar motion coefficient                      rad
+        //
+        //  outputs       :
+        //    rpef        - position vector pef                           km
+        //    vpef        - velocity vector pef                           km/s
+        //
+        //  locals        :
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //    pm          - matrix for ecef - pef 
+        //
+        //  coupling      :
+        //   polarm       - rotation for polar motion      
+        //
+        //  references    :
+        //    vallado       2013, 228-236
+        // ------------------------------------------------------------------------------
 
         public void ecef_pef
             (
@@ -3513,48 +3456,44 @@ namespace AstroLibMethods
         }  //  ecef_pef
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function ecef_tirs
-        *
-        *  this function transforms a vector from earth fixed (itrf) frame to
-        *  pseudo earth fixed (pef). 
-        *
-        *  author        : david vallado           davallado@gmail.com    4 jun 2002
-        *
-        *  revisions
-        *    vallado     - add terms for ast calculation                 30 sep 2002
-        *    vallado     - consolidate with iau 2000                     14 feb 2005
-        *
-        *  inputs          description                                   range / units
-        *    recef       - position vector earth fixed                   km
-        *    vecef       - velocity vector earth fixed                   km/s
-        *    direct      - direction of transfer                         eto, efrom
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *    ttt         - julian centuries of tt                        centuries
-        *    lod         - excess length of day                          sec
-        *    xp          - polar motion coefficient                      rad
-        *    yp          - polar motion coefficient                      rad
-        *
-        *  outputs       :
-        *    rpef        - position vector pef                           km
-        *    vpef        - velocity vector pef                           km/s
-        *
-        *  locals        :
-        *    deltapsi    - nutation angle                                rad
-        *    trueeps     - true obliquity of the ecliptic                rad
-        *    meaneps     - mean obliquity of the ecliptic                rad
-        *    nut         - matrix for tod - mod 
-        *    st          - matrix for pef - tod 
-        *    stdot       - matrix for pef - tod rate
-        *    pm          - matrix for ecef - pef 
-        *
-        *  coupling      :
-        *   polarm       - rotation for polar motion      
-        *
-        *  references    :
-        *    vallado       2013, 228-236
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function ecef_tirs
+        //
+        //  this function transforms a vector from earth fixed (itrf) frame to
+        //  pseudo earth fixed (pef). 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector earth fixed                   km
+        //    vecef       - velocity vector earth fixed                   km/s
+        //    direct      - direction of transfer                         eto, efrom
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    ttt         - julian centuries of tt                        centuries
+        //    lod         - excess length of day                          sec
+        //    xp          - polar motion coefficient                      rad
+        //    yp          - polar motion coefficient                      rad
+        //
+        //  outputs       :
+        //    rpef        - position vector pef                           km
+        //    vpef        - velocity vector pef                           km/s
+        //
+        //  locals        :
+        //    deltapsi    - nutation angle                                rad
+        //    trueeps     - true obliquity of the ecliptic                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //    pm          - matrix for ecef - pef 
+        //
+        //  coupling      :
+        //   polarm       - rotation for polar motion      
+        //
+        //  references    :
+        //    vallado       2013, 228-236
+        // ------------------------------------------------------------------------------
 
         public void ecef_tirs
             (
@@ -3587,47 +3526,45 @@ namespace AstroLibMethods
         }  //  ecef_tirs
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function teme_ecef
-        *
-        *  this function transforms a vector between the earth fixed(ITRF) frame and the
-        *  true equator mean equniox frame(teme).the results take into account
-        *    the effects of sidereal time, and polar motion.
-        *
-        *  author        : david vallado                  719 - 573 - 2600   30 oct 2017
-        *
-        *  revisions
-        *
-        *  inputs          description                                   range / units
-        *    rteme        - position vector teme                           km
-        *    vteme        - velocity vector teme                           km / s
-        *    ateme        - acceleration vector teme                       km / s2
-        *    direct       - direction of transfer                          eFrom, 'TOO '
-        *    ttt          - julian centuries of tt                         centuries
-        *    jdut1        - julian date of ut1                             days from 4713 bc
-        *    lod          - excess length of day                           sec
-        *    xp           - polar motion coefficient                       arc sec
-        *    yp           - polar motion coefficient                       arc sec
-        *    eqeterms     - use extra two terms(kinematic) after 1997      0, 2
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *
-        *  outputs       :
-        *    recef        - position vector earth fixed                    km
-        *    vecef        - velocity vector earth fixed                    km / s
-        *    aecef        - acceleration vector earth fixed                km / s2
-        *
-        *  locals :
-        *    st           - matrix for pef - tod
-        *    pm           - matrix for ecef - pef
-        *
-        *  coupling :
-        *   gstime        - greenwich mean sidereal time                   rad
-        *   polarm        - rotation for polar motion                      pef - ecef
-        *
-        *  references :
-        *    vallado       2013, 231 - 233
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function teme_ecef
+        //
+        //  this function transforms a vector between the earth fixed(ITRF) frame and the
+        //  true equator mean equniox frame(teme).the results take into account
+        //    the effects of sidereal time, and polar motion.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    rteme        - position vector teme                           km
+        //    vteme        - velocity vector teme                           km / s
+        //    ateme        - acceleration vector teme                       km / s2
+        //    direct       - direction of transfer                          eFrom, 'TOO '
+        //    ttt          - julian centuries of tt                         centuries
+        //    jdut1        - julian date of ut1                             days from 4713 bc
+        //    lod          - excess length of day                           sec
+        //    xp           - polar motion coefficient                       arc sec
+        //    yp           - polar motion coefficient                       arc sec
+        //    eqeterms     - use extra two terms(kinematic) after 1997      0, 2
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //
+        //  outputs       :
+        //    recef        - position vector earth fixed                    km
+        //    vecef        - velocity vector earth fixed                    km / s
+        //    aecef        - acceleration vector earth fixed                km / s2
+        //
+        //  locals :
+        //    st           - matrix for pef - tod
+        //    pm           - matrix for ecef - pef
+        //
+        //  coupling :
+        //   gstime        - greenwich mean sidereal time                   rad
+        //   polarm        - rotation for polar motion                      pef - ecef
+        //
+        //  references :
+        //    vallado       2013, 231 - 233
+        // ----------------------------------------------------------------------------*/
 
         public void teme_ecef
             (
@@ -3734,45 +3671,45 @@ namespace AstroLibMethods
         }  // teme_ecef
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function teme_eci
-        *
-        *  this function transforms a vector from the true equator mean equinox system,
-        *  (teme) to the mean equator mean equinox (j2000) system.
-        *
-        *  author        : david vallado                  719 - 573 - 2600   30 oct 2017
-        *
-        *  inputs        description                                   range / units
-        *    rteme       - position vector of date
-        *                  true equator, mean equinox                     km
-        *    vteme       - velocity vector of date
-        *                  true equator, mean equinox                     km / s
-        *    ateme       - acceleration vector of date
-        *                  true equator, mean equinox                     km / s2
-        *    ttt         - julian centuries of tt                         centuries
-        *    ddpsi       - delta psi correction to gcrf                   rad
-        *    ddeps       - delta eps correction to gcrf                   rad
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *
-        *  outputs       :
-        *    reci        - position vector eci                            km
-        *    veci        - velocity vector eci                            km / s
-        *    aeci        - acceleration vector eci                        km / s2
-        *
-        *  locals :
-        *    prec        - matrix for eci - mod
-        *    nutteme     - matrix for mod - teme - an approximation for nutation
-        *    eqeg        - rotation for equation of equinoxes(geometric terms only)
-        *    tm          - combined matrix for teme2eci
-        *
-        *  coupling      :
-        *   precess      - rotation for precession                        eci - mod
-        *   nutation     - rotation for nutation                          eci - tod
-        *
-        *  references :
-        *    vallado       2013, 231 - 233
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function teme_eci
+        //
+        //  this function transforms a vector from the true equator mean equinox system,
+        //  (teme) to the mean equator mean equinox (j2000) system.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    rteme       - position vector of date
+        //                  true equator, mean equinox                     km
+        //    vteme       - velocity vector of date
+        //                  true equator, mean equinox                     km / s
+        //    ateme       - acceleration vector of date
+        //                  true equator, mean equinox                     km / s2
+        //    ttt         - julian centuries of tt                         centuries
+        //    ddpsi       - delta psi correction to gcrf                   rad
+        //    ddeps       - delta eps correction to gcrf                   rad
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //
+        //  outputs       :
+        //    reci        - position vector eci                            km
+        //    veci        - velocity vector eci                            km / s
+        //    aeci        - acceleration vector eci                        km / s2
+        //
+        //  locals :
+        //    prec        - matrix for eci - mod
+        //    nutteme     - matrix for mod - teme - an approximation for nutation
+        //    eqeg        - rotation for equation of equinoxes(geometric terms only)
+        //    tm          - combined matrix for teme2eci
+        //
+        //  coupling      :
+        //   precess      - rotation for precession                        eci - mod
+        //   nutation     - rotation for nutation                          eci - tod
+        //
+        //  references :
+        //    vallado       2013, 231 - 233
+        // ----------------------------------------------------------------------------*/
 
         public void teme_eci
             (
@@ -3836,38 +3773,38 @@ namespace AstroLibMethods
         }  //  teme_eci
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function qmod2ecef
-        *
-        *  this function trsnforms a vector from the mean equator mean equniox frame
-        *    (qmod), to an earth fixed (ITRF) frame.  the results take into account
-        *    the effects of precession, nutation, sidereal time, and polar motion.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 jun 2002
-        *
-        *  inputs          description                                   range / units
-        *    rqmod       - position vector qmod                          km
-        *    vqmod       - velocity vector qmod                          km/s
-        *    ttt         - julian centuries of tt                        centuries
-        *    jdutc       - julian date of utc                            days from 4713 bc
-        *
-        *  outputs       :
-        *    recef       - position vector earth fixed                   km
-        *    vecef       - velocity vector earth fixed                   km/s
-        *
-        *  locals        :
-        *    deltapsi    - nutation angle                                rad
-        *    meaneps     - mean obliquity of the ecliptic                rad
-        *    nut         - matrix for tod - mod 
-        *    st          - matrix for pef - tod 
-        *
-        *  coupling      :
-        *   nutationqmod - rotation for nutation (qmod)                   qmod - tod
-        *
-        *  references    :
-        *    vallado       2007, 239-248
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function qmod2ecef
+        //
+        //  this function trsnforms a vector from the mean equator mean equniox frame
+        //    (qmod), to an earth fixed (ITRF) frame.  the results take into account
+        //    the effects of precession, nutation, sidereal time, and polar motion.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    rqmod       - position vector qmod                          km
+        //    vqmod       - velocity vector qmod                          km/s
+        //    ttt         - julian centuries of tt                        centuries
+        //    jdutc       - julian date of utc                            days from 4713 bc
+        //
+        //  outputs       :
+        //    recef       - position vector earth fixed                   km
+        //    vecef       - velocity vector earth fixed                   km/s
+        //
+        //  locals        :
+        //    deltapsi    - nutation angle                                rad
+        //    meaneps     - mean obliquity of the ecliptic                rad
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //
+        //  coupling      :
+        //   nutationqmod - rotation for nutation (qmod)                   qmod - tod
+        //
+        //  references    :
+        //    vallado       2007, 239-248
+        // ------------------------------------------------------------------------------
 
         public void qmod2ecef
             (
@@ -3923,58 +3860,58 @@ namespace AstroLibMethods
         }  //  qmod2ecef 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function csm2efg
-        *
-        *  this function transforms an efg (pef) state vector and ric (eci) vector of
-        *  another satellite and finds both states in ecef. note that afspc calls pef efg.
-        *  there is about a 5cm and 5cm/s error with the afspc values - still tracking that down. 
-        *
-        *  author        : david vallado           davallado@gmail.com   18 nov 2011
-        *
-        *  inputs          description                                   range / units
-        *    r1pef       - pos vector pseudo earth fixed    km
-        *    v1pef       - vel vector pseude earth fixed    km/s
-        *    r2ric       - rel pos vector eci               km
-        *    v2ric       - rel vel vector eci               km/s
-        *    ttt         - julian centuries of tt           centuries
-        *    jdut1       - julian date of ut1               days from 4713 bc
-        *    lod         - excess length of day             sec
-        *    xp          - polar motion coefficient         rad
-        *    yp          - polar motion coefficient         rad
-        *    eqeterms    - terms for ast calculation        0,2
-        *    ddpsi       - delta psi correction to gcrf     rad
-        *    ddeps       - delta eps correction to gcrf     rad
-        *    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        *
-        *  outputs       :
-        *    r1ecef      - position vector earth fixed      km
-        *    v1ecef      - velocity vector earth fixed      km/s
-        *    r2ecef      - position vector earth fixed      km
-        *    v2ecef      - velocity vector earth fixed      km/s
-        *
-        *  locals        :
-        *    reci        - position vector eci              km
-        *    veci        - velocity vector eci              km/s
-        *    deltapsi    - nutation angle                   rad
-        *    trueeps     - true obliquity of the ecliptic   rad
-        *    meaneps     - mean obliquity of the ecliptic   rad
-        *    prec        - matrix for mod - eci 
-        *    nut         - matrix for tod - mod 
-        *    st          - matrix for pef - tod 
-        *    stdot       - matrix for pef - tod rate
-        *    pm          - matrix for ecef - pef 
-        *
-        *  coupling      :
-        *   precess      - rotation for precession       
-        *   nutation     - rotation for nutation          
-        *   sidereal     - rotation for sidereal time     
-        *   polarm       - rotation for polar motion      
-        *
-        *  references    :
-        *    vallado       2007, 228-236
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function csm2efg
+        //
+        //  this function transforms an efg (pef) state vector and ric (eci) vector of
+        //  another satellite and finds both states in ecef. note that afspc calls pef efg.
+        //  there is about a 5cm and 5cm/s error with the afspc values - still tracking that down. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1pef       - pos vector pseudo earth fixed    km
+        //    v1pef       - vel vector pseude earth fixed    km/s
+        //    r2ric       - rel pos vector eci               km
+        //    v2ric       - rel vel vector eci               km/s
+        //    ttt         - julian centuries of tt           centuries
+        //   jdut1       - julian date of ut1               days from 4713 bc
+        //    lod         - excess length of day             sec
+        //   xp          - polar motion coefficient         rad
+        //    yp          - polar motion coefficient         rad
+        //    eqeterms    - terms for ast calculation        0,2
+        //    ddpsi       - delta psi correction to gcrf     rad
+        //    ddeps       - delta eps correction to gcrf     rad
+        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //
+        //  outputs       :
+        //    r1ecef      - position vector earth fixed      km
+        //    v1ecef      - velocity vector earth fixed      km/s
+        //    r2ecef      - position vector earth fixed      km
+        //    v2ecef      - velocity vector earth fixed      km/s
+        //
+        //  locals        :
+        //    reci        - position vector eci              km
+        //    veci        - velocity vector eci              km/s
+        //    deltapsi    - nutation angle                   rad
+        //    trueeps     - true obliquity of the ecliptic   rad
+        //    meaneps     - mean obliquity of the ecliptic   rad
+        //    prec        - matrix for mod - eci 
+        //    nut         - matrix for tod - mod 
+        //    st          - matrix for pef - tod 
+        //    stdot       - matrix for pef - tod rate
+        //    pm          - matrix for ecef - pef 
+        //
+        //  coupling      :
+        //   precess      - rotation for precession       
+        //   nutation     - rotation for nutation          
+        //   sidereal     - rotation for sidereal time     
+        //   polarm       - rotation for polar motion      
+        //
+        //  references    :
+        //    vallado       2007, 228-236
+        //------------------------------------------------------------------------------
 
         public void csm2efg
             (
@@ -4091,62 +4028,56 @@ namespace AstroLibMethods
         // -----------------------------------------------------------------------------------------
 
 
-        /* -----------------------------------------------------------------------------
-         *
-         *                           function rv2coe
-         *
-         *  this function finds the classical orbital elements given the geocentric
-         *    equatorial position and velocity vectors. mu is needed if km and m are
-         *    both used with the same routine
-         *
-         *  author        : david vallado           davallado@gmail.com   21 jun 2002
-         *
-         *  revisions
-         *    vallado     - fix special cases                              5 sep 2002
-         *    vallado     - delete extra check in inclination code        16 oct 2002
-         *    vallado     - add constant file use                         29 jun 2003
-         *    vallado     - add mu                                         2 apr 2007
-         *
-         *  inputs          description                              range / units
-         *    r           - ijk position vector                          km 
-         *    v           - ijk velocity vector                          km/s 
-         *
-         *  outputs       :
-         *    p           - semilatus rectum                             km
-         *    a           - semimajor axis                               km
-         *    ecc         - eccentricity
-         *    incl        - inclination                                  0.0  to Math.PI rad
-         *    raan       - right ascension of ascending node             0.0  to 2pi rad
-         *    argp        - argument of perigee                          0.0  to 2pi rad
-         *    nu          - true anomaly                                 0.0  to 2pi rad
-         *    m           - mean anomaly                                 0.0  to 2pi rad
-         *    arglat      - argument of latitude      (ci)               0.0  to 2pi rad
-         *    truelon     - true longitude            (ce)               0.0  to 2pi rad
-         *    lonper      - longitude of periapsis    (ee)               0.0  to 2pi rad
-         *
-         *  locals        :
-         *    hbar        - angular momentum h vector                    km2 / s
-         *    ebar        - eccentricity     e vector
-         *    nbar        - line of nodes    n vector
-         *    c1          - v**2 - u/r
-         *    rdotv       - r dot v
-         *    hk          - hk unit vector
-         *    sme         - specfic mechanical energy                    km2 / s2
-         *    i           - index
-         *    e           - eccentric, parabolic,
-         *                  hyperbolic anomaly                           rad
-         *    temp        - temporary variable
-         *    typeorbit   - type of orbit                                ee, ei, ce, ci
-         *
-         *  coupling      :
-         *    mag         - magnitude of a vector
-         *    cross       - cross product of two vectors
-         *    angle       - find the angle between two vectors
-         *    newtonnu    - find the mean anomaly
-         *
-         *  references    :
-         *    vallado       2007, 126, alg 9, ex 2-5
-         * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function rv2coe
+        //
+        //  this function finds the classical orbital elements given the geocentric
+        //    equatorial position and velocity vectors. mu is needed if km and m are
+        //    both used with the same routine
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r           - ijk position vector                          km 
+        //    v           - ijk velocity vector                          km/s 
+        //
+        //  outputs       :
+        //    p           - semilatus rectum                             km
+        //    a           - semimajor axis                               km
+        //    ecc         - eccentricity
+        //    incl        - inclination                                  0.0  to Math.PI rad
+        //    raan       - right ascension of ascending node             0.0  to 2pi rad
+        //    argp        - argument of perigee                          0.0  to 2pi rad
+        //    nu          - true anomaly                                 0.0  to 2pi rad
+        //    m           - mean anomaly                                 0.0  to 2pi rad
+        //    arglat      - argument of latitude      (ci)               0.0  to 2pi rad
+        //    truelon     - true longitude            (ce)               0.0  to 2pi rad
+        //    lonper      - longitude of periapsis    (ee)               0.0  to 2pi rad
+        //
+        //  locals        :
+        //    hbar        - angular momentum h vector                    km2 / s
+        //    ebar        - eccentricity     e vector
+        //    nbar        - line of nodes    n vector
+        //    c1          - v**2 - u/r
+        //    rdotv       - r dot v
+        //    hk          - hk unit vector
+        //    sme         - specfic mechanical energy                    km2 / s2
+        //    i           - index
+        //    e           - eccentric, parabolic,
+        //                  hyperbolic anomaly                           rad
+        //    temp        - temporary variable
+        //    typeorbit   - type of orbit                                ee, ei, ce, ci
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    cross       - cross product of two vectors
+        //    angle       - find the angle between two vectors
+        //    newtonnu    - find the mean anomaly
+        //
+        //  references    :
+        //    vallado       2007, 126, alg 9, ex 2-5
+        // -----------------------------------------------------------------------------
 
         public void rv2coe
              (
@@ -4170,11 +4101,11 @@ namespace AstroLibMethods
             infinite = 999999.9;
             m = 0.0;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             magr = MathTimeLibr.mag(r);
             magv = MathTimeLibr.mag(v);
 
-            // ------------------  find h n and e vectors   ----------------
+            // ------------------  find h n and e vectors    // ---------------
             MathTimeLibr.cross(r, v, out hbar);
             magh = MathTimeLibr.mag(hbar);
             if (magh > small)
@@ -4189,7 +4120,7 @@ namespace AstroLibMethods
                     ebar[i] = (c1 * r[i] - rdotv * v[i]) / gravConst.mu;
                 ecc = MathTimeLibr.mag(ebar);
 
-                // ------------  find a e and semi-latus rectum   ----------
+                // ------------  find a e and semi-latus rectum    // ---------
                 sme = (magv * magv * 0.5) - (gravConst.mu / magr);
                 if (Math.Abs(sme) > small)
                     a = -gravConst.mu / (2.0 * sme);
@@ -4197,7 +4128,7 @@ namespace AstroLibMethods
                     a = infinite;
                 p = magh * magh / gravConst.mu;
 
-                // -----------------  find inclination   -------------------
+                // -----------------  find inclination    // ------------------
                 hk = hbar[2] / magh;
                 incl = Math.Acos(hk);
 
@@ -4243,7 +4174,7 @@ namespace AstroLibMethods
                 else
                     argp = undefined;
 
-                // ------------  find true anomaly at epoch    -------------
+                // ------------  find true anomaly at epoch     // ------------
                 if (typeorbit[0] == 'e')
                 {
                     nu = MathTimeLibr.angle(ebar, r);
@@ -4317,49 +4248,46 @@ namespace AstroLibMethods
 
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           function coe2rv
-        *
-        *  this function finds the position and velocity vectors in geocentric
-        *    equatorial (ijk) system given the classical orbit elements. the additional
-        *    orbital elements provide calculations for perfectly circular and equatorial orbits. 
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  revisions
-        *    vallado     - conversion to c#                              23 nov 2011
-        *
-        *  inputs          description                    range / units
-        *    p           - semilatus rectum               km
-        *    ecc         - eccentricity
-	*    incl        - inclination                               0.0 to pi rad
-	*    raan        - rtasc of ascending node                   0.0 to 2pi rad
-        *    argp        - argument of perigee            0.0 to 2pi rad
-        *    nu          - true anomaly                   0.0 to 2pi rad
-        *    arglat      - argument of latitude      (ci) 0.0 to 2pi rad
-        *    lamtrue     - true longitude            (ce) 0.0 to 2pi rad
-        *    lonper      - longitude of periapsis    (ee) 0.0 to 2pi rad
-        *
-        *  outputs       :
-        *    r           - ijk position vector            km
-        *    v           - ijk velocity vector            km / s
-        *
-        *  locals        :
-        *    temp        - temporary real*8 value
-        *    rpqw        - pqw position vector            km
-        *    vpqw        - pqw velocity vector            km / s
-        *    sinnu       - sine of nu
-        *    cosnu       - cosine of nu
-        *    tempvec     - pqw velocity vector
-        *
-        *  coupling      :
-        *    rot3        - rotation about the 3rd axis
-        *    rot1        - rotation about the 1st axis
-        *
-        *  references    :
-        *    vallado       2007, 126, alg 10, ex 2-5
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                           function coe2rv
+        //
+        //  this function finds the position and velocity vectors in geocentric
+        //    equatorial (ijk) system given the classical orbit elements. the additional
+        //    orbital elements provide calculations for perfectly circular and equatorial orbits. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    p           - semilatus rectum               km
+        //    ecc         - eccentricity
+        //    incl        - inclination                               0.0 to pi rad
+        //    raan        - rtasc of ascending node                   0.0 to 2pi rad
+        //    argp        - argument of perigee            0.0 to 2pi rad
+        //    nu          - true anomaly                   0.0 to 2pi rad
+        //    arglat      - argument of latitude      (ci) 0.0 to 2pi rad
+        //    lamtrue     - true longitude            (ce) 0.0 to 2pi rad
+        //    lonper      - longitude of periapsis    (ee) 0.0 to 2pi rad
+        //
+        //  outputs       :
+        //    r           - ijk position vector            km
+        //    v           - ijk velocity vector            km / s
+        //
+        //  locals        :
+        //    temp        - temporary real*8 value
+        //    rpqw        - pqw position vector            km
+        //    vpqw        - pqw velocity vector            km / s
+        //    sinnu       - sine of nu
+        //    cosnu       - cosine of nu
+        //    tempvec     - pqw velocity vector
+        //
+        //  coupling      :
+        //    rot3        - rotation about the 3rd axis
+        //    rot1        - rotation about the 1st axis
+        //
+        //  references    :
+        //    vallado       2007, 126, alg 10, ex 2-5
+        // --------------------------------------------------------------------------- 
 
         public void coe2rv
             (
@@ -4376,7 +4304,7 @@ namespace AstroLibMethods
             small = 0.0000001;
 
 
-            // --------------------  implementation   ----------------------
+            // --------------------  implementation    // ---------------------
             //       determine what type of orbit is involved and set up the
             //       set up angles for the special cases.
             // -------------------------------------------------------------
@@ -4444,13 +4372,9 @@ namespace AstroLibMethods
         // this function transforms a position and velocity vector into the flight
         //    elements - latgc, lon, fpa, az, position and velocity magnitude.
         //
-        //  author        : david vallado           davallado@gmail.com    7 jun 2002
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  revisions
-        //    vallado     - fix special orbit types (ee)                   5 sep 2002
-        //    vallado     - add constant file use                         29 jun 2003
-        //
-        //  inputs          description                    range / units
+        //  inputs          description                              range / units
         //    r           - eci position vector            km
         //    v           - eci velocity vector            km/s
         //
@@ -4482,7 +4406,7 @@ namespace AstroLibMethods
               out double meanlonNu, out Int16 fr
             )
         {
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             double p, ecc, incl, raan, argp, nu, m, arglat, lonper, truelon;
             double small = 0.0000001;
             double undefined = 999999.1;
@@ -4561,13 +4485,9 @@ namespace AstroLibMethods
         //  this function finds the classical orbital elements given the equinoctial
         //    elements.
         //
-        //  author        : david vallado           davallado@gmail.com    9 jun 2002
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  revisions
-        //    vallado     - fix elliptical equatorial orbits case         19 oct 2002
-        //    vallado     - add constant file use                         29 jun 2003
-        //
-        //  inputs          description                    range / units
+        //  inputs          description                              range / units
         //    a           - semimajor axis                 km
         //    af          - component of ecc vector
         //    ag          - component of ecc vector
@@ -4605,7 +4525,7 @@ namespace AstroLibMethods
             double a, double af, double ag, double chi, double psi, double meanlon, Int16 fr, out double[] r, out double[] v
             )
         {
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             double p, ecc, incl, raan, argp, nu, m, eccanom, arglat, lonper, truelon;
             double small = 0.0000001;
             double undefined = 999999.1;
@@ -4688,51 +4608,47 @@ namespace AstroLibMethods
         } // eq2rv
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function rv2flt
-        *
-        *  this function transforms a position and velocity vector into the flight
-        *    elements - latgc, lon, fpa, az, position and velocity magnitude.
-        *
-        *  author        : david vallado           davallado@gmail.com   17 jun 2002
-        *
-        *  revisions
-        *    vallado     - add terms for ast calculation                 30 sep 2002
-        *    vallado     - chg magr var names                            23 may 2003
-        *
-        *  inputs description                                             range / units
-        *    r           - eci position vector km
-        *    v           - eci velocity vector km/s
-        *    ttt         - julian centuries of tt                          centuries
-        *    jdut1       - julian date of ut1                              days from 4713 bc
-        *    lod         - excess length of day                            sec
-        *    xp          - polar motion coefficient                        arc sec
-        *    yp          - polar motion coefficient                        arc sec
-        *    terms       - number of terms for ast calculation             0,2
-        *    ddpsi, ddeps - corrections for fk5 to gcrf                    rad
-        *
-        *  outputs       :
-        *    magr        - eci position vector magnitude                   km
-        *    magv        - eci velocity vector magnitude                   km/sec
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *    lon         - longitude                                       rad
-        *    fpa         - sat flight path angle                           rad
-        *    az          - sat flight path az                              rad
-        *
-        *  locals        :
-        *    fpav        - sat flight path anglefrom vert                  rad
-        *
-        *    none        -
-        *  references    :
-        *    vallado       2013, xx
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function rv2flt
+        //
+        //  this function transforms a position and velocity vector into the flight
+        //    elements - latgc, lon, fpa, az, position and velocity magnitude.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r           - eci position vector km
+        //    v           - eci velocity vector km/s
+        //    ttt         - julian centuries of tt                          centuries
+        //    jdut1       - julian date of ut1                              days from 4713 bc
+        //    lod         - excess length of day                            sec
+        //    xp          - polar motion coefficient                        arc sec
+        //    yp          - polar motion coefficient                        arc sec
+        //    terms       - number of terms for ast calculation             0,2
+        //    ddpsi, ddeps - corrections for fk5 to gcrf                    rad
+        //
+        //  outputs       :
+        //    magr        - eci position vector magnitude                   km
+        //    magv        - eci velocity vector magnitude                   km/sec
+        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    lon         - longitude                                       rad
+        //    fpa         - sat flight path angle                           rad
+        //    az          - sat flight path az                              rad
+        //
+        //  locals        :
+        //    fpav        - sat flight path anglefrom vert                  rad
+        //
+        //    none        -
+        //  references    :
+        //    vallado       2013, xx
+        // ----------------------------------------------------------------------------*/
 
         public void rv2flt
             (
             double[] reci, double[] veci, double jdtt, double jdftt,
-            double jdut1,  double lod,
-            double xp, double yp, int terms, double ddpsi, double ddeps, 
+            double jdut1, double lod,
+            double xp, double yp, int terms, double ddpsi, double ddeps,
             EOPSPWLib.iau80Class iau80arr,
             out double lon, out double latgc, out double rtasc, out double decl,
             out double fpa, out double az, out double magr, out double magv
@@ -4751,7 +4667,7 @@ namespace AstroLibMethods
 
             // -------- convert r to ecef for lat/lon calculation
             eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                EOPSPWLibr.iau80arr, 
+                EOPSPWLibr.iau80arr,
                 jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             // ----------------- find longitude value  ----------------- uses ecef
@@ -4784,46 +4700,46 @@ namespace AstroLibMethods
         }  // rv2flt
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure rv_elatlon
-        *
-        *  this procedure converts ecliptic latitude and longitude with position and
-        *    velocity vectors. uses velocity vector to find the solution of Math.Singular
-        *    cases.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                    range / units
-        *    rijk        - ijk position vector            er
-        *    vijk        - ijk velocity vector            er/tu
-        *    direction   - which set of vars to output    from  too
-        *
-        *  outputs       :
-        *    rr          - radius of the sat              er
-        *    ecllat      - ecliptic latitude              -Math.PI/2 to Math.PI/2 rad
-        *    ecllon      - ecliptic longitude             -Math.PI/2 to Math.PI/2 rad
-        *    drr         - radius of the sat rate         er/tu
-        *    decllat     - ecliptic latitude rate         -Math.PI/2 to Math.PI/2 rad
-        *    eecllon     - ecliptic longitude rate        -Math.PI/2 to Math.PI/2 rad
-        *
-        *  locals        :
-        *    obliquity   - obliquity of the ecliptic      rad
-        *    temp        -
-        *    temp1       -
-        *    re          - position vec in eclitpic frame
-        *    ve          - velocity vec in ecliptic frame
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    rot1        - rotation about 1st axis
-        *    dot         - dot product
-        *    arcsin      - arc Math.Sine function
-        *    Math.Atan2       - arc tangent function that resolves quadrant ambiguites
-        *
-        *  references    :
-        *    vallado       2013, 268, eq 4-15
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure rv_elatlon
+        //
+        //  this procedure converts ecliptic latitude and longitude with position and
+        //    velocity vectors. uses velocity vector to find the solution of Math.Singular
+        //    cases.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    rijk        - ijk position vector            er
+        //    vijk        - ijk velocity vector            er/tu
+        //    direction   - which set of vars to output    from  too
+        //
+        //  outputs       :
+        //    rr          - radius of the sat              er
+        //    ecllat      - ecliptic latitude              -Math.PI/2 to Math.PI/2 rad
+        //    ecllon      - ecliptic longitude             -Math.PI/2 to Math.PI/2 rad
+        //    drr         - radius of the sat rate         er/tu
+        //    decllat     - ecliptic latitude rate         -Math.PI/2 to Math.PI/2 rad
+        //    eecllon     - ecliptic longitude rate        -Math.PI/2 to Math.PI/2 rad
+        //
+        //  locals        :
+        //    obliquity   - obliquity of the ecliptic      rad
+        //    temp        -
+        //    temp1       -
+        //    re          - position vec in eclitpic frame
+        //    ve          - velocity vec in ecliptic frame
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    rot1        - rotation about 1st axis
+        //    dot         - dot product
+        //    arcsin      - arc Math.Sine function
+        //    Math.Atan2       - arc tangent function that resolves quadrant ambiguites
+        //
+        //  references    :
+        //    vallado       2013, 268, eq 4-15
+        // ----------------------------------------------------------------------------*/
 
         public void rv_elatlon
         (
@@ -4857,7 +4773,7 @@ namespace AstroLibMethods
             }
             else
             {
-                /* -------------- calculate angles and rates ---------------- */
+                // -------------- calculate angles and rates ------------------
                 rr = MathTimeLibr.mag(rijk);
                 temp = Math.Sqrt(rijk[0] * rijk[0] + rijk[1] * rijk[1]);
                 if (temp < small)
@@ -4886,39 +4802,39 @@ namespace AstroLibMethods
         } //  rv_elatlon
 
 
-        /* ------------------------------------------------------------------------------
-        * 
-        *                            function rv_radec
-        * 
-        *   this function converts the right ascension and declination values with
-        *     position and velocity vectors of a satellite. uses velocity vector to
-        *     find the solution of singular cases.
-    	*
-    	*  author        : david vallado           davallado@gmail.com   22 jun 2002
-    	*
-        *   inputs          description                          range / units
-    	*     r           - position vector eci                       km, er
-    	*     v           - velocity vector eci                       km/s, er/tu
-    	*     direct      -  direction to convert                     eFrom  eTo
-    	*
-        *   outputs       :
-        *     rr          - radius of the satellite                      km
-        *     rtasc       - right ascension                              rad
-        *     decl        - declination                                  rad
-        *     drr         - radius of the satellite rate                 km/s
-        *     drtasc      - right ascension rate                         rad/s
-        *     ddecl       - declination rate                             rad/s
-        * 
-        *   locals        :
-        *     temp        - temporary position vector
-        *     temp1       - temporary variable
-        * 
-        *   coupling      :
-        *     none
-        * 
-        *   references    :
-    	*    vallado       2013, 259, alg 25
-    	-----------------------------------------------------------------------------*/
+        // ------------------------------------------------------------------------------
+        // 
+        //                            function rv_radec
+        // 
+        //   this function converts the right ascension and declination values with
+        //     position and velocity vectors of a satellite. uses velocity vector to
+        //     find the solution of singular cases.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //     r           - position vector eci                       km, er
+        //     v           - velocity vector eci                       km/s, er/tu
+        //     direct      -  direction to convert                     eFrom  eTo
+        //
+        //   outputs       :
+        //     rr          - radius of the satellite                      km
+        //     rtasc       - right ascension                              rad
+        //     decl        - declination                                  rad
+        //     drr         - radius of the satellite rate                 km/s
+        //     drtasc      - right ascension rate                         rad/s
+        //     ddecl       - declination rate                             rad/s
+        // 
+        //   locals        :
+        //     temp        - temporary position vector
+        //     temp1       - temporary variable
+        // 
+        //   coupling      :
+        //     none
+        // 
+        //   references    :
+        //    vallado       2013, 259, alg 25
+        // --------------------------------------------------------------------------------
 
         public void rv_radec
             (
@@ -4930,7 +4846,7 @@ namespace AstroLibMethods
             double small = 0.00000001;
             double temp, temp1;
 
-            // -------------------------  implementation   -------------------------
+            // -------------------------  implementation    // ------------------------
             if (direct.Equals(MathTimeLib.Edirection.efrom))
             {
                 r[0] = (rr * Math.Cos(decl) * Math.Cos(rtasc));
@@ -4973,57 +4889,57 @@ namespace AstroLibMethods
 
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure rv_razel
-        *
-        *  this procedure converts range, azimuth, and elevation and their rates with
-        *    the geocentric equatorial (ecef) position and velocity vectors.  notice the
-        *    value of small as it can affect rate term calculations. uses velocity
-	    *    vector to find the solution of singular cases.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                            range / units
-        *    recef       - ecef position vector                       km
-        *    vecef       - ecef velocity vector                       km/s
-	    *    latgd       - geodetic latitude                          -pi/2 to pi/2 rad
-	    *    lon         - geodetic longitude                         -2pi to pi rad
-        *    direct      -  direction to convert                      eFrom  eTo
-        *
-        *  outputs       :
-        *    rho         - satellite range from site                  km
-        *    az          - azimuth                                    0.0 to 2pi rad
-	    *    el          - elevation                                  -pi/2 to pi/2 rad
-        *    drho        - range rate                                 km/s
-        *    daz         - azimuth rate                               rad/s
-        *    del         - elevation rate                             rad/s
-        *
-        *  locals        :
-        *    rsecef      - ecef site position vector                  km
-        *    rhovecef    - ecef range vector from site                km
-        *    drhovecef   - ecef velocity vector from site             km/s
-        *    rhosez      - sez range vector from site                 km
-        *    drhosez     - sez velocity vector from site              km
-        *    tempvec     - temporary vector
-        *    temp        - temporary extended value
-        *    temp1       - temporary extended value
-        *    i           - index
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    addvec      - add two vectors
-        *    rot3        - rotation about the 3rd axis
-        *    rot2        - rotation about the 2nd axis
-        *    atan2       - arc tangent function which also resloves quadrants
-        *    dot         - dot product of two vectors
-        *    rvsez_razel - find r and v from site in topocentric horizon (sez) system
-        *    arcsin      - arc sine function
-        *    sign        - returns the sign of a variable
-        *
-        *  references    :
-        *    vallado       2013, 265, alg 27
-        -----------------------------------------------------------------------------*/
+        // ------------------------------------------------------------------------------
+        //
+        //                           procedure rv_razel
+        //
+        //  this procedure converts range, azimuth, and elevation and their rates with
+        //    the geocentric equatorial (ecef) position and velocity vectors.  notice the
+        //    value of small as it can affect rate term calculations. uses velocity
+        //    vector to find the solution of singular cases.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - ecef position vector                       km
+        //    vecef       - ecef velocity vector                       km/s
+        //    latgd       - geodetic latitude                          -pi/2 to pi/2 rad
+        //    lon         - geodetic longitude                         -2pi to pi rad
+        //    direct      -  direction to convert                      eFrom  eTo
+        //
+        //  outputs       :
+        //    rho         - satellite range from site                  km
+        //    az          - azimuth                                    0.0 to 2pi rad
+        //    el          - elevation                                  -pi/2 to pi/2 rad
+        //    drho        - range rate                                 km/s
+        //    daz         - azimuth rate                               rad/s
+        //    del         - elevation rate                             rad/s
+        //
+        //  locals        :
+        //    rsecef      - ecef site position vector                  km
+        //    rhovecef    - ecef range vector from site                km
+        //    drhovecef   - ecef velocity vector from site             km/s
+        //    rhosez      - sez range vector from site                 km
+        //    drhosez     - sez velocity vector from site              km
+        //    tempvec     - temporary vector
+        //    temp        - temporary extended value
+        //    temp1       - temporary extended value
+        //    i           - index
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    addvec      - add two vectors
+        //    rot3        - rotation about the 3rd axis
+        //    rot2        - rotation about the 2nd axis
+        //    atan2       - arc tangent function which also resloves quadrants
+        //    dot         - dot product of two vectors
+        //    rvsez_razel - find r and v from site in topocentric horizon (sez) system
+        //    arcsin      - arc sine function
+        //    sign        - returns the sign of a variable
+        //
+        //  references    :
+        //    vallado       2013, 265, alg 27
+        // -----------------------------------------------------------------------------
 
         public void rv_razel
             (
@@ -5048,16 +4964,16 @@ namespace AstroLibMethods
 
             if (direct.Equals(MathTimeLib.Edirection.efrom))
             {
-                /* ---------  find sez range and velocity vectors ----------- */
+                // ---------  find sez range and velocity vectors -------------
                 rvsez_razel(ref rhosez, ref drhosez, direct, ref rho, ref az, ref el, ref drho, ref daz, ref del);
 
-                /* ----------  perform sez to ecef transformation ------------ */
+                // ----------  perform sez to ecef transformation --------------
                 tempvec = MathTimeLibr.rot2(rhosez, latgd - halfpi);
                 rhoecef = MathTimeLibr.rot3(tempvec, -lon);
                 tempvec = MathTimeLibr.rot2(drhosez, latgd - halfpi);
                 drhoecef = MathTimeLibr.rot3(tempvec, -lon);
 
-                /* ---------  find ecef range and velocity vectors -----------*/
+                // ---------  find ecef range and velocity vectors -----------*/
                 MathTimeLibr.addvec(1.0, rhoecef, 1.0, rsecef, out recef);
                 vecef[0] = drhoecef[0];
                 vecef[1] = drhoecef[1];
@@ -5065,20 +4981,20 @@ namespace AstroLibMethods
             }
             else
             {
-                /* ------- find ecef range vector from site to satellite ----- */
+                // ------- find ecef range vector from site to satellite -------
                 MathTimeLibr.addvec(1.0, recef, -1.0, rsecef, out rhoecef);
                 drhoecef[0] = vecef[0];
                 drhoecef[1] = vecef[1];
                 drhoecef[2] = vecef[2];
                 rho = MathTimeLibr.mag(rhoecef);
 
-                /* ------------ convert to sez for calculations ------------- */
+                // ------------ convert to sez for calculations ---------------
                 tempvec = MathTimeLibr.rot3(rhoecef, lon);
                 rhosez = MathTimeLibr.rot2(tempvec, halfpi - latgd);
                 tempvec = MathTimeLibr.rot3(drhoecef, lon);
                 drhosez = MathTimeLibr.rot2(tempvec, halfpi - latgd);
 
-                /* ------------ calculate azimuth and elevation ------------- */
+                // ------------ calculate azimuth and elevation ---------------
                 temp = Math.Sqrt(rhosez[0] * rhosez[0] + rhosez[1] * rhosez[1]);
                 if (Math.Abs(rhosez[1]) < small)
                     if (temp < small)
@@ -5098,7 +5014,7 @@ namespace AstroLibMethods
 
                 el = Math.Asin(rhosez[2] / rho);
 
-                /* ----- calculate range, azimuth and elevation rates ------- */
+                // ----- calculate range, azimuth and elevation rates ---------
                 drho = MathTimeLibr.dot(rhosez, drhosez) / rho;
                 if (Math.Abs(temp * temp) > small)
                     daz = (drhosez[0] * rhosez[1] - drhosez[1] * rhosez[0]) / (temp * temp);
@@ -5113,43 +5029,43 @@ namespace AstroLibMethods
         }  //  rv_razel
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure rv_tradec
-        *
-        *  this procedure converts topocentric right-ascension declination with
-        *    position and velocity vectors. the velocity vector is used to find the
-        *    solution of singular cases.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                            range / units
-        *    reci        - eci position vector                    km
-        *    veci        - eci velocity vector                    km/s
-        *    rseci       - eci site position vector               km
-        *    direct      - direction to convert                   eFrom  eTo
-        *
-        *  outputs       :
-        *    rho         - topo radius of the sat                 km
-        *    trtasc      - topo right ascension                   rad
-        *    tdecl       - topo declination                       rad
-        *    drho        - topo radius of the sat rate            km/s
-        *    tdrtasc     - topo right ascension rate              rad/s
-        *    tddecl      - topo declination rate                  rad/s
-        *
-        *  locals        :
-        *    rhov        - eci range vector from site             km
-        *    drhov       - eci velocity vector from site          km/s
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    addvec      - add two vectors
-        *    dot         - dot product of two vectors
-        *
-        *  references    :
-        *    vallado       2022, 254-257, eq 4-1, 4-2, alg 26
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure rv_tradec
+        //
+        //  this procedure converts topocentric right-ascension declination with
+        //    position and velocity vectors. the velocity vector is used to find the
+        //    solution of singular cases.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    reci        - eci position vector                    km
+        //    veci        - eci velocity vector                    km/s
+        //    rseci       - eci site position vector               km
+        //    direct      - direction to convert                   eFrom  eTo
+        //
+        //  outputs       :
+        //    rho         - topo radius of the sat                 km
+        //    trtasc      - topo right ascension                   rad
+        //    tdecl       - topo declination                       rad
+        //    drho        - topo radius of the sat rate            km/s
+        //    tdrtasc     - topo right ascension rate              rad/s
+        //    tddecl      - topo declination rate                  rad/s
+        //
+        //  locals        :
+        //    rhov        - eci range vector from site             km
+        //    drhov       - eci velocity vector from site          km/s
+        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    addvec      - add two vectors
+        //    dot         - dot product of two vectors
+        //
+        //  references    :
+        //    vallado       2022, 254-257, eq 4-1, 4-2, alg 26
+        // ----------------------------------------------------------------------------
 
         public void rv_tradec
         (
@@ -5228,47 +5144,47 @@ namespace AstroLibMethods
         } //  rv_tradec
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure rvsez_razel
-        *
-        *  this procedure converts range, azimuth, and elevation values with slant
-        *    range and velocity vectors for a satellite from a radar site in the
-        *    topocentric horizon (sez) system.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                           range / units
-        *    rhovec      - sez satellite range vector           km
-        *    drhovec     - sez satellite velocity vector        km/s
-        *    direct      - direction to convert                 eFrom  eTo
-        *
-        *  outputs       :
-        *    rho         - satellite range from site            km
-        *    az          - azimuth                              0.0 to 2pi rad
-        *    el          - elevation                            -Math.PI/2 to Math.PI/2 rad
-        *    drho        - range rate                           km/s
-        *    daz         - azimuth rate                         rad/s
-        *    del         - elevation rate                       rad/s
-        *
-        *  locals        :
-        *    sinel       - variable for Math.Sin( el )
-        *    cosel       - variable for Math.Cos( el )
-        *    sinaz       - variable for Math.Sin( az )
-        *    cosaz       - variable for Math.Cos( az )
-        *    temp        -
-        *    temp1       -
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    sign        - returns the sign of a variable
-        *    dot         - dot product
-        *    arcsin      - arc sine function
-        *    atan2       - arc tangent function that resolves quadrant ambiguites
-        *
-        *  references    :
-        *    vallado       2013, 261, eq 4-4, eq 4-5
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure rvsez_razel
+        //
+        //  this procedure converts range, azimuth, and elevation values with slant
+        //    range and velocity vectors for a satellite from a radar site in the
+        //    topocentric horizon (sez) system.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    rhovec      - sez satellite range vector           km
+        //    drhovec     - sez satellite velocity vector        km/s
+        //    direct      - direction to convert                 eFrom  eTo
+        //
+        //  outputs       :
+        //    rho         - satellite range from site            km
+        //    az          - azimuth                              0.0 to 2pi rad
+        //    el          - elevation                            -Math.PI/2 to Math.PI/2 rad
+        //    drho        - range rate                           km/s
+        //    daz         - azimuth rate                         rad/s
+        //    del         - elevation rate                       rad/s
+        //
+        //  locals        :
+        //    sinel       - variable for Math.Sin( el )
+        //    cosel       - variable for Math.Cos( el )
+        //    sinaz       - variable for Math.Sin( az )
+        //    cosaz       - variable for Math.Cos( az )
+        //    temp        -
+        //    temp1       -
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    sign        - returns the sign of a variable
+        //    dot         - dot product
+        //    arcsin      - arc sine function
+        //    atan2       - arc tangent function that resolves quadrant ambiguites
+        //
+        //  references    :
+        //    vallado       2013, 261, eq 4-4, eq 4-5
+        // ----------------------------------------------------------------------------*/
 
         public void rvsez_razel
         (
@@ -5288,12 +5204,12 @@ namespace AstroLibMethods
                 sinaz = Math.Sin(az);
                 cosaz = Math.Cos(az);
 
-                /* ----------------- form sez range vector ------------------ */
+                // ----------------- form sez range vector --------------------
                 rhosez[0] = (-rho * cosel * cosaz);
                 rhosez[1] = (rho * cosel * sinaz);
                 rhosez[2] = (rho * sinel);
 
-                /* --------------- form sez velocity vector ----------------- */
+                // --------------- form sez velocity vector -------------------
                 drhosez[0] = (-drho * cosel * cosaz +
                     rhosez[2] * del * cosaz + rhosez[1] * daz);
                 drhosez[1] = (drho * cosel * sinaz -
@@ -5302,7 +5218,7 @@ namespace AstroLibMethods
             }
             else
             {
-                /* ------------ calculate azimuth and elevation ------------- */
+                // ------------ calculate azimuth and elevation ---------------
                 temp = Math.Sqrt(rhosez[0] * rhosez[0] + rhosez[1] * rhosez[1]);
                 if (Math.Abs(rhosez[1]) < small)
                     if (temp < small)
@@ -5320,7 +5236,7 @@ namespace AstroLibMethods
 
                 el = Math.Asin(rhosez[2] / MathTimeLibr.mag(rhosez));
 
-                /* ------  calculate range, azimuth and elevation rates ----- */
+                // ------  calculate range, azimuth and elevation rates -------
                 drho = MathTimeLibr.dot(rhosez, drhosez) / rho;
                 if (Math.Abs(temp * temp) > small)
                     daz = (drhosez[0] * rhosez[1] - drhosez[1] * rhosez[0]) / (temp * temp);
@@ -5421,7 +5337,7 @@ namespace AstroLibMethods
             // a = [0;0;0];
             // [recef,vecef,aecef] = eci2ecef(reci,veci,a,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps);
             prec = precess(ttt, EOpt.e80, out psia, out wa, out ea, out xa);
-            nut = nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr,  fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
+            nut = nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, fArgs, out deltapsi, out deltaeps, out trueeps, out meaneps);
             st = sidereal(jdut1, deltapsi, meaneps, fArgs, lod, 2, EOpt.e80);  // stdot calc, not returned, use terms = 2 since well past 1997
             pm = polarm(xp, yp, ttt, EOpt.e80);
             prect = MathTimeLibr.mattrans(prec, 3);
@@ -5464,37 +5380,34 @@ namespace AstroLibMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function rv2rsw
-        *
-        *  this function converts position and velocity vectors into radial, along-
-        *    track, and MathTimeLibr.cross-track coordinates. note that sometimes the middle vector
-        *    is called in-track.
-        *
-        *  author        : david vallado           davallado@gmail.com    9 jun 2002
-        *
-        *  revisions
-        *    vallado     - conversion to c#                              23 Nov 2011
-        *
-        *  inputs          description                    range / units
-        *    r           - position vector                km
-        *    v           - velocity vector                km/s
-        *
-        *  outputs       :
-        *    rrsw        - position vector                km
-        *    vrsw        - velocity vector                km/s
-        *    transmat    - transformation matrix
-        *
-        *  locals        :
-        *    tempvec     - temporary vector
-        *    rvec,svec,wvec - direction Math.Cosines
-        *
-        *  coupling      :
-        *
-        *  references    :
-        *    vallado       2007, 163
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function rv2rsw
+        //
+        //  this function converts position and velocity vectors into radial, along-
+        //    track, and MathTimeLibr.cross-track coordinates. note that sometimes the middle vector
+        //    is called in-track.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r           - position vector                km
+        //    v           - velocity vector                km/s
+        //
+        //  outputs       :
+        //    rrsw        - position vector                km
+        //    vrsw        - velocity vector                km/s
+        //    transmat    - transformation matrix
+        //
+        //  locals        :
+        //    tempvec     - temporary vector
+        //    rvec,svec,wvec - direction Math.Cosines
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //    vallado       2007, 163
+        // -----------------------------------------------------------------------------
 
         public double[,] rv2rsw
             (
@@ -5508,7 +5421,7 @@ namespace AstroLibMethods
             double[] tempvec = new double[3];
             double[,] transmat = new double[3, 3];
 
-            // --------------------  Implementation   ----------------------
+            // --------------------  Implementation    // ---------------------
             // in order to work correctly each of the components must be
             // unit vectors
             // radial component
@@ -5538,48 +5451,45 @@ namespace AstroLibMethods
             vrsw = MathTimeLibr.matvecmult(transmat, v, 3);
 
             return transmat;
-            /*
-            *   alt approach
-            *       rrsw[0] = MathTimeLibr.mag(r)
-            *       rrsw[2] = 0.0
-            *       rrsw[3] = 0.0
-            *       vrsw[0] = dot(r, v)/rrsw(0)
-            *       vrsw[1] = sqrt(v(0)**2 + v(1)**2 + v(2)**2 - vrsw(0)**2)
-            *       vrsw[2] = 0.0
-            */
+            //
+            //   alt approach
+            //       rrsw[0] = MathTimeLibr.mag(r)
+            //       rrsw[2] = 0.0
+            //       rrsw[3] = 0.0
+            //       vrsw[0] = dot(r, v)/rrsw(0)
+            //       vrsw[1] = sqrt(v(0)**2 + v(1)**2 + v(2)**2 - vrsw(0)**2)
+            //       vrsw[2] = 0.0
+            ///
         }  //  rv2rsw 
 
 
-        /* -----------------------------------------------------------------------------
-         *
-         *                           function rv2ntw
-         *
-         *  this function converts position and velocity vectors into normal, in-
-         *    track, and cross-track coordinates. 
-         *
-         *  author        : david vallado           davallado@gmail.com    9 jun 2002
-         *
-         *  revisions
-         *    vallado     - conversion to c#                              23 Nov 2011
-         *
-         *  inputs          description                           range / units
-         *    r           - position vector                           km
-         *    v           - velocity vector                           km/s
-         *
-         *  outputs       :
-         *    rntw        - position vector                           km
-         *    vntw        - velocity vector                           km/s
-         *    transmat    - transformation matrix
-         *
-         *  locals        :
-         *    tempvec     - temporary vector
-         *    nvec,tvec,wvec - direction Cosines
-         *
-         *  coupling      :
-         *
-         *  references    :
-         *    vallado       2013, 164
-         * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function rv2ntw
+        //
+        //  this function converts position and velocity vectors into normal, in-
+        //    track, and cross-track coordinates. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r           - position vector                           km
+        //    v           - velocity vector                           km/s
+        //
+        //  outputs       :
+        //    rntw        - position vector                           km
+        //    vntw        - velocity vector                           km/s
+        //    transmat    - transformation matrix
+        //
+        //  locals        :
+        //    tempvec     - temporary vector
+        //    nvec,tvec,wvec - direction Cosines
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //    vallado       2013, 164
+        // -----------------------------------------------------------------------------
 
         public double[,] rv2ntw
             (
@@ -5593,7 +5503,7 @@ namespace AstroLibMethods
             double[] tempvec = new double[3];
             double[,] transmat = new double[3, 3];
 
-            // --------------------  Implementation   ----------------------
+            // --------------------  Implementation   ---------------------
             // in order to work correctly each of the components must be
             // unit vectors
             // in velocity component
@@ -5623,66 +5533,64 @@ namespace AstroLibMethods
             vntw = MathTimeLibr.matvecmult(transmat, v, 3);
 
             return transmat;
-            /*
-            *   alt approach
-            *       rrsw[0] = MathTimeLibr.mag(r)
-            *       rrsw[2] = 0.0
-            *       rrsw[3] = 0.0
-            *       vrsw[0] = dot(r, v)/rrsw(0)
-            *       vrsw[1] = sqrt(v(0)**2 + v(1)**2 + v(2)**2 - vrsw(0)**2)
-            *       vrsw[2] = 0.0
-            */
+            //
+            //   alt approach
+            //       rrsw[0] = MathTimeLibr.mag(r)
+            //       rrsw[2] = 0.0
+            //       rrsw[3] = 0.0
+            //       vrsw[0] = dot(r, v)/rrsw(0)
+            //       vrsw[1] = sqrt(v(0)**2 + v(1)**2 + v(2)**2 - vrsw(0)**2)
+            //       vrsw[2] = 0.0
+            ///
         }  //  rv2ntw 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function rv2pqw
-        *
-        *  this function finds the pqw vectors given the geocentric equatorial 
-        *  position and velocity vectors.  mu is needed if km and m are
-        *    both used with the same routine
-        *
-        *  author        : david vallado           davallado@gmail.com   21 jun 2002
-        *
-        *  revisions
-        *
-        *  inputs          description                    range / units
-        *    r           - ijk position vector            km or m
-        *    v           - ijk velocity vector            km/s or m/s
-        *    mu          - gravitational parameter        km3/s2 or m3/s2
-        *
-        *  outputs       :
-        *    rpqw        - pqw position vector            km
-        *    vpqw        - pqw velocity vector            km / s
-        *
-        *  locals        :
-        *    hbar        - angular momentum h vector      km2 / s
-        *    ebar        - eccentricity     e vector
-        *    nbar        - line of nodes    n vector
-        *    c1          - v**2 - u/r
-        *    rdotv       - r dot v
-        *    hk          - hk unit vector
-        *    sme         - specfic mechanical energy      km2 / s2
-        *    i           - index
-        *    p           - semilatus rectum               km
-        *    a           - semimajor axis                 km
-        *    ecc         - eccentricity
-        *    incl        - inclination                    0.0  to Math.PI rad
-        *    nu          - true anomaly                   0.0  to 2pi rad
-        *    arglat      - argument of latitude      (ci) 0.0  to 2pi rad
-        *    truelon     - true longitude            (ce) 0.0  to 2pi rad
-        *    lonper      - longitude of periapsis    (ee) 0.0  to 2pi rad
-        *    temp        - temporary variable
-        *    typeorbit   - type of orbit                  ee, ei, ce, ci
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    MathTimeLibr.cross       - MathTimeLibr.cross product of two vectors
-        *    angle       - find the angle between two vectors
-        *
-        *  references    :
-        *    vallado       2007, 126, alg 9, ex 2-5
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function rv2pqw
+        //
+        //  this function finds the pqw vectors given the geocentric equatorial 
+        //  position and velocity vectors.  mu is needed if km and m are
+        //    both used with the same routine
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r           - ijk position vector            km or m
+        //    v           - ijk velocity vector            km/s or m/s
+        //    mu          - gravitational parameter        km3/s2 or m3/s2
+        //
+        //  outputs       :
+        //    rpqw        - pqw position vector            km
+        //    vpqw        - pqw velocity vector            km / s
+        //
+        //  locals        :
+        //    hbar        - angular momentum h vector      km2 / s
+        //    ebar        - eccentricity     e vector
+        //    nbar        - line of nodes    n vector
+        //    c1          - v**2 - u/r
+        //    rdotv       - r dot v
+        //    hk          - hk unit vector
+        //    sme         - specfic mechanical energy      km2 / s2
+        //    i           - index
+        //    p           - semilatus rectum               km
+        //    a           - semimajor axis                 km
+        //    ecc         - eccentricity
+        //    incl        - inclination                    0.0  to Math.PI rad
+        //    nu          - true anomaly                   0.0  to 2pi rad
+        //    arglat      - argument of latitude      (ci) 0.0  to 2pi rad
+        //    truelon     - true longitude            (ce) 0.0  to 2pi rad
+        //    lonper      - longitude of periapsis    (ee) 0.0  to 2pi rad
+        //    temp        - temporary variable
+        //    typeorbit   - type of orbit                  ee, ei, ce, ci
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    MathTimeLibr.cross       - MathTimeLibr.cross product of two vectors
+        //    angle       - find the angle between two vectors
+        //
+        //  references    :
+        //    vallado       2007, 126, alg 9, ex 2-5
+        // -----------------------------------------------------------------------------
 
         public void rv2pqw
              (
@@ -5708,11 +5616,11 @@ namespace AstroLibMethods
             small = 0.00000001;
             undefined = 999999.1;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation  ----------------
             magr = MathTimeLibr.mag(r);
             magv = MathTimeLibr.mag(v);
 
-            // ------------------  find h n and e vectors   ----------------
+            // ------------------  find h n and e vectors  ---------------
             MathTimeLibr.cross(r, v, out hbar);
             magh = MathTimeLibr.mag(hbar);
             if (magh > small)
@@ -5727,10 +5635,10 @@ namespace AstroLibMethods
                     ebar[i] = (c1 * r[i] - rdotv * v[i]) / gravConst.mu;
                 ecc = MathTimeLibr.mag(ebar);
 
-                // ------------  find a e and semi-latus rectum   ----------
+                // ------------  find a e and semi-latus rectum  ---------
                 p = magh * magh / gravConst.mu;
 
-                // -----------------  find inclination   -------------------
+                // -----------------  find inclination  ------------------
                 hk = hbar[2] / magh;
                 incl = Math.Acos(hk);
 
@@ -5754,7 +5662,7 @@ namespace AstroLibMethods
                 }
 
 
-                // ------------  find true anomaly at epoch    -------------
+                // ------------  find true anomaly at epoch   ------------
                 if (typeorbit[0] == 'e')
                 {
                     nu = MathTimeLibr.angle(ebar, r);
@@ -5789,7 +5697,7 @@ namespace AstroLibMethods
                 else
                     truelon = undefined;
 
-                // --------------------  implementation   ----------------------
+                // --------------------  implementation  ---------------------
                 //       determine what type of orbit is involved and set up the
                 //       set up angles for the special cases.
                 // -------------------------------------------------------------
@@ -5843,32 +5751,32 @@ namespace AstroLibMethods
         }  // rv2pqw
 
 
-        /* ----------------------------------------------------------------------------
-          *
-          *                           procedure newtone
-          *
-          *  this procedure finds the mean and true anomaly given the eccentric anomaly.  
-          *
-          *  author        : david vallado           davallado@gmail.com   14 feb 2020
-          *
-          *  inputs          description                    range / units
-          *    ecc         - eccentricity                   0.0 to
-          *    eccanom     - eccentric anomaly              0.0 to 2pi rad
-          *
-          *  outputs       :
-          *    m           - mean anomaly                   0.0 to 2pi rad
-          *    nu          - true anomaly                   0.0 to 2pi rad
-          *
-          *  locals        :
-          *    e1          - eccentric anomaly, next value  rad
-          *    sinv        - sine of nu
-          *    cosv        - cosine of nu
-          *
-          *  coupling      :
-          *
-          *  references    :
-          *    vallado       2013, 73, alg 2, ex 2-1
-          * ----------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           procedure newtone
+        //
+        //  this procedure finds the mean and true anomaly given the eccentric anomaly.  
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ecc         - eccentricity                   0.0 to
+        //    eccanom     - eccentric anomaly              0.0 to 2pi rad
+        //
+        //  outputs       :
+        //    m           - mean anomaly                   0.0 to 2pi rad
+        //    nu          - true anomaly                   0.0 to 2pi rad
+        //
+        //  locals        :
+        //    e1          - eccentric anomaly, next value  rad
+        //    sinv        - sine of nu
+        //    cosv        - cosine of nu
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //    vallado       2013, 73, alg 2, ex 2-1
+        // -------------------------------------------------------------------
 
         public void newtone
            (
@@ -5877,7 +5785,7 @@ namespace AstroLibMethods
         {
             double small, sinv, cosv;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             small = 0.00000001;
 
             // ------------------------- circular --------------------------
@@ -5924,46 +5832,46 @@ namespace AstroLibMethods
         }  // newtone
 
 
-        /* ----------------------------------------------------------------------------
-         *
-         *                           procedure newtonmx
-         *
-         *  this procedure performs the newton rhapson iteration to find the
-         *    eccentric anomaly given the mean anomaly.  the true anomaly is also
-         *    calculated. This is an optimized version from Oltrogge JAS 2015. 
-         *
-         *  author        : david vallado           davallado@gmail.com    1 mar 2001
-         *
-         *  inputs          description                        range / units
-         *    ecc         - eccentricity                         0.0 to
-         *    m           - mean anomaly                         0.0 to 2pi rad
-         *
-         *  outputs       :
-         *    eccanom     - eccentric anomaly                    0.0 to 2pi rad
-         *    nu          - true anomaly                         0.0 to 2pi rad
-         *
-         *  locals        :
-         *    e1          - eccentric anomaly, next value  rad
-         *    sinv        - sine of nu
-         *    cosv        - cosine of nu
-         *    ktr         - index
-         *    r1r         - cubic roots - 1 to 3
-         *    r1i         - MathTimeLibr imaginary component
-         *    r2r         -
-         *    r2i         -
-         *    r3r         -
-         *    r3i         -
-         *    s           - variables for parabolic solution
-         *    w           - variables for parabolic solution
-         *
-         *  coupling      :
-         *    cubic       - solves a cubic polynomial
-         *    power       - raises a base number to an arbitrary power
-         *
-         *  references    :
-         *    vallado       2013, 73, alg 2, ex 2-1
-         *    oltrogge      JAS 2015
-         * ----------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           procedure newtonmx
+        //
+        //  this procedure performs the newton rhapson iteration to find the
+        //    eccentric anomaly given the mean anomaly.  the true anomaly is also
+        //    calculated. This is an optimized version from Oltrogge JAS 2015. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ecc         - eccentricity                         0.0 to
+        //    m           - mean anomaly                         0.0 to 2pi rad
+        //
+        //  outputs       :
+        //    eccanom     - eccentric anomaly                    0.0 to 2pi rad
+        //    nu          - true anomaly                         0.0 to 2pi rad
+        //
+        //  locals        :
+        //    e1          - eccentric anomaly, next value  rad
+        //    sinv        - sine of nu
+        //    cosv        - cosine of nu
+        //    ktr         - index
+        //    r1r         - cubic roots - 1 to 3
+        //    r1i         - MathTimeLibr imaginary component
+        //    r2r         -
+        //    r2i         -
+        //    r3r         -
+        //    r3i         -
+        //    s           - variables for parabolic solution
+        //    w           - variables for parabolic solution
+        //
+        //  coupling      :
+        //    cubic       - solves a cubic polynomial
+        //    power       - raises a base number to an arbitrary power
+        //
+        //  references    :
+        //    vallado       2013, 73, alg 2, ex 2-1
+        //    oltrogge      JAS 2015
+        // -------------------------------------------------------------------
 
         public void newtonmx
             (
@@ -5973,7 +5881,7 @@ namespace AstroLibMethods
             double numiter, small, halfpi, ktr, sinv, cosv, s, w, e1;
             double so, s1, s2, alp, bet, z2, fp, f1p, f2p, cosE, sinE;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             numiter = 50;
             small = 0.00000001;
             halfpi = Math.PI * 0.5;
@@ -6068,49 +5976,49 @@ namespace AstroLibMethods
         } // newtonmx
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           procedure newtonm
-        *
-        *  this procedure performs the newton rhapson iteration to find the
-        *    eccentric anomaly given the mean anomaly.  the true anomaly is also
-        *    calculated.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2001
-        *
-        *  inputs          description                    range / units
-        *    ecc         - eccentricity                   0.0 to
-        *    m           - mean anomaly                   0.0 to 2pi rad
-        *
-        *  outputs       :
-        *    eccanom     - eccentric anomaly              0.0 to 2pi rad
-        *    nu          - true anomaly                   0.0 to 2pi rad
-        *
-        *  locals        :
-        *    e1          - eccentric anomaly, next value  rad
-        *    sinv        - sine of nu
-        *    cosv        - cosine of nu
-        *    ktr         - index
-        *    r1r         - cubic roots - 1 to 3
-        *    r1i         - MathTimeLibr imaginary component
-        *    r2r         -
-        *    r2i         -
-        *    r3r         -
-        *    r3i         -
-        *    s           - variables for parabolic solution
-        *    w           - variables for parabolic solution
-        *
-        *  coupling      :
-        *    atan2       - arc tangent function which also resloves quadrants
-        *    cubic       - solves a cubic polynomial
-        *    power       - raises a base number to an arbitrary power
-        *    sinh        - hyperbolic sine
-        *    cosh        - hyperbolic cosine
-        *    sgn         - returns the sign of an argument
-        *
-        *  references    :
-        *    vallado       2013, 73, alg 2, ex 2-1
-        * ----------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           procedure newtonm
+        //
+        //  this procedure performs the newton rhapson iteration to find the
+        //    eccentric anomaly given the mean anomaly.  the true anomaly is also
+        //    calculated.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ecc         - eccentricity                   0.0 to
+        //    m           - mean anomaly                   0.0 to 2pi rad
+        //
+        //  outputs       :
+        //    eccanom     - eccentric anomaly              0.0 to 2pi rad
+        //    nu          - true anomaly                   0.0 to 2pi rad
+        //
+        //  locals        :
+        //    e1          - eccentric anomaly, next value  rad
+        //    sinv        - sine of nu
+        //    cosv        - cosine of nu
+        //    ktr         - index
+        //    r1r         - cubic roots - 1 to 3
+        //    r1i         - MathTimeLibr imaginary component
+        //    r2r         -
+        //    r2i         -
+        //    r3r         -
+        //    r3i         -
+        //    s           - variables for parabolic solution
+        //    w           - variables for parabolic solution
+        //
+        //  coupling      :
+        //    atan2       - arc tangent function which also resloves quadrants
+        //    cubic       - solves a cubic polynomial
+        //    power       - raises a base number to an arbitrary power
+        //    sinh        - hyperbolic sine
+        //    cosh        - hyperbolic cosine
+        //    sgn         - returns the sign of an argument
+        //
+        //  references    :
+        //    vallado       2013, 73, alg 2, ex 2-1
+        // -------------------------------------------------------------------
 
         public void newtonm
             (
@@ -6119,7 +6027,7 @@ namespace AstroLibMethods
         {
             double numiter, small, halfpi, ktr, sinv, cosv, s, w, e1;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    ----------------
             numiter = 50;
             small = 0.00000001;
             halfpi = Math.PI * 0.5;
@@ -6210,41 +6118,38 @@ namespace AstroLibMethods
         } // newtonm
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function newtonnu
-        *
-        *  this function solves keplers equation when the true anomaly is known.
-        *    the mean and eccentric, parabolic, or hyperbolic anomaly is also found.
-        *    the parabolic limit at 168ø is arbitrary. the hyperbolic anomaly is also
-        *    limited. the hyperbolic sine is used because it's not double valued.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 may 2002
-        *
-        *  revisions
-        *    vallado     - fix small                                     24 sep 2002
-        *
-        *  inputs          description                           range / units
-        *    ecc         - eccentricity                             0.0  to
-        *    nu          - true anomaly                             0.0 to 2pi rad
-        *
-        *  outputs       :
-        *    eccanom     - eccentric anomaly                        0.0  to 2pi rad       153.02 ø
-        *    m           - mean anomaly                             0.0  to 2pi rad       151.7425 ø
-        *
-        *  locals        :
-        *    e1          - eccentric anomaly, next value            rad
-        *    sine        - sine of e
-        *    cose        - cosine of e
-        *    ktr         - index
-        *
-        *  coupling      :
-        *    arcsinh     - arc hyperbolic Math.Sine
-        *    sinh        - hyperbolic Math.Sine
-        *
-        *  references    :
-        *    vallado       2007, 85, alg 5
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function newtonnu
+        //
+        //  this function solves keplers equation when the true anomaly is known.
+        //    the mean and eccentric, parabolic, or hyperbolic anomaly is also found.
+        //    the parabolic limit at 168ø is arbitrary. the hyperbolic anomaly is also
+        //    limited. the hyperbolic sine is used because it's not double valued.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ecc         - eccentricity                             0.0  to
+        //    nu          - true anomaly                             0.0 to 2pi rad
+        //
+        //  outputs       :
+        //    eccanom     - eccentric anomaly                        0.0  to 2pi rad       153.02 ø
+        //    m           - mean anomaly                             0.0  to 2pi rad       151.7425 ø
+        //
+        //  locals        :
+        //    e1          - eccentric anomaly, next value            rad
+        //    sine        - sine of e
+        //    cose        - cosine of e
+        //    ktr         - index
+        //
+        //  coupling      :
+        //    arcsinh     - arc hyperbolic Math.Sine
+        //    sinh        - hyperbolic Math.Sine
+        //
+        //  references    :
+        //    vallado       2007, 85, alg 5
+        // -----------------------------------------------------------------------------
 
         public void newtonnu
             (
@@ -6253,7 +6158,7 @@ namespace AstroLibMethods
         {
             double small, sine, cose;
 
-            // ---------------------  implementation   ---------------------
+            // ---------------------  implementation    // --------------------
             eccanom = 999999.9;
             m = 999999.9;
             small = 0.00000001;
@@ -6313,38 +6218,35 @@ namespace AstroLibMethods
         } // newtonnu
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function lon2nu
-        *
-        *  this function finds the true anomaly from coes and longitude.
-        *
-        *  author        : david vallado           davallado@gmail.com    1 mar 2011
-        *
-        *  revisions
-        *    vallado     - conversion to c#                              23 Nov 2011
-        *    
-        *  inputs          description                    range / units
-        *    jdut1       - julian date in ut1             days from 4713 bc
-        *    lon         - longitude                      0 to 2pi rad
-        *    incl        - inclination                    0 to 2pi rad
-        *    raan        - right ascenion of the node     0 to 2pi rad
-        *    argp        - argument of perigee            0 to 2pi rad
-        *
-        *  outputs       :
-        *    nu          - true anomaly                   0 to 2pi rad
-        *
-        *  locals        :
-        *    temp        - temporary variable for doubles   rad
-        *    tut1        - julian centuries from the
-        *                  jan 1, 2000 12 h epoch (ut1)
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    vallado       2013, 110, eq 2-101
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function lon2nu
+        //
+        //  this function finds the true anomaly from coes and longitude.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jdut1       - julian date in ut1             days from 4713 bc
+        //    lon         - longitude                      0 to 2pi rad
+        //    incl        - inclination                    0 to 2pi rad
+        //    raan        - right ascenion of the node     0 to 2pi rad
+        //    argp        - argument of perigee            0 to 2pi rad
+        //
+        //  outputs       :
+        //    nu          - true anomaly                   0 to 2pi rad
+        //
+        //  locals        :
+        //    temp        - temporary variable for doubles   rad
+        //    tut1        - julian centuries from the
+        //                  jan 1, 2000 12 h epoch (ut1)
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    vallado       2013, 110, eq 2-101
+        // -----------------------------------------------------------------------------
 
         public double lon2nu
             (
@@ -6408,35 +6310,32 @@ namespace AstroLibMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function findc2c3
-        *
-        *  this function calculates the c2 and c3 functions for use in the universal
-        *    variable calculation of z.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 may 2002
-        *
-        *  revisions
-        *                -
-        *
-        *  inputs          description                    range / units
-        *    znew        - z variable                     rad2
-        *
-        *  outputs       :
-        *    c2new       - c2 function value
-        *    c3new       - c3 function value
-        *
-        *  locals        :
-        *    sqrtz       - square root of znew
-        *
-        *  coupling      :
-        *    Math.Sinh        - hyperbolic Math.Sine
-        *    Math.Cosh        - hyperbolic Math.Cosine
-        *
-        *  references    :
-        *    vallado       2013, 63, alg 1
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function findc2c3
+        //
+        //  this function calculates the c2 and c3 functions for use in the universal
+        //    variable calculation of z.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    znew        - z variable                     rad2
+        //
+        //  outputs       :
+        //    c2new       - c2 function value
+        //    c3new       - c3 function value
+        //
+        //  locals        :
+        //    sqrtz       - square root of znew
+        //
+        //  coupling      :
+        //    Math.Sinh        - hyperbolic Math.Sine
+        //    Math.Cosh        - hyperbolic Math.Cosine
+        //
+        //  references    :
+        //    vallado       2013, 63, alg 1
+        // -----------------------------------------------------------------------------
 
         public void findc2c3
             (
@@ -6447,7 +6346,7 @@ namespace AstroLibMethods
             double small, sqrtz;
             small = 0.00000001;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             if (znew > small)
             {
                 sqrtz = Math.Sqrt(znew);
@@ -6472,42 +6371,42 @@ namespace AstroLibMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function findfandg
-        *
-        *  this function calculates the f and g functions for use in various applications. 
-        *  several methods are available. the values are in normal (not canonical) units.
-        *  note that not all the input parameters are needed for each case. also, the step
-        *  size dtsec should be small, perhaps on the order of 60-120 secs!
-        *
-        *  author        : david vallado           davallado@gmail.com   27 jan 2020
-        *
-        *  inputs          description                    range / units
-        *    r1          - position vector                     km
-        *    v1          - velocity vector                     km/s
-        *    r2          - position vector                     km
-        *    v2          - velocity vector                     km/s
-        *    x           - universal variable
-        *    c2          - stumpff function
-        *    c3          - stumpff function
-        *    dtsec       - step size                          sec (SMALL time steps only!!)
-        *    opt         - calculation method                 pqw, series, c2c3
-        *    
-        *  outputs       :
-        *    f, g        - f and g functions                 
-        *    fdot, gdot  - fdot and gdot functions
-        *
-        *  locals        :
-        *                -
-        *  coupling      :
-        *
-        *  references    :
-        *    vallado       2013, 83, 87, 813
-        *  findfandg(r1, v1t, r2, v2t, 0.0, 0.0, 0.0, 0.0, 0.0, "pqw", out f, out g, out fdot, out gdot);
-        *  findfandg(r1, v1t, r2, v2t, dtsec, 0.0, 0.0, 0.0, 0.0, "series", out f, out g, out fdot, out gdot);
-        *  findfandg(r1, v1t, r2, v2t, dtsec, 0.35987, 0.6437, 0.2378, -0.0239, "c2c3", out f, out g, out fdot, out gdot);
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function findfandg
+        //
+        //  this function calculates the f and g functions for use in various applications. 
+        //  several methods are available. the values are in normal (not canonical) units.
+        //  note that not all the input parameters are needed for each case. also, the step
+        //  size dtsec should be small, perhaps on the order of 60-120 secs!
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1          - position vector                     km
+        //    v1          - velocity vector                     km/s
+        //    r2          - position vector                     km
+        //    v2          - velocity vector                     km/s
+        //    x           - universal variable
+        //    c2          - stumpff function
+        //    c3          - stumpff function
+        //    dtsec       - step size                          sec (SMALL time steps only!!)
+        //    opt         - calculation method                 pqw, series, c2c3
+        //    
+        //  outputs       :
+        //    f, g        - f and g functions                 
+        //    fdot, gdot  - fdot and gdot functions
+        //
+        //  locals        :
+        //                -
+        //  coupling      :
+        //
+        //  references    :
+        //    vallado       2013, 83, 87, 813
+        //  findfandg(r1, v1t, r2, v2t, 0.0, 0.0, 0.0, 0.0, 0.0, "pqw", out f, out g, out fdot, out gdot);
+        //  findfandg(r1, v1t, r2, v2t, dtsec, 0.0, 0.0, 0.0, 0.0, "series", out f, out g, out fdot, out gdot);
+        //  findfandg(r1, v1t, r2, v2t, dtsec, 0.35987, 0.6437, 0.2378, -0.0239, "c2c3", out f, out g, out fdot, out gdot);
+        // -----------------------------------------------------------------------------
         public void findfandg
             (
             double[] r1, double[] v1, double[] r2, double[] v2, double dtsec,
@@ -6524,7 +6423,7 @@ namespace AstroLibMethods
             magr1 = MathTimeLibr.mag(r1);
             magv1 = MathTimeLibr.mag(v1);
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             switch (opt)
             {
                 case "pqw":
@@ -6634,12 +6533,12 @@ namespace AstroLibMethods
         }  //  findfandg
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function iterateuniversalX
-        *
-        *  this function iterates to find the universal variable
-         ----------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function iterateuniversalX
+        //
+        //  this function iterates to find the universal variable
+        // ------------------------------------------------------------------------------
         public void iterateuniversalX
         (
             double alpha, double dtsec, double rdotv, double magr,
@@ -6663,7 +6562,7 @@ namespace AstroLibMethods
             twopi = 2.0 * Math.PI;
             halfpi = Math.PI * 0.5;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    ----------------
             // set constants and intermediate printouts
             numiter = 50;
             a = 1.0 / alpha;
@@ -6744,69 +6643,66 @@ namespace AstroLibMethods
         }
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           function kepler
-        *
-        *  this function solves keplers problem for orbit determination and returns a
-        *    future geocentric equatorial (ijk) position and velocity vector.  the
-        *    solution uses universal variables.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  revisions
-        *    vallado     - fix some mistakes                             13 apr 2004
-        *
-        *  inputs          description                              range / units
-        *    r1          - ijk position vector - initial            km
-        *    vo          - ijk velocity vector - initial            km / s
-        *    dtsec       - length of time to propagate              s
-        *
-        *  outputs       :
-        *    r           - ijk position vector                      km
-        *    v           - ijk velocity vector                      km / s
-        *    error       - error flag                               'ok',  
-        *
-        *  locals        :
-        *    f           - f expression
-        *    g           - g expression
-        *    fdot        - f dot expression
-        *    gdot        - g dot expression
-        *    xold        - old universal variable x
-        *    xoldsqrd    - xold squared
-        *    xnew        - new universal variable x
-        *    xnewsqrd    - xnew squared
-        *    znew        - new value of z
-        *    c2new       - c2(psi) function
-        *    c3new       - c3(psi) function
-        *    dtsec       - change in time                           s
-        *    timenew     - new time                                 s
-        *    rdotv       - result of r1 dot vo
-        *    a           - semi or axis                             km
-        *    alpha       - reciprocol  1/a
-        *    sme         - specific mech energy                     km2 / s2
-        *    period      - time period for satellite                s
-        *    s           - variable for parabolic case
-        *    w           - variable for parabolic case
-        *    h           - angular momentum vector
-        *    temp        - temporary real*8 value
-        *    i           - index
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    findc2c3    - find c2 and c3 functions
-        *
-        *  references    :
-        *    vallado       2004, 95-103, alg 8, ex 2-4
-         ------------------------------------------------------------------------------ */
+        // ------------------------------------------------------------------------------
+        //
+        //                           function kepler
+        //
+        //  this function solves keplers problem for orbit determination and returns a
+        //    future geocentric equatorial (ijk) position and velocity vector.  the
+        //    solution uses universal variables.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1          - ijk position vector - initial            km
+        //    vo          - ijk velocity vector - initial            km / s
+        //    dtsec       - length of time to propagate              s
+        //
+        //  outputs       :
+        //    r           - ijk position vector                      km
+        //    v           - ijk velocity vector                      km / s
+        //    error       - error flag                               'ok',  
+        //
+        //  locals        :
+        //    f           - f expression
+        //    g           - g expression
+        //    fdot        - f dot expression
+        //    gdot        - g dot expression
+        //    xold        - old universal variable x
+        //    xoldsqrd    - xold squared
+        //    xnew        - new universal variable x
+        //    xnewsqrd    - xnew squared
+        //    znew        - new value of z
+        //    c2new       - c2(psi) function
+        //    c3new       - c3(psi) function
+        //    dtsec       - change in time                           s
+        //    timenew     - new time                                 s
+        //    rdotv       - result of r1 dot vo
+        //    a           - semi or axis                             km
+        //    alpha       - reciprocol  1/a
+        //    sme         - specific mech energy                     km2 / s2
+        //    period      - time period for satellite                s
+        //    s           - variable for parabolic case
+        //    w           - variable for parabolic case
+        //    h           - angular momentum vector
+        //    temp        - temporary real*8 value
+        //    i           - index
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    findc2c3    - find c2 and c3 functions
+        //
+        //  references    :
+        //    vallado       2004, 95-103, alg 8, ex 2-4
+        // -------------------------------------------------------------------------------
 
         public void kepler
             (
             double[] r1, double[] vo, double dtsec, out double[] r2, out double[] v
             )
         {
-            // -------------------------  implementation   -----------------
-            int ktr, i, numiter, mulrev;
+            // -------------------------  implementation    // ----------------
+            int ktr, i, numiter;
             double[] h = new double[3];
             double[] rx = new double[3];
             double[] vx = new double[3];
@@ -6834,7 +6730,7 @@ namespace AstroLibMethods
             twopi = 2.0 * Math.PI;
             halfpi = Math.PI * 0.5;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation  ----------------
             // set constants and intermediate printouts
             numiter = 50;
 
@@ -6844,11 +6740,10 @@ namespace AstroLibMethods
                 //            printf(" vo %16.8f %16.8f %16.8f ER/TU \n",vo[0]/velkmps, vo[1]/velkmps, vo[2]/velkmps );
             }
 
-            // --------------------  initialize values   -------------------
+            // --------------------  initialize values     ------------------
             ktr = 0;
             xold = 0.0;
             znew = 0.0;
-            mulrev = 0;
 
             if (Math.Abs(dtsec) > small)
             {
@@ -7000,47 +6895,43 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-          *
-          *
-          *                           function ecef2ll
-          *
-          *  these subroutines convert a geocentric equatorial position vector into
-          *    latitude and longitude.  geodetic and geocentric latitude are found. the
-          *    inputs must be ecef.
-          *
-          *  author        : david vallado           davallado@gmail.com   27 may 2002
-          *
-          *  revisions
-          *    vallado     - fix jdut1 var name, add clarifying comments   26 aug 2002
-          *    vallado     - fix documentation for ecef                    19 jan 2005
-          *
-          *  inputs          description                    range / units
-          *    r           - ecef position vector           km
-          *
-          *  outputs       :
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-          *    latgd       - geodetic latitude              -pi/2 to pi/2 rad
-          *    lon         - longitude (west -)             0 to 2pi rad
-          *    hellp       - height above the ellipsoid     km
-          *
-          *  locals        :
-          *    temp        - diff between geocentric/
-          *                  geodetic lat                   rad
-          *    Math.Sintemp     - Math.Sine of temp                   rad
-          *    olddelta    - previous value of deltalat     rad
-          *    rtasc       - right ascension                rad
-          *    decl        - declination                    rad
-          *    i           - index
-          *
-          *  coupling      :
-          *    mag         - magnitude of a vector
-          *    gcgd        - converts between geocentric and geodetic latitude
-          *
-          *  references    :
-          *    vallado       2001, 174-179, alg 12 and alg 13, ex 3-3
-          *
-          ------------------------------------------------------------------------------ */
+        // ----------------------------------------------------------------------------
+        //
+        //
+        //                           function ecef2ll
+        //
+        //  these subroutines convert a geocentric equatorial position vector into
+        //    latitude and longitude.  geodetic and geocentric latitude are found. the
+        //    inputs must be ecef.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r           - ecef position vector           km
+        //
+        //  outputs       :
+        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    latgd       - geodetic latitude              -pi/2 to pi/2 rad
+        //    lon         - longitude (west -)             0 to 2pi rad
+        //    hellp       - height above the ellipsoid     km
+        //
+        //  locals        :
+        //    temp        - diff between geocentric/
+        //                  geodetic lat                   rad
+        //    Math.Sintemp     - Math.Sine of temp                   rad
+        //    olddelta    - previous value of deltalat     rad
+        //    rtasc       - right ascension                rad
+        //    decl        - declination                    rad
+        //    i           - index
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    gcgd        - converts between geocentric and geodetic latitude
+        //
+        //  references    :
+        //    vallado       2001, 174-179, alg 12 and alg 13, ex 3-3
+        //
+        // -------------------------------------------------------------------------------
 
         public void ecef2ll
             (
@@ -7056,7 +6947,7 @@ namespace AstroLibMethods
 
             c = 0.0;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             magr = MathTimeLibr.mag(r);
 
             // ----------------- find longitude value  ---------------------
@@ -7103,48 +6994,46 @@ namespace AstroLibMethods
         } //  ecef2ll
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *
-        *                           function ecef2llb
-        *
-        *  this subroutine converts a geocentric equatorial position vector into
-        *    latitude and longitude.  geodetic and geocentric latitude are found. the
-        *    inputs must be ecef. there is no iteration and this is borkowski's method. 
-        *
-        *  author        : david vallado           davallado@gmail.com    9 jun 2002
-        *
-        *  revisions
-        *
-        *  inputs          description                         range / units
-        *    r           - ecef position vector                km
-        *
-        *  outputs       :
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *    latgd       - geodetic latitude                   -pi/2 to pi/2 rad  
-        *    lon         - longitude (west -)                  0 to 2pi rad
-        *    hellp       - height above the ellipsoid           km
-        *
-        *  locals        :
-        *    rc          - range of site wrt earth center      er
-        *    height      - height above earth wrt site         er
-        *    alpha       - angle from iaxis to point, lst      rad
-        *    olddelta    - previous value of deltalat          rad
-        *    deltalat    - diff between delta and
-        *                  geocentric lat                      rad
-        *    delta       - declination angle of r in ecef      rad
-        *    rsqrd       - magnitude of r squared              er2
-        *    sintemp     - sine of temp                        rad
-        *    c           -
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    gcgd        - converts between geocentric and geodetic latitude
-        *
-        *  references    :
-        *    vallado       2022, 174-179, alg 12 and alg 13, ex 3-3
-        *
-        ------------------------------------------------------------------------------ */
+        // ----------------------------------------------------------------------------
+        //
+        //
+        //                           function ecef2llb
+        //
+        //  this subroutine converts a geocentric equatorial position vector into
+        //    latitude and longitude.  geodetic and geocentric latitude are found. the
+        //    inputs must be ecef. there is no iteration and this is borkowski's method. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r           - ecef position vector                km
+        //
+        //  outputs       :
+        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    latgd       - geodetic latitude                   -pi/2 to pi/2 rad  
+        //    lon         - longitude (west -)                  0 to 2pi rad
+        //    hellp       - height above the ellipsoid           km
+        //
+        //  locals        :
+        //    rc          - range of site wrt earth center      er
+        //    height      - height above earth wrt site         er
+        //    alpha       - angle from iaxis to point, lst      rad
+        //    olddelta    - previous value of deltalat          rad
+        //    deltalat    - diff between delta and
+        //                  geocentric lat                      rad
+        //    delta       - declination angle of r in ecef      rad
+        //    rsqrd       - magnitude of r squared              er2
+        //    sintemp     - sine of temp                        rad
+        //    c           -
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    gcgd        - converts between geocentric and geodetic latitude
+        //
+        //  references    :
+        //    vallado       2022, 174-179, alg 12 and alg 13, ex 3-3
+        //
+        // -------------------------------------------------------------------------------
 
         public void ecef2llb
             (
@@ -7156,7 +7045,7 @@ namespace AstroLibMethods
             double twopi = 2.0 * Math.PI;
             double small = 0.00000001;
 
-            // -------------------------  implementation   -------------------------
+            // -------------------------  implementation    // ------------------------
             // ---------------- find longitude value  ----------------------
             temp = Math.Sqrt(r[0] * r[0] + r[1] * r[1]);
             if (Math.Abs(temp) < small)
@@ -7205,35 +7094,32 @@ namespace AstroLibMethods
         }  // ecef2llb
 
 
-        /*---------------------------------------------------------------------------
-        *
-        *                           function gd2gc
-        *
-        *  this function converts from geodetic to geocentric latitude for positions
-        *    on the surface of the earth.  notice that (1-f) squared = 1-esqrd.
-        *
-        *  author        : david vallado           davallado@gmail.com   30 may 2002
-        *
-        *  revisions
-        *                -
-        *
-        *  inputs          description                    range / units
-        *    latgd       - geodetic latitude              -Math.PI to Math.PI rad
-        *
-        *  outputs       :
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *
-        *  locals        :
-        *    none.
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2001, 146, eq 3-11
-        *
-        * [latgc] = gd2gc ( latgd );
-        * ------------------------------------------------------------------------------ */
+        //  ---------------------------------------------------------------------------
+        //
+        //                           function gd2gc
+        //
+        //  this function converts from geodetic to geocentric latitude for positions
+        //    on the surface of the earth.  notice that (1-f) squared = 1-esqrd.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    latgd       - geodetic latitude              -Math.PI to Math.PI rad
+        //
+        //  outputs       :
+        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //
+        //  locals        :
+        //    none.
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2001, 146, eq 3-11
+        //
+        // [latgc] = gd2gc ( latgd );
+        // --------------------------------------------------------------------------------
 
         public double gd2gc
             (
@@ -7242,23 +7128,23 @@ namespace AstroLibMethods
         {
             double eesqrd = 0.006694379990141;     // eccentricity of earth sqrd
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             return Math.Atan((1.0 - eesqrd) * Math.Tan(latgd));
 
         }  //  gd2gc
 
 
 
-        /* ------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------
         //
         //                           function checkhitearth
         //
         //  this function checks to see if the trajectory hits the earth during the
         //    transfer. 
         //
-        //  author        : david vallado           davallado@gmail.com   14 aug 2017
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  inputs          description                    range / units
+        //  inputs          description                              range / units
         //    altPad      - pad for alt above surface       km  
         //    r1          - initial position vector of int  km   
         //    v1t         - initial velocity vector of trns km/s
@@ -7438,16 +7324,16 @@ namespace AstroLibMethods
         } // checkhitearth
 
 
-        /* ------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------
         //
         //                           function checkhitearthc
         //
         //  this function checks to see if the trajectory hits the earth during the
         //    transfer. Calc in canonical units.
         //
-        //  author        : david vallado           davallado@gmail.com   14 aug 2017
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  inputs          description                    range / units
+        //  inputs          description                              range / units
         //    altPadc     - pad for alt above surface       er  
         //    r1c         - initial position vector of int  er   
         //    v1tc        - initial velocity vector of trns er/tu
@@ -7628,14 +7514,14 @@ namespace AstroLibMethods
 
 
 
-        /* ------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------
         //                           function lambertumins
         //
         //  find the minimum psi values for the universal variable lambert problem
         //
-        //  author        : david vallado           davallado@gmail.com    8 jun 2016
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  inputs          description                          range / units
+        //  inputs          description                              range / units
         //    r1          - ijk position vector 1                 km
         //    r2          - ijk position vector 2                 km
         //    nrev        - multiple revolutions                  0, 1,  
@@ -7770,44 +7656,44 @@ namespace AstroLibMethods
 
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure lambertminT
-        *
-        *  this procedure solves lambert's problem and finds the miniumum time for 
-        *  multi-revolution cases.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 mar 2018
-        *
-        *  inputs          description                        range / units
-        *    r1          - ijk position vector 1                km
-        *    r2          - ijk position vector 2                km
-        *    dm          - direction of motion                  'L', 'S'
-        *    de          - orbital energy                       'L', 'H'
-        *    nrev        - number of revs to complete           0, 1, 2, 3,  
-        *
-        *  outputs       :
-        *    tmin        - minimum time of flight               sec
-        *    tminp       - minimum parabolic tof                sec
-        *    tminenergy  - minimum energy tof                   sec
-        *
-        *  locals        :
-        *    i           - index
-        *    loops       -
-        *    cosdeltanu  -
-        *    sindeltanu  -
-        *    dnu         -
-        *    chord       -
-        *    s           -
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    dot         - dot product
-        *
-        *  references    :
-        *    vallado       2013, 494, Alg 59, ex 7-5
-        *    prussing      JAS 2000
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure lambertminT
+        //
+        //  this procedure solves lambert's problem and finds the miniumum time for 
+        //  multi-revolution cases.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1          - ijk position vector 1                km
+        //    r2          - ijk position vector 2                km
+        //    dm          - direction of motion                  'L', 'S'
+        //    de          - orbital energy                       'L', 'H'
+        //    nrev        - number of revs to complete           0, 1, 2, 3,  
+        //
+        //  outputs       :
+        //    tmin        - minimum time of flight               sec
+        //    tminp       - minimum parabolic tof                sec
+        //    tminenergy  - minimum energy tof                   sec
+        //
+        //  locals        :
+        //    i           - index
+        //    loops       -
+        //    cosdeltanu  -
+        //    sindeltanu  -
+        //    dnu         -
+        //    chord       -
+        //    s           -
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    dot         - dot product
+        //
+        //  references    :
+        //    vallado       2013, 494, Alg 59, ex 7-5
+        //    prussing      JAS 2000
+        // ----------------------------------------------------------------------------*/
 
         public void lambertminT
         (
@@ -7897,42 +7783,42 @@ namespace AstroLibMethods
         }  // lambertminT
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure lambertTmaxrp
-        *
-        *  this procedure solves lambert's problem and finds the TOF for maximum rp
-        *
-        *  author        : david vallado           davallado@gmail.com   26 aug 2019
-        *
-        *  inputs          description                    range / units
-        *    r1          - ijk position vector 1          km
-        *    r2          - ijk position vector 2          km
-        *    dm          - direction of motion                  'L', 'S'
-        *    de          - orbital energy                       'L', 'H'
-        *    nrev        - number of revs to complete     0, 1, 2, 3,  
-        *
-        *  outputs       :
-        *    tmin        - minimum time of flight         sec
-        *    tminp       - minimum parabolic tof          sec
-        *    tminenergy  - minimum energy tof             sec
-        *
-        *  locals        :
-        *    i           - index
-        *    loops       -
-        *    cosdeltanu  -
-        *    sindeltanu  -
-        *    dnu         -
-        *    chord       -
-        *    s           -
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    dot         - dot product
-        *
-        *  references    :
-        *    thompson       2019
-        *    -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure lambertTmaxrp
+        //
+        //  this procedure solves lambert's problem and finds the TOF for maximum rp
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1          - ijk position vector 1          km
+        //    r2          - ijk position vector 2          km
+        //    dm          - direction of motion                  'L', 'S'
+        //    de          - orbital energy                       'L', 'H'
+        //    nrev        - number of revs to complete     0, 1, 2, 3,  
+        //
+        //  outputs       :
+        //    tmin        - minimum time of flight         sec
+        //    tminp       - minimum parabolic tof          sec
+        //    tminenergy  - minimum energy tof             sec
+        //
+        //  locals        :
+        //    i           - index
+        //    loops       -
+        //    cosdeltanu  -
+        //    sindeltanu  -
+        //    dnu         -
+        //    chord       -
+        //    s           -
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    dot         - dot product
+        //
+        //  references    :
+        //    thompson       2019
+        //     // ----------------------------------------------------------------------------*/
 
         public void lambertTmaxrp
         (
@@ -8039,71 +7925,71 @@ namespace AstroLibMethods
         }  // lambertTmaxrp
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure lambertuniv
-        *
-        *  this procedure solves the lambert problem for orbit determination and returns
-        *    the velocity vectors at each of two given position vectors.  the solution
-        *    uses universal variables for calculation and a bissection technique for
-        *    updating psi.
-        *
-        *  algorithm     : setting the initial bounds:
-        *                  using -8pi and 4pi2 will allow single rev solutions
-        *                  using -4pi2 and 8pi2 will allow multi-rev solutions
-        *                  the farther apart the initial guess, the more iterations
-        *                    because of the iteration
-        *                  inner loop is for special cases. must be sure to exit both!
-        *
-        *  author        : david vallado                 davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                          range / units
-        *    r1          - ijk position vector 1                km
-        *    r2          - ijk position vector 2                km
-        *    v1          - ijk velocity vector 1 if avail       km/s
-        *    dm          - direction of motion                  'L', 'S'
-        *    de          - orbital energy                       'L', 'H'
-        *                  only affects nrev >= 1 upper/lower bounds
-        *    dtsec       - time between r1 and r2               sec
-        *    nrev        - number of revs to complete           0, 1, 2, 3,  
-        *    kbi         - psi value for min                     
-        *    altpad      - altitude pad for hitearth calc       km
-        *    show        - control output don't output for speed      'y', 'n'
-        *
-        *  outputs       :
-        *    v1t         - ijk transfer velocity vector         km/s
-        *    v2t         - ijk transfer velocity vector         km/s
-        *    hitearth    - flag if hit or not                   'y', 'n'
-        *    error       - error flag                           1, 2, 3,   use numbers since c++ is so horrible at strings
-        *
-        *  locals        :
-        *    vara        - variable of the iteration,
-        *                  not the semi or axis!
-        *    y           - area between position vectors
-        *    upper       - upper bound for z
-        *    lower       - lower bound for z
-        *    cosdeltanu  - cosine of true anomaly change        rad
-        *    f           - f expression
-        *    g           - g expression
-        *    gdot        - g dot expression
-        *    xold        - old universal variable x
-        *    xoldcubed   - xold cubed
-        *    zold        - old value of z
-        *    znew        - new value of z
-        *    c2new       - c2(z) function
-        *    c3new       - c3(z) function
-        *    timenew     - new time                             sec
-        *    small       - tolerance for roundoff errors
-        *    i, j        - index
-        *
-        *  coupling
-        *    mag         - magnitude of a vector
-        *    dot         - dot product of two vectors
-        *    findc2c3    - find c2 and c3 functions
-        *
-        *  references    :
-        *    vallado       2013, 492, alg 58, ex 7-5
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure lambertuniv
+        //
+        //  this procedure solves the lambert problem for orbit determination and returns
+        //    the velocity vectors at each of two given position vectors.  the solution
+        //    uses universal variables for calculation and a bissection technique for
+        //    updating psi.
+        //
+        //  algorithm     : setting the initial bounds:
+        //                  using -8pi and 4pi2 will allow single rev solutions
+        //                  using -4pi2 and 8pi2 will allow multi-rev solutions
+        //                  the farther apart the initial guess, the more iterations
+        //                    because of the iteration
+        //                  inner loop is for special cases. must be sure to exit both!
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1          - ijk position vector 1                km
+        //    r2          - ijk position vector 2                km
+        //    v1          - ijk velocity vector 1 if avail       km/s
+        //    dm          - direction of motion                  'L', 'S'
+        //    de          - orbital energy                       'L', 'H'
+        //                  only affects nrev >= 1 upper/lower bounds
+        //    dtsec       - time between r1 and r2               sec
+        //    nrev        - number of revs to complete           0, 1, 2, 3,  
+        //    kbi         - psi value for min                     
+        //    altpad      - altitude pad for hitearth calc       km
+        //    show        - control output don't output for speed      'y', 'n'
+        //
+        //  outputs       :
+        //    v1t         - ijk transfer velocity vector         km/s
+        //    v2t         - ijk transfer velocity vector         km/s
+        //    hitearth    - flag if hit or not                   'y', 'n'
+        //    error       - error flag                           1, 2, 3,   use numbers since c++ is so horrible at strings
+        //
+        //  locals        :
+        //    vara        - variable of the iteration,
+        //                  not the semi or axis!
+        //    y           - area between position vectors
+        //    upper       - upper bound for z
+        //    lower       - lower bound for z
+        //    cosdeltanu  - cosine of true anomaly change        rad
+        //    f           - f expression
+        //    g           - g expression
+        //    gdot        - g dot expression
+        //    xold        - old universal variable x
+        //    xoldcubed   - xold cubed
+        //    zold        - old value of z
+        //    znew        - new value of z
+        //    c2new       - c2(z) function
+        //    c3new       - c3(z) function
+        //    timenew     - new time                             sec
+        //    small       - tolerance for roundoff errors
+        //    i, j        - index
+        //
+        //  coupling
+        //    mag         - magnitude of a vector
+        //    dot         - dot product of two vectors
+        //    findc2c3    - find c2 and c3 functions
+        //
+        //  references    :
+        //    vallado       2013, 492, alg 58, ex 7-5
+        // ----------------------------------------------------------------------------*/
 
         public void lambertuniv
                (
@@ -8125,7 +8011,7 @@ namespace AstroLibMethods
             v1t = new double[] { 0.0, 0.0, 0.0 };
             v2t = new double[] { 0.0, 0.0, 0.0 };
 
-            /* --------------------  initialize values   -------------------- */
+            // --------------------  initialize values    // ---------------------
             estr = "";  // determine various cases
             hitearth = 'x';
             errorstr = "ok";
@@ -8148,7 +8034,7 @@ namespace AstroLibMethods
             else
                 vara = Math.Sqrt(magr1 * magr2 * (1.0 + cosdeltanu));
 
-            /* -------- set up initial bounds for the bisection ------------ */
+            // -------- set up initial bounds for the bisection --------------
             if (nrev == 0)
             {
                 lower = -16.0 * Math.PI * Math.PI; // could be negative infinity for all cases, allow hyperbolic and parabolic solutions
@@ -8165,7 +8051,7 @@ namespace AstroLibMethods
                     lower = kbi;
             }
 
-            /* ----------------  form initial guesses   --------------------- */
+            // ----------------  form initial guesses     ----------------------
             psinew = 0.0;
             xold = 0.0;
             if (nrev == 0)
@@ -8214,7 +8100,7 @@ namespace AstroLibMethods
                         {
                             psinew = 0.8 * (1.0 / c3new) * (1.0 - (magr1 + magr2) * Math.Sqrt(c2new) / vara);
 
-                            /* ------ find c2 and c3 functions ------ */
+                            // ------ find c2 and c3 functions --------
                             findc2c3(psinew, out c2new, out c3new);
                             psiold = psinew;
                             lower = psiold;
@@ -8365,31 +8251,31 @@ namespace AstroLibMethods
 
 
 
-        /* -------------------------------------------------------------------------- 
-        *                           function lambhodograph
-        *
-        * this function accomplishes 180 deg transfer(and 360 deg) for lambert problem.
-        *
-        *  author        : david vallado           davallado@gmail.com  22 may 2017
-        *
-        *  inputs          description                            range / units
-        *    r1    - ijk position vector 1                            km
-        *    r2    - ijk position vector 2                            km
-        *    v1    - intiial ijk velocity vector 1                    km/s
-        *    p     - semiparamater of transfer orbit                  km
-        *    ecc   - eccentricity of transfer orbit                   km
-        *    dnu   - true anomaly delta for transfer orbit            rad
-        *    dtsec - time between r1 and r2                           s
-        *    dnu - true anomaly change                                rad
-        *
-        *  outputs       :
-        *    v1t - ijk transfer velocity vector                       km/s
-        *    v2t - ijk transfer velocity vector                       km/s
-        * 
-        *  references :
-        *    Thompson JGCD 2013 v34 n6 1925
-        *    Thompson AAS GNC 2018
-        ----------------------------------------------------------------------------- */
+        // -------------------------------------------------------------------------- 
+        //                           function lambhodograph
+        //
+        // this function accomplishes 180 deg transfer(and 360 deg) for lambert problem.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1    - ijk position vector 1                            km
+        //    r2    - ijk position vector 2                            km
+        //    v1    - intiial ijk velocity vector 1                    km/s
+        //    p     - semiparamater of transfer orbit                  km
+        //    ecc   - eccentricity of transfer orbit                   km
+        //    dnu   - true anomaly delta for transfer orbit            rad
+        //    dtsec - time between r1 and r2                           s
+        //    dnu - true anomaly change                                rad
+        //
+        //  outputs       :
+        //    v1t - ijk transfer velocity vector                       km/s
+        //    v2t - ijk transfer velocity vector                       km/s
+        // 
+        //  references :
+        //    Thompson JGCD 2013 v34 n6 1925
+        //    Thompson AAS GNC 2018
+        // ------------------------------------------------------------------------------
 
         public void lambhodograph
         (
@@ -8515,7 +8401,7 @@ namespace AstroLibMethods
         }  // double kbattin
 
 
-        /* -------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
 
         private static double seebattin(double v)
         {
@@ -8588,69 +8474,69 @@ namespace AstroLibMethods
         }  // double seebattin
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure lamberbattin
-        *
-        *  this procedure solves lambert's problem using battins method. the method is
-        *    developed in battin (1987).
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                            range / units
-        *    r1          - ijk position vector 1                      km
-        *    r2          - ijk position vector 2                      km
-        *    v1          - ijk velocity vector 1 if avail             km/s
-        *    dm          - direction of motion                       'L', 'S'
-        *    de          - orbital energy                            'L', 'H'
-        *                  only affects nrev >= 1 solutions
-        *    dtsec       - time between r1 and r2                     sec
-        *    nrev        - number of revs to complete                 0, 1, 2, 3,  
-        *    altpad      - altitude pad for hitearth calc             km
-        *    show        - control output don't output for speed      'y', 'n'
-        *
-        *  outputs       :
-        *    v1t         - ijk transfer velocity vector               km/s
-        *    v2t         - ijk transfer velocity vector               km/s
-        *    hitearth    - flag if hti or not                         'y', 'n'
-        *    errorsum    - error flag                                 'ok',  
-        *    errorout    - text for iterations / last loop
-        *
-        *  locals        :
-        *    i           - index
-        *    loops       -
-        *    u           -
-        *    b           -
-        *    sinv        -
-        *    cosv        -
-        *    rp          -
-        *    x           -
-        *    xn          -
-        *    y           -
-        *    l           -
-        *    m           -
-        *    cosdeltanu  -
-        *    sindeltanu  -
-        *    dnu         -
-        *    a           -
-        *    tan2w       -
-        *    ror         -
-        *    h1          -
-        *    h2          -
-        *    tempx       -
-        *    eps         -
-        *    denom       -
-        *    chord       -
-        *    k2          -
-        *    s           -
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *
-        *  references    :
-        *    vallado       2013, 494, Alg 59, ex 7-5
-        *    thompson      AAS GNC 2018
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure lamberbattin
+        //
+        //  this procedure solves lambert's problem using battins method. the method is
+        //    developed in battin (1987).
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1          - ijk position vector 1                      km
+        //    r2          - ijk position vector 2                      km
+        //    v1          - ijk velocity vector 1 if avail             km/s
+        //    dm          - direction of motion                       'L', 'S'
+        //    de          - orbital energy                            'L', 'H'
+        //                  only affects nrev >= 1 solutions
+        //    dtsec       - time between r1 and r2                     sec
+        //    nrev        - number of revs to complete                 0, 1, 2, 3,  
+        //    altpad      - altitude pad for hitearth calc             km
+        //    show        - control output don't output for speed      'y', 'n'
+        //
+        //  outputs       :
+        //    v1t         - ijk transfer velocity vector               km/s
+        //    v2t         - ijk transfer velocity vector               km/s
+        //    hitearth    - flag if hti or not                         'y', 'n'
+        //    errorsum    - error flag                                 'ok',  
+        //    errorout    - text for iterations / last loop
+        //
+        //  locals        :
+        //    i           - index
+        //    loops       -
+        //    u           -
+        //    b           -
+        //    sinv        -
+        //    cosv        -
+        //    rp          -
+        //    x           -
+        //    xn          -
+        //    y           -
+        //    l           -
+        //    m           -
+        //    cosdeltanu  -
+        //    sindeltanu  -
+        //    dnu         -
+        //    a           -
+        //    tan2w       -
+        //    ror         -
+        //    h1          -
+        //    h2          -
+        //    tempx       -
+        //    eps         -
+        //    denom       -
+        //    chord       -
+        //    k2          -
+        //    s           -
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //
+        //  references    :
+        //    vallado       2013, 494, Alg 59, ex 7-5
+        //    thompson      AAS GNC 2018
+        // ----------------------------------------------------------------------------*/
 
         public void lambertbattin
                (
@@ -8862,9 +8748,9 @@ namespace AstroLibMethods
         //
         //  this function calculates various position information for hills equations.
         //
-        //  author        : david vallado           davallado@gmail.com    1 mar 2001
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  inputs description                                 range / units
+        //  inputs          description                              range / units
         //    r           - init rel position of int              m or km
         //    v           - init rel velocity of int              m or km/s
         //    alt         - altitude of tgt satellite               km
@@ -8892,7 +8778,7 @@ namespace AstroLibMethods
             out double[] rint, out double[] vint
             )
         {
-            // --------------------  implementation   ----------------------
+            // --------------------  implementation    // ---------------------
             double radius, cosnt, sinnt, nt, omega;
             rint = new double[3];
             vint = new double[3];
@@ -8927,9 +8813,9 @@ namespace AstroLibMethods
         //
         //  this function calculates initial velocity for hills equations.
         //
-        //  author        : david vallado           davallado@gmail.com    1 mar 2001
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  inputs description                                     range / units
+        //  inputs          description                              range / units
         //    r           - initial position vector of int            m
         //    alt         - altitude of tgt satellite                 km
         //    dts         - desired time                              s
@@ -8983,39 +8869,39 @@ namespace AstroLibMethods
         }  // hillsv
 
 
-        /*---------------------------------------------------------------------------
-        *
-        *                           procedure site
-        *
-        *  this function finds the position and velocity vectors for a site.  the
-        *    answer is returned in the geocentric equatorial (ecef) coordinate system.
-        *    note that the velocity is zero because the coordinate system is fixed to
-        *    the earth.
-        *
-        *  author        : david vallado           davallado@gmail.com   25 jun 2002
-        *
-        *  inputs          description                    range / units
-        *    latgd       - geodetic latitude              -Math.PI/2 to Math.PI/2 rad
-        *    lon         - longitude of site              -2pi to 2pi rad
-        *    alt         - altitude                       km
-        *
-        *  outputs       :
-        *    rsecef      - ecef site position vector      km
-        *    vsecef      - ecef site velocity vector      km/s
-        *
-        *  locals        :
-        *    Math.Sinlat      - variable containing  Math.Sin(lat)  rad
-        *    temp        - temporary real value
-        *    rdel        - rdel component of site vector  km
-        *    rk          - rk component of site vector    km
-        *    cearth      -
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    vallado       2013, 430, alg 51, ex 7-1
-        ----------------------------------------------------------------------------*/
+        //  ---------------------------------------------------------------------------
+        //
+        //                           procedure site
+        //
+        //  this function finds the position and velocity vectors for a site.  the
+        //    answer is returned in the geocentric equatorial (ecef) coordinate system.
+        //    note that the velocity is zero because the coordinate system is fixed to
+        //    the earth.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    latgd       - geodetic latitude              -Math.PI/2 to Math.PI/2 rad
+        //    lon         - longitude of site              -2pi to 2pi rad
+        //    alt         - altitude                       km
+        //
+        //  outputs       :
+        //    rsecef      - ecef site position vector      km
+        //    vsecef      - ecef site velocity vector      km/s
+        //
+        //  locals        :
+        //    Math.Sinlat      - variable containing  Math.Sin(lat)  rad
+        //    temp        - temporary real value
+        //    rdel        - rdel component of site vector  km
+        //    rk          - rk component of site vector    km
+        //    cearth      -
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    vallado       2013, 430, alg 51, ex 7-1
+        // ---------------------------------------------------------------------------*/
 
         public void site
             (
@@ -9030,20 +8916,20 @@ namespace AstroLibMethods
             rsecef = new double[] { 0.0, 0.0, 0.0 };
             vsecef = new double[] { 0.0, 0.0, 0.0 };
 
-            /* ---------------------  initialize values   ------------------- */
+            // ---------------------  initialize values    // --------------------
             sinlat = Math.Sin(latgd);
 
-            /* -------  find rdel and rk components of site vector  --------- */
+            // -------  find rdel and rk components of site vector  -----------
             cearth = gravConst.re / Math.Sqrt(1.0 - (eesqrd * sinlat * sinlat));
             rdel = (cearth + alt) * Math.Cos(latgd);
             rk = ((1.0 - eesqrd) * cearth + alt) * sinlat;
 
-            /* ----------------  find site position vector  ----------------- */
+            // ----------------  find site position vector  -------------------
             rsecef[0] = rdel * Math.Cos(lon);
             rsecef[1] = rdel * Math.Sin(lon);
             rsecef[2] = rk;
 
-            /* ----------------  find site velocity vector  ----------------- */
+            // ----------------  find site velocity vector  -------------------
             vsecef[0] = 0.0;
             vsecef[1] = 0.0;
             vsecef[2] = 0.0;
@@ -9053,83 +8939,83 @@ namespace AstroLibMethods
         // -------------------------- angles-only techniques ------------------------ 
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure angleslaplace
-        *
-        *  this procedure solves the problem of orbit determination using three
-        *    optical sightings and the method of laplace. the 8th order root is generally 
-        *    the big point of discussion. A Halley iteration permits a quick solution to 
-        *    find the correct root, with a starting guess of 20000 km. the general 
-        *    formulation yields polynomial coefficients that are very large, and can easily 
-        *    become overflow operations. Thus, canonical units are used only until teh root is found, 
-        *    then regular units are resumed. 
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                               range / units
-        *    tdecl1       - declination #1                               rad
-        *    tdecl2       - declination #2                               rad
-        *    tdecl3       - declination #3                               rad
-        *    trtasc1      - right ascension #1                           rad
-        *    trtasc2      - right ascension #2                           rad
-        *    trtasc3      - right ascension #3                           rad
-        *    jd1, jdf1    - julian date of 1st sighting                  days from 4713 bc
-        *    jd2, jdf2    - julian date of 2nd sighting                  days from 4713 bc
-        *    jd3, jdf3    - julian date of 3rd sighting                  days from 4713 bc
-        *    diffsites    - if sites are different (need better test)    'y', 'n'
-        *    rs1          - eci site position vector #1                  km
-        *    rs2          - eci site position vector #2                  km
-        *    rs3          - eci site position vector #3                  km
-        *
-        *  outputs        :
-        *    r2           -  position vector                             km
-        *    v2           -  velocity vector                             km / s
-        *    errstr       - output results for debugging
-        *
-        *  locals         :
-        *    l1           - line of sight vector for 1st
-        *    l2           - line of sight vector for 2nd
-        *    l3           - line of sight vector for 3rd
-        *    ldot         - 1st derivative of l2
-        *    lddot        - 2nd derivative of l2
-        *    rs2dot       - 1st derivative of rs2 - vel
-        *    rs2ddot      - 2nd derivative of rs2
-        *    t12t13       - (t1-t2) * (t1-t3)
-        *    t21t23       - (t2-t1) * (t2-t3)
-        *    t31t32       - (t3-t1) * (t3-t2)
-        *    i            - index
-        *    d            -
-        *    d1           -
-        *    d2           -
-        *    d3           -
-        *    d4           -
-        *    oldr         - previous iteration on r2
-        *    rho          - range from site to satellite at t2
-        *    rhodot       -
-        *    dmat         -
-        *    d1mat        -
-        *    d2mat        -
-        *    d3mat        -
-        *    d4mat        -
-        *    earthrate    - angular rotation of the earth
-        *    l2dotrs      - vector l2 dotted with rs
-        *    temp         - temporary vector
-        *    temp1        - temporary vector
-        *    small        - tolerance
-        *    roots        -
-        *
-        *  coupling       :
-        *    mag          - magnitude of a vector
-        *    determinant  - evaluate the determinant of a matrix
-        *    cross        - cross product of two vectors
-        *    norm         - normlize a matrix
-        *    sgnval       - sgn a value to a matrix
-        *    factor       - find the roots of a polynomial
-        *
-        *  references     :
-        *    vallado       2013, 435
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure angleslaplace
+        //
+        //  this procedure solves the problem of orbit determination using three
+        //    optical sightings and the method of laplace. the 8th order root is generally 
+        //    the big point of discussion. A Halley iteration permits a quick solution to 
+        //    find the correct root, with a starting guess of 20000 km. the general 
+        //    formulation yields polynomial coefficients that are very large, and can easily 
+        //    become overflow operations. Thus, canonical units are used only until teh root is found, 
+        //    then regular units are resumed. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    tdecl1       - declination #1                               rad
+        //    tdecl2       - declination #2                               rad
+        //    tdecl3       - declination #3                               rad
+        //    trtasc1      - right ascension #1                           rad
+        //    trtasc2      - right ascension #2                           rad
+        //    trtasc3      - right ascension #3                           rad
+        //    jd1, jdf1    - julian date of 1st sighting                  days from 4713 bc
+        //    jd2, jdf2    - julian date of 2nd sighting                  days from 4713 bc
+        //    jd3, jdf3    - julian date of 3rd sighting                  days from 4713 bc
+        //    diffsites    - if sites are different (need better test)    'y', 'n'
+        //    rs1          - eci site position vector #1                  km
+        //    rs2          - eci site position vector #2                  km
+        //    rs3          - eci site position vector #3                  km
+        //
+        //  outputs        :
+        //    r2           -  position vector                             km
+        //    v2           -  velocity vector                             km / s
+        //    errstr       - output results for debugging
+        //
+        //  locals         :
+        //    l1           - line of sight vector for 1st
+        //    l2           - line of sight vector for 2nd
+        //    l3           - line of sight vector for 3rd
+        //    ldot         - 1st derivative of l2
+        //    lddot        - 2nd derivative of l2
+        //    rs2dot       - 1st derivative of rs2 - vel
+        //    rs2ddot      - 2nd derivative of rs2
+        //    t12t13       - (t1-t2) * (t1-t3)
+        //    t21t23       - (t2-t1) * (t2-t3)
+        //    t31t32       - (t3-t1) * (t3-t2)
+        //    i            - index
+        //    d            -
+        //    d1           -
+        //    d2           -
+        //    d3           -
+        //    d4           -
+        //    oldr         - previous iteration on r2
+        //    rho          - range from site to satellite at t2
+        //    rhodot       -
+        //    dmat         -
+        //    d1mat        -
+        //    d2mat        -
+        //    d3mat        -
+        //    d4mat        -
+        //    earthrate    - angular rotation of the earth
+        //    l2dotrs      - vector l2 dotted with rs
+        //    temp         - temporary vector
+        //    temp1        - temporary vector
+        //    small        - tolerance
+        //    roots        -
+        //
+        //  coupling       :
+        //    mag          - magnitude of a vector
+        //    determinant  - evaluate the determinant of a matrix
+        //    cross        - cross product of two vectors
+        //    norm         - normlize a matrix
+        //    sgnval       - sgn a value to a matrix
+        //    factor       - find the roots of a polynomial
+        //
+        //  references     :
+        //    vallado       2013, 435
+        // ----------------------------------------------------------------------------*/
 
         public void angleslaplace
         (
@@ -9195,7 +9081,7 @@ namespace AstroLibMethods
             // canonical only through forming and solving the 8th order polynomial
             double tu = Math.Sqrt(gravConst.re * gravConst.re * gravConst.re / gravConst.mu);
 
-            // ----------------------   initialize   ------------------------
+            // ----------------------   initialize    // -----------------------
             double lod = 0.0;  // leave zero for now
             // switch to canonical
             double omegaearthc = gravConst.earthrot * (1.0 - lod / 86400.0) * tu;  // rad/tu
@@ -9603,76 +9489,76 @@ namespace AstroLibMethods
             bigr2 = bigr2c * gravConst.re;
         }  // getGaussRoot
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure anglesgauss
-        *
-        *  this procedure solves the problem of orbit determination using three
-        *    optical sightings. the solution procedure uses the gaussian technique.
-        *    the 8th order root is generally the big point of discussion. A Halley iteration
-        *    permits a quick solution to find the correct root, with a starting guess of 20000 km. 
-        *    the general formulation yields polynomial coefficients that are very large, and can easily 
-        *    become overflow operations. Thus, canonical units are used only until the root is found, 
-        *    then regular units are resumed. 
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                              range / units
-        *    tdecl1       - declination #1                               rad
-        *    tdecl2       - declination #2                               rad
-        *    tdecl3       - declination #3                               rad
-        *    trtasc1      - right ascension #1                           rad
-        *    trtasc2      - right ascension #2                           rad
-        *    trtasc3      - right ascension #3                           rad
-        *    jd1, jdf1    - julian date of 1st sighting                  days from 4713 bc
-        *    jd2, jdf2    - julian date of 2nd sighting                  days from 4713 bc
-        *    jd3, jdf3    - julian date of 3rd sighting                  days from 4713 bc
-        *    rs1          - eci site position vector #1                  km
-        *    rs2          - eci site position vector #2                  km
-        *    rs3          - eci site position vector #3                  km
-        *
-        *  outputs        :
-        *    r2           -  position vector at t2                       km
-        *    v2           -  velocity vector at t2                       km / s
-        *    errstr       - output results for debugging
-        *
-        *  locals         :
-        *    los1         - line of sight vector for 1st
-        *    los2         - line of sight vector for 2nd
-        *    los3         - line of sight vector for 3rd
-        *    tau          - taylor expansion series about
-        *                   tau ( t - to )
-        *    tausqr       - tau squared
-        *    t21t23       - (t2-t1) * (t2-t3)
-        *    t31t32       - (t3-t1) * (t3-t2)
-        *    i            - index
-        *    d            -
-        *    rho          - range from site to sat at t2                 km
-        *    rhodot       -
-        *    dmat         -
-        *    earthrate    - velocity of earth rotation
-        *    p            -
-        *    q            -
-        *    oldr         -
-        *    oldv         -
-        *    f1           - f coefficient
-        *    g1           -
-        *    f3           -
-        *    g3           -
-        *    l2dotrs      -
-        *
-        *  coupling       :
-        *    mag          - magnitude of a vector
-        *    determinant  - evaluate the determinant of a matrix
-        *    factor       - find roots of a polynomial
-        *    matmult      - multiply two matrices together
-        *    gibbs        - gibbs method of orbit determination
-        *    hgibbs       - herrick gibbs method of orbit determination
-        *    angle        - angle between two vectors
-        *
-        *  references     :
-        *    vallado       2013, 442, alg 52, ex 7-2
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure anglesgauss
+        //
+        //  this procedure solves the problem of orbit determination using three
+        //    optical sightings. the solution procedure uses the gaussian technique.
+        //    the 8th order root is generally the big point of discussion. A Halley iteration
+        //    permits a quick solution to find the correct root, with a starting guess of 20000 km. 
+        //    the general formulation yields polynomial coefficients that are very large, and can easily 
+        //    become overflow operations. Thus, canonical units are used only until the root is found, 
+        //    then regular units are resumed. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    tdecl1       - declination #1                               rad
+        //    tdecl2       - declination #2                               rad
+        //    tdecl3       - declination #3                               rad
+        //    trtasc1      - right ascension #1                           rad
+        //    trtasc2      - right ascension #2                           rad
+        //    trtasc3      - right ascension #3                           rad
+        //    jd1, jdf1    - julian date of 1st sighting                  days from 4713 bc
+        //    jd2, jdf2    - julian date of 2nd sighting                  days from 4713 bc
+        //    jd3, jdf3    - julian date of 3rd sighting                  days from 4713 bc
+        //    rs1          - eci site position vector #1                  km
+        //    rs2          - eci site position vector #2                  km
+        //    rs3          - eci site position vector #3                  km
+        //
+        //  outputs        :
+        //    r2           -  position vector at t2                       km
+        //    v2           -  velocity vector at t2                       km / s
+        //    errstr       - output results for debugging
+        //
+        //  locals         :
+        //    los1         - line of sight vector for 1st
+        //    los2         - line of sight vector for 2nd
+        //    los3         - line of sight vector for 3rd
+        //    tau          - taylor expansion series about
+        //                   tau ( t - to )
+        //    tausqr       - tau squared
+        //    t21t23       - (t2-t1) * (t2-t3)
+        //    t31t32       - (t3-t1) * (t3-t2)
+        //    i            - index
+        //    d            -
+        //    rho          - range from site to sat at t2                 km
+        //    rhodot       -
+        //    dmat         -
+        //    earthrate    - velocity of earth rotation
+        //    p            -
+        //    q            -
+        //    oldr         -
+        //    oldv         -
+        //    f1           - f coefficient
+        //    g1           -
+        //    f3           -
+        //    g3           -
+        //    l2dotrs      -
+        //
+        //  coupling       :
+        //    mag          - magnitude of a vector
+        //    determinant  - evaluate the determinant of a matrix
+        //    factor       - find roots of a polynomial
+        //    matmult      - multiply two matrices together
+        //    gibbs        - gibbs method of orbit determination
+        //    hgibbs       - herrick gibbs method of orbit determination
+        //    angle        - angle between two vectors
+        //
+        //  references     :
+        //    vallado       2013, 442, alg 52, ex 7-2
+        // ----------------------------------------------------------------------------*/
 
         public void anglesgauss
         (
@@ -9714,7 +9600,7 @@ namespace AstroLibMethods
             // canonical only through forming and solving the 8th order polynomial
             double tu = Math.Sqrt(gravConst.re * gravConst.re * gravConst.re / gravConst.mu);
 
-            // ----------------------   initialize   ------------------------ 
+            // ----------------------   initialize    // ----------------------- 
             char show;
             show = 'a';  // show all
             show = 'y';  // show just root info
@@ -9858,7 +9744,6 @@ namespace AstroLibMethods
             // do as Halley iteration since derivatives are possible. tests at LEO, GPS, GEO,
             // all seem to converge to the proper answer
             int kk = 1;
-            double bigr2x; //, bigr2nx;
             bigr2c = 20000.0 / gravConst.re; // er guess ~GPS altitude
                                              // bigr2nx = bigr2c;
             while (Math.Abs(bigr2 - bigr2c) > 8.0e-5 && kk < 15)  // do in er, 0.5 km
@@ -10135,57 +10020,57 @@ namespace AstroLibMethods
         }    // anglesgauss
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure doubler
-        *
-        *  this rountine accomplishes the iteration evaluation of one step for the double-r 
-        *  angles only routine.
-        *  
-        *  author        : david vallado           davallado@gmail.com   23 dec 2003
-        *
-        *  inputs          description                                 range / units
-        *    cc1          - 
-        *    cc2          - 
-        *    magrsite1    - 
-        *    magrsite2    - 
-        *    magr1in      - initial estimate 
-        *    magr2in      - initial estimate
-        *    los1         - line of sight vector for 1st
-        *    los2         - line of sight vector for 2nd
-        *    los3         - line of sight vector for 3rd
-        *    rsite1       - eci site position vector #1                  km
-        *    rsite2       - eci site position vector #2                  km
-        *    rsite3       - eci site position vector #3                  km
-        *    t1           -                                              sec
-        *    t3           -                                              sec
-        *    dm           - direction of motion                          'S', 'L' 
-        *       likely not needed because for orbits that repeat, you always want to go the short way, rel to the initial vectors
-        *    n12          - # of days between tracks 1,2                 days
-        *    n13          - # of days between tracks 1,3                 days
-        *    n23          - # of days between tracks 2,3                 days
-        *
-        *  outputs        :
-        *    r2           - position vector at t2                        km
-        *    r3           - position vector at t3                        km
-        *    f1           -
-        *    f2           -
-        *    q1           - quality estimate
-        *    magr1        - magnitude of r1 vector                       km
-        *    magr2        - magnitude of r2 vector                       km
-        *    a            - semi major axis                              km / s
-        *    deltae32     - eccentric anomaly difference 3-2            
-        *    errstr       - output results for debugging
-        *    
-        *  locals         :
-        *                 -
-        *
-        *  coupling       :
-        *    dot, cross, mag
-        *
-        *  references     :
-        *    vallado       2013
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure doubler
+        //
+        //  this rountine accomplishes the iteration evaluation of one step for the double-r 
+        //  angles only routine.
+        //  
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    cc1          - 
+        //    cc2          - 
+        //    magrsite1    - 
+        //    magrsite2    - 
+        //    magr1in      - initial estimate 
+        //    magr2in      - initial estimate
+        //    los1         - line of sight vector for 1st
+        //    los2         - line of sight vector for 2nd
+        //    los3         - line of sight vector for 3rd
+        //    rsite1       - eci site position vector #1                  km
+        //    rsite2       - eci site position vector #2                  km
+        //    rsite3       - eci site position vector #3                  km
+        //    t1           -                                              sec
+        //    t3           -                                              sec
+        //    dm           - direction of motion                          'S', 'L' 
+        //       likely not needed because for orbits that repeat, you always want to go the short way, rel to the initial vectors
+        //    n12          - # of days between tracks 1,2                 days
+        //    n13          - # of days between tracks 1,3                 days
+        //    n23          - # of days between tracks 2,3                 days
+        //
+        //  outputs        :
+        //    r2           - position vector at t2                        km
+        //    r3           - position vector at t3                        km
+        //    f1           -
+        //    f2           -
+        //    q1           - quality estimate
+        //    magr1        - magnitude of r1 vector                       km
+        //    magr2        - magnitude of r2 vector                       km
+        //    a            - semi major axis                              km / s
+        //    deltae32     - eccentric anomaly difference 3-2            
+        //    errstr       - output results for debugging
+        //    
+        //  locals         :
+        //                 -
+        //
+        //  coupling       :
+        //    dot, cross, mag
+        //
+        //  references     :
+        //    vallado       2013
+        // ----------------------------------------------------------------------------*/
 
         void doubler
         (
@@ -10206,7 +10091,6 @@ namespace AstroLibMethods
             double[] temp = new double[3];
             char show = 'y';
             // seems to always need to be 'S' way???
-            char dm = 'S';
             deltae21 = 0.0;
 
             twopi = 2.0 * Math.PI;
@@ -10440,68 +10324,68 @@ namespace AstroLibMethods
         }  // doubler
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure anglesdoubler
-        *
-        *  this procedure solves the problem of orbit determination using three
-        *    optical sightings. the solution procedure uses the double-r technique.
-        *    the important thing is the input of the initial guesses of the range which
-        *    may be easiest from the solution of the gauss 8th order poly.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                              range / units
-        *    tdecl1       - declination #1                               rad
-        *    tdecl2       - declination #2                               rad
-        *    tdecl3       - declination #3                               rad
-        *    trtasc1      - right ascension #1                           rad
-        *    trtasc2      - right ascension #2                           rad
-        *    trtasc3      - right ascension #3                           rad
-        *    trtasc3      - right ascension #3                           rad
-        *    jd1, jdf1    - julian date of 1st sighting                  days from 4713 bc
-        *    jd2, jdf2    - julian date of 2nd sighting                  days from 4713 bc
-        *    jd3, jdf3    - julian date of 3rd sighting                  days from 4713 bc
-        *    rs1          - eci site position vector #1                  km
-        *    rs2          - eci site position vector #2                  km
-        *    rs3          - eci site position vector #3                  km
-        *    magr1in      - initial estimate 
-        *    magr2in      - initial estimate
-        *
-        *  outputs         :
-        *    r2           -  position vector at t2                       km
-        *    v2           -  velocity vector at t2                       km / s
-        *    errstr       - output results for debugging
-        *
-        *  locals         :
-        *    los1         - line of sight vector for 1st
-        *    los2         - line of sight vector for 2nd
-        *    los3         - line of sight vector for 3rd
-        *    tau          - taylor expansion series about
-        *                   tau ( t - to )
-        *    tausqr       - tau squared
-        *    t21t23       - (t2-t1) * (t2-t3)
-        *    t31t32       - (t3-t1) * (t3-t2)
-        *    rho          - range from site to sat at t2                 km
-        *    rhodot       -
-        *    earthrate    - velocity of earth rotation
-        *    p            -
-        *    q            -
-        *    oldr         -
-        *    oldv         -
-        *    f1           - f coefficient
-        *    g1           -
-        *    f3           -
-        *    g3           -
-        *
-        *  coupling       :
-        *    mag          - magnitude of a vector
-        *    matmult      - multiply two matrices together
-        *    angle        - angle between two vectors
-        *
-        *  references     :
-        *    vallado       2013, 442, alg 52, ex 7-2
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure anglesdoubler
+        //
+        //  this procedure solves the problem of orbit determination using three
+        //    optical sightings. the solution procedure uses the double-r technique.
+        //    the important thing is the input of the initial guesses of the range which
+        //    may be easiest from the solution of the gauss 8th order poly.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    tdecl1       - declination #1                               rad
+        //    tdecl2       - declination #2                               rad
+        //    tdecl3       - declination #3                               rad
+        //    trtasc1      - right ascension #1                           rad
+        //    trtasc2      - right ascension #2                           rad
+        //    trtasc3      - right ascension #3                           rad
+        //    trtasc3      - right ascension #3                           rad
+        //    jd1, jdf1    - julian date of 1st sighting                  days from 4713 bc
+        //    jd2, jdf2    - julian date of 2nd sighting                  days from 4713 bc
+        //    jd3, jdf3    - julian date of 3rd sighting                  days from 4713 bc
+        //    rs1          - eci site position vector #1                  km
+        //    rs2          - eci site position vector #2                  km
+        //    rs3          - eci site position vector #3                  km
+        //    magr1in      - initial estimate 
+        //    magr2in      - initial estimate
+        //
+        //  outputs         :
+        //    r2           -  position vector at t2                       km
+        //    v2           -  velocity vector at t2                       km / s
+        //    errstr       - output results for debugging
+        //
+        //  locals         :
+        //    los1         - line of sight vector for 1st
+        //    los2         - line of sight vector for 2nd
+        //    los3         - line of sight vector for 3rd
+        //    tau          - taylor expansion series about
+        //                   tau ( t - to )
+        //    tausqr       - tau squared
+        //    t21t23       - (t2-t1) * (t2-t3)
+        //    t31t32       - (t3-t1) * (t3-t2)
+        //    rho          - range from site to sat at t2                 km
+        //    rhodot       -
+        //    earthrate    - velocity of earth rotation
+        //    p            -
+        //    q            -
+        //    oldr         -
+        //    oldv         -
+        //    f1           - f coefficient
+        //    g1           -
+        //    f3           -
+        //    g3           -
+        //
+        //  coupling       :
+        //    mag          - magnitude of a vector
+        //    matmult      - multiply two matrices together
+        //    angle        - angle between two vectors
+        //
+        //  references     :
+        //    vallado       2013, 442, alg 52, ex 7-2
+        // ----------------------------------------------------------------------------*/
 
         public void anglesdoubler
         (
@@ -10513,9 +10397,9 @@ namespace AstroLibMethods
         )
         {
             Int32 i, ktr;
-            double f1, f2, q1, magr1, magr2, a, a1, a2, deltae32;
+            double f1, f2, q1, magr2, a, a1, a2, deltae32;
             double tol, tau1, tau2, tau3, magr1old, magr2old, f, g,
-                magrsite1, magrsite2, magrsite3, cc1, cc2, f1delr1, f2delr1, f1delr2, f2delr2,
+                magrsite1, magrsite2, cc1, cc2, f1delr1, f2delr1, f1delr2, f2delr2,
                 pf2pr1, pf1pr2, q2, q3;
             double deltar1, deltar2, delta1, delta2, pf1pr1, pf2pr2, delta, magr1o, magr2o;  // pctchg
             int n12, n13, n23;  // number of revs for geo cases
@@ -10529,7 +10413,7 @@ namespace AstroLibMethods
             double[] los3 = new double[3];
             string tmpstr;
 
-            // ----------------------   initialize   ------------------------ 
+            // ----------------------   initialize    // ----------------------- 
             tol = 1e-8 * gravConst.re;  // km too small?
             tol = 0.1; // km
             //tol = 1.0; // km
@@ -10763,62 +10647,62 @@ namespace AstroLibMethods
         } // anglesdoubler
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                                  anglesgooding
-        *
-        *   compute orbit from three observed lines of sight (angles only). Uses the gooding
-        *     approach. he lists code in his papers, but no driver routines, and the CMDA 
-        *     implementation is rather different.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                              range / units
-        *   ind     =  indicator identifying which of the two
-        *                          (when there are two) lambert solutions
-        *                          to use.
-        *                               = 0       if nhrev = 0 or 1
-        *                               = 0 or 1  if nhrev.ge. 2
-        *    trtasc1      - right ascension #1                           rad
-        *    trtasc2      - right ascension #2                           rad
-        *    trtasc3      - right ascension #3                           rad
-        *    tdecl1       - declination #1                               rad
-        *    tdecl2       - declination #2                               rad
-        *    tdecl3       - declination #3                               rad
-        *    jd1          - julian date of 1st sighting            days from 4713 bc
-        *    jd2          - julian date of 2nd sighting            days from 4713 bc
-        *    jd3          - julian date of 3rd sighting            days from 4713 bc
-        *    rs           -  site position vector                        km
-        *    rng1         -  initial range estimate at time t1
-        *    rng3         -  initial range estimate at time t3
-        *    rng1         - converged value of range estimate
-        *    numhalfrev   - number of half evolutions between observations
-        *                   number of half-revs(k) included in the angle p1-*-p3
-        *   
-        *    outputs      :
-        *    r2           - middle observation position vector (eci)      km
-        *    v2           - middle observation velocity vector (eci)      km/s
-        *   the following is in solution array for each solution see "ix_solution" for layout
-        *
-        *   itnum   = iteration count
-        *   cr      = |*| where * is the calculated version of range vector at time t2.
-        *   crit    = convergence test value(solution converges when  crit^2 <  critval)
-        *   axrtio  = ratio(minor:major) for an ellipse in the
-        *                   f/g plane(& also the rho1/rho3); is a function
-        *                   of the partials and indicates the condition of
-        *                   the jacobian matrix: 0 = 'singular', 1 = ideal
-        *
-        *   bearng =  direction of corresponding axes in the
-        *                         rho1/rho3 plane.
-        *                         [corrected 15.4.04 by halving the angle]
-        *   a, e, i, bom, q = computed orbital elements
-        *   xs(6)  = computed pos/vel at time t2
-        *
-        *  references     :
-        *    vallado 2021 Chap 7
-        *    gooding tr 93004, april 1993. 
-        *    cmda 1997
-        * ------------------------------------------------------------------------------ */
+        // ------------------------------------------------------------------------------
+        //
+        //                                  anglesgooding
+        //
+        //   compute orbit from three observed lines of sight (angles only). Uses the gooding
+        //     approach. he lists code in his papers, but no driver routines, and the CMDA 
+        //     implementation is rather different.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //   ind     =  indicator identifying which of the two
+        //                          (when there are two) lambert solutions
+        //                          to use.
+        //                               = 0       if nhrev = 0 or 1
+        //                               = 0 or 1  if nhrev.ge. 2
+        //    trtasc1      - right ascension #1                           rad
+        //    trtasc2      - right ascension #2                           rad
+        //    trtasc3      - right ascension #3                           rad
+        //    tdecl1       - declination #1                               rad
+        //    tdecl2       - declination #2                               rad
+        //    tdecl3       - declination #3                               rad
+        //    jd1          - julian date of 1st sighting            days from 4713 bc
+        //    jd2          - julian date of 2nd sighting            days from 4713 bc
+        //    jd3          - julian date of 3rd sighting            days from 4713 bc
+        //    rs           -  site position vector                        km
+        //    rng1         -  initial range estimate at time t1
+        //    rng3         -  initial range estimate at time t3
+        //    rng1         - converged value of range estimate
+        //    numhalfrev   - number of half evolutions between observations
+        //                   number of half-revs(k) included in the angle p1-*-p3
+        //   
+        //    outputs      :
+        //    r2           - middle observation position vector (eci)      km
+        //    v2           - middle observation velocity vector (eci)      km/s
+        //   the following is in solution array for each solution see "ix_solution" for layout
+        //
+        //   itnum   = iteration count
+        //   cr      = |*| where * is the calculated version of range vector at time t2.
+        //   crit    = convergence test value(solution converges when  crit^2 <  critval)
+        //   axrtio  = ratio(minor:major) for an ellipse in the
+        //                   f/g plane(& also the rho1/rho3); is a function
+        //                   of the partials and indicates the condition of
+        //                   the jacobian matrix: 0 = 'singular', 1 = ideal
+        //
+        //   bearng =  direction of corresponding axes in the
+        //                         rho1/rho3 plane.
+        //                         [corrected 15.4.04 by halving the angle]
+        //   a, e, i, bom, q = computed orbital elements
+        //   xs(6)  = computed pos/vel at time t2
+        //
+        //  references     :
+        //    vallado 2021 Chap 7
+        //    gooding tr 93004, april 1993. 
+        //    cmda 1997
+        // --------------------------------------------------------------------------------
 
         public void anglesgooding
         (
@@ -10888,7 +10772,7 @@ namespace AstroLibMethods
             //nautct = -10000;               //Std value now, not 0 above
             //hn = 0.5;                 //Halley value(basic)
 
-            /* ----------------  find line of sight vectors  ---------------- */
+            // ----------------  find line of sight vectors  ------------------
             los1[0] = Math.Cos(tdecl1) * Math.Cos(trtasc1);
             los1[1] = Math.Cos(tdecl1) * Math.Sin(trtasc1);
             los1[2] = Math.Sin(tdecl1);
@@ -11019,74 +10903,74 @@ namespace AstroLibMethods
 
 
 
-        /* ------------------------------------------------------------------------------
-        *                                obs3lsx
-        *                                
-        *  compute orbit from three observed lines of sight (angles only). this is a subroutine of the 
-        *    Gooding angles-only method.                                                                   
-        *                                                                  
-        *  author        : david vallado           davallado@gmail.com    6 apr 2021
-        *
-        *  inputs          description                                          range / units
-        *    tau12       - t2 - t1                                                s  
-        *    tau13       - t3 - t1                                                s
-        *    rs1eci      - site position vector #1 eci                            km
-        *    rs2eci      - site position vector #2 eci                            km
-        *    rs3eci      - site position vector #3 eci                            km
-        *    rho1        - assumed range at time t1                               km
-        *    rho3        - assumed range at time t3                               km
-        *    numhalfrev  - number of half-revs (k) included in input angle p1-*-p3
-        *    ind         - indicator for which of two lambert solutions to use
-        *                    = 0       if numHalfRev  (k) = 0 or 1          
-        *                    = 0 or 1  if numHalfRev  (k) >= 2            
-        *    r1          -  position vector #1                                    km
-        *    r2          -  position vector #2                                    km
-        *    r3          -  position vector #3                                    km
-        *    magr1, magr2, magr3     = computed position magnitude from earth center at times t1, t2, t3          
-        *                                                                    
-        *  outputs       :
-        *    num         - number of solutions found by lambert valamb    (0, unlikely 1, 2)
-        *    rho2sez     - slant range vector for t2                              km
-        *    
-        *  locals        :
-        *   cntrol = input flags & controls inputs see original gooding /cntrol/ common     
-        *                          see beginning of code for layout                   
-        *                                                                     
-        *               nhrev   =  number of half-revs(k) included in the 
-        *                          angle p1-*-p3                           
-        *               t12     =  t2 - t1                                 
-        *               t13     =  t3 - t1                                 
-        *               r01     =  initial range estimate at time t1       
-        *               r03     =  initial range estimate at time t3       
-        *   r01 = converged value of range estimate outputs at time t1(if obsls "successful")
-        *   r03     = converged value of range estimate at time t13(if obsls "successful")
-        *               itnum   = iteration count      
-        *               hn = 0.5;    'halley'/'modified newton-raphson' control
-        *                           =0.5 for halley,  1.0 for modified newton-raphson
-        *               ngm     = counts use of "g" means                  
-        *               nmod    = overall modification count               
-        *               nfail   = count of number of lamber failures       
-        *               cr      = |*| where * is the calculated version of 
-        *                         range vector at time t2.
-        *               crit    = convergence test value(solution
-        *                         converges when  crit^2 <  critval)
-        *               axrtio  = ratio(minor:major) for an ellipse in the
-        *                   f/g plane(& also the rho1/rho3); is a function 
-        *                   of the partials and indicates the condition of 
-        *                   the jacobian matrix: 0 = 'singular', 1 = ideal 
-        *               bearng =  direction of corresponding axes in the rho1/rho3 plane.
-        *                         [corrected 15.4.04 by halving the angle]
-        *               xs[6]  = computed pos/vel at time t2   
-        *   pdinc      -    starting partial derivative "increment":
-        *                    delta-x = pdinc* r1, delta-y = pdinc* r3
-        *                crival;  "square" of convergence criteria
-        *   numsoltns  - number of solutions from the lambert trials 
-        *                 note this will vary as trajectories hit the earth
-        *                 
-        *  references     :
-        *    gooding tr 93004, april 1993. 
-        *    cmda 1997
-        * ------------------------------------------------------------------------------ */
+        // ------------------------------------------------------------------------------
+        //                                obs3lsx
+        //                                
+        //  compute orbit from three observed lines of sight (angles only). this is a subroutine of the 
+        //    Gooding angles-only method.                                                                   
+        //                                                                  
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    tau12       - t2 - t1                                                s  
+        //    tau13       - t3 - t1                                                s
+        //    rs1eci      - site position vector #1 eci                            km
+        //    rs2eci      - site position vector #2 eci                            km
+        //    rs3eci      - site position vector #3 eci                            km
+        //    rho1        - assumed range at time t1                               km
+        //    rho3        - assumed range at time t3                               km
+        //    numhalfrev  - number of half-revs (k) included in input angle p1-*-p3
+        //    ind         - indicator for which of two lambert solutions to use
+        //                    = 0       if numHalfRev  (k) = 0 or 1          
+        //                    = 0 or 1  if numHalfRev  (k) >= 2            
+        //    r1          -  position vector #1                                    km
+        //    r2          -  position vector #2                                    km
+        //    r3          -  position vector #3                                    km
+        //    magr1, magr2, magr3     = computed position magnitude from earth center at times t1, t2, t3          
+        //                                                                    
+        //  outputs       :
+        //    num         - number of solutions found by lambert valamb    (0, unlikely 1, 2)
+        //    rho2sez     - slant range vector for t2                              km
+        //    
+        //  locals        :
+        //   cntrol = input flags & controls inputs see original gooding /cntrol/ common     
+        //                          see beginning of code for layout                   
+        //                                                                     
+        //               nhrev   =  number of half-revs(k) included in the 
+        //                          angle p1-*-p3                           
+        //               t12     =  t2 - t1                                 
+        //               t13     =  t3 - t1                                 
+        //               r01     =  initial range estimate at time t1       
+        //               r03     =  initial range estimate at time t3       
+        //   r01 = converged value of range estimate outputs at time t1(if obsls "successful")
+        //   r03     = converged value of range estimate at time t13(if obsls "successful")
+        //               itnum   = iteration count      
+        //               hn = 0.5;    'halley'/'modified newton-raphson' control
+        //                           =0.5 for halley,  1.0 for modified newton-raphson
+        //               ngm     = counts use of "g" means                  
+        //               nmod    = overall modification count               
+        //               nfail   = count of number of lamber failures       
+        //               cr      = |*| where * is the calculated version of 
+        //                         range vector at time t2.
+        //               crit    = convergence test value(solution
+        //                         converges when  crit^2 <  critval)
+        //               axrtio  = ratio(minor:major) for an ellipse in the
+        //                   f/g plane(& also the rho1/rho3); is a function 
+        //                   of the partials and indicates the condition of 
+        //                   the jacobian matrix: 0 = 'singular', 1 = ideal 
+        //               bearng =  direction of corresponding axes in the rho1/rho3 plane.
+        //                         [corrected 15.4.04 by halving the angle]
+        //               xs[6]  = computed pos/vel at time t2   
+        //   pdinc      -    starting partial derivative "increment":
+        //                    delta-x = pdinc* r1, delta-y = pdinc* r3
+        //                crival;  "square" of convergence criteria
+        //   numsoltns  - number of solutions from the lambert trials 
+        //                 note this will vary as trajectories hit the earth
+        //                 
+        //  references     :
+        //    gooding tr 93004, april 1993. 
+        //    cmda 1997
+        // --------------------------------------------------------------------------------
 
         public void obs3lsx
         (
@@ -11633,7 +11517,7 @@ namespace AstroLibMethods
                             critsq = ffggd1 * ffggd1 + ffggd3 * ffggd3;
                             // (normally enough) critsq = f * f * (fd1 ^ 2 + fd3 ^ 2)
                             crit = Math.Sqrt(critsq);
-                            //*...      g terms(which not needed anyway!) dropped now
+                            ///...      g terms(which not needed anyway!) dropped now
                             fgxy = fgxy + f * (fdd1 + fdd3);
                             sqar = 4.0 * (f * (f * ddel + fdd1 * fgdd33 - 2.0 * fd13 * fgdd13 + fdd3 * fgdd11) + del * del);
                             // chk if ever negative?
@@ -11711,49 +11595,49 @@ namespace AstroLibMethods
         }  // obs3lsx
 
 
-        /* ------------------------------------------------------------------------------
-        *                                   calcps
-        *                                   
-        *  calculate slant range vector to compare with observed line of sight. Gooding IOD
-        *    to derive the components of the range vector at time t2. the estimated range vectors 
-        *    are 'topocentric', being relative to the observer.
-        *    dav note: Gooding goes to a lot of trouble to find radial and transverse components
-        *    of the velocity. with my lambert formulations, it's much easier to
-        *    a. find the lambert solution (s) of t1/t3 and dt
-        *    b. take initial t1 pos and velocity on lambert solution, and propagate to middle 
-        *       time with kepler
-        *    c. find slant range vector
-        *    
-        *  author        : david vallado           davallado@gmail.com   22 jan 2021
-        *
-        *  inputs        : description                                          range / units
-        *    los1        - line of sight vector for t1                            
-        *    los3        - line of sight vector for t3                            
-        *    tau12       - t2 - t1                                                s  
-        *    tau13       - t3 - t1                                                s
-        *    rs1         - site position vector #1 eci                            km
-        *    rs2         - site position vector #2 eci                            km
-        *    rs3         - site position vector #3 eci                            km
-        *    rho1        - estimated range at time t1                             km
-        *    rho3        - estimated range at time t3                             km
-        *    hrev        - number of half-revs (k) included in input angle p1-*-p3
-        *    ind         - indicator for which of two lambert solutions to use
-        *                    = 0       if numHalfRev  (k) = 0 or 1          
-        *                    = 0 or 1  if numHalfRev  (k) >= 2            
-        *    
-        *  outputs       :
-        *    numsoltns   - number of solutions found by lambert valamb    (0, unlikely 1, 2)
-        *    r1          -  position vector #1                                    km
-        *    r2          -  position vector #2                                    km
-        *    r3          -  position vector #3                                    km
-        *    magr1, magr3     = computed position magnitude from earth center at times t1, t3          
-        *    rho2sez     - slant range vector for t2                              km
-        *    
-        *  locals        :
-        *  
-        *  
-        *  
-        * ------------------------------------------------------------------------------ */
+        // ------------------------------------------------------------------------------
+        //                                   calcps
+        //                                   
+        //  calculate slant range vector to compare with observed line of sight. Gooding IOD
+        //    to derive the components of the range vector at time t2. the estimated range vectors 
+        //    are 'topocentric', being relative to the observer.
+        //    dav note: Gooding goes to a lot of trouble to find radial and transverse components
+        //    of the velocity. with my lambert formulations, it's much easier to
+        //    a. find the lambert solution (s) of t1/t3 and dt
+        //    b. take initial t1 pos and velocity on lambert solution, and propagate to middle 
+        //       time with kepler
+        //    c. find slant range vector
+        //    
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    los1        - line of sight vector for t1                            
+        //    los3        - line of sight vector for t3                            
+        //    tau12       - t2 - t1                                                s  
+        //    tau13       - t3 - t1                                                s
+        //    rs1         - site position vector #1 eci                            km
+        //    rs2         - site position vector #2 eci                            km
+        //    rs3         - site position vector #3 eci                            km
+        //    rho1        - estimated range at time t1                             km
+        //    rho3        - estimated range at time t3                             km
+        //    hrev        - number of half-revs (k) included in input angle p1-*-p3
+        //    ind         - indicator for which of two lambert solutions to use
+        //                    = 0       if numHalfRev  (k) = 0 or 1          
+        //                    = 0 or 1  if numHalfRev  (k) >= 2            
+        //    
+        //  outputs       :
+        //    numsoltns   - number of solutions found by lambert valamb    (0, unlikely 1, 2)
+        //    r1          -  position vector #1                                    km
+        //    r2          -  position vector #2                                    km
+        //    r3          -  position vector #3                                    km
+        //    magr1, magr3     = computed position magnitude from earth center at times t1, t3          
+        //    rho2sez     - slant range vector for t2                              km
+        //    
+        //  locals        :
+        //  
+        //  
+        //  
+        // --------------------------------------------------------------------------------
 
         public void calcps
         (
@@ -11888,60 +11772,60 @@ namespace AstroLibMethods
 
         } // calcps
 
-        /* -------------------------- conversion techniques ------------------------- */
+        // -------------------------- conversion techniques ---------------------------
 
-        /* ------------------------- three vector techniques ------------------------ */
+        // ----------------------- three vector IOD techniques ------------------------
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           procedure gibbs
-        *
-        *  this procedure performs the gibbs method of orbit determination.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                          range / units
-        *    r1          -  position vector #1                        km
-        *    r2          -  position vector #2                        km
-        *    r3          -  position vector #3                        km
-        *
-        *  outputs       :
-        *    v2          -  velocity vector for r2                    km / s
-        *    theta       - angle between vectors                         rad
-        *    error       - flag indicating success                       'ok',...
-        *
-        *  locals        :
-        *    tover2      -
-        *    l           -
-        *    small       - tolerance for roundoff errors
-        *    r1mr2       - MathTimeLibr.magnitude of r1 - r2
-        *    r3mr1       - MathTimeLibr.magnitude of r3 - r1
-        *    r2mr3       - MathTimeLibr.magnitude of r2 - r3
-        *    p           - p vector     r2 x r3
-        *    q           - q vector     r3 x r1
-        *    w           - w vector     r1 x r2
-        *    d           - d vector     p + q + w
-        *    n           - n vector (r1)p + (r2)q + (r3)w
-        *    s           - s vector
-        *                    (r2-r3)r1+(r3-r1)r2+(r1-r2)r3
-        *    b           - b vector     d x r2
-        *    theta1      - temp angle between the vectors                rad
-        *    pn          - p unit vector
-        *    r1n         - r1 unit vector
-        *    dn          - d unit vector
-        *    nn          - n unit vector
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    cross       - cross product of two vectors
-        *    dot         - dot product of two vectors
-        *    add3vec     - add three vectors
-        *    norm        - creates a unit vector
-        *    angle       - angle between two vectors
-        *
-        *  references    :
-        *    vallado       2013, 460, alg 54, ex 7-3
-        -----------------------------------------------------------------------------*/
+        // -----------------------------------------------------------------------------
+        //
+        //                           procedure gibbs
+        //
+        //  this procedure performs the gibbs method of orbit determination.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1          -  position vector #1                        km
+        //    r2          -  position vector #2                        km
+        //    r3          -  position vector #3                        km
+        //
+        //  outputs       :
+        //    v2          -  velocity vector for r2                    km / s
+        //    theta       - angle between vectors                         rad
+        //    error       - flag indicating success                       'ok',...
+        //
+        //  locals        :
+        //    tover2      -
+        //    l           -
+        //    small       - tolerance for roundoff errors
+        //    r1mr2       - MathTimeLibr.magnitude of r1 - r2
+        //    r3mr1       - MathTimeLibr.magnitude of r3 - r1
+        //    r2mr3       - MathTimeLibr.magnitude of r2 - r3
+        //    p           - p vector     r2 x r3
+        //    q           - q vector     r3 x r1
+        //    w           - w vector     r1 x r2
+        //    d           - d vector     p + q + w
+        //    n           - n vector (r1)p + (r2)q + (r3)w
+        //    s           - s vector
+        //                    (r2-r3)r1+(r3-r1)r2+(r1-r2)r3
+        //    b           - b vector     d x r2
+        //    theta1      - temp angle between the vectors                rad
+        //    pn          - p unit vector
+        //    r1n         - r1 unit vector
+        //    dn          - d unit vector
+        //    nn          - n unit vector
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    cross       - cross product of two vectors
+        //    dot         - dot product of two vectors
+        //    add3vec     - add three vectors
+        //    norm        - creates a unit vector
+        //    angle       - angle between two vectors
+        //
+        //  references    :
+        //    vallado       2013, 460, alg 54, ex 7-3
+        // ---------------------------------------------------------------------------- 
 
         public void gibbs
     (
@@ -11954,7 +11838,7 @@ namespace AstroLibMethods
             double[] p, q, w, d, n, s, b, pn, r1n, dn, nn = new double[3];
             v2 = new double[] { 0.0, 0.0, 0.0 };
 
-            /* --------------------  initialize values   -------------------- */
+            // --------------------  initialize values    // ---------------------
             error = "ok";
             magr1 = MathTimeLibr.mag(r1);
             magr2 = MathTimeLibr.mag(r2);
@@ -11963,9 +11847,9 @@ namespace AstroLibMethods
             theta1 = 0.0;
             copa = 0.0;
 
-            /* ----------------------------------------------------------------
-            *  determine if the vectors are coplanar.
-            ----------------------------------------------------------------- */
+            // ----------------------------------------------------------------
+            //  determine if the vectors are coplanar.
+            // ------------------------------------------------------------------
             MathTimeLibr.cross(r2, r3, out p);
             MathTimeLibr.cross(r3, r1, out q);
             MathTimeLibr.cross(r1, r2, out w);
@@ -11978,16 +11862,16 @@ namespace AstroLibMethods
                 error = "not coplanar";
             }
 
-            /* ---------------- or don't continue processing ---------------- */
+            // ---------------- or don't continue processing ------------------
             MathTimeLibr.addvec3(1.0, p, 1.0, q, 1.0, w, out d);
             MathTimeLibr.addvec3(magr1, p, magr2, q, MathTimeLibr.mag(r3), w, out n);
             nn = MathTimeLibr.norm(n);
             dn = MathTimeLibr.norm(d);
 
-            /* ----------------------------------------------------------------
-            *  determine if the orbit is possible.  both d and n must be in
-            *    the same direction, and non-zero.
-            ----------------------------------------------------------------- */
+            // ----------------------------------------------------------------
+            //  determine if the orbit is possible.  both d and n must be in
+            //    the same direction, and non-zero.
+            // ------------------------------------------------------------------
             if ((Math.Abs(MathTimeLibr.mag(d)) < small) || (Math.Abs(MathTimeLibr.mag(n)) < small) ||
                 (Math.Abs(MathTimeLibr.dot(nn, dn)) < small))
             {
@@ -11998,7 +11882,7 @@ namespace AstroLibMethods
                 theta = MathTimeLibr.angle(r1, r2);
                 theta1 = MathTimeLibr.angle(r2, r3);
 
-                /* ------------ perform gibbs method to find v2 ----------- */
+                // ------------ perform gibbs method to find v2 -------------
                 r1mr2 = magr1 - magr2;
                 r3mr1 = MathTimeLibr.mag(r3) - magr1;
                 r2mr3 = magr2 - MathTimeLibr.mag(r3);
@@ -12008,77 +11892,57 @@ namespace AstroLibMethods
                 tover2 = l / magr2;
                 MathTimeLibr.addvec(tover2, b, l, s, out v2);
             }
-            /*
-            if (((show == 'y') || (show == 's')) && (strcmp(error, "ok") == 0))
-            if (fileout != null)
-            {
-            fprintf(fileout, "%16s %9.3f %9.3f %9.3f\n",
-            "p vector = ", p[1], p[2], p[3]);
-            fprintf(fileout, "%16s %9.3f %9.3f %9.3f\n",
-            "q vector = ", q[1], q[2], q[3]);
-            fprintf(fileout, "%16s %9.3f %9.3f %9.3f\n",
-            "w vector = ", w[1], w[2], w[3]);
-            fprintf(fileout, "%16s %9.3f %9.3f %9.3f\n",
-            "n vector = ", n[1], n[2], n[3]);
-            fprintf(fileout, "%16s %9.3f %9.3f %9.3f\n",
-            "d vector = ", d[1], d[2], d[3]);
-            fprintf(fileout, "%16s %9.3f %9.3f %9.3f\n",
-            "s vector = ", s[1], s[2], s[3]);
-            fprintf(fileout, "%16s %9.3f %9.3f %9.3f\n",
-            "b vector = ", b[1], b[2], b[3]);
-            }
-            */
         }  // gibbs
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure herrgibbs
-        *
-        *  this procedure implements the herrick-gibbs approximation for orbit
-        *    determination, and finds the middle velocity vector for the 3 given
-        *    position vectors.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                             range / units
-        *    r1          -  position vector #1                         km
-        *    r2          -  position vector #2                         km
-        *    r3          -  position vector #3                         km
-        *    jd1         - julian date of 1st sighting                days from 4713 bc
-        *    jd2         - julian date of 2nd sighting                days from 4713 bc
-        *    jd3         - julian date of 3rd sighting                days from 4713 bc
-        *
-        *  outputs       :
-        *    v2          -  velocity vector for r2                     km / s
-        *    theta       - angle between vectors                       rad
-        *    error       - flag indicating success                     'ok',...
-        *
-        *  locals        :
-        *    dt21        - time delta between r1 and r2                s
-        *    dt31        - time delta between r3 and r1                s
-        *    dt32        - time delta between r3 and r2                s
-        *    p           - p vector    r2 x r3
-        *    pn          - p unit vector
-        *    r1n         - r1 unit vector
-        *    theta1      - temporary angle between vec                 rad
-        *    tolangle    - tolerance angle  (1 deg)                    rad
-        *    term1       - 1st term for hgibbs expansion
-        *    term2       - 2nd term for hgibbs expansion
-        *    term3       - 3rd term for hgibbs expansion
-        *    i           - index
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *    cross       - cross product of two vectors
-        *    dot         - dot product of two vectors
-        *    arcsin      - arc sine function
-        *    norm        - creates a unit vector
-        *    angle       - angle between two vectors
-        *
-        *  references    :
-        *    vallado       2013, 466, alg 55, ex 7-4
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure herrgibbs
+        //
+        //  this procedure implements the herrick-gibbs approximation for orbit
+        //    determination, and finds the middle velocity vector for the 3 given
+        //    position vectors.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    r1          -  position vector #1                         km
+        //    r2          -  position vector #2                         km
+        //    r3          -  position vector #3                         km
+        //    jd1         - julian date of 1st sighting                days from 4713 bc
+        //    jd2         - julian date of 2nd sighting                days from 4713 bc
+        //    jd3         - julian date of 3rd sighting                days from 4713 bc
+        //
+        //  outputs       :
+        //    v2          -  velocity vector for r2                     km / s
+        //    theta       - angle between vectors                       rad
+        //    error       - flag indicating success                     'ok',...
+        //
+        //  locals        :
+        //    dt21        - time delta between r1 and r2                s
+        //    dt31        - time delta between r3 and r1                s
+        //    dt32        - time delta between r3 and r2                s
+        //    p           - p vector    r2 x r3
+        //    pn          - p unit vector
+        //    r1n         - r1 unit vector
+        //    theta1      - temporary angle between vec                 rad
+        //    tolangle    - tolerance angle  (1 deg)                    rad
+        //    term1       - 1st term for hgibbs expansion
+        //    term2       - 2nd term for hgibbs expansion
+        //    term3       - 3rd term for hgibbs expansion
+        //    i           - index
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //    cross       - cross product of two vectors
+        //    dot         - dot product of two vectors
+        //    arcsin      - arc sine function
+        //    norm        - creates a unit vector
+        //    angle       - angle between two vectors
+        //
+        //  references    :
+        //    vallado       2013, 466, alg 55, ex 7-4
+        // ----------------------------------------------------------------------------*/
 
         public void herrgibbs
         (
@@ -12090,7 +11954,7 @@ namespace AstroLibMethods
             double dt21, dt31, dt32, term1, term2, term3, tolangle, magr1, magr2;
             v2 = new double[] { 0.0, 0.0, 0.0 };
 
-            /* --------------------  initialize values   -------------------- */
+            // --------------------  initialize values    // ---------------------
             tolangle = 0.017452406;  // (1.0 deg in rad)
 
             magr1 = MathTimeLibr.mag(r1);
@@ -12105,9 +11969,9 @@ namespace AstroLibMethods
             dt31 = (jd3 - jd1) * 86400.0;   // differences in times
             dt32 = (jd3 - jd2) * 86400.0;
 
-            /* ----------------------------------------------------------------
-            *  determine if the vectors are coplanar.
-            ---------------------------------------------------------------- */
+            // ----------------------------------------------------------------
+            //  determine if the vectors are coplanar.
+            // -----------------------------------------------------------------
             MathTimeLibr.cross(r2, r3, out p);
             pn = MathTimeLibr.norm(p);
             r1n = MathTimeLibr.norm(r1);
@@ -12117,11 +11981,11 @@ namespace AstroLibMethods
                 error = "not coplanar";
             }
 
-            /* ----------------------------------------------------------------
-            * check the size of the angles between the three position vectors.
-            *   herrick gibbs only gives "reasonable" answers when the
-            *   position vectors are reasonably close.  1.0 deg is only an estimate.
-            ---------------------------------------------------------------- */
+            // ----------------------------------------------------------------
+            // check the size of the angles between the three position vectors.
+            //   herrick gibbs only gives "reasonable" answers when the
+            //   position vectors are reasonably close.  1.0 deg is only an estimate.
+            // -----------------------------------------------------------------
             theta = MathTimeLibr.angle(r1, r2);
             theta1 = MathTimeLibr.angle(r2, r3);
             if ((theta > tolangle) || (theta1 > tolangle))
@@ -12129,7 +11993,7 @@ namespace AstroLibMethods
                 error = "angle > 1 deg";
             }
 
-            /* ------------ perform herrick-gibbs method to find v2 --------- */
+            // ------------ perform herrick-gibbs method to find v2 -----------
             term1 = -dt32 *
                 (1.0 / (dt21 * dt31) + gravConst.mu / (12.0 * magr1 * magr1 * magr1));
             term2 = (dt32 - dt21) *
@@ -12140,49 +12004,49 @@ namespace AstroLibMethods
         }  // herrgibbs
 
 
-        /*------------------------------------------------------------------------------
-        *
-        *                           procedure target
-        *
-        *  this procedure accomplishes the targeting problem using kepler/pkepler and
-        *    lambert.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jun 2002
-        *
-        *  inputs          description                             range / units
-        *    rint        - initial position vector of int             er
-        *    vint        - initial velocity vector of int             er/tu
-        *    rtgt        - initial position vector of tgt             er
-        *    vtgt        - initial velocity vector of tgt             er/tu
-        *    dm          - direction of motion                        'L','S'
-        *    de          - direction of energy                        'L', 'H'
-        *    kind        - type of propagator                         'k','p'
-        *    dtsec        - time of flight to the int                  tu
-        *
-        *  outputs       :
-        *    v1t         - initial transfer velocity vec              er/tu
-        *    v2t         - final transfer velocity vec                er/tu
-        *    dv1         - initial change velocity vec                er/tu
-        *    dv2         - final change velocity vec                  er/tu
-        *    error       - error flag from gauss                      'ok', ...
-        *
-        *  locals        :
-        *    transnormal - cross product of trans orbit                er
-        *    intnormal   - cross product of int orbit                 er
-        *    r1tgt       - position vector after dt, tgt              er
-        *    v1tgt       - velocity vector after dt, tgt              er/tu
-        *    rirt        - rint[4] * r1tgt[4]
-        *    cosdeltanu  - cosine of deltanu                          rad
-        *    sindeltanu  - sine of deltanu                            rad
-        *    deltanu     - angle between position vectors             rad
-        *
-        *  coupling      :
-        *    kepler      - find r2 and v2 at future time
-        *    lambertuniv - find velocity vectors at each end of transfer
-        *
-        *  references    :
-        *    vallado       2013, 503, alg 61
-        -----------------------------------------------------------------------------*/
+        //  ------------------------------------------------------------------------------
+        //
+        //                           procedure target
+        //
+        //  this procedure accomplishes the targeting problem using kepler/pkepler and
+        //    lambert.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    rint        - initial position vector of int             er
+        //    vint        - initial velocity vector of int             er/tu
+        //    rtgt        - initial position vector of tgt             er
+        //    vtgt        - initial velocity vector of tgt             er/tu
+        //    dm          - direction of motion                        'L','S'
+        //    de          - direction of energy                        'L', 'H'
+        //    kind        - type of propagator                         'k','p'
+        //    dtsec        - time of flight to the int                  tu
+        //
+        //  outputs       :
+        //    v1t         - initial transfer velocity vec              er/tu
+        //    v2t         - final transfer velocity vec                er/tu
+        //    dv1         - initial change velocity vec                er/tu
+        //    dv2         - final change velocity vec                  er/tu
+        //    error       - error flag from gauss                      'ok', ...
+        //
+        //  locals        :
+        //    transnormal - cross product of trans orbit                er
+        //    intnormal   - cross product of int orbit                 er
+        //    r1tgt       - position vector after dt, tgt              er
+        //    v1tgt       - velocity vector after dt, tgt              er/tu
+        //    rirt        - rint[4] * r1tgt[4]
+        //    cosdeltanu  - cosine of deltanu                          rad
+        //    sindeltanu  - sine of deltanu                            rad
+        //    deltanu     - angle between position vectors             rad
+        //
+        //  coupling      :
+        //    kepler      - find r2 and v2 at future time
+        //    lambertuniv - find velocity vectors at each end of transfer
+        //
+        //  references    :
+        //    vallado       2013, 503, alg 61
+        // ----------------------------------------------------------------------------*/
 
         public void target
         (
@@ -12200,7 +12064,7 @@ namespace AstroLibMethods
 
             //    int err = fopen_s(&outfile, "D:/Codes/LIBRARY/CPP/Libraries/ast2Body/test2body.out", "w");
 
-            /* ----------- propagate target forward in time ----------------- */
+            // ----------- propagate target forward in time -------------------
             switch (kind)
             {
                 case 'k':
@@ -12214,7 +12078,7 @@ namespace AstroLibMethods
                     break;
             }
 
-            /* ----------- calculate transfer orbit between r2's ------------- */
+            // ----------- calculate transfer orbit between r2's ---------------
             //           if (error.Equals("ok"))
             {
                 //        lambertuniv(rint, r1tgt, dm, de, nrev, dtsec, tbi, altpad, out v1t, out v2t, out hitearth, out error);
@@ -12231,49 +12095,45 @@ namespace AstroLibMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function initjplde
-        *
-        *  this function initializes the jpl planetary ephemeris data. the input
-        *  data files are from processing the ascii files into a text file of sun
-        *  and moon positions, generated by FOR code and the JPL DE files.
-        *
-        *  author        : david vallado           davallado@gmail.com   22 jan 2018
-        *
-        *  revisions
-        *
-        *  inputs          description                           range / units
-        *    jplLoc      - location for jpl data file  
-        *    infilename  - file name
-        *
-        *  outputs       :
-        *    jpldearr    - array of jplde data records
-        *    jdjpldestart- julian date of the start of the jpldearr data
-        *    jdfjpldestart- julian date fraction of the start of the jpldearr data
-        *
-        *  locals        :
-        *                -
-        *
-        *  coupling      :
-        *
-        *  references    :
-        *
-        *  -------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function readjplde
+        //
+        //  this function initializes the jpl planetary ephemeris data. the input
+        //  data files are from processing the ascii files into a text file of sun
+        //  and moon positions, generated by FOR code and the JPL DE files.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jplLoc      - location for jpl data file  
+        //    infilename  - file name
+        //
+        //  outputs       :
+        //    jpldearr    - array of jplde data records
+        //    jdjpldestart- julian date of the start of the jpldearr data
+        //    jdfjpldestart- julian date fraction of the start of the jpldearr data
+        //
+        //  locals        :
+        //                -
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //
+        //  ----------------------------------------------------------------------------
 
-        public void initjplde
+        public void readjplde
             (
             ref jpldedataClass[] jpldearr,
             string jplLoc,
-            string infilename,
-            out double jdjpldestart, out double jdfjpldestart
+            string infilename
             )
         {
             double jdtdb, jdtdbf;
+            Int32 year, mon, day, hr;
             string patternd, patternh;
             Int32 i;
-            jdjpldestart = 0.0;
-            jdfjpldestart = 0.0;
 
             // read the whole file at once into lines of an array
             string[] fileData = File.ReadAllLines(jplLoc + infilename);
@@ -12304,7 +12164,7 @@ namespace AstroLibMethods
                 if (dayorhr == 'd')
                 {
                     linedata = Regex.Split(fileData[i], patternd);
-                    jpldearr[i].hr = 0;
+                    hr = 0;
                     jpldearr[i].rsun[0] = Convert.ToDouble(linedata[4]);
                     jpldearr[i].rsun[1] = Convert.ToDouble(linedata[5]);
                     jpldearr[i].rsun[2] = Convert.ToDouble(linedata[6]);
@@ -12316,7 +12176,7 @@ namespace AstroLibMethods
                 else
                 {
                     linedata = Regex.Split(fileData[i], patternh);
-                    jpldearr[i].hr = Convert.ToInt32(linedata[4]);
+                    hr = Convert.ToInt32(linedata[4]);
                     jpldearr[i].rsun[0] = Convert.ToDouble(linedata[5]);
                     jpldearr[i].rsun[1] = Convert.ToDouble(linedata[6]);
                     jpldearr[i].rsun[2] = Convert.ToDouble(linedata[7]);
@@ -12326,19 +12186,12 @@ namespace AstroLibMethods
                     jpldearr[i].rmoon[2] = Convert.ToDouble(linedata[12]);
                 }
 
-                jpldearr[i].year = Convert.ToInt32(linedata[1]);
-                jpldearr[i].mon = Convert.ToInt32(linedata[2]);
-                jpldearr[i].day = Convert.ToInt32(linedata[3]);
+                year = Convert.ToInt32(linedata[1]);
+                mon = Convert.ToInt32(linedata[2]);
+                day = Convert.ToInt32(linedata[3]);
 
-                MathTimeLibr.jday(jpldearr[i].year, jpldearr[i].mon, jpldearr[i].day, jpldearr[i].hr, 0, 0.0, out jdtdb, out jdtdbf);
+                MathTimeLibr.jday(year, mon, day, hr, 0, 0.0, out jdtdb, out jdtdbf);
                 jpldearr[i].mjd = jdtdb + jdtdbf - 2400000.5;
-
-                // ---- find epoch date
-                if (i == 0)
-                {
-                    MathTimeLibr.jday(jpldearr[i].year, jpldearr[i].mon, jpldearr[i].day, jpldearr[i].hr, 0, 0.0, out jdjpldestart, out jdfjpldestart);
-                    jpldearr[i].mjd = jdjpldestart + jdfjpldestart;
-                }
             }
 
             jpldesize = i;
@@ -12346,54 +12199,53 @@ namespace AstroLibMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function findjpldeparam
-        *
-        *  this routine finds the jplde parameters for a given time. several types of
-        *  interpolation are available. the cio and iau76 nutation parameters are also
-        *  read for optimizing the speeed of calculations.
-        *
-        *  author        : david vallado               davallado@gmail.com   12 dec 2005
-        *
-        *  inputs          description                               range / units
-        *    jdtdb         - epoch julian date                     days from 4713 BC
-        *    jdtdbF        - epoch julian date fraction            day fraction from jdutc
-        *    interp        - interpolation                        n-none, l-linear, s-spline
-        *    jpldearr      - array of jplde data records
-        *    jdjpldestart  - julian date of the start of the jpldearr data (set in initjplde)
-        *
-        *  outputs       :
-        *    dut1        - delta ut1 (ut1-utc)                        sec
-        *    dat         - number of leap seconds                     sec
-        *    lod         - excess length of day                       sec
-        *    xp          - x component of polar motion                rad
-        *    yp          - y component of polar motion                rad
-        *    ddpsi       - correction to delta psi (iau-76 theory)    rad
-        *    ddeps       - correction to delta eps (iau-76 theory)    rad
-        *    dx          - correction to x (cio theory)               rad
-        *    dy          - correction to y (cio theory)               rad
-        *    x           - x component of cio                         rad
-        *    y           - y component of cio                         rad
-        *    s           -                                            rad
-        *    deltapsi    - nutation longitude angle                   rad
-        *    deltaeps    - obliquity of the ecliptic correction       rad
-        *
-        *  locals        :
-        *                -
-        *
-        *  coupling      :
-        *    none        -
-        *
-        *  references    :
-        *    vallado       2013,
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function findjpldeparam
+        //
+        //  this routine finds the jplde parameters for a given time. several types of
+        //  interpolation are available. the cio and iau76 nutation parameters are also
+        //  read for optimizing the speeed of calculations.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jdtdb         - epoch julian date                     days from 4713 BC
+        //    jdtdbF        - epoch julian date fraction            day fraction from jdutc
+        //    interp        - interpolation                        n-none, l-linear, s-spline
+        //    jpldearr      - array of jplde data records
+        //    jdjpldestart  - julian date of the start of the jpldearr data (set in initjplde)
+        //
+        //  outputs       :
+        //    dut1        - delta ut1 (ut1-utc)                        sec
+        //    dat         - number of leap seconds                     sec
+        //    lod         - excess length of day                       sec
+        //    xp          - x component of polar motion                rad
+        //    yp          - y component of polar motion                rad
+        //    ddpsi       - correction to delta psi (iau-76 theory)    rad
+        //    ddeps       - correction to delta eps (iau-76 theory)    rad
+        //    dx          - correction to x (cio theory)               rad
+        //    dy          - correction to y (cio theory)               rad
+        //    x           - x component of cio                         rad
+        //    y           - y component of cio                         rad
+        //    s           -                                            rad
+        //    deltapsi    - nutation longitude angle                   rad
+        //    deltaeps    - obliquity of the ecliptic correction       rad
+        //
+        //  locals        :
+        //                -
+        //
+        //  coupling      :
+        //    none        -
+        //
+        //  references    :
+        //    vallado       2013,
+        // -----------------------------------------------------------------------------
 
         public void findjpldeparam
             (
             double jdtdb, double jdtdbF, char interp,
             jpldedataClass[] jpldearr,
-            double jdjpldestart,
             out double[] rsun, out double rsmag,
             out double[] rmoon, out double rmmag
         )
@@ -12418,7 +12270,7 @@ namespace AstroLibMethods
             //printf("jdtdb %lf  %lf  %lf  %lf \n ", jdtdb, jdtdbF, jdb, mfme);x[recnum]
 
             // ---- read data for day of interest
-            jdjpldestarto = Math.Floor(jdtdb + jdtdbF - jdjpldestart);
+            jdjpldestarto = Math.Floor(jdtdb + jdtdbF - 2400000.5 - jpldearr[0].mjd);
             //recnum = Convert.ToInt32(jdjpldestarto);  // for 1 day centers
             recnum = Convert.ToInt32(jdjpldestarto) * 2;  // for 12 hr centers
 
@@ -12510,57 +12362,54 @@ namespace AstroLibMethods
         }  //  findjpldeparam
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           function sunmoonjpl
-        *
-        *  this function calculates the geocentric equatorial position vector
-        *    the sun given the julian date. these are the jpl de ephemerides.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 may 2002
-        *
-        *  revisions
-        *
-        *  inputs          description                    range / units
-        *    jdtdb         - epoch julian date              days from 4713 BC
-        *    jdtdbF        - epoch julian date fraction     day fraction from jdutc
-        *    interp        - interpolation                        n-none, l-linear, s-spline
-        *    jpldearr      - array of jplde data records
-        *    jdjpldestart  - julian date of the start of the jpldearr data (set in initjplde)
-        *
-        *  outputs       :
-        *    rsun        - ijk position vector of the sun au
-        *    rtasc       - right ascension                rad
-        *    decl        - declination                    rad
-        *
-        *  locals        :
-        *    meanlong    - mean longitude
-        *    meananomaly - mean anomaly
-        *    eclplong    - ecliptic longitude
-        *    obliquity   - mean obliquity of the ecliptic
-        *    tut1        - julian centuries of ut1 from
-        *                  jan 1, 2000 12h
-        *    ttdb        - julian centuries of tdb from
-        *                  jan 1, 2000 12h
-        *    hr          - hours                          0 .. 24              10
-        *    min         - minutes                        0 .. 59              15
-        *    sec         - seconds                        0.0  .. 59.99          30.00
-        *    temp        - temporary variable
-        *    deg         - degrees
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 279, alg 29, ex 5-1
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                           function sunmoonjpl
+        //
+        //  this function calculates the geocentric equatorial position vector
+        //    the sun given the julian date. these are the jpl de ephemerides.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jdtdb         - epoch julian date              days from 4713 BC
+        //    jdtdbF        - epoch julian date fraction     day fraction from jdutc
+        //    interp        - interpolation                        n-none, l-linear, s-spline
+        //    jpldearr      - array of jplde data records
+        //    jdjpldestart  - julian date of the start of the jpldearr data (set in initjplde)
+        //
+        //  outputs       :
+        //    rsun        - ijk position vector of the sun au
+        //    rtasc       - right ascension                rad
+        //    decl        - declination                    rad
+        //
+        //  locals        :
+        //    meanlong    - mean longitude
+        //    meananomaly - mean anomaly
+        //    eclplong    - ecliptic longitude
+        //    obliquity   - mean obliquity of the ecliptic
+        //    tut1        - julian centuries of ut1 from
+        //                  jan 1, 2000 12h
+        //    ttdb        - julian centuries of tdb from
+        //                  jan 1, 2000 12h
+        //    hr          - hours                          0 .. 24              10
+        //    min         - minutes                        0 .. 59              15
+        //    sec         - seconds                        0.0  .. 59.99          30.00
+        //    temp        - temporary variable
+        //    deg         - degrees
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 279, alg 29, ex 5-1
+        // -----------------------------------------------------------------------------
 
         public void sunmoonjpl
             (
             double jdtdb, double jdtdbF,
             char interp,
             ref jpldedataClass[] jpldearr,
-            double jdjpldestart,
             out double[] rsun, out double rtascs, out double decls,
             out double[] rmoon, out double rtascm, out double declm
             )
@@ -12568,9 +12417,9 @@ namespace AstroLibMethods
             double rsmag, rmmag, temp;
             double small = 0.000001;
 
-            // -------------------------  implementation   -----------------
-            // -------------------  initialize values   --------------------
-            findjpldeparam(jdtdb, jdtdbF, interp, jpldearr, jdjpldestart, out rsun, out rsmag, out rmoon, out rmmag);
+            // -------------------------  implementation    // ----------------
+            // -------------------  initialize values    // -------------------
+            findjpldeparam(jdtdb, jdtdbF, interp, jpldearr, out rsun, out rsmag, out rmoon, out rmmag);
 
             temp = Math.Sqrt(rsun[0] * rsun[0] + rsun[1] * rsun[1]);
             if (temp < small)
@@ -12591,52 +12440,49 @@ namespace AstroLibMethods
 
 
 
-        /* ------------------------------------------------------------------------------
-        *
-        *                           function sun
-        *
-        *  this function calculates the geocentric equatorial position vector
-        *    the sun given the julian date. Sergey K (2022) has noted that improved results 
-        *    are found assuming the oputput is in a precessing frame (TEME) and converting to ICRF. 
-        *    this is the low precision formula and is valid for years from 1950 to 2050.  
-        *    accuaracy of apparent coordinates is about 0.01 degrees.  notice many of 
-        *    the calculations are performed in degrees, and are not changed until later.  
-        *    this is due to the fact that the almanac uses degrees exclusively in their formulations.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 may 2002
-        *
-        *  revisions
-        *    vallado     - fix mean lon of sun                            7 may 2004
-        *  
-        *  inputs          description                         range / units
-        *    jd          - julian date  (UTC)                       days from 4713 bc
-        *
-        *  outputs       :
-        *    rsun        - inertial position vector of the sun      au
-        *    rtasc       - right ascension                          rad
-        *    decl        - declination                              rad
-        *
-        *  locals        :
-        *    meanlong    - mean longitude
-        *    meananomaly - mean anomaly
-        *    eclplong    - ecliptic longitude
-        *    obliquity   - mean obliquity of the ecliptic
-        *    tut1        - julian centuries of ut1 from
-        *                  jan 1, 2000 12h
-        *    ttdb        - julian centuries of tdb from
-        *                  jan 1, 2000 12h
-        *    hr          - hours                                    0 .. 24              10
-        *    min         - minutes                                  0 .. 59              15
-        *    sec         - seconds                                  0.0  .. 59.99          30.00
-        *    temp        - temporary variable
-        *    deg         - degrees
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 279, alg 29, ex 5-1
-        * --------------------------------------------------------------------------- */
+        // ------------------------------------------------------------------------------
+        //
+        //                           function sun
+        //
+        //  this function calculates the geocentric equatorial position vector
+        //    the sun given the julian date. Sergey K (2022) has noted that improved results 
+        //    are found assuming the oputput is in a precessing frame (TEME) and converting to ICRF. 
+        //    this is the low precision formula and is valid for years from 1950 to 2050.  
+        //    accuaracy of apparent coordinates is about 0.01 degrees.  notice many of 
+        //    the calculations are performed in degrees, and are not changed until later.  
+        //    this is due to the fact that the almanac uses degrees exclusively in their formulations.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jd          - julian date  (UTC)                       days from 4713 bc
+        //
+        //  outputs       :
+        //    rsun        - inertial position vector of the sun      au
+        //    rtasc       - right ascension                          rad
+        //    decl        - declination                              rad
+        //
+        //  locals        :
+        //    meanlong    - mean longitude
+        //    meananomaly - mean anomaly
+        //    eclplong    - ecliptic longitude
+        //    obliquity   - mean obliquity of the ecliptic
+        //    tut1        - julian centuries of ut1 from
+        //                  jan 1, 2000 12h
+        //    ttdb        - julian centuries of tdb from
+        //                  jan 1, 2000 12h
+        //    hr          - hours                                    0 .. 24              10
+        //    min         - minutes                                  0 .. 59              15
+        //    sec         - seconds                                  0.0  .. 59.99          30.00
+        //    temp        - temporary variable
+        //    deg         - degrees
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 279, alg 29, ex 5-1
+        // -----------------------------------------------------------------------------
 
         public void sun
                     (
@@ -12653,8 +12499,8 @@ namespace AstroLibMethods
             twopi = 2.0 * Math.PI;
             deg2rad = Math.PI / 180.0;
 
-            // -------------------------  implementation   -----------------
-            // -------------------  initialize values   --------------------
+            // -------------------------  implementation    // ----------------
+            // -------------------  initialize values    // -------------------
             tut1 = (jd - 2451545.0) / 36525.0;
 
             meanlong = 280.460 + 36000.77 * tut1;
@@ -12701,46 +12547,43 @@ namespace AstroLibMethods
         }  // sun
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function moon
-        *
-        *  this function calculates the geocentric equatorial (ijk) position vector
-        *    for the moon given the julian date.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 may 2002
-        *
-        *  revisions
-        *                -
-        *
-        *  inputs          description                             range / units
-        *    jd          - julian date                              days from 4713 bc
-        *
-        *  outputs       :
-        *    rmoon       - ijk position vector of moon              km
-        *    rtasc       - right ascension                          rad
-        *    decl        - declination                              rad
-        *
-        *  locals        :
-        *    eclplong    - ecliptic longitude
-        *    eclplat     - eclpitic latitude
-        *    hzparal     - horizontal parallax
-        *    l           - geocentric direction Math.Cosines
-        *    m           -             "     "
-        *    n           -             "     "
-        *    ttdb        - julian centuries of tdb from
-        *                  jan 1, 2000 12h
-        *    hr          - hours                                    0 .. 24
-        *    min         - minutes                                  0 .. 59
-        *    sec         - seconds                                  0.0  .. 59.99
-        *    deg         - degrees
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 288, alg 31, ex 5-3
-        * --------------------------------------------------------------------------- */
+        // -----------------------------------------------------------------------------
+        //
+        //                           function moon
+        //
+        //  this function calculates the geocentric equatorial (ijk) position vector
+        //    for the moon given the julian date.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jd          - julian date                              days from 4713 bc
+        //
+        //  outputs       :
+        //    rmoon       - ijk position vector of moon              km
+        //    rtasc       - right ascension                          rad
+        //    decl        - declination                              rad
+        //
+        //  locals        :
+        //    eclplong    - ecliptic longitude
+        //    eclplat     - eclpitic latitude
+        //    hzparal     - horizontal parallax
+        //    l           - geocentric direction Math.Cosines
+        //    m           -             "     "
+        //    n           -             "     "
+        //    ttdb        - julian centuries of tdb from
+        //                  jan 1, 2000 12h
+        //    hr          - hours                                    0 .. 24
+        //    min         - minutes                                  0 .. 59
+        //    sec         - seconds                                  0.0  .. 59.99
+        //    deg         - degrees
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 288, alg 31, ex 5-3
+        // -----------------------------------------------------------------------------
 
         public void moon
             (
@@ -12756,7 +12599,7 @@ namespace AstroLibMethods
             twopi = 2.0 * Math.PI;
             deg2rad = Math.PI / 180.0;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             ttdb = (jd - 2451545.0) / 36525.0;
 
             eclplong = 218.32 + 481267.8813 * ttdb
@@ -12772,8 +12615,7 @@ namespace AstroLibMethods
                         - 0.28 * Math.Sin((318.3 + 6003.18 * ttdb) * deg2rad)
                         - 0.17 * Math.Sin((217.6 - 407332.20 * ttdb) * deg2rad);      // deg
 
-            hzparal = 0.9508 + 0.0518 * Math.Cos((134.9 + 477198.85 * ttdb)
-                       * deg2rad)
+            hzparal = 0.9508 + 0.0518 * Math.Cos((134.9 + 477198.85 * ttdb) * deg2rad)
                       + 0.0095 * Math.Cos((259.2 - 413335.38 * ttdb) * deg2rad)
                       + 0.0078 * Math.Cos((235.7 + 890534.23 * ttdb) * deg2rad)
                       + 0.0028 * Math.Cos((269.9 + 954397.70 * ttdb) * deg2rad);    // deg
@@ -12803,43 +12645,43 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function InitGravityField
-        *
-        *  this function reads and stores the gravity field coefficients. the routine is 
-        *  can process either un-normalized or normalized coefficients. it's important to 
-        *  set the normal parameter correctly as the gravData will contain c,s, or cNor, sNor 
-        *  as needed. this should help minimize confusion with future use. because large 
-        *  (>170) gravity fields cause normalization  problems, it's preferable to use 
-        *  normalized gravity fields but you must also use a recursion that normalizes the
-        *  legendre functions. arrays are dimensioned from 0 because L,m go from 0. this may 
-        *  cause difficulties in FOR, Matlab and languages that don't permit 0 array indices.
-        *      
-        *  author        : david vallado             davallado@gmail.com        5 aug 2024
-        *
-        *  inputs        description                                          range / units
-        *    fname       - filename for gravity field      
-        *    normalized  - normalized or unnormalized                           'y', 'n'                        
-        *    startKtr    - first line of ata in the gravity file                0, 1, ...
-        *
-        *  outputs       :
-        *    order       - size of gravity field                                1..2160..
-        *    gravData    - structure containing the gravity field coefficients, 
-        *                  radius of the Earth, and gravitational parameter
-        *
-        *  locals :
-        *    L, m        - degree and order indices
-        *    ktr         - starting line of data in each gravity file
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references :
-        *    vallado       2022, 550-551
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function readGravityField
+        //
+        //  this function reads and stores the gravity field coefficients. the routine is 
+        //  can process either un-normalized or normalized coefficients. it's important to 
+        //  set the normal parameter correctly as the gravData will contain c,s, or cNor, sNor 
+        //  as needed. this should help minimize confusion with future use. because large 
+        //  (>170) gravity fields cause normalization  problems, it's preferable to use 
+        //  normalized gravity fields but you must also use a recursion that normalizes the
+        //  legendre functions. arrays are dimensioned from 0 because L,m go from 0. this may 
+        //  cause difficulties in FOR, Matlab and languages that don't permit 0 array indices.
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    fname       - filename for gravity field      
+        //    normalized  - normalized or unnormalized                           'y', 'n'                        
+        //    startKtr    - first line of ata in the gravity file                0, 1, ...
+        //
+        //  outputs       :
+        //    order       - size of gravity field                                1..2160..
+        //    gravData    - structure containing the gravity field coefficients, 
+        //                  radius of the Earth, and gravitational parameter
+        //
+        //  locals :
+        //    L, m        - degree and order indices
+        //    ktr         - starting line of data in each gravity file
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references :
+        //    vallado       2022, 550-551
+        // ----------------------------------------------------------------------------
 
-        public void initGravityField
+        public void readGravityField
             (
                 string fname,
                 char normalized,
@@ -12851,7 +12693,6 @@ namespace AstroLibMethods
             Int32 maxsizeGravField = 2500;
             Int32 L, m, ktr, begincol;
             string line, line1;
-            double conv;
             L = 0;
 
             gravData = new gravityConst();
@@ -12914,43 +12755,41 @@ namespace AstroLibMethods
             else
                 order = L;
 
-        } // initGravityField
+        } // readGravityField
 
 
 
-
-
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function LegPolyGTDS
-        *
-        *   this function finds the unnormalized and normalized Legendre polynomials for the 
-        *   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
-        *   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 greater  
-        *   as they start at 1. these functions are valid for normalized and unnormalized expressions, 
-        *   up to degree and order ~170. larger gravity fields should use alternate formulations
-        *   designed for larger gravity fields. this is the GTDS approach. 
-        *      
-        *  author        : david vallado             davallado@gmail.com        5 aug 2024
-        *
-        *  inputs        description                                          range / units
-        *    latgc       - geocentric lat of satellite, not nadir point         -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                                1..~170
-        *    normalized  - normalized or unnormalized                           'y', 'n'                        
-        *
-        *  outputs       :
-        *    LegArrGU    - array of un normalized Legendre polynomials, gtds
-        *    LegArrGN    - array of normalized Legendre polynomials, gtds
-        *
-        *  locals :
-        *    L,m         - degree and order indices
-        *
-        *  coupling      :
-        *   none
-        *
-        *  references :
-        *    vallado       2022, 500, Eq 8-56
-          ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function LegPolyGTDS
+        //
+        //   this function finds the unnormalized and normalized Legendre polynomials for the 
+        //   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
+        //   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 greater  
+        //   as they start at 1. these functions are valid for normalized and unnormalized expressions, 
+        //   up to degree and order ~170. larger gravity fields should use alternate formulations
+        //   designed for larger gravity fields. this is the GTDS approach. 
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    latgc       - geocentric lat of satellite, not nadir point         -pi/2 to pi/2 rad          
+        //    order       - size of gravity field                                1..~170
+        //    normalized  - normalized or unnormalized                           'y', 'n'                        
+        //
+        //  outputs       :
+        //    LegArrGU    - array of un normalized Legendre polynomials, gtds
+        //    LegArrGN    - array of normalized Legendre polynomials, gtds
+        //
+        //  locals :
+        //    L,m         - degree and order indices
+        //
+        //  coupling      :
+        //   none
+        //
+        //  references :
+        //    vallado       2022, 500, Eq 8-56
+        // ---------------------------------------------------------------------------*/
 
         public void LegPolyGTDS
            (
@@ -13022,38 +12861,38 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function LegPolyMont
-         *
-         *   this function finds the unnormalized and normalized Legendre polynomials for the 
-         *   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
-         *   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 
-         *   greater as they start at 1. note that some recursions at high degree tesseral terms 
-         *   experience error for resonant orbits. these are valid for normalized and 
-         *   unnormalized expressions. for satellite operations, orders up to about 120 are valid. 
-         *   this is the montenbruck formulation. 
-         *      
-         *  author        : david vallado             davallado@gmail.com       5 aug 2024
-         *
-         *  inputs        description                                           range / units
-         *    latgc       - geocentric lat of satellite, not nadir point          -pi/2 to pi/2 rad          
-         *    order       - size of gravity field                                 1..~170
-         *    normalized  - normalized or unnormalized                            'y', 'n'                        
-         *
-         *  outputs       :
-         *    LegArrMU    - array of unnormalized Legendre polynomials, montenbruck
-         *    LegArrMN    - array of normalized Legendre polynomials, montenbruck
-         *
-         *  locals :
-         *    L,m         - degree and order indices
-         *
-         *  coupling      :
-         *   none
-         *
-         *  references :
-         *    vallado       2022, 600
-           ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function LegPolyMont
+        //
+        //   this function finds the unnormalized and normalized Legendre polynomials for the 
+        //   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
+        //   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 
+        //   greater as they start at 1. note that some recursions at high degree tesseral terms 
+        //   experience error for resonant orbits. these are valid for normalized and 
+        //   unnormalized expressions. for satellite operations, orders up to about 120 are valid. 
+        //   this is the montenbruck formulation. 
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    latgc       - geocentric lat of satellite, not nadir point          -pi/2 to pi/2 rad          
+        //    order       - size of gravity field                                 1..~170
+        //    normalized  - normalized or unnormalized                            'y', 'n'                        
+        //
+        //  outputs       :
+        //    LegArrMU    - array of unnormalized Legendre polynomials, montenbruck
+        //    LegArrMN    - array of normalized Legendre polynomials, montenbruck
+        //
+        //  locals :
+        //    L,m         - degree and order indices
+        //
+        //  coupling      :
+        //   none
+        //
+        //  references :
+        //    vallado       2022, 600
+        // ---------------------------------------------------------------------------*/
 
         public void LegPolyMont
            (
@@ -13127,37 +12966,37 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function LegPolyGottN
-        *
-        *   this function finds the portions of the legendre functions and associated legendre 
-        *   functions for the gravity field using the constant portion from the normalized Gottlieb 
-        *   approach. the arrays are indexed from 0 to coincide with the usual nomenclature 
-        *   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 
-        *   greater as they start at 1. note that this formulation is able to handle degree 
-        *   and order terms larger than 170 due to the formulation. note these will not match 
-        *   hand calculations because they do not have the latgc term which is added later in 
-        *   the recursions. these functions can be found one time.
-        *      
-        *  author        : david vallado             davallado@gmail.com           3 sep 2024
-        *
-        *  inputs        description                                             range / units
-        *    order       - size of gravity field                                   1..~170
-        *
-        *  outputs       :
-        *    LegArrNorm  - array of normalized Legendre polynomials, constant portion
-        *
-        *  locals :
-        *    L,m         - degree and order indices
-        *
-        *  coupling      :
-        *   none
-        *
-        *  references :
-        *    eckman, brown, adamo 2016 paper and code in matlab
-        *    vallado       2022, 600, Eq 8-56
-          ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function LegPolyGottN
+        //
+        //   this function finds the portions of the legendre functions and associated legendre 
+        //   functions for the gravity field using the constant portion from the normalized Gottlieb 
+        //   approach. the arrays are indexed from 0 to coincide with the usual nomenclature 
+        //   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 
+        //   greater as they start at 1. note that this formulation is able to handle degree 
+        //   and order terms larger than 170 due to the formulation. note these will not match 
+        //   hand calculations because they do not have the latgc term which is added later in 
+        //   the recursions. these functions can be found one time.
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    order       - size of gravity field                                   1..~170
+        //
+        //  outputs       :
+        //    LegArrNorm  - array of normalized Legendre polynomials, constant portion
+        //
+        //  locals :
+        //    L,m         - degree and order indices
+        //
+        //  coupling      :
+        //   none
+        //
+        //  references :
+        //    eckman, brown, adamo 2016 paper and code in matlab
+        //    vallado       2022, 600, Eq 8-56
+        // ---------------------------------------------------------------------------*/
 
         public void LegPolyGottN
            (
@@ -13191,7 +13030,7 @@ namespace AstroLibMethods
                 for (m = 1; m < L; m++) // m = 1:L 
                 {
                     norm1m[L, m] = Math.Sqrt((L - m) * (2.0 * L + 1.0) / ((L + m) * (2.0 * L - 1.0)));    // eq 3-4 
-                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1.0) / 
+                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1.0) /
                         ((L + m) * (L + m - 1.0) * (2.0 * L - 3.0)));   // eq 3-5 
                     normn1[L, m] = Math.Sqrt((L + m + 1.0) * (L - m));    // part of eq 3-9 
                 }
@@ -13201,452 +13040,32 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *                                   alfsx
-        *
-        *  return a one-dimensional array for the diagonal elements (Pl,l) (sectoral) of 
-        *  the fully normalized ALFs for a given order in X-numbers. it is needed before 
-        *  a call to alfmx. results in a 1d array for speed. 
-        *  
-        *    coslatgc - Math.Sin(latgc)
-        *    mx       - order
-        *    normArr  - precomputed alm, blm, dm conversions
-        *               dm = sqrt((2L + 1) / (2L))
-        *    ps       - Legendre function 1d array x, xnumber
-        *    ips      - Legendre function 1d array ix, xnumber
-        *    
-        *    Fukushima 2012a table 9
-        ------------------------------------------------------------------------------ */
-
-        public void alfsx
-            (
-            double coslatgc,
-            Int32 mx,
-            double[,,] normArr,
-            out double[] ps,
-            out Int32[] ips
-            )
-        {
-            ps = new double[mx + 2];
-            ips = new Int32[mx + 2];
-
-            Int32 IND = 960;
-            double x, y;
-            Int32 m, ix;
-            double BIG = Math.Pow(2, IND);
-            double BIGI = Math.Pow(2, -IND);
-            double BIGS = Math.Pow(2, IND / 2);
-            double BIGSI = Math.Pow(2, -IND / 2);
-            double ROOT3 = 1.7320508075688773;
-
-            // initialize
-            ps[0] = 1.0;
-
-            x = ROOT3 * coslatgc;
-            ix = 0;
-            ps[1] = x;
-            ips[1] = ix;
-            for (m = 2; m <= mx; m++)
-            {
-                x = (normArr[m, m, 4] * coslatgc) * x;
-                y = Math.Abs(x);
-                if (y >= BIGS)
-                {
-                    x = x * BIGI;
-                    ix = ix + 1;
-                }
-                else if (y < BIGSI)
-                {
-                    x = x * BIG;
-                    ix = ix - 1;
-                }
-                ps[m] = x;
-                ips[m] = ix;
-            }
-        }  // alfsx
-
-
-
-        /* ----------------------------------------------------------------------------
-        *                                   alfmx
-        *
-        *  return a one-dimensional array (column) of the fully normalized ALFs for a 
-        *  given order (m) using X-numbers. the psm ipsm are initial single diagonal (sectoral) 
-        *  values. Returns a 1d array for speed. 
-        *  
-        *    t      - Math.Sin(latgc)
-        *    m      - order, the col you want to find
-        *    nx     - max order
-        *    normArr  - precomputed alm, blm conversions
-        *    psm    - Legendre function x, xnumber of order (col) m diagonal term
-        *    ipsm   - Legendre function ix, xnumber of order (col) m diagonal term
-        *    
-        *    pm     - normalized Legendre function array
-        *    
-        *    Fukushima 2012a table 10
-         ---------------------------------------------------------------------------- */
-
-        public void alfmx
-            (
-            double sinlatgc,
-            Int32 m,
-            Int32 nx,
-            double[,,] normArr,
-            double psm,
-            Int32 ipsm,
-            //out double[] pm
-            ref double[,] pm
-            )
-        {
-            //pm = new double[NX];
-            //pm = new double[NX+2, NX+2];
-            Int32 IND = 960;
-            double x, y, w, z;
-            Int32 id, ix, iy, iz;
-            double BIG = Math.Pow(2, IND);
-            double BIGI = Math.Pow(2, -IND);
-            double BIGS = Math.Pow(2, IND / 2);
-            double BIGSI = Math.Pow(2, -IND / 2);
-
-            // check to see if any variables are larger than the radix cutoff
-            // input diagonal term from col of interest for ex 3, 3
-            x = psm;
-            ix = ipsm;
-            if (ix == 0)
-                pm[m, m] = x;
-            else if (ix < 0)
-                pm[m, m] = x * BIGI;
-            else
-                pm[m, m] = x * BIG;
-
-            //if (m >= nx) return
-            // now calculate the inner diagonal term for ex 4, 3
-            y = x;
-            iy = ix;
-            x = (normArr[m + 1, m, 7] * sinlatgc) * y;
-            ix = iy;
-            w = Math.Abs(x);
-            if (w >= BIGS)
-            {
-                x = x * BIGI;
-                ix = ix + 1;
-            }
-            else if (w < BIGSI)
-            {
-                x = x * BIG;
-                ix = ix - 1;
-            }
-
-            if (ix == 0)
-                pm[m + 1, m] = x;
-            else if (ix < 0)
-                pm[m + 1, m] = x * BIGI;
-            else
-                pm[m + 1, m] = x * BIG;
-
-            // now remaining terms for ex 5, 3 and 6, 3
-            for (int L = m + 2; L <= nx; L++)
-            {
-                id = ix - iy;
-                if (id == 0)
-                {
-                    z = (normArr[L, m, 0] * sinlatgc) * x - normArr[L, m, 1] * y;
-                    iz = ix;
-                }
-                else if (id == 1)
-                {
-                    z = (normArr[L, m, 0] * sinlatgc) * x - normArr[L, m, 1] * (y * BIGI);
-                    iz = ix;
-                }
-                else if (id == -1)
-                {
-                    z = (normArr[L, m, 0] * sinlatgc) * (x * BIGI) - normArr[L, m, 1] * y;
-                    iz = iy;
-                }
-                else if (id > 1)
-                {
-                    z = (normArr[L, m, 0] * sinlatgc) * x;
-                    iz = ix;
-                }
-                else
-                {
-                    z = -normArr[L, m, 1] * y;
-                    iz = iy;
-                }
-
-                w = Math.Abs(z);
-                if (w >= BIGS)
-                {
-                    z = z * BIGI;
-                    iz = iz + 1;
-                }
-                else if (w < BIGSI)
-                {
-                    z = z * BIG;
-                    iz = iz - 1;
-                }
-
-                if (iz == 0)
-                    pm[L, m] = z;
-                else if (iz < 0)
-                    pm[L, m] = z * BIGI;
-                else
-                    pm[L, m] = z * BIG;
-
-                y = x;
-                iy = ix;
-                x = z;
-                ix = iz;
-            }  // for 
-
-        }  // alfmx
-
-
-        /* ----------------------------------------------------------------------------
-         *
-         *                           function LegPolyFN
-         *
-         *   this function finds the unnormalized and normalized Legendre polynomials for the 
-         *   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
-         *   (eq 8-21 in my text). fortran and matlab implementations will have indicies of 1 
-         *   greater as they start at 1. note that some recursions at high degree tesseral terms 
-         *   experience error for resonant orbits. these are valid for normalized and 
-         *   unnormalized expressions. for satellite operations, orders up to about 120 are valid. 
-         *   this is the fukushima formulation. 
-         *      
-         *  author        : david vallado             davallado@gmail.com           5 aug 2024
-         *
-         *  inputs        description                                             range / units
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-         *    order       - size of gravity field                                   1..~170
-         *
-         *  outputs       :
-         *    LegArrFN    - array of normalized Legendre polynomials, fukushima
-         *
-         *  locals :
-         *    L,m         - degree and order indices
-         *
-         *  coupling      :
-         *   none
-         *
-         *  references :
-         *    fukushima 2012a
-           ----------------------------------------------------------------------------*/
-
-        public void LegPolyFN
-           (
-               double latgc,
-               Int32 order,
-               double[,,] normArr,
-               out double[,] legarrFN
-           )
-        {
-            Int32 L, m;
-            legarrFN = new double[order + 2, order + 2];
-            double[] psm = new double[order + 2];
-            Int32[] ipsm = new Int32[order + 2];
-
-            // get diagonal terms
-            for (L = 0; L <= order; L++)
-                alfsx(Math.Cos(latgc), order, normArr, out psm, out ipsm);
-
-            // get each col for rest of matrix
-            for (m = 0; m <= order; m++)
-                alfmx(Math.Sin(latgc), m, order, normArr, psm[m], ipsm[m], ref legarrFN);
-
-        }  // LegPolyFN
-
-
-
-        /* ----------------------------------------------------------------------------
-         * GEODYN approach
-         *LEGFGL          93 / 03 / 23            0000.0    PGMR: FGL
-         *
-         * FUNCTION:  COMPUTES LEGENDRE AND ASSOCIATED LEGENDRE FUNCTIONS UP TO
-         *DEGREE N AND ORDER M, N.GE.M
-         *
-         * I/O PARAMETERS:
-         *NAME I/O A/S DESCRIPTION OF PARAMETERS
-         * ------------------------------------------------------------
-         * N   IS DEGREE OF SPHERICAL HARMONICS
-         * M   IS    ORDER OF SPHERICAL HARMONICS
-         * X   IS Math.Sin(LATITUDE)
-         * POA    2-D LEGENDRE FUNCTIONS
-         *
-         * REFERENCES
-         * JPL EM 312 / 87 - 153, 20 APRIL 1987
-         ---------------------------------------------------------------------------- */
-        public void geodynlegp
-            (
-               double latgc,
-               Int32 degree,
-               Int32 order,
-               out double[,] LegArrOU,
-               out double[,] LegArrON
-            )
-        {
-            int i, j;
-            double y, conv;
-            double x = Math.Sin(latgc);
-            LegArrOU = new double[degree + 2, order + 2];
-            LegArrON = new double[degree + 2, order + 2];
-
-            // zero all out
-            for (i = 1; i <= degree + 1; i++)
-            {
-                for (j = 1; j <= order + 1; j++)
-                    LegArrOU[i, j] = 0.0;
-            }
-
-            // recursions
-            LegArrOU[1, 1] = 1.0;
-            LegArrOU[2, 1] = x;
-
-            // COMPUTE LEGENDRE FUNCTIONS UP TO DEGREE 
-            for (i = 2; i <= degree; i++)
-                LegArrOU[i + 1, 1] = (Convert.ToDouble(2 * i - 1) * x * LegArrOU[i, 1] - (i - 1) * LegArrOU[i - 1, 1]) / Convert.ToDouble(i);
-            if (order == 0)
-                return;  // just do zonals
-
-            // COMPUTE ASSOCIATED LEGENDRE FUNCTIONS UP TO ORDER 
-            y = Math.Sqrt(1.0 - x * x);
-            LegArrOU[2, 2] = y;
-            if (order != 1)
-            {
-                // THIS IS THE SECTORIAL PART OF THE ASSOCIATED FUNCTIONS
-                for (i = 2; i <= order; i++)
-                {
-                    LegArrOU[i + 1, i + 1] = (2 * i - 1) * y * LegArrOU[i, i];
-                }
-            }
-            // THIS THE TESSERAL PART OF THE ASSOCIATED FUNCTIONS
-            for (i = 2; i <= degree; i++)
-            {
-                // int i1 = i - 1;
-                for (j = 1; j <= i - 1; j++)
-                {
-                    if (j <= order)
-                    {
-                        LegArrOU[i + 1, j + 1] = Convert.ToDouble(2 * i - 1) * y * LegArrOU[i, j];
-                        if (i - 2 >= j)
-                            LegArrOU[i + 1, j + 1] = LegArrOU[i + 1, j + 1] + LegArrOU[i - 1, j + 1];
-                    }
-                }
-            }
-
-            // normalize after the polynomials are found because they are intertwined in the recursion
-            // indicies are +1
-            for (i = 3; i <= order; i++)
-            {
-                for (j = 1; j <= i; j++)
-                {
-                    // find normalized or unnormalized depending on which is already in file
-                    // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
-                    if (j == 1)
-                        conv = Math.Sqrt((MathTimeLibr.factorial(i - j) * (2 * i + 1)) / MathTimeLibr.factorial(i + j));
-                    else
-                        conv = Math.Sqrt((MathTimeLibr.factorial(i - j) * 2 * (2 * i + 1)) / MathTimeLibr.factorial(i + j));
-
-                    LegArrON[i, j] = conv * LegArrOU[i, j];
-                } // for m
-
-            } // for L
-        }  // geodynlegp
-
-
-        // web approach willmert
-        public double[,] legendre(int L, int m, double x)  //SphereNorm norm,
-        {
-            //SphereNorm norm = new SphereNorm();
-            double[,] P = new double[L + 1, m + 1];
-            double y, u, v, Pmin1, Pmin2;
-            Pmin1 = 0.0;
-            Pmin2 = 0.0;
-
-            x = Math.Sin(x);
-
-            // P[0, 0] = 1.0 / Math.Sqrt(4.0 * Math.PI);
-            P[0, 0] = 1.0;
-            P[0, 1] = 0.0;
-            P[1, 1] = Math.Cos(x);
-
-            // Use recurrence equation 1 to increase to the target m
-            y = Math.Sqrt(1.0 - x * x);
-            for (int mi = 2; mi <= m; mi++)
-            {
-                // this is the normalization for L = m ??
-                u = Math.Sqrt(1.0 + 1.0 / (2.0 * mi));
-                // his negative is not correct
-                P[mi, mi] = u * y * P[mi - 1, mi - 1];
-            }
-
-            // Setup for 2-term recurrence, using recurrence relation 2 to set Pmin1
-            //for (int mi = 2; mi < L; mi++)
-            //{
-            //    v = Math.Sqrt(1.0 + 2.0 * (mi + 1));  // 1 + 2l,  1 + 2(m+1)
-            //    Pmin2 = P[mi - 2, mi - 2];
-            //    Pmin1 = v * x * Pmin2;
-
-            //    if (L == mi + 1)
-            //        P[L, mi] = Pmin1;
-            //}
-
-            v = Math.Sqrt(1.0 + 2.0 * (0 + 1));  // 1 + 2l,  1 + 2(m+1)
-            Pmin2 = P[0, 0];
-            Pmin1 = v * x * Pmin2;
-
-
-            //does it need del for kroneker delta????????
-            for (int mi = 2; mi < L; mi++)
-            {
-                for (int Li = mi; Li < L; Li++)  // +2??
-                {
-                    v = Math.Sqrt(1.0 + 2.0 * (mi + 1));  // 1 + 2l,  1 + 2(m+1)
-                    Pmin2 = P[mi - 2, mi - 2];
-                    Pmin1 = v * x * Pmin2;
-
-                    if (Li == mi + 1)
-                        P[Li, mi] = Pmin1;
-                    // Use recurrence relation 3
-                    double temp = 1.0 / ((2 * Li - 3.0) * (Li * Li - mi * mi));
-                    double a = Math.Sqrt((2 * Li + 1) * (4.0 * Math.Pow(Li - 1, 2) - 1)) * temp;
-                    double b = Math.Sqrt((2 * Li + 1) * (Math.Pow(Li - 1, 2) - mi * mi)) * temp;
-                    P[Li, mi] = a * x * Pmin1 - b * Pmin2;
-                    Pmin2 = Pmin1;
-                    Pmin1 = P[Li - 1, mi];
-                }
-            }
-            return P;
-        }  // wilmert
-
-
-
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function TrigPoly
-        *
-        *   this function finds the accumulated trigonometric terms for satellite 
-        *   operations, orders up to about 120 are valid. this is the GTDS approach. 
-        *      
-        *  author        : david vallado             davallado@gmail.com          10 oct 2019
-        *
-        *  inputs        description                                            range / units
-        *    lon         - longitude of satellite                                  0 - 2pi rad
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                                   1..2160..
-        *
-        *  outputs       :
-        *    trigArr     - array of trigonometric terms
-        *
-        *  locals :
-        *    L,m         - degree and order indices
-        *
-        *  coupling      :
-        *   none
-        *
-        *  references :
-        *    vallado       2022, 600, Eq 8-56
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function TrigPoly
+        //
+        //   this function finds the accumulated trigonometric terms for satellite 
+        //   operations, orders up to about 120 are valid. this is the GTDS approach. 
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    lon         - longitude of satellite                                  0 - 2pi rad
+        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    order       - size of gravity field                                   1..2160..
+        //
+        //  outputs       :
+        //    trigArr     - array of trigonometric terms
+        //
+        //  locals :
+        //    L,m         - degree and order indices
+        //
+        //  coupling      :
+        //   none
+        //
+        //  references :
+        //    vallado       2022, 600, Eq 8-56
+        // ----------------------------------------------------------------------------*/
 
         public void TrigPoly
            (
@@ -13678,37 +13097,37 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function TrigPolyLeg
-        *
-        *   this function finds the accumulated legendre polynomials and trigonometric
-        *   terms for satellite operations, orders up to about 120 are valid. this is the 
-        *   montenbruck approach. 
-        *   
-        *  author        : david vallado             davallado@gmail.com       10 oct 2019
-        *
-        *  inputs        description                                           range / units
-        *    recef       - satellite position vector, earth fixed                km
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                                 1..2160..
-        *    normalized  - normalized or unnormalized                              'y', 'n'                        
-  *
-        *  outputs       :
-        *    VArr        - array of trig terms
-        *    WArr        - array of trig terms
-        *    VArrN       - array of trig terms normalized
-        *    WArrN       - array of trig terms normalized
-        *
-        *  locals :
-        *    L,m         - degree and order indices
-        *
-        *  coupling      :
-        *   none
-        *
-        *  references :
-        *    vallado       2022, 602
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function TrigPolyLeg
+        //
+        //   this function finds the accumulated legendre polynomials and trigonometric
+        //   terms for satellite operations, orders up to about 120 are valid. this is the 
+        //   montenbruck approach. 
+        //   
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - satellite position vector, earth fixed                km
+        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    order       - size of gravity field                                 1..2160..
+        //    normalized  - normalized or unnormalized                              'y', 'n'                        
+        //
+        //  outputs       :
+        //    VArr        - array of trig terms
+        //    WArr        - array of trig terms
+        //    VArrN       - array of trig terms normalized
+        //    WArrN       - array of trig terms normalized
+        //
+        //  locals :
+        //    L,m         - degree and order indices
+        //
+        //  coupling      :
+        //   none
+        //
+        //  references :
+        //    vallado       2022, 602
+        // ----------------------------------------------------------------------------*/
 
         public void TrigPolyLeg
            (
@@ -13799,44 +13218,44 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function FullGeopG
-        *
-        *   this function finds the acceleration for the gravity field. the acceleration is
-        *   found in the body fixed frame. rotation back to inertial is done after this 
-        *   routine. this is the gtds approach. 
-        *      
-        *  author        : david vallado             davallado@gmail.com  10 oct 2019
-        *
-        *  inputs        description                                   range / units
-        *    recef       - position vector ECEF                          km   
-        *    order       - size of gravity field                         1..360
-        *    normalized  - normalized in file                            'y', 'n'
-        *    unnormArr   - array of normalization values                  
-        *    gravData    - structure containing the gravity field coefficients, 
-        *                  radius of the Earth, and gravitational parameter
-        *
-        *  outputs       :
-        *    apertG      - efc perturbation acceleration                  km / s^2
-        *
-        *  locals :
-        *    show        - show intermediate steps                        'y', 'n'
-        *    straccum    - string containing the various intermediate steps
-        *    conv        - conversion to normalize
-        *    L, m        - degree and order indices
-        *    trigArr     - array of trigonometric terms
-        *    LegArr      - array of Legendre polynomials
-        *    VArr        - array of trig terms
-        *    WArr        - array of trig terms
-        *
-        *  coupling      :
-        *   LegPolyG     - find the unnormalized Legendre polynomials through recursion
-        *   TrigPoly     - find the trigonmetric terms through recursion
-        *
-        *  references :
-        *    vallado       2022, 600, Eq 8-56
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function FullGeopG
+        //
+        //   this function finds the acceleration for the gravity field. the acceleration is
+        //   found in the body fixed frame. rotation back to inertial is done after this 
+        //   routine. this is the gtds approach. 
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector ECEF                          km   
+        //    order       - size of gravity field                         1..360
+        //    normalized  - normalized in file                            'y', 'n'
+        //    unnormArr   - array of normalization values                  
+        //    gravData    - structure containing the gravity field coefficients, 
+        //                  radius of the Earth, and gravitational parameter
+        //
+        //  outputs       :
+        //    apertG      - efc perturbation acceleration                  km / s^2
+        //
+        //  locals :
+        //    show        - show intermediate steps                        'y', 'n'
+        //    straccum    - string containing the various intermediate steps
+        //    conv        - conversion to normalize
+        //    L, m        - degree and order indices
+        //    trigArr     - array of trigonometric terms
+        //    LegArr      - array of Legendre polynomials
+        //    VArr        - array of trig terms
+        //    WArr        - array of trig terms
+        //
+        //  coupling      :
+        //   LegPolyG     - find the unnormalized Legendre polynomials through recursion
+        //   TrigPoly     - find the trigonmetric terms through recursion
+        //
+        //  references :
+        //    vallado       2022, 600, Eq 8-56
+        // ----------------------------------------------------------------------------*/
 
         public void FullGeopG
         (
@@ -13965,43 +13384,43 @@ namespace AstroLibMethods
         }  // FullGeopG 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function FullGeopM
-        *
-        *   this function finds the acceleration for the gravity field. the acceleration is
-        *   found in the body fixed frame. rotation back to inertial is done after this 
-        *   routine. this is the montenbruck approach. 
-        *      
-        *  author        : david vallado             davallado@gmail.com  10 oct 2019
-        *
-        *  inputs        description                                   range / units
-        *    recef       - position vector ECEF                          km   
-        *    order       - size of gravity field                         1..360
-        *    normalized  - normalized in file                            'y', 'n'
-        *    unnormArr   - array of normalization values                  
-        *    gravData    - structure containing the gravity field coefficients, 
-        *                  radius of the Earth, and gravitational parameter
-        *
-        *  outputs       :
-        *    apert       - efc perturbation acceleration                  km / s^2
-        *
-        *  locals :
-        *    show        - show intermediate steps                        'y', 'n'
-        *    straccum    - string containing the various intermediate steps
-        *    conv        - conversion to normalize
-        *    L, m        - degree and order indices
-        *    LegArr      - array of Legendre polynomials
-        *    VArr        - array of trig terms
-        *    WArr        - array of trig terms
-        *
-        *  coupling      :
-        *   LegPoly      - find the unnormalized Legendre polynomials through recursion
-        *   TrigPoly     - find the trigonmetric terms through recursion
-        *
-        *  references :
-        *    vallado       2013, 597, Eq 8-57
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function FullGeopM
+        //
+        //   this function finds the acceleration for the gravity field. the acceleration is
+        //   found in the body fixed frame. rotation back to inertial is done after this 
+        //   routine. this is the montenbruck approach. 
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector ECEF                          km   
+        //    order       - size of gravity field                         1..360
+        //    normalized  - normalized in file                            'y', 'n'
+        //    unnormArr   - array of normalization values                  
+        //    gravData    - structure containing the gravity field coefficients, 
+        //                  radius of the Earth, and gravitational parameter
+        //
+        //  outputs       :
+        //    apert       - efc perturbation acceleration                  km / s^2
+        //
+        //  locals :
+        //    show        - show intermediate steps                        'y', 'n'
+        //    straccum    - string containing the various intermediate steps
+        //    conv        - conversion to normalize
+        //    L, m        - degree and order indices
+        //    LegArr      - array of Legendre polynomials
+        //    VArr        - array of trig terms
+        //    WArr        - array of trig terms
+        //
+        //  coupling      :
+        //   LegPoly      - find the unnormalized Legendre polynomials through recursion
+        //   TrigPoly     - find the trigonmetric terms through recursion
+        //
+        //  references :
+        //    vallado       2013, 597, Eq 8-57
+        // ----------------------------------------------------------------------------*/
 
         public void FullGeopM
         (
@@ -14161,41 +13580,41 @@ namespace AstroLibMethods
         }  // FullGeopM 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function FullGeopMC
-        *
-        *   this function finds the acceleration for the gravity field. the acceleration is
-        *   found in the body fixed frame. rotation back to inertial is done after this 
-        *   routine. this is the montenbruck code approach. 
-        *      
-        *  author        : david vallado             davallado@gmail.com  10 oct 2019
-        *
-        *  inputs        description                                   range / units
-        *    recef       - position vector ECEF                          km   
-        *    order       - size of gravity field                         1..360
-        *    normalized  - normalized in file                            'y', 'n'
-        *    unnormArr   - array of normalization values                  
-        *    gravData    - structure containing the gravity field coefficients, 
-        *                  radius of the Earth, and gravitational parameter
-        *
-        *  outputs       :
-        *    apertMC     - efc perturbation acceleration                  km / s^2
-        *
-        *  locals :
-        *    conv        - conversion to normalize
-        *    L, m        - degree and order indices
-        *    LegArr      - array of Legendre polynomials
-        *    VArr        - array of trig terms
-        *    WArr        - array of trig terms
-        *
-        *  coupling      :
-        *   LegPoly      - find the unnormalized Legendre polynomials through recursion
-        *
-        *  references :
-        *    montenbruck   2012
-        *    vallado       2022, 602
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function FullGeopMC
+        //
+        //   this function finds the acceleration for the gravity field. the acceleration is
+        //   found in the body fixed frame. rotation back to inertial is done after this 
+        //   routine. this is the montenbruck code approach. 
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    recef       - position vector ECEF                          km   
+        //    order       - size of gravity field                         1..360
+        //    normalized  - normalized in file                            'y', 'n'
+        //    unnormArr   - array of normalization values                  
+        //    gravData    - structure containing the gravity field coefficients, 
+        //                  radius of the Earth, and gravitational parameter
+        //
+        //  outputs       :
+        //    apertMC     - efc perturbation acceleration                  km / s^2
+        //
+        //  locals :
+        //    conv        - conversion to normalize
+        //    L, m        - degree and order indices
+        //    LegArr      - array of Legendre polynomials
+        //    VArr        - array of trig terms
+        //    WArr        - array of trig terms
+        //
+        //  coupling      :
+        //   LegPoly      - find the unnormalized Legendre polynomials through recursion
+        //
+        //  references :
+        //    montenbruck   2012
+        //    vallado       2022, 602
+        // ----------------------------------------------------------------------------*/
 
         public void FullGeopMC
         (
@@ -14401,40 +13820,40 @@ namespace AstroLibMethods
         }  // FullGeopMC 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function FullGeopGott
-        *
-        *   this function finds the acceleration for the gravity field using the normalized 
-        *   Gottlieb approach. the arrays are indexed from 0 to coincide with the usual nomenclature 
-        *   (eq 8-21 in my text). Fortran and MATLAB implementations will have indices of 1 greater 
-        *   as they start at 1. note that this formulation is able to handle degree and order terms 
-        *   larger then 170 due to the formulation. 
-        *      
-        *  author        : david vallado             davallado@gmail.com   2 aug 2024
-        *
-        *  inputs        description                                              range / units
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                                  1.. 170 .. 2000
-        *    gravData    - structure containing the gravity field coefficients, 
-        *                  radius of the Earth, and gravitational parameter
-        *    normxx      - constant normalization parameters pre-calculated              
-        *    recef       - earth fixed position vector for satellite              km
-        *
-        *  outputs       :
-        *    LegGottN    - array of normalized Legendre polynomials, Gottlieb 
-        *    accel       - acceleration from gravity                              km/s^2
-        *
-        *  locals :
-        *    L,m         - degree and order indices
-        *
-        *  coupling      :
-        *   none
-        *
-        *  references :
-        *    eckman, brown, adamo 2016 paper and code in matlab
-        *    vallado       2022, 600-601, Eq 8-62
-          ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function FullGeopGott
+        //
+        //   this function finds the acceleration for the gravity field using the normalized 
+        //   Gottlieb approach. the arrays are indexed from 0 to coincide with the usual nomenclature 
+        //   (eq 8-21 in my text). Fortran and MATLAB implementations will have indices of 1 greater 
+        //   as they start at 1. note that this formulation is able to handle degree and order terms 
+        //   larger then 170 due to the formulation. 
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    order       - size of gravity field                                  1.. 170 .. 2000
+        //    gravData    - structure containing the gravity field coefficients, 
+        //                  radius of the Earth, and gravitational parameter
+        //    normxx      - constant normalization parameters pre-calculated              
+        //    recef       - earth fixed position vector for satellite              km
+        //
+        //  outputs       :
+        //    LegGottN    - array of normalized Legendre polynomials, Gottlieb 
+        //    accel       - acceleration from gravity                              km/s^2
+        //
+        //  locals :
+        //    L,m         - degree and order indices
+        //
+        //  coupling      :
+        //   none
+        //
+        //  references :
+        //    eckman, brown, adamo 2016 paper and code in matlab
+        //    vallado       2022, 600-601, Eq 8-62
+        // ---------------------------------------------------------------------------*/
 
         public void FullGeopGott
            (
@@ -14442,7 +13861,7 @@ namespace AstroLibMethods
                Int32 order,
                gravityConst gravData,
                double[] recef,
-               double[] norm1, double[] norm2, double[] norm11, double[] normn10, 
+               double[] norm1, double[] norm2, double[] norm11, double[] normn10,
                double[,] norm1m, double[,] norm2m, double[,] normn1,
                out double[,] LegGottN,
                out double[] accel
@@ -14455,7 +13874,7 @@ namespace AstroLibMethods
             double[] ctil = new double[order + 2];
             double[] stil = new double[order + 2];
             double[,] g = new double[3, 3];
-            double reorn, sumhn, sumgmn, magr, ep, mxpnm, bnmtil, anmtm1, bnmtm1, anmt1, sumj, sumjn,
+            double reorn, sumhn, sumgmn, magr, ep, mxpnm, bnmtil, anmtm1, bnmtm1, sumj, sumjn,
                 sumkn, sumk, sumh, sumgm, lambda, reor, muor2;
             double n2m1;
             Int32 lim, nm1, np1, mm1, mp1;
@@ -14575,409 +13994,38 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function FullGeopLear
-        *
-        *   this function finds the acceleration for the gravity field using the normalized Lear approach.  
-        *   the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21 in my text). Fortran 
-        *   and MATLAB implementations will have indices of 1 greater as they start at 1. note that this formulation
-        *   is able to handle degree and order terms larger then 170 due to the formulation. 
-        *      
-        *  author        : david vallado             davallado@gmail.com   20 aug 2024
-        *
-        *  inputs        description                                              range / units
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                                  1.. 170 .. 2000
-        *    gravData    - structure containing the gravity field coefficients, 
-        *                  radius of the Earth, and gravitational parameter
-        *    recef       - earth fixed position vector for satellite              km
-        *
-        *  outputs       :
-        *    LegLearN    - array of normalized Legendre polynomials, Lear 
-        *    accel       - acceleration from gravity                              km/s^2
-        *
-        *  locals :
-        *    L,m         - degree and order indices
-        *
-        *  coupling      :
-        *   none
-        *
-        *  references :
-        *    eckman, brown, adamo 2016 paper and code in matlab
-        *    vallado       2022, 600-601, Eq 8-62
-          ----------------------------------------------------------------------------*/
-
-        public void FullGeopLear
-           (
-               double latgc,
-               Int32 order,
-               gravityConst gravData,
-               double[] recef,
-               out double[,] LegLearN,
-               out double[] accel
-           )
-        {
-            Int32 L, m;
-            LegLearN = new double[order + 2, order + 2];
-            accel = new double[3];
-
-            double[] norm1 = new double[order + 2];
-            double[] norm10 = new double[order + 2];
-            double[] norm11 = new double[order + 2];
-            double[] norm2 = new double[order + 2];
-            double[] cm = new double[order + 2];
-            double[] sm = new double[order + 2];
-            double[,] g = new double[3, 3];
-            double[,] norm1m = new double[order + 2, order + 2];
-            double[,] norm2m = new double[order + 2, order + 2];
-            double[,] pnm = new double[order + 2, order + 2];
-            double t1, t3, r1, r2;
-            double n2m1, e1, e2, e3, e4, e5;
-            Int32 nm1, nm2, mmax, Li, nmodel;
-            double magr, sphi, cphi, root3, root5;
-            double[] rn = new double[4];
-            double[] asph = new double[4];
-            double[] pn = new double[order + 2];
-            double[] ppn = new double[order + 2];
-            double[] rb = new double[order + 2];
-            double tsnm, tcnm, tsm, tcm, tpnm;
-
-            // keep square field for now
-            mmax = order;
-
-            // setup the lear normalization factors
-            for (L = 1; L < order; L++)
-            {
-                norm1[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 1.0));   // eq 3-1
-                norm2[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 3.0));   // eq 3-2
-                norm11[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L)) / (2.0 * L - 1.0);  // eq 3-3
-                for (m = 1; m < L; m++)
-                {
-                    norm1m[L, m] = Math.Sqrt((L - m) * (2.0 * L + 1.0) / ((L + m) * (2.0 * L - 1.0)));  // eq 3-4
-                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1.0) / 
-                        ((L + m) * (L + m - 1.0) * (2.0 * L - 3.0)));  // eq 3-5
-                }
-            }
-
-            // initialization for tesseral eq 3-9
-            for (L = 1; L < order; L++)
-            {
-                pnm[L - 1, L] = 0.0;
-            }
-
-            e1 = recef[0] * recef[0] + recef[1] * recef[1];
-            magr = MathTimeLibr.mag(recef);
-            r1 = Math.Sqrt(e1);
-            sphi = recef[2] / magr;  // sin(latgd) NOT latgc!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            cphi = Math.Sqrt(e1) / magr;  // cos(decl) or cos(latgd)
-            sm[0] = 0.0;
-            cm[0] = 1.0;
-
-            if (r1 != 0.0)
-            {
-                sm[0] = recef[1] / r1;
-                cm[0] = recef[0] / r1;
-            }
-            rb[0] = gravData.re / magr;   // this appears to be an initial value only for the recursions
-            rb[1] = rb[0] * rb[0];  // this is cos(latgd)*cos(latgd) ????????????????????????????
-            sm[1] = 2.0 * cm[0] * sm[0];
-            cm[1] = 2.0 * cm[0] * cm[0] - 1.0;
-            root3 = Math.Sqrt(3.0);
-            root5 = Math.Sqrt(5.0);
-            // zonal initialization norm
-           //dav pn[0] = 1.0;  // dav add
-            pn[0] = root3 * sphi; // inc norm
-            pn[1] = root5 * (3.0 * sphi * sphi - 1.0) * 0.5; // inc norm
-            // zonal initialization deriv norm
-            ppn[0] = root3; // norm
-            ppn[1] = root5 * 3.0 * sphi; // norm
-            // sectoral initialization norm
-            pnm[0, 0] = root3; // norm
-            pnm[1, 1] = root5 * root3 * cphi * 0.5; // norm
-            pnm[1, 0] = root5 * root3 * sphi; // norm 
-            LegLearN[0, 0] = -root3 * sphi; // norm
-            LegLearN[1, 1] = -root3 * root5 * sphi * cphi; // norm
-            LegLearN[1, 0] = root5 * root3 * (1.0 - 2.0 * sphi * sphi); // norm
-            if (order >= 2)
-            {
-                for (L = 2; L <= order; L++)
-                {
-                    nm1 = L - 1;
-                    nm2 = L - 2;
-                    rb[L] = rb[nm1] * rb[0];
-                    sm[L] = 2.0 * cm[0] * sm[nm1] - sm[nm2];
-                    cm[L] = 2.0 * cm[0] * cm[nm1] - cm[nm2];
-                    e1 = 2.0 * L - 1.0;
-                    pn[L] = (e1 * sphi * norm1[L] * pn[nm1] - nm1 * norm2[L] * pn[nm2]) / L; // zonal eq 3-6
-                    LegLearN[L, 0] = pn[L];  // dav 
-                    ppn[L] = norm1[L] * (sphi * ppn[nm1] + L * pn[nm1]); // zonal deriv eq 3-7
-                    pnm[L, L] = e1 * cphi * norm11[L] * pnm[nm1, nm1]; // sectoral eq 3-8 
-                    LegLearN[L, L] = -L * sphi * pnm[L, L];  // sectoral deriv eq 3-10
-                }
-                for (L = 2; L <= order; L++)
-                {
-                    nm1 = L - 1;
-                    e1 = (2.0 * L - 1.0) * sphi;
-                    e2 = -L * sphi;
-                    for (m = 1; m <= nm1; m++)
-                    {
-                        e3 = norm1m[L, m] * pnm[nm1, m]; // norm
-                        e4 = L + m;
-                        e5 = (e1 * e3 - (e4 - 1.0) * norm2m[L, m] * pnm[L - 2, m]) / (L - m); // tesseral eq 3-9
-                        pnm[L, m] = e5;
-                        LegLearN[L, m] = e2 * e5 + e4 * e3;  // tesseral deriv eq 3-11
-                    }
-                }
-            }
-            asph[1] = -1.0;
-            asph[3] = 0.0;
-            for (L = 2; L <= order; L++)
-            {
-                //Li = L + 1; matlab
-                e1 = gravData.cNor[L, 0] * rb[L-1];
-                asph[1] = asph[1] - (L + 1.0) * e1 * pn[L-1];
-                asph[3] = asph[3] + e1 * ppn[L-1];
-            }
-            asph[3] = cphi * asph[3];
-            t1 = 0.0;
-            t3 = 0.0;
-            asph[2] = 0.0;
-            for (L = 2; L <= order; L++)
-            {
-                //ni = L + 1; matlab
-                e1 = 0.0;
-                e2 = 0.0;
-                e3 = 0.0;
-                if (L > mmax)
-                    nmodel = mmax;
-                else
-                    nmodel = L;
-
-                for (m = 1; m <= nmodel; m++)
-                {
-                    //mi = m + 1; matlab
-                    tsnm = gravData.sNor[L, m];
-                    tcnm = gravData.cNor[L, m];
-                    tsm = sm[m-1];
-                    tcm = cm[m-1];
-                    tpnm = pnm[L-1, m-1];
-                    e4 = tsnm * tsm + tcnm * tcm;
-                    e1 = e1 + e4 * tpnm;
-                    e2 = e2 + m * (tsnm * tcm - tcnm * tsm) * tpnm;
-                    e3 = e3 + e4 * LegLearN[L-1, m-1];
-                }
-                t1 = t1 + (L + 1) * rb[L-1] * e1;
-                asph[2] = asph[2] + rb[L-1] * e2;
-                t3 = t3 + rb[L-1] * e3;
-            }
-            e4 = gravData.mu / (magr * magr);
-            asph[1] = e4 * (asph[1] - cphi * t1);
-            asph[2] = e4 * asph[2];
-            asph[3] = e4 * (asph[3] + t3);
-            e5 = asph[1] * cphi - asph[3] * sphi;
-
-            accel[0] = e5 * cm[1] - asph[2] * sm[1];
-            accel[1] = e5 * sm[1] + asph[2] * cm[1];
-            accel[2] = asph[1] * sphi + asph[3] * cphi;
-        }   // FullGeopLear
 
 
-
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function FullGeopPines
-        *
-        *   this function finds the acceleration for the gravity field using the normalized Pines approach.  
-        *   the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21 in my text). Fortran 
-        *   and MATLAB implementations will have indices of 1 greater as they start at 1. note that this formulation
-        *   is able to handle degree and order terms larger then 170 due to the formulation. 
-        *      
-        *  author        : david vallado             davallado@gmail.com   20 aug 2024
-        *
-        *  inputs        description                                              range / units
-        *    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        *    order       - size of gravity field                                  1.. 170 .. 2000
-        *    gravData    - structure containing the gravity field coefficients, 
-        *                  radius of the Earth, and gravitational parameter
-        *    recef       - earth fixed position vector for satellite              km
-        *
-        *  outputs       :
-        *    LegPineN    - array of normalized Legendre polynomials, Pines 
-        *    accel       - acceleration from gravity                              km/s^2
-        *
-        *  locals :
-        *    L,m         - degree and order indices
-        *
-        *  coupling      :
-        *   none
-        *
-        *  references :
-        *    eckman, brown, adamo 2016 paper and code in matlab
-        *    vallado       2022, 600-601, Eq 8-62
-          ----------------------------------------------------------------------------*/
-
-        public void FullGeopPines
-           (
-               double latgc,
-               Int32 order,
-               gravityConst gravData,
-               double[] recef,
-               out double[,] LegPineN,
-               out double[] accel
-           )
-        {
-            Int32 L, m;
-            LegPineN = new double[order + 3, order + 3];
-            accel = new double[3];
-
-            double[] runit = new double[3];
-            double[] rm = new double[order + 2];
-            double[] im = new double[order + 2];
-            Int32 lim, mp2;
-            double g1, g2, g3, g4, g1temp, g2temp, g3temp, g4temp, magr;
-            double alpha_num, alpha, beta, beta_num, beta_den, alpha_den;
-            double dnm, enm, fnm, muor, ror, SM;
-
-            alpha_num = 0.0;
-            alpha_den = 0.0;
-            lim = order;
-            SM = 0.0;
-            g1temp = g2temp = g3temp = g4temp = 0.0;
-
-            magr = MathTimeLibr.mag(recef);
-            runit = MathTimeLibr.norm(recef);
-
-            LegPineN[0, 0] = Math.Sqrt(2.0);
-            for (m = 0; m < order + 2; m++)
-            {
-                //mi = m + 1;
-                // DIAGONAL RECURSION
-                if (m != 0)
-                {
-                    LegPineN[m, m] = Math.Sqrt(1.0 + (1.0 / (2.0 * m))) * LegPineN[m - 1, m - 1]; // norm
-                }
-                // FIRST OFF - DIAGONAL RECURSION 
-                if (m != order + 2)
-                {
-                    LegPineN[m + 1, m] = Math.Sqrt(2.0 * m + 3.0) * runit[2] * LegPineN[m, m]; // norm
-                }
-                // COLUMN RECURSION 
-                if (m < order + 1)
-                {
-                    for (L = m + 2; L < order + 2; L++)
-                    {
-                        //Li = L + 1;
-                        alpha_num = (2.0 * L + 1.0) * (2.0 * L - 1.0);
-                        alpha_den = (L - m) * (L + m);
-                        alpha = Math.Sqrt(alpha_num / alpha_den);
-                        beta_num = (2.0 * L + 1.0) * (L - m - 1.0) * (L + m - 1.0);
-                        beta_den = (2.0 * L - 3.0) * (L + m) * (L - m);
-                        beta = Math.Sqrt(beta_num / beta_den);
-                        LegPineN[L, m] = alpha * runit[2] * LegPineN[L - 1, m] - beta * LegPineN[L - 2, m]; // norm
-                    }
-                }
-            }
-
-            for (L = 0; L < order + 2; L++)
-            {
-                //Li = L + 1;
-                LegPineN[L, 0] = LegPineN[L, 0] * Math.Sqrt(0.5); // norm
-            }
-
-            rm[1] = 0.0;
-            im[1] = 0.0;
-            rm[2] = 1.0;
-            im[2] = 0.0;
-            for (m = 1; m < order; m++)
-            {
-                mp2 = m + 2;
-                rm[mp2] = runit[0] * rm[mp2 - 1] - runit[1] * im[mp2 - 1];
-                im[mp2] = runit[0] * im[mp2 - 1] + runit[1] * rm[mp2 - 1];
-            }
-
-            muor = gravData.mu / (gravData.re * magr);
-            ror = gravData.re / (magr);
-            g1 = 0.0;
-            g2 = 0.0;
-            g3 = 0.0;
-            g4 = 0.0;
-            for (L = 0; L <= order; L++)
-            {
-                //Li = L + 1;  matlab
-                g1temp = 0.0;
-                g2temp = 0.0;
-                g3temp = 0.0;
-                g4temp = 0.0;
-                SM = 0.5;
-                // keep square field
-                if (L > order)
-                    lim = order;
-                else
-                    lim = L;
-                for (m = 0; m < lim; m++)
-                {
-                    //mi = m + 1;  matlab
-                    mp2 = m + 2;
-                    dnm = gravData.cNor[L, m] * rm[mp2] + gravData.sNor[L, m] * im[mp2];
-                    enm = gravData.cNor[L, m] * rm[mp2 - 1] + gravData.sNor[L, m] * im[mp2 - 1];
-                    fnm = gravData.sNor[L, m] * rm[mp2 - 1] - gravData.cNor[L, m] * im[mp2 - 1];
-
-                    alpha = Math.Sqrt(SM * (L - m) * (L + m + 1)); // norm
-
-                    g1temp = g1temp + LegPineN[L, m] * m * enm;
-                    g2temp = g2temp + LegPineN[L, m] * m * fnm;
-                    g3temp = g3temp + alpha * LegPineN[L, m + 1] * dnm; // norm
-                    g4temp = g4temp + ((L + m + 1) * LegPineN[L, m] + alpha * runit[2] * LegPineN[L, m + 1]) * dnm;  // norm
-
-                    if (m == 0)
-                    {
-                        SM = 1.0;
-                    } // norm
-                }
-                muor = ror * muor;
-                g1 = g1 + muor * g1temp;
-                g2 = g2 + muor * g2temp;
-                g3 = g3 + muor * g3temp;
-                g4 = g4 + muor * g4temp;
-            }
-
-            accel[0] = g1 - g4 * runit[0];
-            accel[1] = g2 - g4 * runit[1];
-            accel[2] = g3 - g4 * runit[2];
-        }    // FullGeopPines
-
-
-        /* ---------------------------------------------------------------------------- 
-        *
-        *                           function pathm
-        *
-        *  this function determines the end position for a given range and azimuth
-        *    from a given point.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 may 2002
-        *
-        *  inputs description                                        range / units
-        *    llat        - start geocentric latitude              -pi/2 to pi/2 rad
-        *    llon        - start longitude (west -)               0.0  to 2pi rad
-        *    range       - range between points er
-        *    az          - azimuth                                0.0  to 2pi rad
-        *
-        *  outputs       :
-        *    tlat        - end geocentric latitude                -pi/2 to pi/2 rad
-        *    tlon        - end longitude(west -)                 0.0  to 2pi rad
-        *
-        *  locals        :
-        *    sindeltan   - sine of delta n                              rad
-        *    cosdeltan   - cosine of delta n                            rad
-        *    deltan      - angle between the two points                 rad
-        *
-        *  coupling      :
-        *    none.
-        *
-        *  references    :
-        *    vallado       2013, 774-776, eq 11-6, eq 11-7
-        * ------------------------------------------------------------------------------ */
+        // ---------------------------------------------------------------------------- 
+        //
+        //                           function pathm
+        //
+        //  this function determines the end position for a given range and azimuth
+        //    from a given point.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    llat        - start geocentric latitude              -pi/2 to pi/2 rad
+        //    llon        - start longitude (west -)               0.0  to 2pi rad
+        //    range       - range between points er
+        //    az          - azimuth                                0.0  to 2pi rad
+        //
+        //  outputs       :
+        //    tlat        - end geocentric latitude                -pi/2 to pi/2 rad
+        //    tlon        - end longitude(west -)                 0.0  to 2pi rad
+        //
+        //  locals        :
+        //    sindeltan   - sine of delta n                              rad
+        //    cosdeltan   - cosine of delta n                            rad
+        //    deltan      - angle between the two points                 rad
+        //
+        //  coupling      :
+        //    none.
+        //
+        //  references    :
+        //    vallado       2013, 774-776, eq 11-6, eq 11-7
+        // --------------------------------------------------------------------------------
 
         public void pathm
             (
@@ -14987,7 +14035,7 @@ namespace AstroLibMethods
             double twopi = 2.0 * Math.PI;
             double small, deltan, sindn, cosdn;
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             small = 0.00000001;
             deltan = 0.0;
 
@@ -15030,45 +14078,42 @@ namespace AstroLibMethods
         }  // pathm
 
 
-        /* ---------------------------------------------------------------------------- 
-        *
-        *                           function rngaz
-        *
-        *  this function calculates the range and azimuth between two specified
-        *
-        *
-        *    ground points on a spherical earth.notice the range will always be
-        *    within the range of values listed since you for not know the direction of
-        *    firing, long or short.  the function will calculate rotating earth ranges
-        *    if the tof is passed in other than 0.0 . range is calulated in rad and
-        *    converted to er by s = ro, but the radius of the earth = 1 er, so it's
-        *    s = o.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 may 2002
-        *
-        *  revisions
-        *                - dav 31 may 06 add elliptical model
-        *
-        *  inputs description                                    range / units
-        *    llat        - start geocentric latitude             -pi/2 to pi/2 rad
-        *    llon        - start longitude (west -)               0.0  to 2pi rad
-        *    tlat        - end geocentric latitude               -pi/2 to pi/2 rad
-        *    tlon        - end longitude(west -)                  0.0  to 2pi rad
-        *    tof         - time of flight if icbm, or             0.0 min
-        *
-        *  outputs       :
-        *    range       - range between points km
-        *    az          - azimuth                                0.0  to 2pi rad
-        *
-        *  locals        :
-        *    none.
-        *
-        *  coupling      :
-        *    site, rot3, binomial, cross, atan2, dot, unit
-        *
-        *  references    :
-        *    vallado       2001, 774-775, eq 11-3, eq 11-4, eq 11-5
-        * ------------------------------------------------------------------------------ */
+        // ---------------------------------------------------------------------------- 
+        //
+        //                           function rngaz
+        //
+        //  this function calculates the range and azimuth between two specified
+        //
+        //
+        //    ground points on a spherical earth.notice the range will always be
+        //    within the range of values listed since you for not know the direction of
+        //    firing, long or short.  the function will calculate rotating earth ranges
+        //    if the tof is passed in other than 0.0 . range is calulated in rad and
+        //    converted to er by s = ro, but the radius of the earth = 1 er, so it's
+        //    s = o.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    llat        - start geocentric latitude             -pi/2 to pi/2 rad
+        //    llon        - start longitude (west -)               0.0  to 2pi rad
+        //    tlat        - end geocentric latitude               -pi/2 to pi/2 rad
+        //    tlon        - end longitude(west -)                  0.0  to 2pi rad
+        //    tof         - time of flight if icbm, or             0.0 min
+        //
+        //  outputs       :
+        //    range       - range between points km
+        //    az          - azimuth                                0.0  to 2pi rad
+        //
+        //  locals        :
+        //    none.
+        //
+        //  coupling      :
+        //    site, rot3, binomial, cross, atan2, dot, unit
+        //
+        //  references    :
+        //    vallado       2001, 774-775, eq 11-3, eq 11-4, eq 11-5
+        // --------------------------------------------------------------------------------
         public void rngaz
             (
               double llat, double llon, double tlat, double tlon, double tof,
@@ -15080,7 +14125,7 @@ namespace AstroLibMethods
             double omegaearth = 0.05883359221938136;
             // fix units on tof and omegaearth
 
-            // -------------------------  implementation   -------------------------
+            // -------------------------  implementation    // ------------------------
             range = Math.Acos(Math.Sin(llat) * Math.Sin(tlat) +
                   Math.Cos(llat) * Math.Cos(tlat) * Math.Cos(tlon - llon + omegaearth * tof));
 
@@ -15194,34 +14239,34 @@ namespace AstroLibMethods
         //                                       Estimation functions
         // -----------------------------------------------------------------------------------------
 
-        /* ---------------------------------------------------------------------------- 
-        *
-        *                                function partObs2State
-        *
-        *  finds partials of the observations (range az el ) wrt the state using analytical techniques.  
-        *
-        *  author        : david vallado           davallado@gmail.com        18 sep 2023
-        *
-        *  inputs          description 
-        *    rhosez      - slant range position vector in SEZ          km
-        *    latgd       - geodetic latitude                           -pi/2 to pi/2 rad
-        *    lon         - longitude (west -)                          0.0  to 2pi rad
-        *
-        *  outputs       :
-        *    partObsState- partial of obs wrt state
-        *
-        *  locals        :
-        *
-        *  coupling      :
-        *    mag         - magnitude of a vector
-        *
-        *  references    :
-        *    vallado       2022, 819
-         ---------------------------------------------------------------------------- - */
+        // ---------------------------------------------------------------------------- 
+        //
+        //                                function partObs2State
+        //
+        //  finds partials of the observations (range az el ) wrt the state using analytical techniques.  
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    rhosez      - slant range position vector in SEZ          km
+        //    latgd       - geodetic latitude                           -pi/2 to pi/2 rad
+        //    lon         - longitude (west -)                          0.0  to 2pi rad
+        //
+        //  outputs       :
+        //    partObsState- partial of obs wrt state
+        //
+        //  locals        :
+        //
+        //  coupling      :
+        //    mag         - magnitude of a vector
+        //
+        //  references    :
+        //    vallado       2022, 819
+        // --------------------------------------------------------------------------- - */
 
         public void partObs2State
             (
-              double[] rhosez, double latgd, double lon, 
+              double[] rhosez, double latgd, double lon,
               out double[,] partObsState
             )
         {
@@ -15230,7 +14275,7 @@ namespace AstroLibMethods
             // -------------------------  implementation ----------------------------
             double magrho, magrho2, rhosezs2, rhoseze2, rhosezz2, magrho3, temp;
             double sinlat, coslat, sinlon, coslon;
-            double[,] tm = new double[3,3];
+            double[,] tm = new double[3, 3];
 
             // ------------------------- find partial of SEZ wrt ECEF
             sinlat = Math.Sin(latgd);
@@ -15283,32 +14328,29 @@ namespace AstroLibMethods
         //                                       covariance functions
         // -----------------------------------------------------------------------------------------
 
-        /* ---------------------------------------------------------------------------- 
-        *
-        *                           function posvelcov2pts
-        *
-        *  finds 12 sigma points given position and velocity and covariance information
-        *  using cholesky matrix square root algorithm
-        *  then progates covariance points
-        *
-        *  author        : sal alfano      719-573-2600   31 mar 2011
-        *
-        *  revisions
-        *                  dave vallado   make single routine to simply find sigma
-        *                  points
-        *
-        *  inputs          description 
-        *    cov         - eci 6x6 covariance matrix      km or m
-        *    reci        - eci 3x1 position vector        km or m
-        *    veci        - eci 3x1 velocity vector        km or m
-        *
-        *  outputs       :
-        *    sigmapts    - structure of sigma points (6 x 12)
-        *
-        *  locals        :
-        *
-        *  sigmapts = posvelcov2pts(reci, veci, cov);
-         ---------------------------------------------------------------------------- - */
+        // ---------------------------------------------------------------------------- 
+        //
+        //                           function posvelcov2pts
+        //
+        //  finds 12 sigma points given position and velocity and covariance information
+        //  using cholesky matrix square root algorithm
+        //  then progates covariance points
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    cov         - eci 6x6 covariance matrix      km or m
+        //    reci        - eci 3x1 position vector        km or m
+        //    veci        - eci 3x1 velocity vector        km or m
+        //
+        //  outputs       :
+        //    sigmapts    - structure of sigma points (6 x 12)
+        //
+        //  references        :
+        //    Alfano original code
+        //    
+        //  sigmapts = posvelcov2pts(reci, veci, cov);
+        // --------------------------------------------------------------------------- - */
 
         public void posvelcov2pts
             (
@@ -15317,7 +14359,7 @@ namespace AstroLibMethods
         {
             Int32 i, j, jj;
             double[,] s = new double[6, 6];
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
 
             // initialize data & pre-allocate new points
             sigmapts = new double[,] { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -15348,31 +14390,28 @@ namespace AstroLibMethods
         }  // posvelcov2pts
 
 
-        /* ---------------------------------------------------------------------------- 
-        *
-        *                           function poscov2pts
-        *
-        *  finds 12 sigma points given position and velocity and covariance information
-        *  using cholesky matrix square root algorithm
-        *  then progates covariance points
-        *
-        *  author        : sal alfano      719-573-2600   31 mar 2011
-        *
-        *  revisions
-        *                  dave vallado   make single routine to simply find sigma
-        *                  points
-        *
-        *  inputs          description 
-        *    cov         - eci 3x3 covariance matrix      km or m
-        *    reci        - eci 3x1 position vector        km or m
-        *
-        *  outputs       :
-        *    sigmapts    - structure of sigma points (3 x 6)
-        *
-        *  locals        :
-        *
-        *  sigmapts = poscov2pts(reci, cov);
-         ---------------------------------------------------------------------------- - */
+        // ---------------------------------------------------------------------------- 
+        //
+        //                           function poscov2pts
+        //
+        //  finds 12 sigma points given position and velocity and covariance information
+        //  using cholesky matrix square root algorithm
+        //  then progates covariance points
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    cov         - eci 3x3 covariance matrix      km or m
+        //    reci        - eci 3x1 position vector        km or m
+        //
+        //  outputs       :
+        //    sigmapts    - structure of sigma points (3 x 6)
+        //
+        //  references        :
+        //    Alfano original code
+        //
+        //  sigmapts = poscov2pts(reci, cov);
+        // --------------------------------------------------------------------------- - */
 
         public void poscov2pts
             (
@@ -15381,7 +14420,7 @@ namespace AstroLibMethods
         {
             Int32 i, j, jj;
             double[,] s = new double[3, 3];
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
 
             // initialize data & pre-allocate new points
             sigmapts = new double[,] { { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 },
@@ -15410,30 +14449,30 @@ namespace AstroLibMethods
 
 
 
-        /* ---------------------------------------------------------------------------- 
-        *
-        *                           function remakecovpv
-        *
-        *  takes propagated perturbed points from square root algorithm
-        *  and finds mean and covariance
-        *
-        *  author        : sal alfano      719-573-2600   7 apr 2010
-        *
-        *  revisions
-        *                -
-        *
-        *  inputs          description 
-        *    pts            Array of propagated points from square root algorithm
-        *
-        *  outputs       :
-        *    cov             n_dim x n_dim covariance matrix (m)
-        *    yu             1 x n_dim mean vector (m)
-        *
-        *  locals        :
-        *    y              1 x n_dim mean shifted vector (m)
-        *    n_dim          dimension of vector
-        *    n_pts          total number of points
-         ---------------------------------------------------------------------------- - */
+        // ---------------------------------------------------------------------------- 
+        //
+        //                           function remakecovpv
+        //
+        //  takes propagated perturbed points from square root algorithm
+        //  and finds mean and covariance
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    pts            Array of propagated points from square root algorithm
+        //
+        //  outputs       :
+        //    cov             n_dim x n_dim covariance matrix (m)
+        //    yu             1 x n_dim mean vector (m)
+        //
+        //  locals        :
+        //    y              1 x n_dim mean shifted vector (m)
+        //    n_dim          dimension of vector
+        //    n_pts          total number of points
+        //    
+        //    references :
+        //      alfano original code
+        // --------------------------------------------------------------------------- - */
 
         public void remakecovpv
             (
@@ -15446,7 +14485,7 @@ namespace AstroLibMethods
             oo12 = 1.0 / 12.0;
             yu = new double[] { 0, 0, 0, 0, 0, 0 };
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             // initialize data & pre-allocate matrices
             double[,] y = new double[6, 12];
             double[,] tmp = new double[6, 6];
@@ -15474,29 +14513,30 @@ namespace AstroLibMethods
 
 
 
-        /* ---------------------------------------------------------------------------- 
-        *
-        *                           function remakecovp
-        *
-        *  takes propagated perturbed points from square root algorithm
-        *  and finds mean and covariance
-        *
-        *  author        : sal alfano      719-573-2600   7 apr 2010
-        *
-        *  revisions
-        *
-        *  inputs          description 
-        *    pts            Array of propagated points from square root algorithm
-        *
-        *  outputs       :
-        *    cov             n_dim x n_dim covariance matrix (m)
-        *    yu             1 x n_dim mean vector (m)
-        *
-        *  locals        :
-        *    y              1 x n_dim mean shifted vector (m)
-        *    n_dim          dimension of vector
-        *    n_pts          total number of points
-         ---------------------------------------------------------------------------- - */
+        // ---------------------------------------------------------------------------- 
+        //
+        //                           function remakecovp
+        //
+        //  takes propagated perturbed points from square root algorithm
+        //  and finds mean and covariance
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    pts            Array of propagated points from square root algorithm
+        //
+        //  outputs       :
+        //    cov             n_dim x n_dim covariance matrix (m)
+        //    yu             1 x n_dim mean vector (m)
+        //
+        //  locals        :
+        //    y              1 x n_dim mean shifted vector (m)
+        //    n_dim          dimension of vector
+        //    n_pts          total number of points
+        //    
+        //    references  :
+        //     alfano original code
+        // --------------------------------------------------------------------------- - */
 
         public void remakecovp
             (
@@ -15509,7 +14549,7 @@ namespace AstroLibMethods
             oo6 = 1.0 / 6.0;
             yu = new double[] { 0, 0, 0 };
 
-            // -------------------------  implementation   -----------------
+            // -------------------------  implementation    // ----------------
             // initialize data & pre-allocate matrices
             double[,] y = new double[3, 6];
             double[,] tmp = new double[3, 3];
@@ -15533,54 +14573,51 @@ namespace AstroLibMethods
         } // remakecovp  
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function covct2cl
-        *
-        *  this function transforms a six by six covariance matrix expressed in cartesian elements
-        *    into one expressed in classical elements
-        *
-        *  author        : david vallado           davallado@gmail.com   21 jun 2002
-        *
-        *  revisions
-        *    vallado     - major update                                  26 aug 2015
-        *
-        *  inputs          description                          range / units
-        *    cartcov     - 6x6 cartesian covariance matrix         m, m/s
-        *    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)  m, m/s
-        *    anomclass   - anomaly                              'meana', 'truea'
-        *
-        *  outputs       :
-        *    classcov    - 6x6 classical covariance matrix
-        *    tm          - transformation matrix
-        *
-        *  locals        :
-        *    r           - matrix of partial derivatives
-        *    rj2000      - position vector                      km
-        *    x,y,z       - components of position vector        km
-        *    vj2000      - velocity vector                      km/s
-        *    vx,vy,vz    - components of position vector        km/s
-        *    p           - semilatus rectum                     km
-        *    a           - semimajor axis                       km
-        *    ecc         - eccentricity
-        *    incl        - inclination                          0.0  to pi rad
-        *    oMathTimeLibr.maga       - longitude of ascending node    0.0  to 2pi rad
-        *    argp        - argument of perigee                  0.0  to 2pi rad
-        *    nu          - true anomaly                         0.0  to 2pi rad
-        *    m           - mean anomaly                         0.0  to 2pi rad
-        *    arglat      - argument of latitude      (ci)       0.0  to 2pi rad
-        *    truelon     - true longitude            (ce)       0.0  to 2pi rad
-        *    lonper      - longitude of periapsis    (ee)       0.0  to 2pi rad
-        *    magr        - magnitude of position vector         km
-        *    magv        - magnitude of velocity vector         km/s
-        *
-        *  coupling      :
-        *    rv2coe      - position and velocity vectors to classical elements
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        *
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function covct2cl
+        //
+        //  this function transforms a six by six covariance matrix expressed in cartesian elements
+        //    into one expressed in classical elements
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    cartcov     - 6x6 cartesian covariance matrix         m, m/s
+        //    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)  m, m/s
+        //    anomclass   - anomaly                              'meana', 'truea'
+        //
+        //  outputs       :
+        //    classcov    - 6x6 classical covariance matrix
+        //    tm          - transformation matrix
+        //
+        //  locals        :
+        //    r           - matrix of partial derivatives
+        //    rj2000      - position vector                      km
+        //    x,y,z       - components of position vector        km
+        //    vj2000      - velocity vector                      km/s
+        //    vx,vy,vz    - components of position vector        km/s
+        //    p           - semilatus rectum                     km
+        //    a           - semimajor axis                       km
+        //    ecc         - eccentricity
+        //    incl        - inclination                          0.0  to pi rad
+        //    oMathTimeLibr.maga       - longitude of ascending node    0.0  to 2pi rad
+        //    argp        - argument of perigee                  0.0  to 2pi rad
+        //    nu          - true anomaly                         0.0  to 2pi rad
+        //    m           - mean anomaly                         0.0  to 2pi rad
+        //    arglat      - argument of latitude      (ci)       0.0  to 2pi rad
+        //    truelon     - true longitude            (ce)       0.0  to 2pi rad
+        //    lonper      - longitude of periapsis    (ee)       0.0  to 2pi rad
+        //    magr        - magnitude of position vector         km
+        //    magv        - magnitude of velocity vector         km/s
+        //
+        //  coupling      :
+        //    rv2coe      - position and velocity vectors to classical elements
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        //
+        // ------------------------------------------------------------------------------
 
         public void covct2cl(double[,] cartcov, double[] cartstate, string anomclass, out double[,] classcov, out double[,] tm)
         {
@@ -15610,7 +14647,7 @@ namespace AstroLibMethods
             reci = new double[] { rx, ry, rz };  // m
             veci = new double[] { vx, vy, vz };
 
-            for(int i = 0; i<3; i++)  // in km
+            for (int i = 0; i < 3; i++)  // in km
             {
                 recim[i] = reci[i] * 0.001;
                 vecim[i] = veci[i] * 0.001;
@@ -15789,48 +14826,44 @@ namespace AstroLibMethods
         }  //  covct2cl
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function covcl2ct
-        *
-        *  this function transforms a six by six covariance matrix expressed in classical elements
-        *    into one expressed in cartesian elements
-        *
-        *  author        : david vallado
-        *
-        *  revisions
-        *    vallado     - simplify code using pqw-eci transformation    12 may 2017
-        *    vallado     - major update                                  26 aug 2015
-        *
-        *  inputs          description                          range / units
-        *    classcov    - 6x6 classical covariance matrix space delimited
-        *    classstate  - 6x1 classical orbit state            (a e i O w nu/m)
-        *    anomclass   - anomaly                              'meana', 'truea'
-        *
-        *  outputs       :
-        *    cartcov     - 6x6 cartesian covariance matrix
-        *    tm          - transformation matrix
-        *
-        *  locals        :
-        *    r           - matrix of partial derivatives
-        *    a           - semimajor axis                       m
-        *    ecc         - eccentricity
-        *    incl        - inclination                          0.0  to pi rad
-        *    oMathTimeLibr.maga       - longitude of asc}ing node      0.0  to 2pi rad
-        *    argp        - argument of perigee                  0.0  to 2pi rad
-        *    nu          - true anomaly                         0.0  to 2pi rad
-        *    m           - mean anomaly                         0.0  to 2pi rad
-        *    p1,p2,p3,p4 - denominator terms for the partials
-        *    eccanom          - eccentric anomaly                    0.0  to 2pi rad
-        *    true1, true2- temp true anomaly                    0.0  to 2pi rad
-        *
-        *  coupling      :
-        *    newtonm     - newton iteration for m and ecc to nu
-        *    newtonnu    - newton iteration for nu and ecc to m
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function covcl2ct
+        //
+        //  this function transforms a six by six covariance matrix expressed in classical elements
+        //    into one expressed in cartesian elements
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    classcov    - 6x6 classical covariance matrix space delimited
+        //    classstate  - 6x1 classical orbit state            (a e i O w nu/m)
+        //    anomclass   - anomaly                              'meana', 'truea'
+        //
+        //  outputs       :
+        //    cartcov     - 6x6 cartesian covariance matrix
+        //    tm          - transformation matrix
+        //
+        //  locals        :
+        //    r           - matrix of partial derivatives
+        //    a           - semimajor axis                       m
+        //    ecc         - eccentricity
+        //    incl        - inclination                          0.0  to pi rad
+        //    oMathTimeLibr.maga       - longitude of asc}ing node      0.0  to 2pi rad
+        //    argp        - argument of perigee                  0.0  to 2pi rad
+        //    nu          - true anomaly                         0.0  to 2pi rad
+        //    m           - mean anomaly                         0.0  to 2pi rad
+        //    p1,p2,p3,p4 - denominator terms for the partials
+        //    eccanom          - eccentric anomaly                    0.0  to 2pi rad
+        //    true1, true2- temp true anomaly                    0.0  to 2pi rad
+        //
+        //  coupling      :
+        //    newtonm     - newton iteration for m and ecc to nu
+        //    newtonnu    - newton iteration for nu and ecc to m
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        // ------------------------------------------------------------------------------
 
         public void covcl2ct
             (double[,] classcov, double[] classstate, string anomclass, out double[,] cartcov, out double[,] tm
@@ -16030,52 +15063,49 @@ namespace AstroLibMethods
         }  //  covcl2ct
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function covct2eq
-        *
-        *  this function transforms a six by six covariance matrix expressed in
-        *    cartesian vectors into one expressed in equinoctial elements.
-        *
-        *  author        : david vallado           davallado@gmail.com   14 jul 2002
-        *
-        *  revisions
-        *    vallado     - major update                                  26 aug 2015
-        *
-        *  inputs          description                          range / units
-        *    cartcov     - 6x6 cartesian covariance matrix       m, m/s
-        *    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)  m, m/s
-        *    anomeq      - anomaly                              'meana', 'truea', 'meann', 'truen', 'meanp', 'truep'
-        *    fr          - retrograde factor                     +1, -1
-        *
-        *  outputs       :
-        *    eqcov       - 6x6 equinoctial covariance matrix
-        *    tm          - transformation matrix
-        *
-        *  locals        :
-        *    r           - matrix of partial derivatives
-        *    a           - semimajor axis                       m
-        *    ecc         - eccentricity
-        *    incl        - inclination                          0.0  to pi rad
-        *    oMathTimeLibr.maga       - longitude of ascending node    0.0  to 2pi rad
-        *    argp        - argument of perigee                  0.0  to 2pi rad
-        *    nu          - true anomaly                         0.0  to 2pi rad
-        *    m           - mean anomaly                         0.0  to 2pi rad
-        *    eccanom          - eccentric anomaly                    0.0  to 2pi rad
-        *    tau         - time from perigee passage
-        *    n           - mean motion                          rad
-        *    af          - component of ecc vector
-        *    ag          - component of ecc vector
-        *    chi         - component of node vector in eqw
-        *    psi         - component of node vector in eqw
-        *    meanlon     - mean longitude                       rad
-        *
-        *  coupling      :
-        *    constastro
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function covct2eq
+        //
+        //  this function transforms a six by six covariance matrix expressed in
+        //    cartesian vectors into one expressed in equinoctial elements.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    cartcov     - 6x6 cartesian covariance matrix       m, m/s
+        //    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)  m, m/s
+        //    anomeq      - anomaly                              'meana', 'truea', 'meann', 'truen', 'meanp', 'truep'
+        //    fr          - retrograde factor                     +1, -1
+        //
+        //  outputs       :
+        //    eqcov       - 6x6 equinoctial covariance matrix
+        //    tm          - transformation matrix
+        //
+        //  locals        :
+        //    r           - matrix of partial derivatives
+        //    a           - semimajor axis                       m
+        //    ecc         - eccentricity
+        //    incl        - inclination                          0.0  to pi rad
+        //    oMathTimeLibr.maga       - longitude of ascending node    0.0  to 2pi rad
+        //    argp        - argument of perigee                  0.0  to 2pi rad
+        //    nu          - true anomaly                         0.0  to 2pi rad
+        //    m           - mean anomaly                         0.0  to 2pi rad
+        //    eccanom          - eccentric anomaly                    0.0  to 2pi rad
+        //    tau         - time from perigee passage
+        //    n           - mean motion                          rad
+        //    af          - component of ecc vector
+        //    ag          - component of ecc vector
+        //    chi         - component of node vector in eqw
+        //    psi         - component of node vector in eqw
+        //    meanlon     - mean longitude                       rad
+        //
+        //  coupling      :
+        //    constastro
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        // ------------------------------------------------------------------------------
 
         public void covct2eq
             (
@@ -16290,46 +15320,43 @@ namespace AstroLibMethods
         }  //  covct2eq
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function coveq2ct
-        *
-        *  this function transforms a six by six covariance matrix expressed in
-        *    equinoctial elements into one expressed in cartesian elements.
-        *
-        *  author        : david vallado           davallado@gmail.com   24 jul 2003
-        *
-        *  revisions
-        *    vallado     - major update                                  26 aug 2015
-        *
-        *  inputs          description                          range / units
-        *    eqcov       - 6x6 equinoctial covariance matrix space delimited
-        *    eqstate     - 6x1 equinoctial orbit state          (a/n af ag chi psi lm/ln)
-        *    anomeq      - anomaly                              'meana', 'truea', 'meann', 'truen', 'meanp', 'truep'
-        *    fr          - retrograde factor                     +1, -1
-        *
-        *  outputs       :
-        *    cartcov     - 6x6 cartesian covariance matrix
-        *    tm          - transformation matrix
-        *
-        *  locals        :
-        *    n           - mean motion                          rad
-        *    af          - component of ecc vector
-        *    ag          - component of ecc vector
-        *    chi         - component of node vector in eqw
-        *    psi         - component of node vector in eqw
-        *    meanlon     - mean longitude                       rad
-        *    nu          - true anomaly                               0.0  to 2pi rad
-        *    m           - mean anomaly                   0.0  to 2pi rad
-        *    r           - matrix of partial derivatives
-        *    eccanom          - eccentric anomaly                    0.0  to 2pi rad
-        *
-        *  coupling      :
-        *    constastro
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function coveq2ct
+        //
+        //  this function transforms a six by six covariance matrix expressed in
+        //    equinoctial elements into one expressed in cartesian elements.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    eqcov       - 6x6 equinoctial covariance matrix space delimited
+        //    eqstate     - 6x1 equinoctial orbit state          (a/n af ag chi psi lm/ln)
+        //    anomeq      - anomaly                              'meana', 'truea', 'meann', 'truen', 'meanp', 'truep'
+        //    fr          - retrograde factor                     +1, -1
+        //
+        //  outputs       :
+        //    cartcov     - 6x6 cartesian covariance matrix
+        //    tm          - transformation matrix
+        //
+        //  locals        :
+        //    n           - mean motion                          rad
+        //    af          - component of ecc vector
+        //    ag          - component of ecc vector
+        //    chi         - component of node vector in eqw
+        //    psi         - component of node vector in eqw
+        //    meanlon     - mean longitude                       rad
+        //    nu          - true anomaly                               0.0  to 2pi rad
+        //    m           - mean anomaly                   0.0  to 2pi rad
+        //    r           - matrix of partial derivatives
+        //    eccanom          - eccentric anomaly                    0.0  to 2pi rad
+        //
+        //  coupling      :
+        //    constastro
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        // ------------------------------------------------------------------------------
 
         public void coveq2ct
             (
@@ -16637,44 +15664,41 @@ namespace AstroLibMethods
         }  //  coveq2ct
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function covcl2eq
-        *
-        *  this function transforms a six by six covariance matrix expressed in
-        *    classical elements into one expressed in equinoctial elements.
-        *
-        *  author        : david vallado           davallado@gmail.com   14 jul 2002
-        *
-        *  revisions
-        *    vallado     - major update                                  26 aug 2015
-        *
-        *  inputs          description                          range / units
-        *    classcov    - 6x6 classical covariance matrix
-        *    classstate  - 6x1 classical orbit state            (a e i O w nu/m)
-        *    anomclass   - anomaly                              'meana', 'truea'
-        *    anomeq      - anomaly                              'meana', 'truea', 'meann', 'truen', 'meanp', 'truep'
-        *    fr          - retrograde factor                     +1, -1
-        *
-        *  outputs       :
-        *    eqcov       - 6x6 equinoctial covariance matrix
-        *    tm          - transformation matrix
-        *
-        *  locals        :
-        *    a           - semimajor axis                       m
-        *    ecc         - eccentricity
-        *    incl        - inclination                          0.0  to pi rad
-        *    oMathTimeLibr.maga       - longitude of ascending node    0.0  to 2pi rad
-        *    argp        - argument of perigee                  0.0  to 2pi rad
-        *    nu          - true anomaly                         0.0  to 2pi rad
-        *    m           - mean anomaly                         0.0  to 2pi rad
-        *    gravConst.mum, gravitational paramater   m^3/s^2 NOTE Meters!
-        *
-        *  coupling      :
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function covcl2eq
+        //
+        //  this function transforms a six by six covariance matrix expressed in
+        //    classical elements into one expressed in equinoctial elements.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    classcov    - 6x6 classical covariance matrix
+        //    classstate  - 6x1 classical orbit state            (a e i O w nu/m)
+        //    anomclass   - anomaly                              'meana', 'truea'
+        //    anomeq      - anomaly                              'meana', 'truea', 'meann', 'truen', 'meanp', 'truep'
+        //    fr          - retrograde factor                     +1, -1
+        //
+        //  outputs       :
+        //    eqcov       - 6x6 equinoctial covariance matrix
+        //    tm          - transformation matrix
+        //
+        //  locals        :
+        //    a           - semimajor axis                       m
+        //    ecc         - eccentricity
+        //    incl        - inclination                          0.0  to pi rad
+        //    oMathTimeLibr.maga       - longitude of ascending node    0.0  to 2pi rad
+        //    argp        - argument of perigee                  0.0  to 2pi rad
+        //    nu          - true anomaly                         0.0  to 2pi rad
+        //    m           - mean anomaly                         0.0  to 2pi rad
+        //    gravConst.mum, gravitational paramater   m^3/s^2 NOTE Meters!
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        // ----------------------------------------------------------------------------*/
 
         public void covcl2eq
             (
@@ -16796,44 +15820,41 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function coveq2cl
-        *
-        *  this function transforms a six by six covariance matrix expressed in
-        *    equinoctial elements into one expressed in classical orbital elements.
-        *
-        *  author        : david vallado           davallado@gmail.com   18 jun 2002
-        *
-        *  revisions
-        *    vallado     - major update                                  26 aug 2015
-        *
-        *  inputs          description                                range / units
-        *    eqcov       - 6x6 equinoctial covariance matrix
-        *    eqstate     - 6x1 equinoctial orbit state                (a/n/p af ag chi psi lm/ln)
-        *    anomclass   - anomaly                                    'meana', 'truea'
-        *    anomeq      - anomaly                                    'meana', 'truea', 'meann', 'truen', 'meanp', 'truep'
-        *    fr          - retrograde factor                           +1, -1
-        *
-        *  outputs       :
-        *    classcov    - 6x6 classical covariance matrix
-        *    tm          - transformation matrix
-        *
-        *  locals        :
-        *    n           - mean motion                                rad
-        *    af          - component of ecc vector
-        *    ag          - component of ecc vector
-        *    chi         - component of node vector in eqw
-        *    psi         - component of node vector in eqw
-        *    meanlon     - mean longitude                             rad
-        *    gravConst.mum, gravitational paramater         m^3/s^2 NOTE Meters!
-        *
-        *  coupling      :
-        *    constastro
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        * ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
+        //
+        //                           function coveq2cl
+        //
+        //  this function transforms a six by six covariance matrix expressed in
+        //    equinoctial elements into one expressed in classical orbital elements.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    eqcov       - 6x6 equinoctial covariance matrix
+        //    eqstate     - 6x1 equinoctial orbit state                (a/n/p af ag chi psi lm/ln)
+        //    anomclass   - anomaly                                    'meana', 'truea'
+        //    anomeq      - anomaly                                    'meana', 'truea', 'meann', 'truen', 'meanp', 'truep'
+        //    fr          - retrograde factor                           +1, -1
+        //
+        //  outputs       :
+        //    classcov    - 6x6 classical covariance matrix
+        //    tm          - transformation matrix
+        //
+        //  locals        :
+        //    n           - mean motion                                rad
+        //    af          - component of ecc vector
+        //    ag          - component of ecc vector
+        //    chi         - component of node vector in eqw
+        //    psi         - component of node vector in eqw
+        //    meanlon     - mean longitude                             rad
+        //    gravConst.mum, gravitational paramater         m^3/s^2 NOTE Meters!
+        //
+        //  coupling      :
+        //    constastro
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        // ----------------------------------------------------------------------------*/
 
         public void coveq2cl
             (
@@ -16982,58 +16003,55 @@ namespace AstroLibMethods
         }  //  coveq2cl
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function covct2fl
-        *
-        *  this function transforms a six by six covariance matrix expressed in cartesian elements
-        *    into one expressed in flight parameters
-        *
-        *  author        : david vallado           davallado@gmail.com   21 jun 2002
-        *
-        *  revisions
-        *    vallado     - major update                                  26 aug 2015
-        *
-        *  inputs          description                          range / units
-        *    cartcov     - 6x6 cartesian covariance matrix
-        *    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)
-        *    anom        - anomaly                              'latlon', 'radec'
-        *    ttt         - julian centuries of tt               centuries
-        *    jdut1       - julian date of ut1                   days from 4713 bc
-        *    lod         - excess length of day                 sec
-        *    xp          - polar motion coefficient             arc sec
-        *    yp          - polar motion coefficient             arc sec
-        *    terms       - number of terms for ast calculation 0,2
-        *    opt         - method option                           e80, e96, e00a, e00cio
-        *  outputs       :
-        *    flcov       - 6x6 flight covariance matrix
-        *    tm          - transformation matrix
-        *
-        *  locals        :
-        *    r           - matrix of partial derivatives
-        *    x,y,z       - components of position vector        km
-        *    vx,vy,vz    - components of position vector        km/s
-        *    magr        - eci position vector magnitude        km
-        *    magv        - eci velocity vector magnitude        km/sec
-        *    d           - r dot v
-        *    h           - angular momentum vector
-        *    hx,hy,hz    - components of angular momentum vector
-        *    hcrossrx,y,z- components of h MathTimeLibr.cross r vector
-        *    p1,p2       - denominator terms for the partials
-        *
-        * coupling      :
-        *    ecef2eci    - convert eci vectors to ecef
-        *
-        * references    :
-        *    Vallado and Alfano 2015
-        ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function covct2fl
+        //
+        //  this function transforms a six by six covariance matrix expressed in cartesian elements
+        //    into one expressed in flight parameters
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    cartcov     - 6x6 cartesian covariance matrix
+        //    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)
+        //    anom        - anomaly                              'latlon', 'radec'
+        //    ttt         - julian centuries of tt               centuries
+        //    jdut1       - julian date of ut1                   days from 4713 bc
+        //    lod         - excess length of day                 sec
+        //    xp          - polar motion coefficient             arc sec
+        //    yp          - polar motion coefficient             arc sec
+        //    terms       - number of terms for ast calculation 0,2
+        //    opt         - method option                           e80, e96, e00a, e00cio
+        //  outputs       :
+        //    flcov       - 6x6 flight covariance matrix
+        //    tm          - transformation matrix
+        //
+        //  locals        :
+        //    r           - matrix of partial derivatives
+        //    x,y,z       - components of position vector        km
+        //    vx,vy,vz    - components of position vector        km/s
+        //    magr        - eci position vector magnitude        km
+        //    magv        - eci velocity vector magnitude        km/sec
+        //    d           - r dot v
+        //    h           - angular momentum vector
+        //    hx,hy,hz    - components of angular momentum vector
+        //    hcrossrx,y,z- components of h MathTimeLibr.cross r vector
+        //    p1,p2       - denominator terms for the partials
+        //
+        // coupling      :
+        //    ecef2eci    - convert eci vectors to ecef
+        //
+        // references    :
+        //    Vallado and Alfano 2015
+        // -----------------------------------------------------------------------------
 
         public void covct2fl
             (
-            double[,] cartcov, double[] cartstate, string anomflt, double jdtt, double jdftt, double jdut1, 
+            double[,] cartcov, double[] cartstate, string anomflt, double jdtt, double jdftt, double jdut1,
             double lod,
             double xp, double yp, Int16 terms, double ddpsi, double ddeps,
-            EOPSPWLib.iau80Class iau80arr, 
+            EOPSPWLib.iau80Class iau80arr,
             out double[,] flcov, out double[,] tm
             )
         {
@@ -17204,57 +16222,54 @@ namespace AstroLibMethods
         }  //  covct2fl
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        * 
-        *                        function covfl2ct
-        *
-        *  this function transforms a six by six covariance matrix expressed in
-        *    flight elements into one expressed in cartesian elements.
-        *
-        *  author        : david vallado           davallado@gmail.com   27 may 2003
-        *
-        *  revisions
-        *    vallado     - major update                                  26 aug 2015
-        *
-        *  inputs          description                          range / units
-        *    flcov       - 6x6 flight covariance matrix
-        *    flstate     - 6x1 flight orbit state               (r v latgc lon fpa az)
-        *    anom        - anomaly                              'latlon', 'radec'
-        *    ttt         - julian centuries of tt               centuries
-        *    jdut1       - julian date of ut1                   days from 4713 bc
-        *    lod         - excess length of day                 sec
-        *    xp          - polar motion coefficient             arc sec
-        *    yp          - polar motion coefficient             arc sec
-        *    terms       - number of terms for ast calculation 0,2
-        *    opt         - method option                           e80, e96, e00a, e00cio
-        *
-        *  outputs       :
-        *    cartcov     - 6x6 cartesian covariance matrix
-        *    tm          - transformation matrix
-        *
-        *  locals        :
-        *    tm           - matrix of partial derivatives
-        *    magr        - eci position vector magnitude        km
-        *    magv        - eci velocity vector magnitude        km/sec
-        *    latgc       - geocentric latitude                  rad
-        *    lon         - longitude                            rad
-        *    fpa         - sat flight path angle                rad
-        *    az          - sat flight path az                   rad
-        *    fpav        - sat flight path anglefrom vert       rad
-        *    xe,ye,ze    - ecef position vector components      km
-        *
-        *  coupling      :
-        *    ecef2eci    - convert eci vectors to ecef
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        // 
+        //                        function covfl2ct
+        //
+        //  this function transforms a six by six covariance matrix expressed in
+        //    flight elements into one expressed in cartesian elements.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    flcov       - 6x6 flight covariance matrix
+        //    flstate     - 6x1 flight orbit state               (r v latgc lon fpa az)
+        //    anom        - anomaly                              'latlon', 'radec'
+        //    ttt         - julian centuries of tt               centuries
+        //    jdut1       - julian date of ut1                   days from 4713 bc
+        //    lod         - excess length of day                 sec
+        //    xp          - polar motion coefficient             arc sec
+        //    yp          - polar motion coefficient             arc sec
+        //    terms       - number of terms for ast calculation 0,2
+        //    opt         - method option                           e80, e96, e00a, e00cio
+        //
+        //  outputs       :
+        //    cartcov     - 6x6 cartesian covariance matrix
+        //    tm          - transformation matrix
+        //
+        //  locals        :
+        //    tm           - matrix of partial derivatives
+        //    magr        - eci position vector magnitude        km
+        //    magv        - eci velocity vector magnitude        km/sec
+        //    latgc       - geocentric latitude                  rad
+        //    lon         - longitude                            rad
+        //    fpa         - sat flight path angle                rad
+        //    az          - sat flight path az                   rad
+        //    fpav        - sat flight path anglefrom vert       rad
+        //    xe,ye,ze    - ecef position vector components      km
+        //
+        //  coupling      :
+        //    ecef2eci    - convert eci vectors to ecef
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        // ------------------------------------------------------------------------------
 
         public void covfl2ct
             (
-            double[,] flcov, double[] flstate, string anomflt, double jdtt, double jdftt, double jdut1, 
-            double lod, double xp, double yp, Int16 terms, double ddpsi, double ddeps, 
+            double[,] flcov, double[] flstate, string anomflt, double jdtt, double jdftt, double jdut1,
+            double lod, double xp, double yp, Int16 terms, double ddpsi, double ddeps,
             EOPSPWLib.iau80Class iau80arr, out double[,] cartcov, out double[,] tm
             )
         {
@@ -17462,34 +16477,34 @@ namespace AstroLibMethods
 
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function covct_rsw
-        *
-        *  this function transforms a six by six covariance matrix expressed in cartesian
-        *    into one expressed in orbit plane, rsw frame
-        *
-        *  author        : david vallado           davallado@gmail.com   20 may 2003
-        *
-        *  inputs          description                          range / units
-        *    cartcov     - 6x6 cartesian covariance matrix space delimited
-        *    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)
-        *
-        *  outputs       :
-        *    covrsw      - 6x6 orbit plane rsw covariance matrix
-        *
-        *  locals        :
-        *    r           - position vector                      m
-        *    v           - velocity vector                      m/s
-        *    tm          - transformation matrix
-        *    temv        - temporary vector
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function covct_rsw
+        //
+        //  this function transforms a six by six covariance matrix expressed in cartesian
+        //    into one expressed in orbit plane, rsw frame
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    cartcov     - 6x6 cartesian covariance matrix space delimited
+        //    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)
+        //
+        //  outputs       :
+        //    covrsw      - 6x6 orbit plane rsw covariance matrix
+        //
+        //  locals        :
+        //    r           - position vector                      m
+        //    v           - velocity vector                      m/s
+        //    tm          - transformation matrix
+        //    temv        - temporary vector
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        // ------------------------------------------------------------------------------
 
         public void covct_rsw
             (
@@ -17556,37 +16571,34 @@ namespace AstroLibMethods
         }  // covct_rsw
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function covct_ntw
-        *
-        *  this function transforms a six by six covariance matrix expressed in the
-        *    cartesian frame to one expressed in the orbit plane (ntw)
-        *
-        *  author        : david vallado           davallado@gmail.com   17 jul 2003
-        *
-        *  revisions
-        *    vallado     - s} out tm                                   25 jul 2003
-        *
-        *  inputs          description                          range / units
-        *    covopntw    - 6x6 orbit plane ntw covariance matrix
-        *    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)
-        *
-        *  outputs       :
-        *    cartcov     - 6x6 cartesian covariance matrix
-        *
-        *  locals        :
-        *    r           - position vector                      m
-        *    v           - velocity vector                      m/s
-        *    tm          - transformation matrix
-        *    temv        - temporary vector
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function covct_ntw
+        //
+        //  this function transforms a six by six covariance matrix expressed in the
+        //    cartesian frame to one expressed in the orbit plane (ntw)
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    covopntw    - 6x6 orbit plane ntw covariance matrix
+        //    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)
+        //
+        //  outputs       :
+        //    cartcov     - 6x6 cartesian covariance matrix
+        //
+        //  locals        :
+        //    r           - position vector                      m
+        //    v           - velocity vector                      m/s
+        //    tm          - transformation matrix
+        //    temv        - temporary vector
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        // ------------------------------------------------------------------------------
 
         public void covct_ntw
             (
@@ -17652,39 +16664,39 @@ namespace AstroLibMethods
             }
         }  // covct_ntw
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function coveci_ecef
-        *
-        *  this function transforms a six by six covariance matrix expressed in eci coordinates
-        *    into one expressed in the ecef frame. 
-        *
-        *  author        : david vallado           davallado@gmail.com   20 may 2003
-        *
-        *  inputs          description                          range / units
-        *    ecicartcov  - 6x6 cartesian covariance matrix space delimited, in eci
-        *    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)
-        *
-        *  outputs       :
-        *    ecefcartcov - 6x6 covariance matrix in ecef
-        *
-        *  locals        :
-        *    r           - position vector                      m
-        *    v           - velocity vector                      m/s
-        *    tm          - transformation matrix
-        *    temv        - temporary vector
-        *
-        *  coupling      :
-        *    none
-        *
-        *  references    :
-        *    Vallado and Alfano 2015
-        * ---------------------------------------------------------------------------- */
+        // ----------------------------------------------------------------------------
+        //
+        //                           function coveci_ecef
+        //
+        //  this function transforms a six by six covariance matrix expressed in eci coordinates
+        //    into one expressed in the ecef frame. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    ecicartcov  - 6x6 cartesian covariance matrix space delimited, in eci
+        //    cartstate   - 6x1 cartesian orbit state            (x y z vx vy vz)
+        //
+        //  outputs       :
+        //    ecefcartcov - 6x6 covariance matrix in ecef
+        //
+        //  locals        :
+        //    r           - position vector                      m
+        //    v           - velocity vector                      m/s
+        //    tm          - transformation matrix
+        //    temv        - temporary vector
+        //
+        //  coupling      :
+        //    none
+        //
+        //  references    :
+        //    Vallado and Alfano 2015
+        // ------------------------------------------------------------------------------
 
         public void coveci_ecef
             (
             ref double[,] ecicartcov, double[] cartstate, Enum direct, ref double[,] ecefcartcov, out double[,] tm,
-            EOPSPWLib.iau80Class iau80arr, 
+            EOPSPWLib.iau80Class iau80arr,
             double ttt, double jdut1, double lod, double xp, double yp, int eqeterms, double ddpsi, double ddeps,
             EOpt opt
             )

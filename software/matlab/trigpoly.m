@@ -26,13 +26,15 @@
 %
 %  references :
 %    vallado       2013, 597, Eq 8-57
+%
+%  [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, order)
 % ----------------------------------------------------------------------------*/
 
 function [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, order)
     constastro;
-    
+
     magr = mag(recef);
-    
+
     % -------------------- gtds approach
     trigArr(0+1, 0+1) = 0.0;    % sin terms
     trigArr(0+1, 1+1) = 1.0;    % cos terms
@@ -41,14 +43,14 @@ function [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, order)
     trigArr(1+1, 1+1) =  cos(lon);
     slon = sin(lon);
     clon = cos(lon);
-    
+
     for m = 2: order
         mi = m + 1;
         trigArr(mi, 0+1) = 2.0 * clon * trigArr(mi-1, 0+1) - trigArr(mi-2, 0+1);  % sin terms
         trigArr(mi, 1+1) = 2.0 * clon * trigArr(mi-1, 1+1) - trigArr(mi-2, 1+1);  % cos terms
         trigArr(mi, 2+1) = (m-1) * tlon + tlon;  % m tan
     end
-    
+
     % -------------------- montenbruck approach
     % now form first set of recursions for l=m on V and W
     % initial zonal values
@@ -57,7 +59,7 @@ function [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, order)
     VArr(1+1, 0+1) = VArr(0+1, 0+1) * VArr(0+1, 0+1) * sin(latgc);
     WArr(0+1, 0+1) = 0.0;
     WArr(1+1, 0+1) = 0.0;
-    
+
     for L = 2: order+1
         Li = L + 1;
         mi = 0 + 1;
@@ -68,7 +70,7 @@ function [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, order)
         WArr(Li, mi) = 0.0;
         %                 end
     end
-    
+
     % now tesseral and sectoral
     for L = 1: order+1
         Li = L + 1;
@@ -77,10 +79,10 @@ function [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, order)
         VArr(Li, mi) = (2*m-1) * recef(1) * temp * VArr(Li-1, mi-1) - recef(2) * temp * WArr(Li-1, mi-1);
         WArr(Li, mi) = (2*m-1) * recef(1) * temp * WArr(Li-1, mi-1) - recef(2) * temp * VArr(Li-1, mi-1);
     end
-    
+
     for (m = L + 1: order)
         mi = m + 1;
-    
+
         if (m <= order)
             VArr(Li, mi) = (2*L-1) / (L-m) * recef(2) * temp * VArr(Li-1, mi);
             WArr(Li, mi) = (2*L-1) / (L-m) * recef(2) * temp * WArr(Li-1, mi);
@@ -94,3 +96,4 @@ function [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, order)
         end
     end
 
+end

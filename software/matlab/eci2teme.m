@@ -66,7 +66,7 @@ function [rteme, vteme, ateme] = eci2teme  ( reci, veci, aeci, iau80arr, ttt, dd
 
     tm = eqe * nut' * prec';
 
-    rteme = tm * reci';
-    vteme = tm * veci';
+    rteme = tm * reci;
+    vteme = tm * veci;
     ateme = tm * aeci;
 

@@ -2,18 +2,18 @@
 %
 %                           function rv2tradec
 %
-%  this function converts geocentric equatorial (eci) position and velocity
-%    vectors into range, topcentric right acension, declination, and rates.  
-%    notice the value of small as it can affect the rate term calculations. 
+%  this function converts geocentric equatorial (ecef) position and velocity
+%    vectors into range, topcentric right acension, declination, and rates.
+%    notice the value of small as it can affect the rate term calculations.
 %    the solution uses the velocity vector to find the singular cases. also,
-%    the right acension and declination rate terms are not observable unless 
+%    the right acension and declination rate terms are not observable unless
 %    the acceleration vector is available.
 %
 %  author        : david vallado           davallado@gmail.com    19 jul 2004
 %
 %  inputs          description                              range / units
-%    reci        - eci position vector                      km
-%    veci        - eci velocity vector                      km/s
+%    recef        - ecef position vector                      km
+%    vecef        - ecef velocity vector                      km/s
 %    latgd       - geodetic latitude                        -pi/2 to pi/2 rad
 %    lon         - longitude of site                        -2pi to 2pi rad
 %    alt         - altitude                                 km
@@ -33,8 +33,8 @@
 %    dtdecl      - topocentric decl rate                    rad / s
 %
 %  locals        :
-%    rhoveci     - eci range vector from site               km
-%    drhoveci    - eci velocity vector from site            km / s
+%    rhovecef     - ecef range vector from site               km
+%    drhovecef    - ecef velocity vector from site            km / s
 %
 %  coupling      :
 %    mag         - magnitude of a vector
@@ -44,51 +44,51 @@
 %  references    :
 %    vallado       2022, 257, alg 26
 %
-%  [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( reci, veci, rseci, vseci )
+%  [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( recef, vecef, rsecef, vsecef )
 % ------------------------------------------------------------------------------
 
-function [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( reci, veci, rseci, vseci )
+function [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( recef, vecef, rsecef, vsecef )
 
     constmath;
 
     % --------------------- implementation ------------------------
-    % ------- find eci slant range vector from site to satellite ---------
-    rhoveci  = reci - rseci;
-    drhoveci = veci - vseci;
-    rho      = mag(rhoveci);
+    % ------- find ecef slant range vector from site to satellite ---------
+    rhovecef  = recef - rsecef;
+    drhovecef = vecef - vsecef;
+    rho      = mag(rhovecef);
 
     % --------------- calculate topocentric rtasc and decl ---------------
-    temp = sqrt( rhoveci(1) * rhoveci(1) + rhoveci(2) * rhoveci(2) );
+    temp = sqrt( rhovecef(1) * rhovecef(1) + rhovecef(2) * rhovecef(2) );
     if (temp < small)
-        trtasc = atan2( drhoveci(2), drhoveci(1) );
+        trtasc = atan2( drhovecef(2), drhovecef(1) );
     else
-        trtasc = atan2( rhoveci(2), rhoveci(1) );
+        trtasc = atan2( rhovecef(2), rhovecef(1) );
     end
 
     % directly over the north pole
-    if (temp < small)            
-        tdecl = sign(rhoveci(3)) * halfpi;   % +- 90 deg
+    if (temp < small)
+        tdecl = sign(rhovecef(3)) * halfpi;   % +- 90 deg
     else
-        magrhoeci = mag(rhoveci);
-        tdecl = asin( rhoveci(3) / magrhoeci );
+        magrhoecef = mag(rhovecef);
+        tdecl = asin( rhovecef(3) / magrhoecef );
     end
     if (trtasc < 0.0)
         trtasc = trtasc + 2.0*pi;
     end
 
     % ---------- calculate topcentric rtasc and decl rates -------------
-    temp1 = -rhoveci(2) * rhoveci(2) - rhoveci(1) * rhoveci(1);
-    drho = dot(rhoveci, drhoveci) / rho;
+    temp1 = -rhovecef(2) * rhovecef(2) - rhovecef(1) * rhovecef(1);
+    drho = dot(rhovecef, drhovecef) / rho;
     if ( abs( temp1 ) > small )
-        dtrtasc = ( drhoveci(1)*rhoveci(2) - drhoveci(2) * rhoveci(1) ) / temp1;
+        dtrtasc = ( drhovecef(1)*rhovecef(2) - drhovecef(2) * rhovecef(1) ) / temp1;
     else
         dtrtasc = 0.0;
     end
 
     if ( abs( temp ) > small )
-        dtdecl = ( drhoveci(3) - drho * sin( tdecl ) ) / temp;
+        dtdecl = ( drhovecef(3) - drho * sin( tdecl ) ) / temp;
     else
         dtdecl = 0.0;
     end
 
-    end   % rv2tradec
+end   % rv2tradec

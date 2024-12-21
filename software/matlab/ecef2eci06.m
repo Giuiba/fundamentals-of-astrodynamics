@@ -84,14 +84,14 @@ function [reci, veci, aeci] = ecef2eci06( recef, vecef, aecef, iau06arr, xys06ta
     omegaearth = [0; 0; thetasa;];
 
     % ---- perform transformations
-    rpef = pm*recef';
+    rpef = pm*recef;
     reci = pnb*st*rpef;
 
-    vpef = pm*vecef';
+    vpef = pm*vecef;
     veci = pnb*st*(vpef + cross(omegaearth,rpef));
 
     temp = cross(omegaearth,rpef);
-    aeci = pnb*st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
+    aeci = pnb*st*( pm*aecef + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
 
 
 

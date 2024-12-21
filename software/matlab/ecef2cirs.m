@@ -71,14 +71,14 @@ function [rcirs, vcirs, acirs] = ecef2cirs(recef, vecef, aecef, iau06arr, ttt, j
     omegaearth = [0; 0; thetasa;];
 
     % ---- perform transformations
-    rpef = pm*recef';
+    rpef = pm*recef;
     rcirs = st*rpef;
 
-    vpef = pm*vecef';
+    vpef = pm*vecef;
     vcirs = st*(vpef + cross(omegaearth,rpef));
 
     temp = cross(omegaearth,rpef);
-    acirs = st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
+    acirs = st*( pm*aecef + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
 
 
 

@@ -162,13 +162,11 @@ namespace TestAllTool
             double[] vsecef = new double[3];
             double[] rseci = new double[3];
             double[] vseci = new double[3];
-            double temp, magr, latgc;
+            double magr, latgc;
             double jd, jdf, second;
             double dut1, lod, xp, yp, ddpsi, ddeps, ddx, ddy, jdtt, jdftt, ttt, jdut1;
             int dat;
             int year, month, day, hr, minute;
-            double rad = 180.0 / Math.PI;
-            double small = 0.00000001;
 
             string tmpstr1 = Regex.Replace(ecistr, @"\s+", " ");
             string tmpstr = Regex.Replace(tmpstr1, ",", "");
@@ -186,16 +184,12 @@ namespace TestAllTool
             MathTimeLibr.invjday(jd, jdf, out year, out month, out day, out hr, out minute, out second);
 
             string nutLoc;
-            string ans;
             Int32 ktrActObs;
             string EOPupdate;
             Int32 mjdeopstart;
             EOPSPWLib.iau80Class iau80arr;
-            EOPSPWLib.iau06Class iau06arr;
             nutLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
             EOPSPWLibr.iau80in(nutLoc, out iau80arr);
-            nutLoc = @"D:\Codes\LIBRARY\DataLib\";
-            EOPSPWLibr.iau06in(nutLoc, out iau06arr);
 
             string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2023-01-01.txt";
             EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out mjdeopstart, out ktrActObs, out EOPupdate);
@@ -418,10 +412,10 @@ namespace TestAllTool
             double n, af, ag, chi, psi, meanlonM, meanlonNu;
             double[] h = new double[3];
             Int16 fr;
-            double rad, lod;
+            double rad;
             double[] initguess = new double[30];
             string errstr;
-            string coestr, eqstr, posstr, velstr, hstr, rsstr, timestr;
+            string coestr, eqstr, posstr, velstr, rsstr, timestr;
             double rng1, rng2, rng3;
             Int32 iyear1, imon1, iday1, ihr1, iminute1;
             Int32 iyear2, imon2, iday2, ihr2, iminute2;
@@ -960,8 +954,8 @@ namespace TestAllTool
                 // unknown if this is better or not from simply using Gauss equation solution
                 // it "may" be better in tougher cases...
                 // gtds approach for finding initial range?
-                double rho2, rng1U, rng1L, beta, d, delta, c1, c2, cmin,
-                    abart, bbart, rho1min, rho1max, magr1min, magr1max, magr1mino, magr1maxo;
+                double rho2, beta, d, delta, c1, c2, cmin,
+                    abart, bbart, rho1min, rho1max, magr1min, magr1max;
                 double magrs2, rng2u, rng2l, l2dotrs;
                 double[] abarv = new double[3];
                 double[] bbarv = new double[3];
@@ -998,8 +992,6 @@ namespace TestAllTool
                         r2l[i] = rng2l * los2[i] + rseci2[i];
 
                     // ---- now form r1 guesses
-                    magr1mino = 6578.1363;  // assume 200 km alt 
-                    magr1maxo = 100000.0;   // km
                     magr1min = 6578.1363;  // assume 200 km alt 
                     magr1max = 100000.0;   // km
 
@@ -1272,7 +1264,6 @@ namespace TestAllTool
             double[] alt = new double[50];
             int idx1, idx2, idx3;
             string ans;
-            char diffsites = 'n';
 
             // read input data
             // note the input data has a # line between each case
@@ -1523,11 +1514,11 @@ namespace TestAllTool
                     AstroLibr.eci_ecef(ref rseci3, ref vseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3,
                          iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
-                    if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
-                        && Math.Abs(lon[idx1] - lon[idx2]) < 0.001 && Math.Abs(lon[idx1] - lon[idx3]) < 0.001)
-                        diffsites = 'n';
-                    else
-                        diffsites = 'y';
+                    //if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
+                    //    && Math.Abs(lon[idx1] - lon[idx2]) < 0.001 && Math.Abs(lon[idx1] - lon[idx3]) < 0.001)
+                    //    diffsites = 'n';
+                    //else
+                    //    diffsites = 'y';
 
 
                     // write output
@@ -1672,11 +1663,11 @@ namespace TestAllTool
                 AstroLibr.eci_ecef(ref rseci3, ref vseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3,
                          iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
-                if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
-                    && Math.Abs(lon[idx1] - lon[idx2]) < 0.001 && Math.Abs(lon[idx1] - lon[idx3]) < 0.001)
-                    diffsites = 'n';
-                else
-                    diffsites = 'y';
+                //if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
+                //    && Math.Abs(lon[idx1] - lon[idx2]) < 0.001 && Math.Abs(lon[idx1] - lon[idx3]) < 0.001)
+                //    diffsites = 'n';
+                //else
+                //    diffsites = 'y';
 
 
                 // write output
@@ -1959,7 +1950,7 @@ namespace TestAllTool
             )
         {
            // obsClassArr = new obsClass[50000];
-            double obsvalue, lat, lon, alt, second;
+            double obsvalue, lon, alt, second;
             int year; int month; int day; int hr; int minute;
             string[] monthStr = new string[13] { "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
             Int32 i; //, obsktr;
@@ -1970,15 +1961,12 @@ namespace TestAllTool
             double[] rsecef = new double[3];
             double[] vsecef = new double[3];
 
-            double rtasc0, decl0, rtasc1, decl1, t0, t1, al0, al1, ap0, ap1, ap2;
+            double rtasc0, decl0, t0;
 
             double rad = 180.0 / Math.PI;
             rtasc0 = 0.0;
             decl0 = 0.0;
             t0 = 0.0;
-            rtasc1 = 0.0;
-            decl1 = 0.0;
-            t1 = 0.0;
 
             // -------------------------------- read EOP data in ----------------------------------
             // xxxxxxxxdo this once outside....
@@ -2209,7 +2197,7 @@ namespace TestAllTool
             double trtasc1, tdecl1, trtasc2, tdecl2, trtasc3, tdecl3, jd1, jdf1, jd2, jdf2, jd3, jdf3, rad;
             double trtasct, tdeclt, jdt, jdft;
             double p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper;
-            int ktr, ktrstart, ktr1, ktr2, ktr3, ktr4;
+            int ktr, ktrstart, ktr1, ktr2, ktr3;
             double[] r2 = new double[3]; 
             double[] v2 = new double[3]; 
             double[] rsecit = new double[3]; 
@@ -2221,7 +2209,6 @@ namespace TestAllTool
             ktr1 = 1;
             ktr2 = 2;
             ktr3 = 3;
-            ktr4 = 4;
             // go through the 4 cases
             for (int zz = 0; zz < 4; zz++)
             {
@@ -2340,11 +2327,11 @@ namespace TestAllTool
                     }
 
 
-                    double rng1, rng2, rng3, pctchg;
+                    double rng1, rng2, pctchg;
                     string ltrstr;
                     rng1 = 25000.0;  // old 12500 needs to be in km!! seems to do better when all the same? if too far off (*2) NAN
                     rng2 = 25000.0 * 1.02;  // 1.02 might be better? make the initial guess a bit different
-                    rng3 = 25000.0 * 1.08;
+                    //rng3 = 25000.0 * 1.08;
                     pctchg = 0.10;
 
                     strbuild.AppendLine((jd1 + jdf1).ToString() + " " + (jd2 + jdf2).ToString() + " " + (jd3 + jdf3).ToString());
