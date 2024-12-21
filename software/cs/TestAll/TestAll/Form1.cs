@@ -239,6 +239,16 @@ namespace TestAllTool
             double[,] mat1 = new double[3, 3];
             double[,] a = new double[3, 3];
 
+            a[0, 0] = 6.0;
+            a[0, 1] = 1.0;
+            a[0, 2] = 1.0;
+            a[1, 0] = 4.0;
+            a[1, 1] = -2.0;
+            a[1, 2] = 5.0;
+            a[2, 0] = 2.0;
+            a[2, 1] = 8.0;
+            a[2, 2] = 7.0;
+
             mat1 = MathTimeLibr.cholesky(a);
 
             strbuild.AppendLine("matcho = " + mat1[0, 0].ToString(fmt1).PadLeft(4) + " " + mat1[0, 1].ToString(fmt1).PadLeft(4) + " " + mat1[0, 2].ToString(fmt1).PadLeft(4));
@@ -252,6 +262,31 @@ namespace TestAllTool
             double[] veci = new double[3];
             double[,] cov = new double[6, 6];
             double[,] sigmapts = new double[6, 12];
+
+            reci = new double[] { 5102.50895791863, 6123.01140072233, 6378.13692818659 };
+            veci = new double[] { -4.74322014817, 0.79053648924, 5.53375572723 };
+
+            cov[0, 0] = 12559.93762571587;
+            cov[0, 1] = cov[1, 0] = 12101.56371305036;
+            cov[0, 2] = cov[2, 0] = -440.3145384949657;
+            cov[0, 3] = cov[3, 0] = -0.8507401236198346;
+            cov[0, 4] = cov[4, 0] = 0.9383675791981778;
+            cov[0, 5] = cov[5, 0] = -0.0318596430999798;
+            cov[1, 1] = 12017.77368889201;
+            cov[1, 2] = cov[2, 1] = 270.3798093532698;
+            cov[1, 3] = cov[3, 1] = -0.8239662300032132;
+            cov[1, 4] = cov[4, 1] = 0.9321640899868708;
+            cov[1, 5] = cov[5, 1] = -0.001327326827629336;
+            cov[2, 2] = 4818.009967057008;
+            cov[2, 3] = cov[3, 2] = 0.02033418761460195;
+            cov[2, 4] = cov[4, 2] = 0.03077663516695039;
+            cov[2, 5] = cov[5, 2] = 0.1977541628188323;
+            cov[3, 3] = 5.774758755889862e-005;
+            cov[3, 4] = cov[4, 3] = -6.396031584925255e-005;
+            cov[3, 5] = cov[5, 3] = 1.079960679599204e-006;
+            cov[4, 4] = 7.24599391355188e-005;
+            cov[4, 5] = cov[5, 4] = 1.03146660433274e-006;
+            cov[5, 5] = 1.870413627417302e-005;
 
             AstroLibr.posvelcov2pts(reci, veci, cov, out sigmapts);
 
@@ -270,15 +305,9 @@ namespace TestAllTool
             double[] r1 = new double[3];
             double[] v1 = new double[3];
             double[] reci = new double[3];
-            double[,] statearr = new double[6, 6];
 
-            r1[0] = statearr[0, 0];
-            r1[1] = statearr[0, 1];
-            r1[2] = statearr[0, 2];
-
-            v1[0] = statearr[0, 3];
-            v1[1] = statearr[0, 4];
-            v1[2] = statearr[0, 5];
+            r1 = new double[] { 5102.50895791863, 6123.01140072233, 6378.13692818659 };
+            v1 = new double[] { -4.74322014817, 0.79053648924, 5.53375572723 };
 
             cov2[0, 0] = 12559.93762571587;
             cov2[0, 1] = cov2[1, 0] = 12101.56371305036;
@@ -309,7 +338,7 @@ namespace TestAllTool
             strbuild.AppendLine("sigmapts = " + sigmapts[2, 0].ToString(fmt1).PadLeft(4) + " " + sigmapts[2, 1].ToString(fmt1).PadLeft(4) + " " + sigmapts[2, 2].ToString(fmt1).PadLeft(4) + " " + sigmapts[2, 3].ToString(fmt1).PadLeft(4) + " " + sigmapts[2, 4].ToString(fmt1).PadLeft(4) + " " + sigmapts[2, 5].ToString(fmt1).PadLeft(4) + " ");
 
             // reassemble covariance at each step and write out
-            AstroLibr.remakecovpv(sigmapts, out yu, out covout);
+            //AstroLibr.remakecovpv(sigmapts, out yu, out covout);
             AstroLibr.poscov2pts(reci, cov, out sigmapts);
 
             strbuild.AppendLine("sigmapts = " + sigmapts[0, 0].ToString(fmt1).PadLeft(4) + " " + sigmapts[0, 1].ToString(fmt1).PadLeft(4) + " " + sigmapts[0, 2].ToString(fmt1).PadLeft(4) + " " + sigmapts[0, 3].ToString(fmt1).PadLeft(4) + " " + sigmapts[0, 4].ToString(fmt1).PadLeft(4) + " " + sigmapts[0, 5].ToString(fmt1).PadLeft(4) + " ");
@@ -324,7 +353,11 @@ namespace TestAllTool
             double[,] cov = new double[6, 6];
             double[,] cov2 = new double[6, 6];
 
-            AstroLibr.remakecovpv(sigmapts, out yu, out cov);
+            sigmapts = new double[3, 6] { { 5377.0260353, 4827.9918806, 5102.5089579, 5102.5089579, 5102.5089579, 5102.5089579 },
+                { 6123.0114007, 6123.0114007, 6391.5382004, 5854.4846011, 6123.0114007, 6123.0114007},
+                { 6378.1369282, 6378.1369282, 6378.1369282, 6378.1369282, 6548.1606318, 6208.1132245} };
+
+     //       AstroLibr.remakecovpv(sigmapts, out yu, out cov);
 
             strbuild.AppendLine("cov = " + cov[0, 0].ToString(fmt1).PadLeft(4) + " " + cov[0, 1].ToString(fmt1).PadLeft(4) + " " + cov[0, 2].ToString(fmt1).PadLeft(4));
             strbuild.AppendLine("cov = " + cov[1, 0].ToString(fmt1).PadLeft(4) + " " + cov[1, 1].ToString(fmt1).PadLeft(4) + " " + cov[1, 2].ToString(fmt1).PadLeft(4));
@@ -335,7 +368,12 @@ namespace TestAllTool
             double[,] sigmapts = new double[6, 12];
             double[] yu = new double[6];
             double[,] cov = new double[6, 6];
-            AstroLibr.remakecovp(sigmapts, out yu, out cov);
+
+            sigmapts = new double[3, 6] { { 5377.0260353, 4827.9918806, 5102.5089579, 5102.5089579, 5102.5089579, 5102.5089579 },
+                { 6123.0114007, 6123.0114007, 6391.5382004, 5854.4846011, 6123.0114007, 6123.0114007},
+                { 6378.1369282, 6378.1369282, 6378.1369282, 6378.1369282, 6548.1606318, 6208.1132245} };
+
+//            AstroLibr.remakecovp(sigmapts, out yu, out cov);
 
             strbuild.AppendLine("cov = " + cov[0, 0].ToString(fmt1).PadLeft(4) + " " + cov[0, 1].ToString(fmt1).PadLeft(4) + " " + cov[0, 2].ToString(fmt1).PadLeft(4));
             strbuild.AppendLine("cov = " + cov[1, 0].ToString(fmt1).PadLeft(4) + " " + cov[1, 1].ToString(fmt1).PadLeft(4) + " " + cov[1, 2].ToString(fmt1).PadLeft(4));
@@ -347,6 +385,7 @@ namespace TestAllTool
             double[,] mat3 = new double[3, 3];
             int matr;
             matr = 3;
+            mat1 = new double[,] { { 1, 3, 3 }, { 1, 4, 3 }, { 1, 3, 4 } };
 
             mat3 = MathTimeLibr.matequal(mat1, matr);
 
@@ -363,6 +402,7 @@ namespace TestAllTool
             matr = 3;
             matc = 3;
             scale = 1.364;
+            mat1 = new double[,] { { 1, 3, 3 }, { 1, 4, 3 }, { 1, 3, 4 } };
 
             mat3 = MathTimeLibr.matscale(mat1, matr, matc, scale);
 
@@ -639,28 +679,143 @@ namespace TestAllTool
             MathTimeLibr.jday(year, mon, day, hr, minute, second, out jd, out jdFrac);
 
             strbuild.AppendLine("jd " + jd.ToString(fmt).PadLeft(4) + " " + jdFrac.ToString(fmt).PadLeft(4));
+
+
+            // alt tests
+            MathTimeLibr.invjday(2450382.5, jdFrac, out year, out mon, out day, out hr, out minute, out second);
+            strbuild.AppendLine("year" + year + " mon " + mon + " day " + day + hr + ":" + minute + ":" + second);
+
+            MathTimeLibr.invjday(2450382.5, -0.2, out year, out mon, out day, out hr, out minute, out second);
+            strbuild.AppendLine("year" + year + " mon " + mon + " day " + day + hr + ":" + minute + ":" + second);
+
+            MathTimeLibr.invjday(2450382.5 + 1.0, 1.5, out year, out mon, out day, out hr, out minute, out second);
+            strbuild.AppendLine("year" + year + " mon " + mon + " day " + day + hr + ":" + minute + ":" + second);
+
+            MathTimeLibr.invjday(2450382.5, -0.5, out year, out mon, out day, out hr, out minute, out second);
+            strbuild.AppendLine("year" + year + " mon " + mon + " day " + day + hr + ":" + minute + ":" + second);
+
+            MathTimeLibr.invjday(2450382.5, 0.5, out year, out mon, out day, out hr, out minute, out second);
+            strbuild.AppendLine("year" + year + " mon " + mon + " day " + day + hr + ":" + minute + ":" + second);
+
         }
         public void testdays2mdhms()
         {
             int year;
             double days;
             int mon, day, hr, minute;
-            double sec;
+            double second;
             year = 2020;
             days = 237.456982367;
 
-            MathTimeLibr.days2mdhms(year, days, out mon, out day, out hr, out minute, out sec);
+            MathTimeLibr.days2mdhms(year, days, out mon, out day, out hr, out minute, out second);
+
+            strbuild.AppendLine("year" + year + " days " + days);
+            strbuild.AppendLine("year" + year + " mon " + mon + " day " + day + hr + ":" + minute + ":" + second);
         }
         public void testinvjday()
         {
             int year;
             int mon, day, hr, minute;
-            double jd, jdFrac, second;
+            double jd, jdF, jdb, mfme, dt, second;
             jd = 2449877.0;
-            jdFrac = 0.3458762;
+            jdF = 0.3458762;
+            mfme = 0.0;
+            dt = 0.0;
 
-            MathTimeLibr.invjday(jd, jdFrac, out year, out mon, out day, out hr, out minute, out second);
-        }
+            MathTimeLibr.invjday(jd, jdF, out year, out mon, out day, out hr, out minute, out second);
+
+            strbuild.AppendLine("year" + year + " mon " + mon + " day " + day + hr + ":" + minute + ":" + second);
+
+
+            // some stressing cases
+            int i;
+            for (i = 1; i < 11; i++)
+            {
+                if (i == 1)
+                {
+                    jd = 2457884.5;
+                    jdF = 0.160911640046296;
+                }
+                if (i == 2)
+                {
+                    jd = 2457884.5;
+                    jdF = -0.160911640046296;
+                }
+                if (i == 3)
+                {
+                    jd = 2457884.5;
+                    jdF = 0.660911640046296;
+                }
+                if (i == 4)
+                {
+                    jd = 2457884.5;
+                    jdF = -0.660911640046296;
+                }
+                if (i == 5)
+                {
+                    jd = 2457884.5;
+                    jdF = 2.160911640046296;
+                }
+                if (i == 6)
+                {
+                    jd = 2457884.660911640046296;
+                    jdF = 0.0;
+                }
+                if (i == 7)
+                {
+                    jd = 2457884.0;
+                    jdF = 2.160911640046296;
+                }
+                if (i == 8)
+                {
+                    jd = 2457884.5;
+                    jdF = 0.0;
+                }
+                if (i == 9)
+                {
+                    jd = 2457884.5;
+                    jdF = 0.5;
+                }
+                if (i == 10)
+                {
+                    jd = 2457884.5;
+                    jdF = 1.0;
+                }
+                if (i == 11)
+                {
+                    jd = 2457884.3;
+                    jdF = 1.0;
+                }
+
+                jdb = Math.Floor(jd + jdF) + 0.5;
+                mfme = (jd + jdF - jdb) * 1440.0;
+                if (mfme < 0.0)
+                {
+                    mfme = 1440.0 + mfme;
+                }
+                MathTimeLibr.invjday(jd, jdF, out year, out mon, out day, out hr, out minute, out second);
+                if (Math.Abs(jdF) >= 1.0)
+                {
+                    jd = jd + Math.Floor(jdF);
+                    jdF = jdF - Math.Floor(jdF);
+                }
+                dt = jd - Math.Floor(jd) - 0.5;
+                if (Math.Abs(dt) > 0.00000001)
+                {
+                    jd = jd - dt;
+                    jdF = jdF + dt;
+                }
+                // this gets it even to the day
+                if (jdF < 0.0)
+                {
+                    jd = jd - 1.0;
+                    jdF = 1.0 + jdF;
+                }
+            }
+                strbuild.AppendLine("year" + year + " mon " + mon + " day " + day + hr + ":" + minute + ":" + second + " " +
+                     mfme +" " + hr * 60.0 + " "+ minute + " " + second / 60.0 + " " + jd + " " + jdF + " " + dt);
+    }   // through stressing cases
+
 
         // tests eop, spw, and fk5 iau80
         public void testiau80in()
@@ -671,7 +826,7 @@ namespace TestAllTool
             double f107, f107bar, ap, avgap, kp, sumkp;
             double[] aparr = new double[8];
             double[] kparr = new double[8];
-            Int32 mjdeopstart, mjdspwstart, ktrActObs;
+            Int32 ktrActObs;
             string EOPupdate;
 
             year = 2017;
@@ -680,20 +835,21 @@ namespace TestAllTool
             hr = 0;
             minute = 0;
             second = 0.0;
+            // 2017 04 06 57849  0.009587  0.384603  0.4636260  0.0014635 -0.098066 -0.012276 -0.000063  0.000300  37 
 
             string fileLoc;
             fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
             EOPSPWLibr.iau80in(fileLoc, out EOPSPWLibr.iau80arr);
 
             string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt";
-            EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out mjdeopstart, out ktrActObs, out EOPupdate);
+            EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName,  out ktrActObs, out EOPupdate);
             int y, m, d, h, mm;
             double ss;
             strbuild.AppendLine("EOP tests  mfme    dut1  dat    lod           xp                      yp               ddpsi                   ddeps               ddx                 ddy");
             for (i = 0; i < 90; i++)
             {
                 MathTimeLibr.jday(year, mon, day, hr + i, minute, second, out jd, out jdFrac);
-                EOPSPWLibr.findeopparam(jd, jdFrac, 's', EOPSPWLibr.eopdata, mjdeopstart + 2400000.5, out dut1, out dat,
+                EOPSPWLibr.findeopparam(jd, jdFrac, 's', EOPSPWLibr.eopdata, out dut1, out dat,
                    out lod, out xp, out yp, out ddpsi, out ddeps, out ddx, out ddy);
                 MathTimeLibr.invjday(jd, jdFrac, out y, out m, out d, out h, out mm, out ss);
                 strbuild.AppendLine(y.ToString("0000") + " " + m.ToString("00") + " " + d.ToString("00") + " " + (h * 60 + mm).ToString("0000") + " " +
@@ -703,13 +859,13 @@ namespace TestAllTool
 
             string spwFileName = @"D:\Codes\LIBRARY\DataLib\SpaceWeather-All-v1.2_2018-01-04.txt";
             string errstr;
-            EOPSPWLibr.readspw(ref EOPSPWLibr.spwdata, spwFileName, out mjdspwstart, out ktrActObs, out errstr);
+            EOPSPWLibr.readspw(ref EOPSPWLibr.spwdata, spwFileName, out ktrActObs, out errstr);
             strbuild.AppendLine("SPW tests  mfme f107 f107bar ap apavg  kp sumkp aparr[]  ");
             for (i = 0; i < 90; i++)
             {
                 MathTimeLibr.jday(year, mon, day, hr + i, minute, second, out jd, out jdFrac);
                 // adj obs, last ctr, act con
-                EOPSPWLibr.findspwparam(jd, jdFrac, 's', 'a', 'l', 'a', EOPSPWLibr.spwdata, mjdspwstart + 2400000.5, out f107, out f107bar,
+                EOPSPWLibr.findspwparam(jd, jdFrac, 's', 'a', 'l', 'a', EOPSPWLibr.spwdata, out f107, out f107bar,
                    out ap, out avgap, aparr, out kp, out sumkp, kparr);
                 MathTimeLibr.invjday(jd, jdFrac, out y, out m, out d, out h, out mm, out ss);
                 strbuild.AppendLine(y.ToString("0000") + " " + m.ToString("00") + " " + d.ToString("00") + " " + (h * 60 + mm).ToString("0000") + " " +
@@ -870,9 +1026,6 @@ namespace TestAllTool
             strbuild.AppendLine("st = " + st[2, 0].ToString(fmt).PadLeft(4) + " " + st[2, 1].ToString(fmt).PadLeft(4) + " " + st[2, 2].ToString(fmt).PadLeft(4) + " ");
 
 
-            AstroLibr.fundarg(ttt, AstroLib.EOpt.e06eq, out fArgs);
-            nut = AstroLibr.nutation(ttt, ddpsi, ddeps, EOPSPWLibr.iau80arr, fArgs,
-                out deltapsi, out deltaeps, out trueeps, out meaneps);
             st = AstroLibr.sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, AstroLib.EOpt.e06eq);
             strbuild.AppendLine("st00 = " + st[0, 0].ToString(fmt).PadLeft(4) + " " + st[0, 1].ToString(fmt).PadLeft(4) + " " + st[0, 2].ToString(fmt).PadLeft(4) + " ");
             strbuild.AppendLine("st00 = " + st[1, 0].ToString(fmt).PadLeft(4) + " " + st[1, 1].ToString(fmt).PadLeft(4) + " " + st[1, 2].ToString(fmt).PadLeft(4) + " ");
@@ -927,14 +1080,14 @@ namespace TestAllTool
         public void testhms_sec()
         {
             int hr, min;
-            double sec;
+            double second;
             double utsec;
             hr = 12;
             min = 34;
-            sec = 56.233;
+            second = 56.233;
             utsec = 0.0;
 
-            MathTimeLibr.hms_sec(ref hr, ref min, ref sec, MathTimeLib.Edirection.eto, ref utsec);
+            MathTimeLibr.hms_sec(ref hr, ref min, ref second, MathTimeLib.Edirection.eto, ref utsec);
 
             strbuild.AppendLine("utsec = " + utsec.ToString(fmt).PadLeft(4));
         }
@@ -942,14 +1095,14 @@ namespace TestAllTool
         public void testhms_ut()
         {
             int hr, min;
-            double sec;
+            double second;
             double ut;
             hr = 13;
             min = 22;
-            sec = 45.98;
+            second = 45.98;
             ut = 0.0;
 
-            MathTimeLibr.hms_ut(ref hr, ref min, ref sec, MathTimeLib.Edirection.eto, ref ut);
+            MathTimeLibr.hms_ut(ref hr, ref min, ref second, MathTimeLib.Edirection.eto, ref ut);
 
             strbuild.AppendLine("ut = " + ut.ToString(fmt).PadLeft(4));
         }
@@ -957,14 +1110,14 @@ namespace TestAllTool
         public void testhms_rad()
         {
             int hr, min;
-            double sec;
+            double second;
             double hms;
             hr = 15;
             min = 15;
-            sec = 53.63;
+            second = 53.63;
             hms = 0.0;
 
-            MathTimeLibr.hms_rad(ref hr, ref min, ref sec, MathTimeLib.Edirection.eto, ref hms);
+            MathTimeLibr.hms_rad(ref hr, ref min, ref second, MathTimeLib.Edirection.eto, ref hms);
 
             strbuild.AppendLine("hms = " + hms.ToString(fmt).PadLeft(4));
         }
@@ -972,14 +1125,14 @@ namespace TestAllTool
         public void testdms_rad()
         {
             int deg, min;
-            double sec;
+            double second;
             double dms;
             deg = -35;
             min = -15;
-            sec = -53.63;
+            second = -53.63;
             dms = 0.0;
 
-            MathTimeLibr.dms_rad(ref deg, ref min, ref sec, MathTimeLib.Edirection.eto, ref dms);
+            MathTimeLibr.dms_rad(ref deg, ref min, ref second, MathTimeLib.Edirection.eto, ref dms);
 
             strbuild.AppendLine("dms = " + dms.ToString(fmt).PadLeft(4));
         }
@@ -992,6 +1145,8 @@ namespace TestAllTool
 
             double[] reci = new double[3];
             double[] veci = new double[3];
+            double[] recii = new double[3];
+            double[] vecii = new double[3];
             double[] recef = new double[3];
             double[] vecef = new double[3];
             double conv;
@@ -1021,8 +1176,8 @@ namespace TestAllTool
 
             MathTimeLibr.jday(year, mon, day, hr, minute, second, out jd, out jdFrac);
 
-            dut1 = -0.4399619;      // sec
-            dat = 32;               // sec
+            dut1 = -0.4399619;      // second
+            dat = 32;               // second
             xp = -0.140682 * conv;  // " to rad
             yp = 0.333309 * conv;
             lod = 0.0015563;
@@ -1032,8 +1187,8 @@ namespace TestAllTool
             ddy = -0.000136 * conv;
 
             // sofa example -------------
-            //dut1 = -0.072073685;      // sec
-            //dat = 33;                // sec
+            //dut1 = -0.072073685;      // second
+            //dat = 33;                // second
             //xp = 0.0349282 * conv;  // " to rad
             //yp = 0.4833163 * conv;
             //lod = 0.0;
@@ -1088,10 +1243,10 @@ namespace TestAllTool
             // get more accurate vaules for now
             AstroLibr.iau06xysS(ttt, EOPSPWLibr.iau06arr, fArgs, out x, out y, out s);
 
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
                  EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
-            strbuild.AppendLine("GCRF          IAU-76/FK5   " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
-                + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
+            strbuild.AppendLine("GCRF          IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
+                + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
 
             AstroLibr.eci_ecef06(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
                  AstroLib.EOpt.e06cio, EOPSPWLibr.iau06arr, AstroLibr.xysarr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
@@ -1100,7 +1255,7 @@ namespace TestAllTool
 
 
             // try backwards
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref recii, ref vecii, MathTimeLib.Edirection.eto, ref recef, ref vecef,
                 EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("ITRF rev       IAU-76/FK5   " + recef[0].ToString(fmt).PadLeft(4) + " " + recef[1].ToString(fmt).PadLeft(4) + " " + recef[2].ToString(fmt).PadLeft(4) + " "
                 + vecef[0].ToString(fmt).PadLeft(4) + " " + vecef[1].ToString(fmt).PadLeft(4) + " " + vecef[2].ToString(fmt).PadLeft(4));
@@ -1128,9 +1283,8 @@ namespace TestAllTool
             hr = 0;
             minute = 0;
             second = 0.0;
-            Int32 mjdeopstart, ktrActObs;
+            Int32 ktrActObs;
             string EOPupdate;
-            double jdeopstart;
             char interp = 'x';  // full series
 
 
@@ -1143,8 +1297,7 @@ namespace TestAllTool
             // read existing data - this does not find x, y, s!
             //getCurrEOPFileName(this.EOPSPWLoc.Text, out eopFileName);
             string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt";
-            EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out mjdeopstart, out ktrActObs, out EOPupdate);
-            jdeopstart = mjdeopstart + 2400000.5;
+            EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out ktrActObs, out EOPupdate);
 
             // now find table of CIO values
             double deltapsi, deltaeps, tempval;
@@ -1236,8 +1389,8 @@ namespace TestAllTool
             second = 28.386009;
             MathTimeLibr.jday(year, mon, day, hr, minute, second, out jd, out jdFrac);
 
-            dut1 = -0.4399619;      // sec
-            dat = 32;               // sec
+            dut1 = -0.4399619;      // second
+            dat = 32;               // second
             xp = -0.140682 * conv;  // " to rad
             yp = 0.333309 * conv;
             lod = 0.0015563;
@@ -1367,12 +1520,12 @@ namespace TestAllTool
             strbuild.AppendLine("PEF           IAU-76/FK5   " + rpef[0].ToString(fmt).PadLeft(4) + " " +
                 rpef[1].ToString(fmt).PadLeft(4) + " " + rpef[2].ToString(fmt).PadLeft(4) + " "
                 + vpef[0].ToString(fmt).PadLeft(4) + " " + vpef[1].ToString(fmt).PadLeft(4) + " " + vpef[2].ToString(fmt).PadLeft(4));
-            AstroLibr.eci_pef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,
+            AstroLibr.eci_pef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref rpef, ref vpef,
                  iau80arr, jdtt, jdftt, jdut1, lod, ddpsi, ddeps);
-            strbuild.AppendLine("ECI rev       IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
-                + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
+            strbuild.AppendLine("ECI rev       IAU-76/FK5   " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
+                + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.eci_tirs(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rtirs, ref vtirs,
+            AstroLibr.eci_tirs(ref recii, ref vecii, MathTimeLib.Edirection.eto, ref rtirs, ref vtirs,
                 AstroLib.EOpt.e06cio, iau06arr, jdtt, jdftt, jdut1, lod, ddx, ddy);
             strbuild.AppendLine("TIRS          IAU-2006 CIO  " + rpef[0].ToString(fmt).PadLeft(4) + " " +
                 rtirs[1].ToString(fmt).PadLeft(4) + " " + rtirs[2].ToString(fmt).PadLeft(4) + " "
@@ -1387,12 +1540,12 @@ namespace TestAllTool
                  iau80arr, jdtt, jdftt, jdut1, lod, ddpsi, ddeps);
             strbuild.AppendLine("TOD           IAU-76/FK5   " + rtod[0].ToString(fmt).PadLeft(4) + " " + rtod[1].ToString(fmt).PadLeft(4) + " " + rtod[2].ToString(fmt).PadLeft(4) + " "
                 + vtod[0].ToString(fmt).PadLeft(4) + " " + vtod[1].ToString(fmt).PadLeft(4) + " " + vtod[2].ToString(fmt).PadLeft(4));
-            AstroLibr.eci_tod(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref rtod, ref vtod,
+            AstroLibr.eci_tod(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref rtod, ref vtod,
                  iau80arr, jdtt, jdftt, jdut1, lod, ddpsi, ddeps);
-            strbuild.AppendLine("ECI rev       IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
-                + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
+            strbuild.AppendLine("ECI rev       IAU-76/FK5   " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
+                + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.eci_cirs(ref reci, ref veci, MathTimeLib.Edirection.eto, ref rcirs, ref vcirs,
+            AstroLibr.eci_cirs(ref recii, ref vecii, MathTimeLib.Edirection.eto, ref rcirs, ref vcirs,
                  EOpt.e06cio, iau06arr, jdtt, jdftt, jdut1, lod, ddx, ddy);
             strbuild.AppendLine("CIRS          IAU-2006 CIO " + rtod[0].ToString(fmt).PadLeft(4) + " " + rtod[1].ToString(fmt).PadLeft(4) + " " + rtod[2].ToString(fmt).PadLeft(4) + " "
                 + vtod[0].ToString(fmt).PadLeft(4) + " " + vtod[1].ToString(fmt).PadLeft(4) + " " + vtod[2].ToString(fmt).PadLeft(4));
@@ -1435,8 +1588,8 @@ namespace TestAllTool
             second = 28.386009;
             MathTimeLibr.jday(year, mon, day, hr, minute, second, out jd, out jdFrac);
 
-            dut1 = -0.4399619;      // sec
-            dat = 32;               // sec
+            dut1 = -0.4399619;      // second
+            dat = 32;               // second
             xp = -0.140682 * conv;  // " to rad
             yp = 0.333309 * conv;
             lod = 0.0015563;
@@ -1492,8 +1645,8 @@ namespace TestAllTool
             second = 28.386009;
             MathTimeLibr.jday(year, mon, day, hr, minute, second, out jd, out jdFrac);
 
-            dut1 = -0.4399619;      // sec
-            dat = 32;               // sec
+            dut1 = -0.4399619;      // second
+            dat = 32;               // second
             xp = -0.140682 * conv;  // " to rad
             yp = 0.333309 * conv;
             ddpsi = -0.052195 * conv;  // " to rad
@@ -1562,8 +1715,8 @@ namespace TestAllTool
             ddeps = -0.003875;
             eqeterms = 2;
 
-            AstroLibr.csm2efg(r1pef, v1pef, r2ric, v2ric, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps, AstroLib.EOpt.e80,
-                out r1ecef, out v1ecef, out r2ecef, out v2ecef);
+            //AstroLibr.csm2efg(r1pef, v1pef, r2ric, v2ric, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps, AstroLib.EOpt.e80,
+            //    out r1ecef, out v1ecef, out r2ecef, out v2ecef);
         }
 
         public void testrv_elatlon()
@@ -2408,7 +2561,7 @@ namespace TestAllTool
 
             // misc test
             double lona, londot, lons, lonp, z, j22, c22, s22, omegaearth, dt;
-            dt = 86400.0;  // 1 day in sec
+            dt = 86400.0;  // 1 day in second
             c22 = 1.57461532572292E-06;
             s22 = -9.03872789196567E-07;
             j22 = Math.Sqrt(c22 * c22 + s22 * s22);
@@ -2498,13 +2651,12 @@ namespace TestAllTool
             string ans;
             Int32 ktrActObs;
             string EOPupdate;
-            Int32 mjdeopstart;
             EOPSPWLib.iau80Class iau80arr;
             fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
             EOPSPWLibr.iau80in(fileLoc, out iau80arr);
 
             string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2020-02-12.txt";
-            EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out mjdeopstart, out ktrActObs, out EOPupdate);
+            EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName,  out ktrActObs, out EOPupdate);
 
             // gooding tests cases from Gooding paper (1997 CMDA)
             double[] los1;
@@ -2600,8 +2752,8 @@ namespace TestAllTool
                         break;
                     case 1:
                         // book example
-                        //dut1 = -0.609641;      // sec
-                        //dat = 35;              // sec
+                        //dut1 = -0.609641;      // second
+                        //dat = 35;              // second
                         //lod = 0.0;
                         //xp = 0.137495 * conv;  // " to rad
                         //yp = 0.342416 * conv;
@@ -2773,7 +2925,7 @@ namespace TestAllTool
                 //jd2 = jd[idx2] + jdf[idx2];
                 //jd3 = jd[idx3] + jdf[idx3];
                 AstroLibr.site(latgd[idx1], lon[idx1], alt[idx1], out rsecef1, out vsecef1);
-                EOPSPWLibr.findeopparam(jd[idx1], jdf[idx1], 's', EOPSPWLibr.eopdata, mjdeopstart + 2400000.5,
+                EOPSPWLibr.findeopparam(jd[idx1], jdf[idx1], 's', EOPSPWLibr.eopdata,
                     out dut1, out dat, out lod, out xp, out yp, out ddpsi, out ddeps, out ddx, out ddy);
                 //MathTimeLibr.convtime(year[idx1], mon[idx1], day[idx1], hr[idx1], minute[idx1], second[idx1], 0, dut1, dat,
                 //    out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
@@ -2788,7 +2940,7 @@ namespace TestAllTool
                      iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 AstroLibr.site(latgd[idx2], lon[idx2], alt[idx2], out rsecef2, out vsecef2);
-                EOPSPWLibr.findeopparam(jd[idx2], jdf[idx2], 's', EOPSPWLibr.eopdata, mjdeopstart + 2400000.5,
+                EOPSPWLibr.findeopparam(jd[idx2], jdf[idx2], 's', EOPSPWLibr.eopdata, 
                     out dut1, out dat, out lod, out xp, out yp, out ddpsi, out ddeps, out ddx, out ddy);
                 //MathTimeLibr.convtime(year[idx2], mon[idx2], day[idx2], hr[idx2], minute[idx2], second[idx2], 0, dut1, dat,
                 //    out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
@@ -2805,7 +2957,7 @@ namespace TestAllTool
 
 
                 AstroLibr.site(latgd[idx3], lon[idx3], alt[idx3], out rsecef3, out vsecef3);
-                EOPSPWLibr.findeopparam(jd[idx3], jdf[idx3], 's', EOPSPWLibr.eopdata, mjdeopstart + 2400000.5,
+                EOPSPWLibr.findeopparam(jd[idx3], jdf[idx3], 's', EOPSPWLibr.eopdata, 
                     out dut1, out dat, out lod, out xp, out yp, out ddpsi, out ddeps, out ddx, out ddy);
                 jdtt = jd[idx3];
                 jdftt = jdf[idx3] + (dat + 32.184) / 86400.0;
@@ -3296,8 +3448,8 @@ namespace TestAllTool
         *    v1          - ijk velocity vector 1 if avail       km/s
         *    dm          - direction of motion                  'L', 'S'
         *    de          - orbital energy                       'L', 'H'
-        *    dtsec       - time between r1 and r2               sec
-        *    dtwait      - time to wait before starting         sec
+        *    dtsec       - time between r1 and r2               second
+        *    dtwait      - time to wait before starting         second
         *    nrev        - number of revs to complete           0, 1, 2, 3,  
         *    tbi         - array of times for nrev              [,] 
         *    altpad      - altitude pad for hitearth calc       km
@@ -5195,7 +5347,7 @@ namespace TestAllTool
             AstroLib.jpldedataClass[] jpldearr = AstroLibr.jpldearr;
             double[] rsun = new double[3];
             double[] rmoon = new double[3];
-            double rtascs, decls, rtascm, declm, rsmag, rmmag, jdjpldestart, jdjpldestartFrac, jd, jdF;
+            double rtascs, decls, rtascm, declm, rsmag, rmmag,  jd, jdF;
 
             MathTimeLibr.jday(2017, 5, 11, 3, 51, 42.7657, out jd, out jdF);
 
@@ -6926,7 +7078,7 @@ namespace TestAllTool
 
             double ttt, ttdb, xp, yp, lod, jdut1, ddpsi, ddeps, ddx, ddy, dut1, jdtt, jdftt;
             int year, mon, day, hr, minute, dat, eqeterms;
-            double second, jdF, jdutc, jdFutc, jdtdb, jdFtdb, jdtdbjplstart, jdFtdbjplstart;
+            double second, jdF, jdutc, jdFutc, jdtdb, jdFtdb;
 
             double hellp, latgd, lon;
             double cd, cr, area, mass, q, tmptdb;
@@ -7012,8 +7164,8 @@ namespace TestAllTool
             ddeps = -0.007459 * conv;
             ddx = 0.000315 * conv;     // " to rad
             ddy = 0.000055 * conv;
-            dut1 = -0.1990725;   // sec
-            dat = 37;            // sec
+            dut1 = -0.1990725;   // second
+            dat = 37;            // second
             AstroLib.EOpt opt = AstroLib.EOpt.e80;
             eqeterms = 2;
             jdtt = jdutc;
@@ -7609,7 +7761,7 @@ namespace TestAllTool
             //  stop timer
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with Montenbruck calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " sec  ");
+            strbuildall.AppendLine("Done with Montenbruck calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
             watch = System.Diagnostics.Stopwatch.StartNew();
             for (int i = 0; i < 500; i++)
@@ -7622,7 +7774,7 @@ namespace TestAllTool
             //  stop timer
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with GTDS calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " sec  ");
+            strbuildall.AppendLine("Done with GTDS calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
 
             watch = System.Diagnostics.Stopwatch.StartNew();
@@ -7637,7 +7789,7 @@ namespace TestAllTool
             //  stop timer
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with GTDS ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " sec  ");
+            strbuildall.AppendLine("Done with GTDS ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
 
             watch = System.Diagnostics.Stopwatch.StartNew();
@@ -7652,7 +7804,7 @@ namespace TestAllTool
             //  stop timer
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with Gott ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " sec  ");
+            strbuildall.AppendLine("Done with Gott ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
             watch = System.Diagnostics.Stopwatch.StartNew();
             for (int i = 0; i < 500; i++)
@@ -7666,7 +7818,7 @@ namespace TestAllTool
             //  stop timer
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with Mont ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " sec  ");
+            strbuildall.AppendLine("Done with Mont ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
 
             watch = System.Diagnostics.Stopwatch.StartNew();
@@ -7681,7 +7833,7 @@ namespace TestAllTool
             //  stop timer
             watch.Stop();
             elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with Fukushima ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " sec  ");
+            strbuildall.AppendLine("Done with Fukushima ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
 
 
@@ -8024,7 +8176,7 @@ namespace TestAllTool
             vh = new double[3];
             // StringBuilder strbuild = new StringBuilder();
 
-            dts = 1400.0; // sec
+            dts = 1400.0; // second
 
             // circular orbit
             alt = 590.0;
@@ -8044,7 +8196,7 @@ namespace TestAllTool
 
             for (int i = 1; i <= 50; i++)
             {
-                dts = i * 60.0;  // sec
+                dts = i * 60.0;  // second
                 AstroLibr.hillsr(rh, vh, alt, dts, out rint, out vint);
                 strbuild.AppendLine(dts.ToString() + " " + rint[0].ToString() + " " + rint[1].ToString() + " " + rint[2].ToString() +
                     " " + vint[0].ToString() + " " + vint[1].ToString() + " " + vint[2].ToString());
@@ -8222,7 +8374,7 @@ namespace TestAllTool
         public void testcovct2rsw()
         {
             int year, mon, day, hr, minute, timezone, dat;
-            double sec, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
+            double second, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
             double lod, xp, yp, ddpsi, ddeps;
             double[,] tm = new double[,] { { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 } };
@@ -8255,7 +8407,7 @@ namespace TestAllTool
             day = 15;
             hr = 16;
             minute = 58;
-            sec = 50.208;
+            second = 50.208;
             dut1 = 0.10597;
             dat = 32;
             timezone = 0;
@@ -8266,7 +8418,7 @@ namespace TestAllTool
             ddpsi = 0.0;
             ddeps = 0.0;
 
-            MathTimeLibr.convtime(year, mon, day, hr, minute, sec, timezone, dut1, dat,
+            MathTimeLibr.convtime(year, mon, day, hr, minute, second, timezone, dut1, dat,
                 out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
                 out tt, out ttt, out jdtt, out jdttfrac,
                 out tdb, out ttdb, out jdtdb, out jdtdbfrac);
@@ -8316,7 +8468,7 @@ namespace TestAllTool
         public void testcovct2clmean()
         {
             int year, mon, day, hr, minute, timezone, dat, terms;
-            double sec, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
+            double second, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
             double p, a, n, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper;
             double af, ag, chi, psi, meanlonNu, meanlonM;
             double latgc, lon, rtasc, decl, fpa, lod, xp, yp, ddpsi, ddeps, az, magr, magv;
@@ -8356,7 +8508,7 @@ namespace TestAllTool
             day = 15;
             hr = 16;
             minute = 58;
-            sec = 50.208;
+            second = 50.208;
             dut1 = 0.10597;
             dat = 32;
             timezone = 0;
@@ -8368,7 +8520,7 @@ namespace TestAllTool
             ddpsi = 0.0;
             ddeps = 0.0;
 
-            MathTimeLibr.convtime(year, mon, day, hr, minute, sec, timezone, dut1, dat,
+            MathTimeLibr.convtime(year, mon, day, hr, minute, second, timezone, dut1, dat,
                 out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
                 out tt, out ttt, out jdtt, out jdttfrac,
                 out tdb, out ttdb, out jdtdb, out jdtdbfrac);
@@ -8478,7 +8630,7 @@ namespace TestAllTool
         public void testcovct2cltrue()
         {
             int year, mon, day, hr, minute, timezone, dat, terms;
-            double sec, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
+            double second, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
             double p, a, n, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper;
             double af, ag, chi, psi, meanlonNu, meanlonM;
             double latgc, lon, rtasc, decl, fpa, lod, xp, yp, ddpsi, ddeps, az, magr, magv;
@@ -8518,7 +8670,7 @@ namespace TestAllTool
             day = 15;
             hr = 16;
             minute = 58;
-            sec = 50.208;
+            second = 50.208;
             dut1 = 0.10597;
             dat = 32;
             timezone = 0;
@@ -8530,7 +8682,7 @@ namespace TestAllTool
             ddpsi = 0.0;
             ddeps = 0.0;
 
-            MathTimeLibr.convtime(year, mon, day, hr, minute, sec, timezone, dut1, dat,
+            MathTimeLibr.convtime(year, mon, day, hr, minute, second, timezone, dut1, dat,
                 out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
                 out tt, out ttt, out jdtt, out jdttfrac,
                 out tdb, out ttdb, out jdtdb, out jdtdbfrac);
@@ -8632,7 +8784,7 @@ namespace TestAllTool
         public void testcovcl2eq(string anom)
         {
             int year, mon, day, hr, minute, timezone, dat, terms;
-            double sec, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
+            double second, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
             double p, a, n, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper;
             double af, ag, chi, psi, meanlonNu, meanlonM;
             double latgc, lon, rtasc, decl, fpa, lod, xp, yp, ddpsi, ddeps, az, magr, magv;
@@ -8674,7 +8826,7 @@ namespace TestAllTool
             day = 15;
             hr = 16;
             minute = 58;
-            sec = 50.208;
+            second = 50.208;
             dut1 = 0.10597;
             dat = 32;
             timezone = 0;
@@ -8686,7 +8838,7 @@ namespace TestAllTool
             ddpsi = 0.0;
             ddeps = 0.0;
 
-            MathTimeLibr.convtime(year, mon, day, hr, minute, sec, timezone, dut1, dat,
+            MathTimeLibr.convtime(year, mon, day, hr, minute, second, timezone, dut1, dat,
                 out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
                 out tt, out ttt, out jdtt, out jdttfrac,
                 out tdb, out ttdb, out jdtdb, out jdtdbfrac);
@@ -8791,7 +8943,7 @@ namespace TestAllTool
         public void testcovct2eq(string anom)
         {
             int year, mon, day, hr, minute, timezone, dat, terms;
-            double sec, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
+            double second, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
             double p, a, n, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper;
             double af, ag, chi, psi, meanlonNu, meanlonM;
             double latgc, lon, rtasc, decl, fpa, lod, xp, yp, ddpsi, ddeps, az, magr, magv;
@@ -8833,7 +8985,7 @@ namespace TestAllTool
             day = 15;
             hr = 16;
             minute = 58;
-            sec = 50.208;
+            second = 50.208;
             dut1 = 0.10597;
             dat = 32;
             timezone = 0;
@@ -8845,7 +8997,7 @@ namespace TestAllTool
             ddpsi = 0.0;
             ddeps = 0.0;
 
-            MathTimeLibr.convtime(year, mon, day, hr, minute, sec, timezone, dut1, dat,
+            MathTimeLibr.convtime(year, mon, day, hr, minute, second, timezone, dut1, dat,
                 out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
                 out tt, out ttt, out jdtt, out jdttfrac,
                 out tdb, out ttdb, out jdtdb, out jdtdbfrac);
@@ -8947,7 +9099,7 @@ namespace TestAllTool
         public void testcovct2fl(string anomflt)
         {
             int year, mon, day, hr, minute, timezone, dat, terms;
-            double sec, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
+            double second, dut1, ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac;
             double p, a, n, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper;
             double af, ag, chi, psi, meanlonNu, meanlonM;
             double latgc, lon, rtasc, decl, fpa, lod, xp, yp, ddpsi, ddeps,az, magr, magv;
@@ -8989,7 +9141,7 @@ namespace TestAllTool
             day = 15;
             hr = 16;
             minute = 58;
-            sec = 50.208;
+            second = 50.208;
             dut1 = 0.10597;
             dat = 32;
             timezone = 0;
@@ -9001,7 +9153,7 @@ namespace TestAllTool
             ddpsi = 0.0;
             ddeps = 0.0;
 
-            MathTimeLibr.convtime(year, mon, day, hr, minute, sec, timezone, dut1, dat,
+            MathTimeLibr.convtime(year, mon, day, hr, minute, second, timezone, dut1, dat,
                 out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
                 out tt, out ttt, out jdtt, out jdttfrac,
                 out tdb, out ttdb, out jdtdb, out jdtdbfrac);

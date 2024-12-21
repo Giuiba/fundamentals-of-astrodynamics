@@ -65,7 +65,7 @@ function [x, y, s, pn] = iau06xys (iau06arr, fArgs06, xys06table, ttt, ddx, ddy,
         [x, y, s] = findxysparam(jdtt, 0.0, 's', xys06table);
     end
 
-    x =  0.000390429583103574; y =3.52648563069063E-05; s =-1.4673151940162E-08;
+    %x =  0.000390429583103574; y =3.52648563069063E-05; s =-1.4673151940162E-08;
 
     % add corrections if available
     x = x + ddx;

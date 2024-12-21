@@ -54,7 +54,7 @@ function [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb, jdtdbF, interp, jp
     %printf("jdtdb %lf  %lf  %lf  %lf \n ", jdtdb, jdtdbF, jdb, mfme);x[recnum]
 
     % ---- read data for day of interest
-    jdjpldestarto = floor(jdtdb + jdtdbF - jpldearr.mjd(1) - 2400000.5);
+    jdjpldestarto = floor(jdtdb + jdtdbF - jpldearr.mjd(1) - 2400000.5 + 1);
     recnum = floor(jdjpldestarto);
 
     % check for out of bound values

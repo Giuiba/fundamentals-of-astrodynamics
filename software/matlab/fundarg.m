@@ -119,7 +119,7 @@ function [fArgs] = fundarg( ttt, opt )
             lonsat  =  50.0774713998 +   1222.11379404 *ttt;
             lonurn  = 0.0;
             lonnep  = 0.0;
-            precrate=   1.39697137214*ttt + 0.0003086*ttt2;
+            precrate=   1.39697137214*ttt + 0.0003086*ttt;
         end
 
         % ---- iau 1980 theory
@@ -156,74 +156,75 @@ function [fArgs] = fundarg( ttt, opt )
         f    = rem( f,360.0  )     * deg2rad;
         d    = rem( d,360.0  )     * deg2rad;
         omega= rem( omega,360.0  ) * deg2rad;
-
-        lonmer= rem( lonmer,360.0 ) * deg2rad;  % rad
-        lonven= rem( lonven,360.0 ) * deg2rad;
-        lonear= rem( lonear,360.0 ) * deg2rad;
-        lonmar= rem( lonmar,360.0 ) * deg2rad;
-        lonjup= rem( lonjup,360.0 ) * deg2rad;
-        lonsat= rem( lonsat,360.0 ) * deg2rad;
-        lonurn= rem( lonurn,360.0 ) * deg2rad;
-        lonnep= rem( lonnep,360.0 ) * deg2rad;
-        precrate= rem( precrate,360.0 ) * deg2rad;
-%iauhelp='y';
+        if opt ~= '06'
+            lonmer= rem( lonmer,360.0 ) * deg2rad;  % rad
+            lonven= rem( lonven,360.0 ) * deg2rad;
+            lonear= rem( lonear,360.0 ) * deg2rad;
+            lonmar= rem( lonmar,360.0 ) * deg2rad;
+            lonjup= rem( lonjup,360.0 ) * deg2rad;
+            lonsat= rem( lonsat,360.0 ) * deg2rad;
+            lonurn= rem( lonurn,360.0 ) * deg2rad;
+            lonnep= rem( lonnep,360.0 ) * deg2rad;
+            precrate= rem( precrate,360.0 ) * deg2rad;
+        end
+        %iauhelp='y';
         if iauhelp == 'y'
             fprintf(1,'fa %11.7f  %11.7f  %11.7f  %11.7f  %11.7f deg \n',l*180/pi,l1*180/pi,f*180/pi,d*180/pi,omega*180/pi );
             fprintf(1,'fa %11.7f  %11.7f  %11.7f  %11.7f deg \n',lonmer*180/pi,lonven*180/pi,lonear*180/pi,lonmar*180/pi );
             fprintf(1,'fa %11.7f  %11.7f  %11.7f  %11.7f deg \n',lonjup*180/pi,lonsat*180/pi,lonurn*180/pi,lonnep*180/pi );
             fprintf(1,'fa %11.7f  \n',precrate*180/pi );
         end
-          
 
-            fArgs(1) = l;   % delaunay variables
-            fArgs(2) = l1;
-            fArgs(3) = f;
-            fArgs(4) = d;
-            fArgs(5) = omega;
-            fArgs(6) = lonmer;  % begin planetary longitudes
-            fArgs(7) = lonven;
-            fArgs(8) = lonear;
-            fArgs(9) = lonmar;
-            fArgs(10) = lonjup;
-            fArgs(11) = lonsat;
-            fArgs(12) = lonurn;
-            fArgs(13) = lonnep;
-            fArgs(14) = precrate;
 
-       % test if they are equivalent
-       % most around 1e-10, but some at 1e-6
-%         oo3600 = 1.0 / 3600.0;
-%         deg2rad = pi / 180.0;
-%         ttt = 0.34698738576;
-%         twopi = 2.0 * pi;
-%         lonmer = mod((908103.259872 + 538101628.688982 * ttt) * oo3600,360)*deg2rad;
-%         lonven = mod((655127.283060 + 210664136.433548 * ttt) * oo3600,360)*deg2rad;
-%         lonear = mod((361679.244588 + 129597742.283429 * ttt) * oo3600,360)*deg2rad;
-%         lonmar = mod((1279558.798488 + 68905077.493988 * ttt) * oo3600,360)*deg2rad;
-%         lonjup = mod((123665.467464 + 10925660.377991 * ttt) * oo3600,360)*deg2rad;
-%         lonsat = mod((180278.799480 + 4399609.855732 * ttt) * oo3600,360)*deg2rad;
-%         lonurn = mod((1130598.018396 + 1542481.193933 * ttt) * oo3600,360)*deg2rad;
-%         lonnep = mod((1095655.195728 + 786550.320744 * ttt) * oo3600,360)*deg2rad;
-%         precrate = ((1.112022 * ttt + 5028.8200) * ttt) * oo3600*deg2rad;
-% 
-%         lonmer1 = mod (4.402608842 + 2608.7903141574 * ttt , twopi);
-%         lonven1 = mod (3.176146697 + 1021.3285546211 * ttt , twopi);
-%         lonear1 = mod(1.753470314 + 628.3075849991 * ttt , twopi);
-%         lonmar1 = mod(6.203480913 + 334.0612426700 * ttt , twopi);
-%         lonjup1 = mod(0.599546497 + 52.9690962641 * ttt , twopi);
-%         lonsat1 = mod(0.874016757 + 21.3299104960 * ttt , twopi);
-%         lonurn1 = mod(5.481293872 + 7.4781598567 * ttt , twopi);
-%         lonnep1 = mod(5.311886287 + 3.8133035638 * ttt , twopi);
-%         precrate1 = (0.024381750 + 0.00000538691 * ttt ) *ttt;
-% 
-%         lonmer-lonmer1
-%         lonven-lonven1
-%         lonear-lonear1
-%         lonmar-lonmar1
-%         lonjup-lonjup1
-%         lonsat-lonsat1
-%         lonurn-lonurn1
-%         lonnep-lonnep1
-%         precrate-precrate1
-% 
+        fArgs(1) = l;   % delaunay variables
+        fArgs(2) = l1;
+        fArgs(3) = f;
+        fArgs(4) = d;
+        fArgs(5) = omega;
+        fArgs(6) = lonmer;  % begin planetary longitudes
+        fArgs(7) = lonven;
+        fArgs(8) = lonear;
+        fArgs(9) = lonmar;
+        fArgs(10) = lonjup;
+        fArgs(11) = lonsat;
+        fArgs(12) = lonurn;
+        fArgs(13) = lonnep;
+        fArgs(14) = precrate;
+
+        % test if they are equivalent
+        % most around 1e-10, but some at 1e-6
+        %         oo3600 = 1.0 / 3600.0;
+        %         deg2rad = pi / 180.0;
+        %         ttt = 0.34698738576;
+        %         twopi = 2.0 * pi;
+        %         lonmer = mod((908103.259872 + 538101628.688982 * ttt) * oo3600,360)*deg2rad;
+        %         lonven = mod((655127.283060 + 210664136.433548 * ttt) * oo3600,360)*deg2rad;
+        %         lonear = mod((361679.244588 + 129597742.283429 * ttt) * oo3600,360)*deg2rad;
+        %         lonmar = mod((1279558.798488 + 68905077.493988 * ttt) * oo3600,360)*deg2rad;
+        %         lonjup = mod((123665.467464 + 10925660.377991 * ttt) * oo3600,360)*deg2rad;
+        %         lonsat = mod((180278.799480 + 4399609.855732 * ttt) * oo3600,360)*deg2rad;
+        %         lonurn = mod((1130598.018396 + 1542481.193933 * ttt) * oo3600,360)*deg2rad;
+        %         lonnep = mod((1095655.195728 + 786550.320744 * ttt) * oo3600,360)*deg2rad;
+        %         precrate = ((1.112022 * ttt + 5028.8200) * ttt) * oo3600*deg2rad;
+        %
+        %         lonmer1 = mod (4.402608842 + 2608.7903141574 * ttt , twopi);
+        %         lonven1 = mod (3.176146697 + 1021.3285546211 * ttt , twopi);
+        %         lonear1 = mod(1.753470314 + 628.3075849991 * ttt , twopi);
+        %         lonmar1 = mod(6.203480913 + 334.0612426700 * ttt , twopi);
+        %         lonjup1 = mod(0.599546497 + 52.9690962641 * ttt , twopi);
+        %         lonsat1 = mod(0.874016757 + 21.3299104960 * ttt , twopi);
+        %         lonurn1 = mod(5.481293872 + 7.4781598567 * ttt , twopi);
+        %         lonnep1 = mod(5.311886287 + 3.8133035638 * ttt , twopi);
+        %         precrate1 = (0.024381750 + 0.00000538691 * ttt ) *ttt;
+        %
+        %         lonmer-lonmer1
+        %         lonven-lonven1
+        %         lonear-lonear1
+        %         lonmar-lonmar1
+        %         lonjup-lonjup1
+        %         lonsat-lonsat1
+        %         lonurn-lonurn1
+        %         lonnep-lonnep1
+        %         precrate-precrate1
+        %
 

@@ -436,12 +436,11 @@ namespace EOPSPWMethods
         // ---------------------------------------------------------------------------
 
         public void readeop(ref EOPdataClass[] eopdata,
-                             string inFile, out Int32 mjdeopstart, out Int32 ktrActualObs, out string updDate)
+                             string inFile, out Int32 ktrActualObs, out string updDate)
         {
             Int32 numrecsobs, i, ktr;
             string[] linedata;
 
-            mjdeopstart = 0;
             updDate = "";
 
             // eiter do the whole array at once, or as each line is read
@@ -484,16 +483,16 @@ namespace EOPSPWMethods
                 // do all at once?
                 //eopdata = new EOPdataClass();
 
-                eopdata[ktr].year = Convert.ToInt32(linedata[0]);  // starts at 0
-                eopdata[ktr].mon = Convert.ToInt32(linedata[1]);
-                eopdata[ktr].day = Convert.ToInt32(linedata[2]);
+                //eopdata[ktr].year = Convert.ToInt32(linedata[0]);  // starts at 0
+                //eopdata[ktr].mon = Convert.ToInt32(linedata[1]);
+                //eopdata[ktr].day = Convert.ToInt32(linedata[2]);
                 eopdata[ktr].mjd = Convert.ToInt32(linedata[3]);
                 eopdata[ktr].xp = Convert.ToDouble(linedata[4]);
-                eopdata[ktr].xerr = 0.0;
+                //eopdata[ktr].xerr = 0.0;
                 eopdata[ktr].yp = Convert.ToDouble(linedata[5]);
-                eopdata[ktr].yerr = 0.0;
+                //eopdata[ktr].yerr = 0.0;
                 eopdata[ktr].dut1 = Convert.ToDouble(linedata[6]);
-                eopdata[ktr].dut1err = 0.0;
+                //eopdata[ktr].dut1err = 0.0;
                 eopdata[ktr].lod = Convert.ToDouble(linedata[7]);
                 eopdata[ktr].ddpsi = Convert.ToDouble(linedata[8]);
                 eopdata[ktr].ddeps = Convert.ToDouble(linedata[9]);
@@ -501,9 +500,6 @@ namespace EOPSPWMethods
                 eopdata[ktr].dy = Convert.ToDouble(linedata[11]);
                 eopdata[ktr].dat = Convert.ToInt32(linedata[12]);
 
-                // ---- find epoch date
-                if (ktr == 1)
-                    mjdeopstart = eopdata[ktr].mjd;
             }
 
             ktrActualObs = Convert.ToInt32(ktr);  // skip end processed as they can have errors (do later)
@@ -528,16 +524,16 @@ namespace EOPSPWMethods
                 // set new record as they are needed
                 eopdata[ktr1] = new EOPdataClass();
 
-                eopdata[ktr1].year = Convert.ToInt32(linedata[0]);  // starts at 0
-                eopdata[ktr1].mon = Convert.ToInt32(linedata[1]);
-                eopdata[ktr1].day = Convert.ToInt32(linedata[2]);
+                //eopdata[ktr1].year = Convert.ToInt32(linedata[0]);  // starts at 0
+                //eopdata[ktr1].mon = Convert.ToInt32(linedata[1]);
+                //eopdata[ktr1].day = Convert.ToInt32(linedata[2]);
                 eopdata[ktr1].mjd = Convert.ToInt32(linedata[3]);
                 eopdata[ktr1].xp = Convert.ToDouble(linedata[4]);
-                eopdata[ktr1].xerr = 0.0;
+                //eopdata[ktr1].xerr = 0.0;
                 eopdata[ktr1].yp = Convert.ToDouble(linedata[5]);
-                eopdata[ktr1].yerr = 0.0;
+                //eopdata[ktr1].yerr = 0.0;
                 eopdata[ktr1].dut1 = Convert.ToDouble(linedata[6]);
-                eopdata[ktr1].dut1err = 0.0;
+                //eopdata[ktr1].dut1err = 0.0;
                 eopdata[ktr1].lod = Convert.ToDouble(linedata[7]);
                 eopdata[ktr1].ddpsi = Convert.ToDouble(linedata[8]);
                 eopdata[ktr1].ddeps = Convert.ToDouble(linedata[9]);
@@ -586,7 +582,7 @@ namespace EOPSPWMethods
         //    none        -
         // ---------------------------------------------------------------------------
 
-        public void findeopparam(double jd, double jdFrac, char interp, EOPdataClass[] eopdata, double jdeopstart,
+        public void findeopparam(double jd, double jdFrac, char interp, EOPdataClass[] eopdata,
                out double dut1, out int dat, out double lod, out double xp, out double yp,
                out double ddpsi, out double ddeps, out double dx, out double dy)
         {
@@ -604,7 +600,7 @@ namespace EOPSPWMethods
                 mfme = 1440.0 + mfme;
 
             // ---- read data for day of interest
-            jdeopstarto = Math.Floor(jd + jdFrac - jdeopstart) + 1; // needed to get correct start day
+            jdeopstarto = Math.Floor(jd + jdFrac - eopdata[0].mjd - 2400000.5) + 1; // needed to get correct start day
             recnum = Convert.ToInt32(jdeopstarto);
 
             // check for out of bound values
@@ -718,7 +714,7 @@ namespace EOPSPWMethods
         //    jday        - julian date
         // ---------------------------------------------------------------------------
 
-        public void readspw(ref SPWdataClass[] spwdata, string inFile, out Int32 mjdspwstart, out Int32 ktrActualObs, out string errstr)
+        public void readspw(ref SPWdataClass[] spwdata, string inFile, out Int32 ktrActualObs, out string errstr)
         {
             double jd, jdFrac;
             Int32 oldjd;
@@ -726,7 +722,6 @@ namespace EOPSPWMethods
 
             //        initSPWArray(ref spwdata);
             oldjd = 0;
-            mjdspwstart = 0;
             errstr = "ok\n";
             string line3 = "";
             DateTime now = DateTime.UtcNow;
@@ -769,11 +764,11 @@ namespace EOPSPWMethods
                     if (line3.Contains("-1"))
                         errstr = errstr + "Error " + line3 + "\n";
 
-                    spwdata[ktr].yr = Convert.ToInt32(linedata[0]);  // starts at 0
-                    spwdata[ktr].mon = Convert.ToInt32(linedata[1]);
-                    spwdata[ktr].day = Convert.ToInt32(linedata[2]);
-                    spwdata[ktr].brsn = Convert.ToInt32(linedata[3]);
-                    spwdata[ktr].nd = Convert.ToInt32(linedata[4]);
+                    //spwdata[ktr].yr = Convert.ToInt32(linedata[0]);  // starts at 0
+                    //spwdata[ktr].mon = Convert.ToInt32(linedata[1]);
+                    //spwdata[ktr].day = Convert.ToInt32(linedata[2]);
+                    //spwdata[ktr].brsn = Convert.ToInt32(linedata[3]);
+                    //spwdata[ktr].nd = Convert.ToInt32(linedata[4]);
                     spwdata[ktr].kparr[0] = Convert.ToInt32(linedata[5]);
                     spwdata[ktr].kparr[1] = Convert.ToInt32(linedata[6]);
                     spwdata[ktr].kparr[2] = Convert.ToInt32(linedata[7]);
@@ -792,11 +787,11 @@ namespace EOPSPWMethods
                     spwdata[ktr].aparr[6] = Convert.ToInt32(linedata[20]);
                     spwdata[ktr].aparr[7] = Convert.ToInt32(linedata[21]);
                     spwdata[ktr].avgap = Convert.ToInt32(linedata[22]);
-                    spwdata[ktr].cp = Convert.ToDouble(linedata[23]);
-                    spwdata[ktr].c9 = Convert.ToInt32(linedata[24]);
-                    spwdata[ktr].isn = Convert.ToInt32(linedata[25]);
+                    //spwdata[ktr].cp = Convert.ToDouble(linedata[23]);
+                    //spwdata[ktr].c9 = Convert.ToInt32(linedata[24]);
+                    //spwdata[ktr].isn = Convert.ToInt32(linedata[25]);
                     spwdata[ktr].adjf10 = Convert.ToDouble(linedata[26]);
-                    spwdata[ktr].q = Convert.ToInt32(linedata[27]);
+                    //spwdata[ktr].q = Convert.ToInt32(linedata[27]);
                     spwdata[ktr].adjctrf81 = Convert.ToDouble(linedata[28]);
                     spwdata[ktr].adjlstf81 = Convert.ToDouble(linedata[29]);
                     spwdata[ktr].obsf10 = Convert.ToDouble(linedata[30]);
@@ -806,17 +801,11 @@ namespace EOPSPWMethods
                     //spwdata[ktr].obsf30 = Convert.ToDouble(linedata[34]);
                     //spwdata[ktr].adjlstf30f81 = Convert.ToDouble(linedata[35]);
                     //spwdata[ktr].obslstf30f81 = Convert.ToDouble(linedata[36]);
-                    MathTimeLibr.jday(spwdata[ktr].yr, spwdata[ktr].mon, spwdata[ktr].day, 0, 0, 0.0, out jd, out jdFrac);
+                    MathTimeLibr.jday(Convert.ToInt32(linedata[0]), Convert.ToInt32(linedata[1]), 
+                        Convert.ToInt32(linedata[2]), 0, 0, 0.0, out jd, out jdFrac);
                     if (ktr > 0)
                         oldjd = spwdata[ktr - 1].mjd;
                     spwdata[ktr].mjd = Convert.ToInt32(jd + jdFrac - 2400000.5);
-
-                    // ---- find epoch date
-                    if (ktr == 0)
-                    {
-                        MathTimeLibr.jday(spwdata[ktr].yr, spwdata[ktr].mon, spwdata[ktr].day, 0, 0, 0.0, out jd, out jdFrac);
-                        mjdspwstart = Convert.ToInt32(jd + jdFrac - 2400000.5);
-                    }
 
                     // find last 3 days data
                     if (spwdata[ktr].mjd >= nowmjd - 3)
@@ -860,11 +849,11 @@ namespace EOPSPWMethods
                         if (line3.Contains("-1"))
                             errstr = errstr + "Error " + line3 + "\n";
 
-                        spwdata[ktr].yr = Convert.ToInt32(linedata[0]);  // starts at 0
-                        spwdata[ktr].mon = Convert.ToInt32(linedata[1]);
-                        spwdata[ktr].day = Convert.ToInt32(linedata[2]);
-                        spwdata[ktr].brsn = Convert.ToInt32(linedata[3]);
-                        spwdata[ktr].nd = Convert.ToInt32(linedata[4]);
+                        //spwdata[ktr].yr = Convert.ToInt32(linedata[0]);  // starts at 0
+                        //spwdata[ktr].mon = Convert.ToInt32(linedata[1]);
+                        //spwdata[ktr].day = Convert.ToInt32(linedata[2]);
+                        //spwdata[ktr].brsn = Convert.ToInt32(linedata[3]);
+                        //spwdata[ktr].nd = Convert.ToInt32(linedata[4]);
                         spwdata[ktr].kparr[0] = Convert.ToInt32(linedata[5]);
                         spwdata[ktr].kparr[1] = Convert.ToInt32(linedata[6]);
                         spwdata[ktr].kparr[2] = Convert.ToInt32(linedata[7]);
@@ -883,11 +872,11 @@ namespace EOPSPWMethods
                         spwdata[ktr].aparr[6] = Convert.ToInt32(linedata[20]);
                         spwdata[ktr].aparr[7] = Convert.ToInt32(linedata[21]);
                         spwdata[ktr].avgap = Convert.ToInt32(linedata[22]);
-                        spwdata[ktr].cp = Convert.ToDouble(linedata[23]);
-                        spwdata[ktr].c9 = Convert.ToInt32(linedata[24]);
-                        spwdata[ktr].isn = Convert.ToInt32(linedata[25]);
+                        //spwdata[ktr].cp = Convert.ToDouble(linedata[23]);
+                        //spwdata[ktr].c9 = Convert.ToInt32(linedata[24]);
+                        //spwdata[ktr].isn = Convert.ToInt32(linedata[25]);
                         spwdata[ktr].adjf10 = Convert.ToDouble(linedata[26]);
-                        spwdata[ktr].q = Convert.ToInt32(linedata[27]);
+                        //spwdata[ktr].q = Convert.ToInt32(linedata[27]);
                         spwdata[ktr].adjctrf81 = Convert.ToDouble(linedata[28]);
                         spwdata[ktr].adjlstf81 = Convert.ToDouble(linedata[29]);
                         spwdata[ktr].obsf10 = Convert.ToDouble(linedata[30]);
@@ -897,7 +886,8 @@ namespace EOPSPWMethods
                         //spwdata[ktr].obsf30 = Convert.ToDouble(linedata[34]);
                         //spwdata[ktr].adjlstf30f81 = Convert.ToDouble(linedata[35]);
                         //spwdata[ktr].obslstf30f81 = Convert.ToDouble(linedata[36]);
-                        MathTimeLibr.jday(spwdata[ktr].yr, spwdata[ktr].mon, spwdata[ktr].day, 0, 0, 0.0, out jd, out jdFrac);
+                        MathTimeLibr.jday(Convert.ToInt32(linedata[0]), Convert.ToInt32(linedata[1]),
+                            Convert.ToInt32(linedata[2]), 0, 0, 0.0, out jd, out jdFrac);
                         oldjd = spwdata[ktr - 1].mjd;
                         spwdata[ktr].mjd = Convert.ToInt32(jd + jdFrac - 2400000.5);
 
@@ -970,7 +960,7 @@ namespace EOPSPWMethods
         // ---------------------------------------------------------------------------
 
         public void findspwparam(double jd, double jdFrac, char interp, char fluxtype, char f81type, char inputtype,
-                                  SPWdataClass[] spwdata, double jdspwstart, out double f107, out double f107bar,
+                                  SPWdataClass[] spwdata, out double f107, out double f107bar,
                                   out double ap, out double avgap, double[] aparr, out double kp, out double sumkp,
                                   double[] kparr)
         {
@@ -998,7 +988,7 @@ namespace EOPSPWMethods
                 fluxtime = 1020.0;
 
             // ---- read data for day of interest
-            jdspwstarto = Math.Floor(jd + jdFrac - jdspwstart);
+            jdspwstarto = Math.Floor(jd + jdFrac - spwdata[0].mjd - 2400000.5);
             recnum = Convert.ToInt32(jdspwstarto);
 
             // --------------------  implementation   ----------------------

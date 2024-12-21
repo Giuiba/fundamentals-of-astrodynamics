@@ -43,6 +43,8 @@
 
 function [dut1, dat, lod, xp, yp, ddpsi, ddeps, dx, dy] = findeopparam( jdtdb, jdtdbF, interp, eoparr)
 
+    convrt = pi / (3600.0 * 180.0);  % " to rad
+   
     % the ephemerides are centered on jdtdb, but it turns out to be 0.5, or 0000 hrs.
     % check if any whole days in jdF
     jdb = floor(jdtdb + jdtdbF) + 0.5;  % want jd at 0 hr
@@ -53,7 +55,7 @@ function [dut1, dat, lod, xp, yp, ddpsi, ddeps, dx, dy] = findeopparam( jdtdb, j
 
     % ---- read data for day of interest
     jdeopstarto = floor(jdtdb + jdtdbF - eoparr(1).mjd - 2400000.5);
-    recnum = floor(jdeopstarto);
+    recnum = floor(jdeopstarto) + 1;
 
     % check for out of bound values
     if ((recnum >= 1) && (recnum <= 51830))  % eopsize
@@ -147,4 +149,12 @@ function [dut1, dat, lod, xp, yp, ddpsi, ddeps, dx, dy] = findeopparam( jdtdb, j
         dy = 0.0;
     end
 
-    %  findeopparam
+    % now convert units for use in operations
+    xp = xp * convrt;  % " to rad
+    yp = yp * convrt;
+    ddpsi = ddpsi * convrt;  % " to rad
+    ddeps = ddeps * convrt;
+    dx = dx * convrt;  % " to rad
+    dy = dy * convrt;
+
+end    %  findeopparam

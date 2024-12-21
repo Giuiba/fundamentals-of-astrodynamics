@@ -57,10 +57,10 @@
 %  references    :
 %    vallado       2007, 268-269, alg 27
 %
-% [rho, az, el, drho, daz, del] = rv2razel(reci, veci, latgd, lon, alt, ttt, iau80arr, jdut1, lod, xp, yp, terms, ddpsi, ddeps )
+% [rho, az, el, drho, daz, del] = rv2razel(recef, vecef, latgd, lon, alt )
 % ------------------------------------------------------------------------------
 
-function [rho, az, el, drho, daz, del] = rv2razel(reci, veci, latgd, lon, alt, ttt, iau80arr, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+function [rho, az, el, drho, daz, del] = rv2razel(recef, vecef, latgd, lon, alt )
 
     halfpi = pi*0.5;
     small  = 0.00000001;
@@ -71,8 +71,8 @@ function [rho, az, el, drho, daz, del] = rv2razel(reci, veci, latgd, lon, alt, t
     %fprintf(1,'rsecef    %14.7f %14.7f %14.7f \n',rsecef );
     
     % -------------------- convert eci to ecef --------------------
-    aeci = [0;0;0];
-    [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    % aeci = [0;0;0];
+    % [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     %fprintf(1,'sat recef    %14.7f %14.7f %14.7f \n',recef );
     % simplified - just use sidereal time rotation
     % thetasa= earthrot * (1.0  - 0.0/86400.0 );

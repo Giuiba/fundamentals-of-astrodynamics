@@ -1,4 +1,4 @@
-%
+
 % ------------------------------------------------------------------------------
 %
 %                           function razel2rv
@@ -46,10 +46,10 @@
 %  references    :
 %    vallado       2001, 250-255, alg 27
 %
-% [reci,veci] = razel2rv ( rho,az,el,drho,daz,del,latgd,lon,alt,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+% [recef, vecef] = razel2rv(latgd, lon, alt, rho, az, el, drho, daz, del)
 % ------------------------------------------------------------------------------
 
-function [reci,veci] = razel2rv ( rho,az,el,drho,daz,del,latgd,lon,alt,ttt,iau80arr,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+function [recef, vecef] = razel2rv(latgd, lon, alt, rho, az, el, drho, daz, del)
 
         % -------------------------  implementation   -----------------
         constmath;
@@ -71,9 +71,9 @@ function [reci,veci] = razel2rv ( rho,az,el,drho,daz,del,latgd,lon,alt,ttt,iau80
         recef = rhoecef + rs;
         vecef = drhoecef;
 
-        % -------- convert ecef to eci
-        recef = recef;
-        vecef = vecef;
-        aceef     = [0;0;0];
-        [reci,veci,aeci] = ecef2eci(recef,vecef,acef,ttt,iau80arr, jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+        % % -------- convert ecef to eci
+        % recef = recef;
+        % vecef = vecef;
+        % aceef     = [0;0;0];
+        % [reci,veci,aeci] = ecef2eci(recef,vecef,acef,ttt,iau80arr, jdut1,lod,xp,yp,terms,ddpsi,ddeps );
 

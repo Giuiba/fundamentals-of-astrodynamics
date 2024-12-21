@@ -56,7 +56,7 @@ function [reci, veci, aeci] = ecef2eci06( recef, vecef, aecef, iau06arr, xys06ta
     % ---- ceo based, iau2006
     if ~contains(opt1, 'a') || ~contains(opt1, 'b')
         [x, y, s, pnb] = iau06xys (iau06arr, fArgs06, xys06table, ttt, ddx, ddy, opt1);
-        [st]  = iau06era (jdut1 );
+        [st, stdot] = sidereal(jdut1, 0.0, 0.0, 0.0, 0.0, 2, '06' );
     end
 
     % ---- class equinox based, 2000a

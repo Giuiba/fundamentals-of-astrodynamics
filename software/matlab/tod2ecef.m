@@ -47,7 +47,7 @@ function [recef, vecef, aecef] = tod2ecef  ( rtod, vtod, atod, iau80arr, jdut1, 
 
     [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
 
-    [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
+    [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms, '80' );
 
     [pm] = polarm(xp, yp, ttt, '80');
 

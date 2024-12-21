@@ -44,12 +44,12 @@ function [rcirs, vcirs, acirs] = ecef2cirs(recef, vecef, aecef, iau06arr, ttt, j
     constastro;
     sethelp;
     st = zeros(3, 3);
-    
+
     [fArgs06] = fundarg(ttt, '06');
 
     % ---- ceo based, iau2006
     if contains(opt1, '06')
-        [st]  = iau06era (jdut1 );
+        [st, stdot] = sidereal(jdut1, 0.0, 0.0, 0.0, 0.0, 0, '06');
     end
 
     % ---- class equinox based, 2000a

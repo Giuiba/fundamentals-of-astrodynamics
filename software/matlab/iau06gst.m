@@ -1,44 +1,44 @@
-    % -----------------------------------------------------------------------------
-    %
-    %                           function iau06gst
-    %
-    %  this function finds the iau2006 greenwich sidereal time.
-    %
-    %  author        : david vallado                  719-573-2600   16 jul 2004
-    %
-    %  revisions
-    %
-    %  inputs          description                    range / units
-    %    jdut1       - julian date of ut1             days from 4713 bc
-    %    ttt         - julian centuries of tt
-    %    deltapsi    - change in longitude            rad
-    %    l           - delaunay element               rad
-    %    ll          - delaunay element               rad
-    %    f           - delaunay element               rad
-    %    d           - delaunay element               rad
-    %    omega       - delaunay element               rad
-    %    many others for planetary values             rad
-    %
-    %  outputs       :
-    %    gst         - greenwich sidereal time        0 to twopi rad
-    %    st          - transformation matrix
-    %
-    %  locals        :
-    %    temp        - temporary variable for reals   rad
-    %    tut1d       - days from the jan 1, 2000 12 h epoch (ut1)
-    %
-    %  coupling      :
-    %    iau00in     - initialize the data arrays
-    %
-    %  references    :
-    %    vallado       2004, 216
-    %
-    % [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
-    %            lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
-    % -----------------------------------------------------------------------------
+% -----------------------------------------------------------------------------
+%
+%                           function iau06gst
+%
+%  this function finds the iau2006 greenwich sidereal time.
+%
+%  author        : david vallado                  719-573-2600   16 jul 2004
+%
+%  revisions
+%
+%  inputs          description                    range / units
+%    jdut1       - julian date of ut1             days from 4713 bc
+%    ttt         - julian centuries of tt
+%    deltapsi    - change in longitude            rad
+%    l           - delaunay element               rad
+%    ll          - delaunay element               rad
+%    f           - delaunay element               rad
+%    d           - delaunay element               rad
+%    omega       - delaunay element               rad
+%    many others for planetary values             rad
+%
+%  outputs       :
+%    gst         - greenwich sidereal time        0 to twopi rad
+%    st          - transformation matrix
+%
+%  locals        :
+%    temp        - temporary variable for reals   rad
+%    tut1d       - days from the jan 1, 2000 12 h epoch (ut1)
+%
+%  coupling      :
+%    iau00in     - initialize the data arrays
+%
+%  references    :
+%    vallado       2004, 216
+%
+% [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
+%            lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
+% -----------------------------------------------------------------------------
 
-    function [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
-        lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate);
+function [gst,st] = iau06gst(jdut1, ttt, deltapsi, l, l1, f, d, omega, ...
+        lonmer, lonven, lonear, lonmar, lonjup, lonsat, lonurn, lonnep, precrate)
 
     sethelp;
 
@@ -93,9 +93,6 @@
         - 0.00000044 * ttt3 + 0.000029956 * ttt4 + 0.0000000368 * ttt5) * convrt; % " to rad
 
     gst = gmst2000 + ee2000; % rad
-    if (gst < 0.0)
-        gst = twopi + gst;
-    end;
 
     if iauhelp == 'y'
         fprintf(1,'meanobl %11.7f getsum %11.7f %11.7f eect %11.7f  \n',epsa*180/pi,gstsum0*180/pi,gstsum1*180/pi,eect2000*180/pi );

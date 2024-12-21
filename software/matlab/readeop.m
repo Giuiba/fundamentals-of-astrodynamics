@@ -73,10 +73,6 @@ function [eoparr] = readeop(eopFileName)
                     eoparr(ktr).dy = str2double(longstr(89:99));
                     eoparr(ktr).dat = str2double(longstr(99:103));
 
-                    % ---- find epoch date
-                    % if (ktr == 1)
-                    %      eoparr.mjdeopstart = eoparr(ktr).mjd;
-                    % end
                 end  % for through observed
 
             end

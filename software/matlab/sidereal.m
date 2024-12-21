@@ -40,11 +40,13 @@
 %  references    :
 %    vallado       2013, 223-224
 %
-% [st, stdot]  = sidereal (jdut1, deltapsi, meaneps, omega, lod, eqeterms );
+% [st, stdot]  = sidereal (jdut1, deltapsi, meaneps, omega, lod, eqeterms, opt );
 % ----------------------------------------------------------------------------
 
-function [st,stdot]  = sidereal (jdut1, deltapsi, meaneps, omega, lod, eqeterms )
-constastro;
+function [st,stdot]  = sidereal (jdut1, deltapsi, meaneps, omega, lod, eqeterms, opt )
+    constastro;
+
+    if (opt == '80')
         % ------------------------ find gmst --------------------------
         gmst= gstime( jdut1 );
 
@@ -59,29 +61,42 @@ constastro;
         end
 
         ast = rem (ast, 2.0*pi);
-        thetasa    = earthrot * (1.0  - lod/86400.0 );
-        omegaearth = thetasa;
 
-%fprintf(1,'st gmst %11.8f ast %11.8f ome  %11.8f \n', gmst*180/pi, ast*180/pi, omegaearth*180/pi );
+        %fprintf(1,'st gmst %11.8f ast %11.8f ome  %11.8f \n', gmst*180/pi, ast*180/pi, omegaearth*180/pi );
+    else
+        % julian centuries of ut1
+        tut1d= jdut1 - 2451545.0;
 
-        st(1,1) =  cos(ast);
-        st(1,2) = -sin(ast);
-        st(1,3) =  0.0;
-        st(2,1) =  sin(ast);
-        st(2,2) =  cos(ast);
-        st(2,3) =  0.0;
-        st(3,1) =  0.0;
-        st(3,2) =  0.0;
-        st(3,3) =  1.0;
+        era = twopi * ( 0.7790572732640 + 1.00273781191135448 * tut1d );
+        era = rem (era,twopi);
 
-        % compute sidereal time rate matrix
-        stdot(1,1) = -omegaearth * sin(ast);
-        stdot(1,2) = -omegaearth * cos(ast);
-        stdot(1,3) =  0.0;
-        stdot(2,1) =  omegaearth * cos(ast);
-        stdot(2,2) = -omegaearth * sin(ast);
-        stdot(2,3) =  0.0;
-        stdot(3,1) =  0.0;
-        stdot(3,2) =  0.0;
-        stdot(3,3) =  0.0;
+        %if iauhelp == 'y'
+        fprintf(1,'era%11.7f  \n',era*180/pi );
+        %  end;
+        ast = era;
+    end
+
+    st(1,1) =  cos(ast);
+    st(1,2) = -sin(ast);
+    st(1,3) =  0.0;
+    st(2,1) =  sin(ast);
+    st(2,2) =  cos(ast);
+    st(2,3) =  0.0;
+    st(3,1) =  0.0;
+    st(3,2) =  0.0;
+    st(3,3) =  1.0;
+
+    % compute sidereal time rate matrix
+    thetasa    = earthrot * (1.0  - lod/86400.0 );
+    omegaearth = thetasa;
+
+    stdot(1,1) = -omegaearth * sin(ast);
+    stdot(1,2) = -omegaearth * cos(ast);
+    stdot(1,3) =  0.0;
+    stdot(2,1) =  omegaearth * cos(ast);
+    stdot(2,2) = -omegaearth * sin(ast);
+    stdot(2,3) =  0.0;
+    stdot(3,1) =  0.0;
+    stdot(3,2) =  0.0;
+    stdot(3,3) =  0.0;
 

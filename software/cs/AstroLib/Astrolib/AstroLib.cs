@@ -12415,7 +12415,7 @@ namespace AstroLibMethods
             )
         {
             double rsmag, rmmag, temp;
-            double small = 0.000001;
+            double small = 1.0e-11;
 
             // -------------------------  implementation    // ----------------
             // -------------------  initialize values    // -------------------
@@ -14476,14 +14476,14 @@ namespace AstroLibMethods
 
         public void remakecovpv
             (
-               double[,] sigmapts, out double[] yu, out double[,] cov
+ //             double[,] sigmapts, out double[] yu, out double[,] cov
             )
         {
-            Int32 i, j;
-            double oo12;
+            //Int32 i, j;
+            //double oo12;
 
-            oo12 = 1.0 / 12.0;
-            yu = new double[] { 0, 0, 0, 0, 0, 0 };
+            //oo12 = 1.0 / 12.0;
+            //yu = new double[] { 0, 0, 0, 0, 0, 0 };
 
             // -------------------------  implementation    // ----------------
             // initialize data & pre-allocate matrices
@@ -14491,21 +14491,21 @@ namespace AstroLibMethods
             double[,] tmp = new double[6, 6];
 
             // find mean
-            for (i = 0; i < 12; i++)
-                for (j = 0; j < 6; j++)
-                    yu[j] = yu[j] + sigmapts[j, i];
+            //for (i = 0; i < 12; i++)
+            //    for (j = 0; j < 6; j++)
+            //        yu[j] = yu[j] + sigmapts[j, i];
 
-            for (j = 0; j < 6; j++)
-                yu[j] = yu[j] * oo12;
+            //for (j = 0; j < 6; j++)
+            //    yu[j] = yu[j] * oo12;
 
-            // find covariance
-            for (i = 0; i < 12; i++)
-                for (j = 0; j < 6; j++)
-                    y[j, i] = sigmapts[j, i] - yu[j];
+            //// find covariance
+            //for (i = 0; i < 12; i++)
+            //    for (j = 0; j < 6; j++)
+            //        y[j, i] = sigmapts[j, i] - yu[j];
 
-            double[,] yt = MathTimeLibr.mattransx(y, 6, 12);
-            tmp = MathTimeLibr.matmult(y, yt, 6, 12, 6);
-            cov = MathTimeLibr.matscale(tmp, 6, 6, oo12);
+            //double[,] yt = MathTimeLibr.mattransx(y, 6, 12);
+            //tmp = MathTimeLibr.matmult(y, yt, 6, 12, 6);
+            //cov = MathTimeLibr.matscale(tmp, 6, 6, oo12);
 
             // cov = MathTimeLibr.matmult(y, tmp, 6, 6, 6);
             //cov = (tmp + tmp) * 0.5;  //tmp*tmp'? // ensures perfect symmetry
@@ -14540,36 +14540,36 @@ namespace AstroLibMethods
 
         public void remakecovp
             (
-               double[,] sigmapts, out double[] yu, out double[,] cov
+ //              double[,] sigmapts, out double[] yu, out double[,] cov
             )
         {
-            Int32 i, j;
-            double oo6;
+            //Int32 i, j;
+            //double oo6;
 
-            oo6 = 1.0 / 6.0;
-            yu = new double[] { 0, 0, 0 };
+            //oo6 = 1.0 / 6.0;
+            //yu = new double[] { 0, 0, 0 };
 
-            // -------------------------  implementation    // ----------------
-            // initialize data & pre-allocate matrices
-            double[,] y = new double[3, 6];
-            double[,] tmp = new double[3, 3];
+            //// -------------------------  implementation    // ----------------
+            //// initialize data & pre-allocate matrices
+            //double[,] y = new double[3, 6];
+            //double[,] tmp = new double[3, 3];
 
             // find mean
-            for (i = 0; i < 6; i++)
-                for (j = 0; j < 3; j++)
-                    yu[j] = yu[j] + sigmapts[j, i];
+            //for (i = 0; i < 6; i++)
+            //    for (j = 0; j < 3; j++)
+            //        yu[j] = yu[j] + sigmapts[j, i];
 
-            for (j = 0; j < 3; j++)
-                yu[j] = yu[j] * oo6;
+            //for (j = 0; j < 3; j++)
+            //    yu[j] = yu[j] * oo6;
 
-            // find covariance
-            for (i = 0; i < 6; i++)
-                for (j = 0; j < 3; j++)
-                    y[j, i] = sigmapts[j, i] - yu[j];
+            //// find covariance
+            //for (i = 0; i < 6; i++)
+            //    for (j = 0; j < 3; j++)
+            //        y[j, i] = sigmapts[j, i] - yu[j];
 
-            double[,] yt = MathTimeLibr.mattransx(y, 3, 6);
-            tmp = MathTimeLibr.matmult(y, yt, 3, 6, 3);
-            cov = MathTimeLibr.matscale(tmp, 3, 3, oo6);
+            //double[,] yt = MathTimeLibr.mattransx(y, 3, 6);
+            //tmp = MathTimeLibr.matmult(y, yt, 3, 6, 3);
+            //cov = MathTimeLibr.matscale(tmp, 3, 3, oo6);
         } // remakecovp  
 
 

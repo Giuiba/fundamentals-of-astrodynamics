@@ -60,7 +60,7 @@ function [reci, veci, aeci] = tirs2eci(rtirs, vtirs, atirs, iau06arr, xysarr, tt
     % ---- ceo based, iau2006
     if not(contains(opt1, 'a')) || not(contains(opt1, 'b'))
         [x, y, s, pnb] = iau06xys (iau06arr, fArgs06, xysarr, ttt, ddx, ddy, opt1);
-        [st]  = iau06era (jdut1 );
+        [st, stdot] = sidereal(jdut1, 0.0, 0.0, 0.0, 0.0, 0, '06' );
     end
 
     % ---- class equinox based, 2000a

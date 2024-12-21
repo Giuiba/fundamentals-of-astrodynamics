@@ -53,7 +53,7 @@ function [reci, veci, aeci] = pef2eci(rpef, vpef, apef, iau80arr, ttt, jdut1, lo
     [prec, psia, wa, ea, xa] = precess ( ttt, '80' );
 
     [deltapsi, trueeps, meaneps, nut] = nutation  (ttt, ddpsi, ddeps, iau80arr, fArgs);
-    [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms );
+    [st, stdot] = sidereal(jdut1, deltapsi, meaneps, fArgs(5), lod, eqeterms, '80' );
 
     thetasa= earthrot * (1.0  - lod/86400.0 );
     omegaearth = [0; 0; thetasa;];

@@ -48,7 +48,7 @@ function [recef,vecef,aecef] = cirs2ecef(rcirs, vcirs, acirs, iau06arr, ttt, jdu
 
     % ---- ceo based, iau2000
     if contains(opt1, '06')
-        [st]  = iau06era (jdut1 );
+        [st, stdot] = sidereal(jdut1, 0.0, 0.0, 0.0, 0.0, 0, '06');
     end
 
     % ---- class equinox based, 2000a
