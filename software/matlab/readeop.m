@@ -79,7 +79,6 @@ function [eoparr] = readeop(eopFileName)
                     % end
                 end  % for through observed
 
-                ktrActObs = ktr;
             end
 
             % ---- process predicted records

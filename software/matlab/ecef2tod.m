@@ -64,12 +64,12 @@ function [rtod, vtod, atod] = ecef2tod(recef, vecef, aecef, iau80arr, ttt, jdut1
     thetasa= earthrot * (1.0  - lod/86400.0 );
     omegaearth = [0; 0; thetasa;];
 
-    rpef = pm*recef';
+    rpef = pm*recef;
     rtod = st*rpef;
 
-    vpef = pm*vecef';
+    vpef = pm*vecef;
     vtod = st*(vpef + cross(omegaearth,rpef));
 
     temp = cross(omegaearth,rpef);
-    atod = st*( pm*aecef' + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
+    atod = st*( pm*aecef + cross(omegaearth,temp) + 2.0*cross(omegaearth,vpef) );
 

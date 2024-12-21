@@ -1,4 +1,4 @@
-%
+
 % ---------------------------------------------------------------------------
 %
 %                           function site
@@ -35,27 +35,27 @@
 %  references    :
 %    vallado       2001, 404-407, alg 47, ex 7-1
 %
-% [rs,vs] = site ( latgd,lon,alt );
+% [rsecef, vsecef] = site ( latgd,lon,alt )
 % -----------------------------------------------------------------------------
 
-function [rsecef, vsecef] = site ( latgd,lon,alt );
+function [rsecef, vsecef] = site ( latgd,lon,alt )
 
-        constastro;
+    constastro;
 
-        % -------------------------  implementation   -----------------
-        sinlat      = sin( latgd );
+    % -------------------------  implementation   -----------------
+    sinlat      = sin( latgd );
 
-        % ------  find rdel and rk components of site vector  ---------
-        cearth= re / sqrt( 1.0 - ( eccearthsqrd*sinlat*sinlat ) );
-        rdel  = ( cearth + alt )*cos( latgd );
-        rk    = ( (1.0-eccearthsqrd)*cearth + alt )*sinlat;
+    % ------  find rdel and rk components of site vector  ---------
+    cearth= re / sqrt( 1.0 - ( eccearthsqrd*sinlat*sinlat ) );
+    rdel  = ( cearth + alt )*cos( latgd );
+    rk    = ( (1.0-eccearthsqrd)*cearth + alt )*sinlat;
 
-        % ---------------  find site position vector  -----------------
-        rsecef(1) = rdel * cos( lon );
-        rsecef(2) = rdel * sin( lon );
-        rsecef(3) = rk;
-        rsecef = rsecef';
-        
-        % ---------------  find site velocity vector  -----------------
-        vsecef = [0.0; 0.0; 0.0];
+    % ---------------  find site position vector  -----------------
+    rsecef(1) = rdel * cos( lon );
+    rsecef(2) = rdel * sin( lon );
+    rsecef(3) = rk;
+    rsecef = rsecef';
+
+    % ---------------  find site velocity vector  -----------------
+    vsecef = [0.0; 0.0; 0.0];
 

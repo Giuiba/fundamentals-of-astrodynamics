@@ -1,4 +1,4 @@
-%
+
 % ----------------------------------------------------------------------------
 %
 %                           function ecef2mod
@@ -68,13 +68,13 @@ function [rmod, vmod, amod] = ecef2mod( recef, vecef, aecef, iau80arr, ttt, jdut
     %trueeps-meaneps
     %deltapsi
     %nut
-    rpef = pm*recef';
+    rpef = pm*recef;
     rmod = nut*st*rpef;
 
-    vpef = pm*vecef';
+    vpef = pm*vecef;
     vmod = nut*st*(vpef + cross(omegaearth,rpef));
 
     temp = cross(omegaearth,rpef);
-    amod = nut*st*( pm*aecef' + cross(omegaearth,temp) ...
+    amod = nut*st*( pm*aecef + cross(omegaearth,temp) ...
         + 2.0*cross(omegaearth,vpef) );
 

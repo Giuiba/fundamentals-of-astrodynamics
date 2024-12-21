@@ -1,73 +1,53 @@
-﻿// -----------------------------------------------------------------------------
+﻿// ----------------------------------------------------------------------------
 //
-//                          EOPSPWLib
+//                                   EOPSPWLib
 //
 // this library contains various eop and space weather routines. These
 // methods read the combined files and find specific values given a particular 
 // date. 
 //
-//    current :
-//               6 nov 23  david vallado
-//                           update names iau06
-//    changes :
-//              18 mar 19  david vallado
-//                           split up to be more functional
-//              19 mar 14  david vallado
-//                           original baseline 
+//                               companion code for
+//                  fundamentals of astrodynamics and applications
+//                                      2022
+//                                by david vallado
 //
-//    (w) 719-330-3517, email dvallado@comspoc.com or davallado@gmail.com
+//                  email dvallado@comspoc.com, davallado@gmail.com
 //
+//   current :
+//              20 jan 2025  david vallado
+//                           original baseline
+//                           
+//   changes :
+//   
+//   defines
+//     EOPdataClass - EOP class parameters
+//     eopdata      - array for EOP data 
+//     eopdataU     - array for EOP data from USNO
+//     SPWdataClass - SPW class parameters
+//     spwdata      - array for SPW data 
+//     iau80Class   - array for iau80 parameters
+//     iau06Class   - array for iau06 parameters
 //
-//  uses
-//    MathTimeMethods;  // Edirection
-//
-//  defines
-//    EOPdataClass - EOP class parameters
-//    eopdata      - array for EOP data 
-//    eopdataU     - array for EOP data from USNO
-//    SPWdataClass - SPW class parameters
-//    spwdata      - array for SPW data 
-//    iau80Class   - array for iau80 funds
-//    iau06Class   - array for iau06 funds
-//    
-//  methods
-//    public void iau80in (string nutLoc, out iau80Class iau80arr)
-//    public void iau06in (string nutLoc, out iau06Class iau06arr)
-//    public void readeop (ref EOPdataClass[] eopdata,
-//                         string inFile, out Int32 mjdeopstart, out Int32 ktrActualObs, out string updDate)
-//    public void findeopparam (double jd, double jdFrac, char interp, EOPdataClass[] eopdata, double jdeopstart,
-//                              out double dut1, out int dat, out double lod, out double xp, out double yp,
-//                              out double ddpsi, out double ddeps, out double dx, out double dy)
-//    public void readspw (ref SPWdataClass[] spwdata, string inFile, out Int32 mjdspwstart, out Int32 ktrActualObs)
-//    public void findspwparam (double jd, double jdFrac, char interp, char fluxtype, char f81type, char inputtype,
-//                              SPWdataClass[] spwdata, double jdspwstart, out double f107, out double f107bar,
-//                              out double ap, out double avgap, double[] aparr, out double kp, out double sumkp,
-//                              double[] kparr)
-//    public double kp2ap (double kpin)
-//    public double ap2kp (double apin)
-//
-// -----------------------------------------------------------------------------
-
+// ----------------------------------------------------------------------------
 
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
 
-using MathTimeMethods;  // Edirection
-using System.Linq.Expressions;
+using MathTimeMethods;  // Edirection, globals
 
 namespace EOPSPWMethods
 {
     public class EOPSPWLib
     {
-        public string EOPSPWLibVersion = "EOPSPWLib Version 2023-11-06";
+        public string EOPSPWLibVersion = "EOPSPWLib Version 2025-01-20";
 
         // assume max of 24000 days from 1957 and eop from 1962  
         // include extra for 10 years of daily predictions
         public const long numb = 60000;
         // actual number of records read in
-        public long numbeop, numbspw;  
+        public long numbeop, numbspw;
 
         // this is just the EOP data setup so it can grow
         public class EOPdataClass
@@ -98,8 +78,8 @@ namespace EOPSPWMethods
         // this will be a fixed size
         public class iau80Class
         {
-            public double[,] rar80 = new double[106,4];
-            public Int32[,] iar80 = new int[106,5];
+            public double[,] rar80 = new double[106, 4];
+            public Int32[,] iar80 = new int[106, 5];
         }
         public iau80Class iau80arr = new iau80Class();
 
@@ -134,30 +114,30 @@ namespace EOPSPWMethods
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function iau80in
-        *
-        *  this function initializes the nutation matricies needed for reduction
-        *    calculations. the routine needs the filename of the files as input.
-        *
-        *  author        : david vallado                  719-573-2600   27 may 2002
-        *
-        *  inputs          description                    range / units
-        *    eoploc      - file location of eop
-        *    
-        *  outputs       :
-        *    iau80arr    - record containing the iau80 constants rad
-        *
-        *  locals        :
-        *    convrt      - conversion factor to degrees
-        *    i,j         - index
-        *
-        *  coupling      :
-        *    none        -
-        * --------------------------------------------------------------------------- */
+        // ---------------------------------------------------------------------------
+        //
+        //                           function iau80in
+        //
+        //  this function initializes the nutation matricies needed for reduction
+        //    calculations. the routine needs the filename of the files as input.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    eoploc      - file location of eop
+        //    
+        //  outputs       :
+        //    iau80arr    - record containing the iau80 constants rad
+        //
+        //  locals        :
+        //    convrt      - conversion factor to degrees
+        //    i,j         - index
+        //
+        //  coupling      :
+        //    none        -
+        // --------------------------------------------------------------------------- 
 
-        public void iau80in (string nutLoc, out iau80Class iau80arr)
+        public void iau80in(string nutLoc, out iau80Class iau80arr)
         {
             double convrt;
             int i, j;
@@ -196,57 +176,54 @@ namespace EOPSPWMethods
         }  // iau80in
 
 
-        /* ----------------------------------------------------------------------------
-        *
-        *                           function iau06in
-        *
-        *  this function initializes the matricies needed for iau 2006 reduction
-        *    calculations. the routine uses the files listed as inputs, but they are
-        *    are not input to the routine as they are static files. 
-        *
-        *  author        : david vallado                  719-573-2600   16 jul 2004
-        *
-        *  revisions
-        *    dav 14 apr 11  update for iau2010 conventions
-        *
-        *  inputs description                                      range / units
-        *    iau06xtab5.2.a.dat  - file for x coefficient
-        *    iau06ytab5.2.b.dat  - file for y coefficient
-        *    iau06stab5.2.d.dat  - file for s coefficient
-        *    iau06ansofa.dat     - file for nutation coefficients
-        *    iau06anpl.dat       - file for planetary nutation coefficients
-        *    iau06nlontab5.3.a.dat - file for longitude coefficients
-        *    iau06nobltab5.3.b.dat - file for obliquity coefficients
-        *    iau06gsttab5.3.e.dat  - file for gmst coefficients
-        *
-        *  outputs       :
-        *    a0x         - real coefficients for x                     rad
-        *    a0xi        - integer coefficients for x
-        *    a0y         - real coefficients for y                     rad
-        *    a0yi        - integer coefficients for y
-        *    a0s         - real coefficients for s                     rad
-        *    a0si        - integer coefficients for s
-        *    apn         - real coefficients for nutation              rad
-        *    apni        - integer coefficients for nutation
-        *    ape         - real coefficients for obliquity             rad
-        *    apei        - integer coefficients for obliquity
-        *    agst        - real coefficients for gst                   rad
-        *    agsti       - integer coefficients for gst
-        *
-        *  locals        :
-        *    convrt      - conversion factor to radians
-        *    i           - index
-        *
-        *  coupling      :
-        *    none        -
-        *
-        *  references    :
-        *    vallado     2013, pg 205-219, 910-912
-        * ----------------------------------------------------------------------------- */
+        // ---------------------------------------------------------------------------
+        //
+        //                           function iau06in
+        //
+        //  this function initializes the matricies needed for iau 2006 reduction
+        //    calculations. the routine uses the files listed as inputs, but they are
+        //    are not input to the routine as they are static files. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    iau06xtab5.2.a.dat  - file for x coefficient
+        //    iau06ytab5.2.b.dat  - file for y coefficient
+        //    iau06stab5.2.d.dat  - file for s coefficient
+        //    iau06ansofa.dat     - file for nutation coefficients
+        //    iau06anpl.dat       - file for planetary nutation coefficients
+        //    iau06nlontab5.3.a.dat - file for longitude coefficients
+        //    iau06nobltab5.3.b.dat - file for obliquity coefficients
+        //    iau06gsttab5.3.e.dat  - file for gmst coefficients
+        //
+        //  outputs       :
+        //    a0x         - real coefficients for x                     rad
+        //    a0xi        - integer coefficients for x
+        //    a0y         - real coefficients for y                     rad
+        //    a0yi        - integer coefficients for y
+        //    a0s         - real coefficients for s                     rad
+        //    a0si        - integer coefficients for s
+        //    apn         - real coefficients for nutation              rad
+        //    apni        - integer coefficients for nutation
+        //    ape         - real coefficients for obliquity             rad
+        //    apei        - integer coefficients for obliquity
+        //    agst        - real coefficients for gst                   rad
+        //    agsti       - integer coefficients for gst
+        //
+        //  locals        :
+        //    convrt      - conversion factor to radians
+        //    i           - index
+        //
+        //  coupling      :
+        //    none        -
+        //
+        //  references    :
+        //    vallado     2013, pg 205-219, 910-912
+        // ----------------------------------------------------------------------------- */
 
-        public void iau06in (string nutLoc, out iau06Class iau06arr)
+        public void iau06in(string nutLoc, out iau06Class iau06arr)
         {
-            string pattern; 
+            string pattern;
             // string line;
             Int32 i, j;
             // Int32 k, numsegs, ktr;
@@ -299,11 +276,11 @@ namespace EOPSPWMethods
                 //string[] linedata = line.Split('|');
                 // reals
                 string[] linedata = Regex.Split(fileData[i], pattern);
-                iau06arr.ax0[i-2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
-                iau06arr.ax0[i-2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
+                iau06arr.ax0[i - 2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
+                iau06arr.ax0[i - 2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
                 // integers
                 for (j = 0; j <= 13; j++)
-                    iau06arr.ax0i[i-2, j] = Convert.ToInt32(linedata[j + 4]);
+                    iau06arr.ax0i[i - 2, j] = Convert.ToInt32(linedata[j + 4]);
             }
 
             // tab5.2b.txt in IERS
@@ -314,11 +291,11 @@ namespace EOPSPWMethods
                 //string[] linedata = line.Split('|');
                 // reals
                 string[] linedata = Regex.Split(fileData[i], pattern);
-                iau06arr.ay0[i-2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
-                iau06arr.ay0[i-2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
+                iau06arr.ay0[i - 2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
+                iau06arr.ay0[i - 2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
                 // integers
                 for (j = 0; j <= 13; j++)
-                    iau06arr.ay0i[i-2, j] = Convert.ToInt32(linedata[j + 4]);
+                    iau06arr.ay0i[i - 2, j] = Convert.ToInt32(linedata[j + 4]);
             }
 
             // tab5.2d.txt in IERS
@@ -330,11 +307,11 @@ namespace EOPSPWMethods
                 // reals
                 string[] linedata = Regex.Split(fileData[i], pattern);
                 // reals
-                iau06arr.as0[i-2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
-                iau06arr.as0[i-2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
+                iau06arr.as0[i - 2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
+                iau06arr.as0[i - 2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
                 // integers
                 for (j = 0; j <= 13; j++)
-                    iau06arr.as0i[i-2, j] = Convert.ToInt32(linedata[j + 4]);
+                    iau06arr.as0i[i - 2, j] = Convert.ToInt32(linedata[j + 4]);
             }
 
 
@@ -349,10 +326,10 @@ namespace EOPSPWMethods
                 string[] linedata = Regex.Split(fileData[i], pattern1);
                 // reals
                 for (j = 0; j < 6; j++)
-                    iau06arr.aapn0[i-2, j] = Convert.ToDouble(linedata[j + 6]) * convrtmu;  // rad
+                    iau06arr.aapn0[i - 2, j] = Convert.ToDouble(linedata[j + 6]) * convrtmu;  // rad
                 // integers
                 for (j = 0; j < 5; j++)
-                    iau06arr.aapn0i[i-2, j] = Convert.ToInt32(linedata[j + 1]);
+                    iau06arr.aapn0i[i - 2, j] = Convert.ToInt32(linedata[j + 1]);
             }
 
             //
@@ -366,10 +343,10 @@ namespace EOPSPWMethods
                 string[] linedata = Regex.Split(fileData[i], pattern1);
                 // reals
                 for (j = 0; j < 4; j++)
-                    iau06arr.aapl0[i-2, j] = Convert.ToDouble(linedata[j + 15]) * convrtmu;  // rad
+                    iau06arr.aapl0[i - 2, j] = Convert.ToDouble(linedata[j + 15]) * convrtmu;  // rad
                 // integers
                 for (j = 0; j < 14; j++)   // 13 ??
-                    iau06arr.aapl0i[i-2, j] = Convert.ToInt32(linedata[j + 1]);
+                    iau06arr.aapl0i[i - 2, j] = Convert.ToInt32(linedata[j + 1]);
             }
 
             // tab5.3a.txt in IERS
@@ -382,11 +359,11 @@ namespace EOPSPWMethods
                 //string[] linedata = line.Split('|');
                 // reals
                 string[] linedata = Regex.Split(fileData[i], pattern);
-                iau06arr.apn0[i-2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
-                iau06arr.apn0[i-2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
+                iau06arr.apn0[i - 2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
+                iau06arr.apn0[i - 2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
                 // integers
                 for (j = 0; j <= 13; j++)
-                    iau06arr.apn0i[i-2, j] = Convert.ToInt32(linedata[j + 4]);
+                    iau06arr.apn0i[i - 2, j] = Convert.ToInt32(linedata[j + 4]);
             }
 
             // tab5.3b.txt in IERS
@@ -398,11 +375,11 @@ namespace EOPSPWMethods
                 //string[] linedata = line.Split('|');
                 // reals
                 string[] linedata = Regex.Split(fileData[i], pattern);
-                iau06arr.apl0[i-2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
-                iau06arr.apl0[i-2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
+                iau06arr.apl0[i - 2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
+                iau06arr.apl0[i - 2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
                 // integers
                 for (j = 0; j <= 13; j++)
-                    iau06arr.apl0i[i-2, j] = Convert.ToInt32(linedata[j + 4]);
+                    iau06arr.apl0i[i - 2, j] = Convert.ToInt32(linedata[j + 4]);
             }
 
             // tab5.2e.txt in IERS
@@ -416,51 +393,49 @@ namespace EOPSPWMethods
                 //string[] linedata = line.Split('|');
                 // reals
                 string[] linedata = Regex.Split(fileData[i], pattern);
-                iau06arr.ag0[i-2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
-                iau06arr.ag0[i-2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
+                iau06arr.ag0[i - 2, 0] = Convert.ToDouble(linedata[2]) * convrtu;  // rad
+                iau06arr.ag0[i - 2, 1] = Convert.ToDouble(linedata[3]) * convrtu;  // rad
                 // integers
                 for (j = 0; j <= 13; j++)
-                    iau06arr.ag0i[i-2, j] = Convert.ToInt32(linedata[j + 4]);
+                    iau06arr.ag0i[i - 2, j] = Convert.ToInt32(linedata[j + 4]);
             }
 
         }    // iau06in
 
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function readeop
-        *
-        *  this function initializes the earth orientation parameter data with an EOP file. the input
-        *  data files are from CelesTrak and the eoppn.txt file contains the nutation
-        *  daily values used for optimizing the speed of operation. note these nutation
-        *  values do not have corrections applied (dx/dy/ddpsi/ddeps) so a single
-        *  routine can process past and future data with these corrections. the
-        *  corrections are not known in the future. the files could be combined, but it
-        *  may make more sense to keep them separate because the values can be calculated
-        *  long into the future.
-        *
-        *  author        : david vallado                  719-573-2600        2 nov 2005
-        *
-        *  revisions
-        *
-        *  inputs          description                    range / units
-        *    eopdata[0]  - array of eop data records
-        *    infile      - name of eop file to read
-        *     
-        *  outputs       :
-        *    eopdata[0]  - array of eop data records
-        *    mjdeopstart - modified julian date of the start of the eopdata[0] data
-        *    ktrActualObs- ktr of number of actual obs (no predicted)
-        *    updDate     - date string of update in case it's not the current time
-        *
-        *  locals        :
-        *                -
-        *
-        *  coupling      :
-        *  -------------------------------------------------------------------------- */
+        // ---------------------------------------------------------------------------
+        //
+        //                           function readeop
+        //
+        //  this function initializes the earth orientation parameter data with an EOP file. the input
+        //  data files are from CelesTrak and the eoppn.txt file contains the nutation
+        //  daily values used for optimizing the speed of operation. note these nutation
+        //  values do not have corrections applied (dx/dy/ddpsi/ddeps) so a single
+        //  routine can process past and future data with these corrections. the
+        //  corrections are not known in the future. the files could be combined, but it
+        //  may make more sense to keep them separate because the values can be calculated
+        //  long into the future.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    eopdata[0]  - array of eop data records
+        //    infile      - name of eop file to read
+        //     
+        //  outputs       :
+        //    eopdata[0]  - array of eop data records
+        //    mjdeopstart - modified julian date of the start of the eopdata[0] data
+        //    ktrActualObs- ktr of number of actual obs (no predicted)
+        //    updDate     - date string of update in case it's not the current time
+        //
+        //  locals        :
+        //                -
+        //
+        //  coupling      :
+        // ---------------------------------------------------------------------------
 
-        public void readeop (ref EOPdataClass[] eopdata,
+        public void readeop(ref EOPdataClass[] eopdata,
                              string inFile, out Int32 mjdeopstart, out Int32 ktrActualObs, out string updDate)
         {
             Int32 numrecsobs, i, ktr;
@@ -577,41 +552,41 @@ namespace EOPSPWMethods
         }   // readeop
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function findeopparam
-        *
-        *  this routine finds the eop parameters for a given time. several types of
-        *  interpolation are available. 
-        *
-        *  author        : david vallado                      719-573-2600   12 dec 2005
-        *
-        *  inputs          description                                  range / units
-        *    jd          - julian date of epoch (0 hrs utc)
-        *    jdFrac      - fractional date of epoch
-        *    interp      - interpolation                                n-none, l-linear, s-spline
-        *    eopdata[0]  - array of eop data records
-        *    jdeopstart  - julian date of the start of the eopdata[0] data (set in initeop)
-        *
-        *  outputs       :
-        *    dut1        - delta ut1 (ut1-utc)                               sec
-        *    dat         - number of leap seconds                            sec
-        *    lod         - excess length of day                              sec
-        *    xp          - x component of polar motion                       rad
-        *    yp          - y component of polar motion                       rad
-        *    ddpsi       - correction to delta psi (iau-76 theory)           rad
-        *    ddeps       - correction to delta eps (iau-76 theory)           rad
-        *    dx          - correction to x (cio theory)                      rad
-        *    dy          - correction to y (cio theory)                      rad
-        *
-        *  locals        :
-        *                -
-        *
-        *  coupling      :
-        *    none        -
-        * --------------------------------------------------------------------------- */
+        // ---------------------------------------------------------------------------
+        //
+        //                           function findeopparam
+        //
+        //  this routine finds the eop parameters for a given time. several types of
+        //  interpolation are available. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jd          - julian date of epoch (0 hrs utc)
+        //    jdFrac      - fractional date of epoch
+        //    interp      - interpolation                                n-none, l-linear, s-spline
+        //    eopdata[0]  - array of eop data records
+        //    jdeopstart  - julian date of the start of the eopdata[0] data (set in initeop)
+        //
+        //  outputs       :
+        //    dut1        - delta ut1 (ut1-utc)                               sec
+        //    dat         - number of leap seconds                            sec
+        //    lod         - excess length of day                              sec
+        //    xp          - x component of polar motion                       rad
+        //    yp          - y component of polar motion                       rad
+        //    ddpsi       - correction to delta psi (iau-76 theory)           rad
+        //    ddeps       - correction to delta eps (iau-76 theory)           rad
+        //    dx          - correction to x (cio theory)                      rad
+        //    dy          - correction to y (cio theory)                      rad
+        //
+        //  locals        :
+        //                -
+        //
+        //  coupling      :
+        //    none        -
+        // ---------------------------------------------------------------------------
 
-        public void findeopparam (double jd, double jdFrac, char interp, EOPdataClass[] eopdata, double jdeopstart,
+        public void findeopparam(double jd, double jdFrac, char interp, EOPdataClass[] eopdata, double jdeopstart,
                out double dut1, out int dat, out double lod, out double xp, out double yp,
                out double ddpsi, out double ddeps, out double dx, out double dy)
         {
@@ -633,7 +608,7 @@ namespace EOPSPWMethods
             recnum = Convert.ToInt32(jdeopstarto);
 
             // check for out of bound values
-            if ((recnum >= 1) && (recnum < numbeop-1))
+            if ((recnum >= 1) && (recnum < numbeop - 1))
             {
                 // ---- set non-interpolated values
                 dut1 = eopdata[recnum].dut1;
@@ -679,7 +654,7 @@ namespace EOPSPWMethods
                                          eopdata[recnum].mjd + fixf);
                     yp = MathTimeLibr.cubicinterp(eopdata[recnum - off1].yp, eopdata[recnum].yp, eopdata[recnum + off1].yp, eopdata[recnum + off2].yp,
                                          eopdata[recnum - off1].mjd, eopdata[recnum].mjd, eopdata[recnum + off1].mjd, eopdata[recnum + off2].mjd,
-                                         eopdata[recnum].mjd + fixf); 
+                                         eopdata[recnum].mjd + fixf);
                     ddpsi = MathTimeLibr.cubicinterp(eopdata[recnum - off1].ddpsi, eopdata[recnum].ddpsi, eopdata[recnum + off1].ddpsi, eopdata[recnum + off2].ddpsi,
                                          eopdata[recnum - off1].mjd, eopdata[recnum].mjd, eopdata[recnum + off1].mjd, eopdata[recnum + off2].mjd,
                                          eopdata[recnum].mjd + fixf);
@@ -717,35 +692,33 @@ namespace EOPSPWMethods
             dy = dy * convrt;
         }  //  findeopparam
 
-               
-                     
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function readspw
-        *
-        *  this function initializes the space weather data from the cssi/SPW files. 
-        *  It reads the actual data, and the predicted.
-        *
-        *  author        : david vallado                  719-573-2600   2 nov 2005
-        *
-        *  revisions
-        *
-        *  inputs          description                             range / units
-        *    inFile      - path and name of input file
-        *    
-        *  outputs       :
-        *    spwdata     - array of spw data records
-        *    jdspwstart  - julian date of the start of the spwarr data
-        *
-        *  locals        :
-        *                -
-        *
-        *  coupling      :
-        *    jday        - julian date
-        *  -------------------------------------------------------------------------- */
 
-        public void readspw (ref SPWdataClass[] spwdata, string inFile, out Int32 mjdspwstart, out Int32 ktrActualObs, out string errstr)
+
+        // ---------------------------------------------------------------------------
+        //
+        //                           function readspw
+        //
+        //  this function initializes the space weather data from the cssi/SPW files. 
+        //  It reads the actual data, and the predicted.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    inFile      - path and name of input file
+        //    
+        //  outputs       :
+        //    spwdata     - array of spw data records
+        //    jdspwstart  - julian date of the start of the spwarr data
+        //
+        //  locals        :
+        //                -
+        //
+        //  coupling      :
+        //    jday        - julian date
+        // ---------------------------------------------------------------------------
+
+        public void readspw(ref SPWdataClass[] spwdata, string inFile, out Int32 mjdspwstart, out Int32 ktrActualObs, out string errstr)
         {
             double jd, jdFrac;
             Int32 oldjd;
@@ -957,48 +930,48 @@ namespace EOPSPWMethods
 
 
 
-            /* -----------------------------------------------------------------------------
-            *
-            *                           function findspwparam
-            *
-            *  this routine finds the atmospheric parameters for a given time.
-            *    ap/kp 3 hourly data is valid at 0000, 0300 hrs, etc
-            *    apavg and kpsum are valid at 1200 hrs
-            *    f107 and f107bar values are valid at 1700/2000 hrs depending on the date
-            *    ap arrays go 0-7, but msisarr goes 1-8 to match msis code and fortran source
-            *
-            *  author        : david vallado                      719-573-2600    2 dec 2005
-            *
-            *  inputs          description                                     range / units
-            *    jd          - julian date of epoch (0 hrs utc)              days from 4713 bc
-            *    mfme        - minutes from midnight epoch                       mins
-            *    interp      - interpolation                                 l - linear, s - spline
-            *    fluxtype    - flux type                                     a-adjusted, o-observed
-            *    f81type     - flux 81-day avg type                          l-last, c-centered
-            *    inputtype   - input type                                    a-actual, c - constant
-            *    spwarr      - array of space weather data
-            *    jdspwstart  - julian date of the start of the spwarr data (set in initspw)
-            *
-            *  outputs       :
-            *    f107        - f10.7 value (current day)
-            *    f107bar     - f10.7 81-day avg value
-            *    ap          - planetary effect array
-            *    avgap       - daily average ap planetary value
-            *    aparr       - last 8 values of 3-hourly ap
-            *    kp          - planetary effect array
-            *    sumkp       - daily kp sum of planetary values
-            *    kparr       - last 8 values of 3-hourly kp
-            *
-            *  locals        :
-            *    fluxtime    - minutes from midnight where f107 is valid (1020 or 1200)
-            *
-            *  coupling      :
-            *    none        -
-            *  -------------------------------------------------------------------------- */
+        // ---------------------------------------------------------------------------
+        //
+        //                           function findspwparam
+        //
+        //  this routine finds the atmospheric parameters for a given time.
+        //    ap/kp 3 hourly data is valid at 0000, 0300 hrs, etc
+        //    apavg and kpsum are valid at 1200 hrs
+        //    f107 and f107bar values are valid at 1700/2000 hrs depending on the date
+        //    ap arrays go 0-7, but msisarr goes 1-8 to match msis code and fortran source
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    jd          - julian date of epoch (0 hrs utc)              days from 4713 bc
+        //    mfme        - minutes from midnight epoch                       mins
+        //    interp      - interpolation                                 l - linear, s - spline
+        //    fluxtype    - flux type                                     a-adjusted, o-observed
+        //    f81type     - flux 81-day avg type                          l-last, c-centered
+        //    inputtype   - input type                                    a-actual, c - constant
+        //    spwarr      - array of space weather data
+        //    jdspwstart  - julian date of the start of the spwarr data (set in initspw)
+        //
+        //  outputs       :
+        //    f107        - f10.7 value (current day)
+        //    f107bar     - f10.7 81-day avg value
+        //    ap          - planetary effect array
+        //    avgap       - daily average ap planetary value
+        //    aparr       - last 8 values of 3-hourly ap
+        //    kp          - planetary effect array
+        //    sumkp       - daily kp sum of planetary values
+        //    kparr       - last 8 values of 3-hourly kp
+        //
+        //  locals        :
+        //    fluxtime    - minutes from midnight where f107 is valid (1020 or 1200)
+        //
+        //  coupling      :
+        //    none        -
+        // ---------------------------------------------------------------------------
 
-            public void findspwparam (double jd, double jdFrac, char interp, char fluxtype, char f81type, char inputtype,
+        public void findspwparam(double jd, double jdFrac, char interp, char fluxtype, char f81type, char inputtype,
                                   SPWdataClass[] spwdata, double jdspwstart, out double f107, out double f107bar,
-                                  out double ap, out double avgap, double[] aparr, out double kp, out double sumkp, 
+                                  out double ap, out double avgap, double[] aparr, out double kp, out double sumkp,
                                   double[] kparr)
         {
             double jd1, mfme, jdspwstarto, fluxtime, fixf, tf107, tf107bar;
@@ -1030,7 +1003,7 @@ namespace EOPSPWMethods
 
             // --------------------  implementation   ----------------------
             // check for out of bound values
-            if ((recnum >= 1) && (recnum < numbspw-1))
+            if ((recnum >= 1) && (recnum < numbspw - 1))
             {
                 //eopdata   = eopdata[recnum];
 
@@ -1068,8 +1041,8 @@ namespace EOPSPWMethods
                 {
                     if (j >= 0)
                     {
-                        aparr[8 - i] = spwdata[recnum].aparr[ j];
-                        kparr[8 - i] = spwdata[recnum].kparr[ j];
+                        aparr[8 - i] = spwdata[recnum].aparr[j];
+                        kparr[8 - i] = spwdata[recnum].kparr[j];
                     }
                     else
                     {
@@ -1196,38 +1169,36 @@ namespace EOPSPWMethods
         }  // findspwparam
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function kp2ap
-        *
-        *  this function converts kp to ap using cubic splines. notice the arrays go
-        *  beyond the range of values to permit endpoint evaluations without additional
-        *  logic. the arrays have an extra element so they will start at 1. also, the normal
-        *  cubic splining is usually between pts 2 and 3, but here it is between 3 and 4 
-        *  because i've added 2 additional points at the start. 
-        *
-        *  author        : david vallado                  719-573-2600   7 aug  2005
-        *
-        *  revisions
-        *
-        *  inputs          description                              range / units
-        *    kpin        - kp
-        *
-        *  outputs       :
-        *    kp2ap       - ap
-        *
-        *  locals        :
-        *    idx         - index of function value above the input value so the input
-        *                  value is between the 2nd and 3rd point
-        *
-        *  coupling      :
-        *    cubicspl    - perform the splining operation given 4 points
-        *
-        *  references    :
-        *    vallado       2013, 558
-        * --------------------------------------------------------------------------- */
+        // ---------------------------------------------------------------------------
+        //
+        //                           function kp2ap
+        //
+        //  this function converts kp to ap using cubic splines. notice the arrays go
+        //  beyond the range of values to permit endpoint evaluations without additional
+        //  logic. the arrays have an extra element so they will start at 1. also, the normal
+        //  cubic splining is usually between pts 2 and 3, but here it is between 3 and 4 
+        //  because i've added 2 additional points at the start. 
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    kpin        - kp
+        //
+        //  outputs       :
+        //    kp2ap       - ap
+        //
+        //  locals        :
+        //    idx         - index of function value above the input value so the input
+        //                  value is between the 2nd and 3rd point
+        //
+        //  coupling      :
+        //    cubicspl    - perform the splining operation given 4 points
+        //
+        //  references    :
+        //    vallado       2013, 558
+        // ---------------------------------------------------------------------------
 
-        public double kp2ap (double kpin)
+        public double kp2ap(double kpin)
         {
             double[] bap = new double[]
                  { 0, -0.00001, -0.001,
@@ -1262,35 +1233,33 @@ namespace EOPSPWMethods
         }   // kp2ap
 
 
-        /* -----------------------------------------------------------------------------
-        *
-        *                           function ap2kp
-        *
-        *  this function converts ap to kp using cubic splines. notice the values go
-        *  beyond the range of values to permit endpoint evaluations without additional
-        *  logic. the arrays have an extra element so they will start at 1.
-        *
-        *  author        : david vallado                  719-573-2600   7 aug  2005
-        *
-        *  revisions
-        *
-        *  inputs          description                             range / units
-        *    kpin        - kp
-        *
-        *  outputs       :
-        *    ap2kp       - ap
-        *
-        *  locals        :
-        *    idx         - index of function value above the input value so the input
-        *                  value is between the 2nd and 3rd point
-        *
-        *  coupling      :
-        *
-        *  references    :
-        *    vallado       2013, 558
-        * --------------------------------------------------------------------------- */
+        // ---------------------------------------------------------------------------
+        //
+        //                           function ap2kp
+        //
+        //  this function converts ap to kp using cubic splines. notice the values go
+        //  beyond the range of values to permit endpoint evaluations without additional
+        //  logic. the arrays have an extra element so they will start at 1.
+        //
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //    kpin        - kp
+        //
+        //  outputs       :
+        //    ap2kp       - ap
+        //
+        //  locals        :
+        //    idx         - index of function value above the input value so the input
+        //                  value is between the 2nd and 3rd point
+        //
+        //  coupling      :
+        //
+        //  references    :
+        //    vallado       2013, 558
+        // ---------------------------------------------------------------------------
 
-        public double ap2kp (double apin)
+        public double ap2kp(double apin)
         {
             double[] bap = new double[]
            { 0, -0.00001, -0.001 ,
@@ -1328,6 +1297,7 @@ namespace EOPSPWMethods
 
 
     // -----------------------------------------------------------------------------
+    // alternate way to import the data
     //public class iau80Data
     //{
     //    public double[,] rar80;

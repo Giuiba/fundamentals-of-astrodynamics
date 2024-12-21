@@ -32,9 +32,9 @@ namespace TestAllTool
         // 000. gives leading 0's
         // ;+00.;-00. gives signs in front
         string fmt = "0.00000000000";
-        string fmtE = "0.0000000000E0";
-        string fmt1 = "0.000000000000";
-        string fmt2 = "0.00000";
+        //string fmtE = "0.0000000000E0";
+        //string fmt1 = "0.000000000000";
+        //string fmt2 = "0.00000";
 
         public frmLambert()
         {
@@ -59,7 +59,6 @@ namespace TestAllTool
               out string caseerr
             )
         {
-            Int32 caseopt;
             double[] v1tk = new double[3];
             double[] v2tk = new double[3];
             double[] v1tu = new double[3];
@@ -76,8 +75,7 @@ namespace TestAllTool
             double[] r3h = new double[3];
             double[] v3h = new double[3];
             double[] dr = new double[3];
-            double ang, f, g, gdot, s, tau;
-            double tmin, tminp, tminenergy;
+            double f, g, gdot, s, tau;
             char hitearth, dm, de;
             detailSum = "";
             detailAll = "";
