@@ -63,7 +63,7 @@
 % ------------------------------------------------------------------------------
 
 function [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
-        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3, rng1, rng2, pctchg)
+        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rsite1, rsite2, rsite3, rng1, rng2, pctchg)
 
     % -------------------------  implementation   -------------------------
     constastro;
