@@ -59,11 +59,11 @@
 %    vallado       2007, 439-443
 %
 % [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
-%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3), rng1, rng2, pctchg)
+%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg)
 % ------------------------------------------------------------------------------
 
 function [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
-        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3, rng1, rng2, pctchg)
+        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg)
 
     % -------------------------  implementation   -------------------------
     constastro;
@@ -102,13 +102,13 @@ function [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
     % --------- now we're ready to start the actual double r algorithm ---------
     magr1old  = 99999.9;
     magr2old  = 99999.9;
-    magrsite1 = mag(rsite1);
-    magrsite2 = mag(rsite2);
-    magrsite3 = mag(rsite3);
+    magrsite1 = mag(rseci1);
+    magrsite2 = mag(rseci2);
+    magrsite3 = mag(rseci3);
 
     % take away negatives because escobal defines rs opposite
-    cc1 = 2.0*dot(los1,rsite1);
-    cc2 = 2.0*dot(los2,rsite2);
+    cc1 = 2.0*dot(los1,rseci1);
+    cc2 = 2.0*dot(los2,rseci2);
     ktr = 0;
 
     oldqr = 100000000.0;
@@ -126,24 +126,24 @@ function [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
         magr2o = magr2in;
 
         [r2, r3, f1, f2, q1, magr1, magr2, a, deltae32] = doubler(cc1, cc2, magrsite1, magrsite2, magr1in, magr2in,...
-            los1, los2, los3, rsite1, rsite2, rsite3, tau12, tau32, n12, n13, n23);
+            los1, los2, los3, rseci1, rseci2, rseci3, tau12, tau32, n12, n13, n23);
 
         % check intermediate status
         f  = 1.0 - a/magr2*(1.0-cos(deltae32));
         g  = tau32 - sqrt(a^3/mu)*(deltae32-sin(deltae32));
         v2 = (r3 - f*r2)/g;
-        [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coeh (r2,v2, re, mu);
-        if show == 'y'
+        [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r2,v2);
+        %if show == 'y'
             fprintf(1,'coes %11.4f%11.4f%13.9f%13.7f%11.5f%11.5f%11.5f%11.5f\n',...
                 p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad );
-        end
+        %end
 
         % -------------- re-calculate f1 and f2 with r1 = r1 + delta r1
         deltar1 = pctchg * magr1o;
         magr1in = magr1o + deltar1;
         magr2in = magr2o;
         [r2, r3, f1delr1, f2delr1, q2, magr1, magr2, a, deltae32] = doubler(cc1, cc2, magrsite1, magrsite2, magr1in, magr2in,...
-            los1, los2, los3, rsite1, rsite2, rsite3, tau12, tau32, n12, n13, n23);
+            los1, los2, los3, rseci1, rseci2, rseci3, tau12, tau32, n12, n13, n23);
 
         pf1pr1 = (f1delr1-f1)/deltar1;
         pf2pr1 = (f2delr1-f2)/deltar1;
@@ -153,7 +153,7 @@ function [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
         deltar2 = pctchg * magr2o;
         magr2in = magr2o + deltar2;
         [r2, r3, f1delr2, f2delr2, q3, magr1, magr2, a, deltae32] = doubler(cc1, cc2, magrsite1, magrsite2, magr1in, magr2in,...
-            los1, los2, los3, rsite1, rsite2, rsite3, tau12, tau32, n12, n13, n23);
+            los1, los2, los3, rseci1, rseci2, rseci3, tau12, tau32, n12, n13, n23);
 
         pf1pr2 = (f1delr2-f1)/deltar2;
         pf2pr2 = (f2delr2-f2)/deltar2;
@@ -233,7 +233,7 @@ function [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
 
     % needed to get the r2 set properly since the last one was moving r2
     [r2, r3, f1, f2, q1, magr1, magr2, a, deltae32] = doubler(cc1, cc2, magrsite1, magrsite2, magr1in, magr2in,...
-        los1, los2, los3, rsite1, rsite2, rsite3, tau12, tau32, n12, n13, n23);
+        los1, los2, los3, rseci1, rseci2, rseci3, tau12, tau32, n12, n13, n23);
 
     f  = 1.0 - a/magr2*(1.0-cos(deltae32));
     g  = tau32 - sqrt(a^3/mu)*(deltae32-sin(deltae32));

@@ -24,6 +24,7 @@ function fid = testall
         optstop = testnum;
     end
 
+    fclose('all'); % clear out all the fids except 0, 1, 2
     directory = 'D:\Codes\LIBRARY\matlab\';
     fid = fopen(strcat(directory,'testallm.out'), 'wt');
 
@@ -266,7 +267,8 @@ function fid = testall
         end
 
     end % for
-
+    
+    fclose('all');
 end  % runtests
 
 
@@ -444,113 +446,88 @@ function testposvelcov2pts(fid)
 
     cov2(1, 1) = 12559.93762571587;
     cov2(1, 2) =  12101.56371305036;
-    cov2(1, 2) = cov2(2, 1);
+    cov2(2, 1) = cov2(1, 2);
     cov2(1, 3) =  -440.3145384949657;
-    cov2(1, 3) = cov2(3, 1);
+    cov2(3, 1) = cov2(1, 3);
     cov2(1, 4) = -0.8507401236198346;
-    cov2(1, 4) = cov2(4, 1);
+    cov2(4, 1) = cov2(1, 4);
     cov2(1, 5) =  0.9383675791981778;
-    cov2(1, 5) = cov2(5, 1);
+    cov2(5, 1) = cov2(1, 5);
     cov2(1, 6) =  -0.0318596430999798;
-    cov2(1, 6) = cov2(6, 1);
+    cov2(6, 1) = cov2(1, 6);
     cov2(2, 2) = 12017.77368889201;
     cov2(2, 3) =  270.3798093532698;
-    cov2(2, 3) = cov2(3, 2);
+    cov2(3, 2) = cov2(2, 3);
     cov2(2, 4) =  -0.8239662300032132;
-    cov2(2, 4) = cov2(4, 2);
+    cov2(4, 2) = cov2(2, 4);
     cov2(2, 5) =  0.9321640899868708;
-    cov2(2, 5) = cov2(5, 2);
+    cov2(5, 2) = cov2(2, 5);
     cov2(2, 6) =  -0.001327326827629336;
-    cov2(2, 6) = cov2(6, 2);
+    cov2(6, 2) = cov2(2, 6);
     cov2(3, 3) = 4818.009967057008;
     cov2(3, 4) =  0.02033418761460195;
-    cov2(3, 4) = cov2(4, 3) ;
+    cov2(4, 3) = cov2(3, 4) ;
     cov2(3, 5) =  0.03077663516695039;
-    cov2(3, 5) = cov2(5, 3);
+    cov2(5, 3) = cov2(3, 5);
     cov2(3, 6) =  0.1977541628188323;
-    cov2(3, 6) = cov2(6, 3);
+    cov2(6, 3) = cov2(3, 6);
     cov2(4, 4) = 5.774758755889862e-005;
     cov2(4, 5)  = -6.396031584925255e-005;
-    cov2(4, 5) = cov2(5, 4);
+    cov2(5, 4) = cov2(4, 5);
     cov2(4, 6) =  1.079960679599204e-006;
-    cov2(4, 6) = cov2(6, 4);
+    cov2(6, 4) = cov2(4, 6);
     cov2(5, 5) = 7.24599391355188e-005;
     cov2(5, 6) = 1.03146660433274e-006;
-    cov2(5, 6) = cov2(6, 5);
+    cov2(6, 5) = cov2(5, 6);
     cov2(6, 6) = 1.870413627417302e-005;
-
 
     [sigmapts] = posvelcov2pts(reci, veci, cov2);
 
-    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f \n', sigmapts(1, 1), sigmapts(1, 2), sigmapts(1, 3));
-    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f \n', sigmapts(2, 1), sigmapts(2, 2), sigmapts(2, 3));
-    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f \n', sigmapts(3, 1), sigmapts(3, 2), sigmapts(3, 3));
+    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(1, 1), sigmapts(1, 2), sigmapts(1, 3), sigmapts(1, 4), sigmapts(1, 5), sigmapts(1, 6));
+    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(2, 1), sigmapts(2, 2), sigmapts(2, 3), sigmapts(2, 4), sigmapts(2, 5), sigmapts(2, 6));
+    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(3, 1), sigmapts(3, 2), sigmapts(3, 3), sigmapts(3, 4), sigmapts(3, 5), sigmapts(3, 6));
+    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(4, 1), sigmapts(4, 2), sigmapts(4, 3), sigmapts(4, 4), sigmapts(4, 5), sigmapts(4, 6));
+    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(5, 1), sigmapts(5, 2), sigmapts(5, 3), sigmapts(5, 4), sigmapts(5, 5), sigmapts(5, 6));
+    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(6, 1), sigmapts(6, 2), sigmapts(6, 3), sigmapts(6, 4), sigmapts(6, 5), sigmapts(6, 6));
+
 end
 
 function testposcov2pts(fid)
     r1 = [5102.50895791863; 6123.01140072233; 6378.13692818659];
-    v1 = [-4.74322014817; 0.79053648924; 5.53375572723];
-    cov2 = zeros(6,6);
+    cov2 = zeros(3,3);
 
     cov2(1, 1) = 12559.93762571587;
     cov2(1, 2) =  12101.56371305036;
-    cov2(1, 2) = cov2(2, 1);
+    cov2(2, 1) = cov2(1, 2);
     cov2(1, 3) =  -440.3145384949657;
-    cov2(1, 3) = cov2(3, 1);
-    cov2(1, 4) = -0.8507401236198346;
-    cov2(1, 4) = cov2(4, 1);
-    cov2(1, 5) =  0.9383675791981778;
-    cov2(1, 5) = cov2(5, 1);
-    cov2(1, 6) =  -0.0318596430999798;
-    cov2(1, 6) = cov2(6, 1);
+    cov2(3, 1) = cov2(1, 3);
     cov2(2, 2) = 12017.77368889201;
     cov2(2, 3) =  270.3798093532698;
-    cov2(2, 3) = cov2(3, 2);
-    cov2(2, 4) =  -0.8239662300032132;
-    cov2(2, 4) = cov2(4, 2);
-    cov2(2, 5) =  0.9321640899868708;
-    cov2(2, 5) = cov2(5, 2);
-    cov2(2, 6) =  -0.001327326827629336;
-    cov2(2, 6) = cov2(6, 2);
+    cov2(3, 2) = cov2(2, 3);
     cov2(3, 3) = 4818.009967057008;
-    cov2(3, 4) =  0.02033418761460195;
-    cov2(3, 4) = cov2(4, 3) ;
-    cov2(3, 5) =  0.03077663516695039;
-    cov2(3, 5) = cov2(5, 3);
-    cov2(3, 6) =  0.1977541628188323;
-    cov2(3, 6) = cov2(6, 3);
-    cov2(4, 4) = 5.774758755889862e-005;
-    cov2(4, 5)  = -6.396031584925255e-005;
-    cov2(4, 5) = cov2(5, 4);
-    cov2(4, 6) =  1.079960679599204e-006;
-    cov2(4, 6) = cov2(6, 4);
-    cov2(5, 5) = 7.24599391355188e-005;
-    cov2(5, 6) = 1.03146660433274e-006;
-    cov2(5, 6) = cov2(6, 5);
-    cov2(6, 6) = 1.870413627417302e-005;
-
+ 
     % form sigmapts pos/vel
-    [sigmapts] = posvelcov2pts(r1, v1, cov2);
-    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(1, 1), sigmapts(1, 2), sigmapts(1, 3), sigmapts(1, 4), sigmapts(1, 5), sigmapts(1, 6));
-    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(2, 1), sigmapts(2, 2), sigmapts(2, 3), sigmapts(2, 4), sigmapts(2, 5), sigmapts(2, 6));
-    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(3, 1), sigmapts(3, 2), sigmapts(3, 3), sigmapts(3, 4), sigmapts(3, 5), sigmapts(3, 6));
+    [sigmapts] = poscov2pts(r1', cov2);
+    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f \n', sigmapts(1, 1), sigmapts(1, 2), sigmapts(1, 3));
+    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f \n', sigmapts(2, 1), sigmapts(2, 2), sigmapts(2, 3));
+    fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f \n', sigmapts(3, 1), sigmapts(3, 2), sigmapts(3, 3));
 
     % reassemble covariance at each step and write out
     % [yu, covout] = remakecovpv(sigmapts);
     % [sigmapts] = poscov2pts(reci, cov);
-    % 
+    %
     % fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(1, 1), sigmapts(1, 2), sigmapts(1, 3), sigmapts(1, 4), sigmapts(1, 5), sigmapts(1, 6));
     % fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(2, 1), sigmapts(2, 2), sigmapts(2, 3), sigmapts(2, 4), sigmapts(2, 5), sigmapts(2, 6));
     % fprintf(fid,'sigmapts = %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', sigmapts(3, 1), sigmapts(3, 2), sigmapts(3, 3), sigmapts(3, 4), sigmapts(3, 5), sigmapts(3, 6));
 end
 
 function testremakecovp(fid)
-sigmapts = [5377.0260353 4827.9918806 5102.5089579 5102.5089579 5102.5089579 5102.5089579; ...
-            6123.0114007 6123.0114007 6391.5382004 5854.4846011 6123.0114007 6123.0114007; ...
-            6378.1369282 6378.1369282 6378.1369282 6378.1369282 6548.1606318 6208.1132245]; 
+    sigmapts = [5377.0260353 4827.9918806 5102.5089579 5102.5089579 5102.5089579 5102.5089579; ...
+        6123.0114007 6123.0114007 6391.5382004 5854.4846011 6123.0114007 6123.0114007; ...
+        6378.1369282 6378.1369282 6378.1369282 6378.1369282 6548.1606318 6208.1132245];
 
     % [yu, sigmapts] = remakecovpv(sigmapts);
-    % 
+    %
     % fprintf(fid,'cov = %15.11f %15.11f %15.11f \n', cov(1, 1), cov(1, 2), cov(1, 3));
     % fprintf(fid,'cov = %15.11f %15.11f %15.11f \n', cov(2, 1), cov(2, 2), cov(2, 3));
     % fprintf(fid,'cov = %15.11f %15.11f %15.11f \n', cov(3, 1), cov(3, 2), cov(3, 3));
@@ -558,12 +535,12 @@ end
 
 
 function testremakecovpv(fid)
-sigmapts = [5377.0260353 4827.9918806 5102.5089579 5102.5089579 5102.5089579 5102.5089579; ...
-            6123.0114007 6123.0114007 6391.5382004 5854.4846011 6123.0114007 6123.0114007; ...
-            6378.1369282 6378.1369282 6378.1369282 6378.1369282 6548.1606318 6208.1132245]; 
+    sigmapts = [5377.0260353 4827.9918806 5102.5089579 5102.5089579 5102.5089579 5102.5089579; ...
+        6123.0114007 6123.0114007 6391.5382004 5854.4846011 6123.0114007 6123.0114007; ...
+        6378.1369282 6378.1369282 6378.1369282 6378.1369282 6548.1606318 6208.1132245];
 
     % [yu, sigmapts] = remakecovpv(sigmapts);
-    % 
+    %
     % fprintf(fid,'cov = %15.11f %15.11f %15.11f \n', cov(1, 1), cov(1, 2), cov(1, 3));
     % fprintf(fid,'cov = %15.11f %15.11f %15.11f \n', cov(2, 1), cov(2, 2), cov(2, 3));
     % fprintf(fid,'cov = %15.11f %15.11f %15.11f \n', cov(3, 1), cov(3, 2), cov(3, 3));
@@ -840,7 +817,7 @@ function testdays2mdhms(fid)
     days = 237.456982367;
     [mon, day, hr, minute, second] = days2mdh(year, days);
 
-    fprintf(fid,'year %5i   days %3i \n',year, days);
+    fprintf(fid,'year %5i   days %3i %14.9f  \n',year, days);
     fprintf(fid,'year %5i   mon %4i day %3i %3i:%2i:%8.6f\n',year, mon, day, hr, minute, second);
 end
 
@@ -2396,7 +2373,7 @@ end
 
 % --------  newtone      - find true and mean anomaly given ecc and eccentric anomaly
 function testnewtone(fid)
-     rad = 180.0 / pi;
+    rad = 180.0 / pi;
     ecc = 0.34;
     eccanom = 334.566986 / rad;
     [m, nu] = newtone(ecc, eccanom);
@@ -2406,7 +2383,7 @@ end
 
 % --------  newtonnu     - find eccentric and mean anomaly given ecc and true anomaly
 function testnewtonnu(fid)
-     rad = 180.0 / pi;
+    rad = 180.0 / pi;
     ecc = 0.34;
     nu = 134.567001 / rad;
 
@@ -2416,10 +2393,18 @@ function testnewtonnu(fid)
 end
 
 
-function keplerc2c3(fid)
+%
+% [r2, v2, c2, c3, x, z] = keplerc2c3(r1, v1, dtsec)
+%
+function [r2, v2, c2, c3, x, z] = keplerc2c3(r1, v1, dtsec)
+    constastro;
 
     % -------------------------  implementation   -----------------
     show = 'n';
+    c2 = 0.0;
+    c3 = 0.0;
+    x = 0.0;
+    z = 0.0;
 
     for ii = 1:3
         rx(ii) = 0.0;
@@ -2450,7 +2435,7 @@ function keplerc2c3(fid)
     xold = 0.0;
     znew = 0.0;
     %errork = '      ok';
-    dtsec = dtseco;
+    dtseco = dtsec;
     mulrev = 0;
 
     if (abs(dtseco) > small)
@@ -2616,7 +2601,7 @@ function testfindfandg(fid)
     %v2 = [ 5.4720951867079; -4.39299050886976; 2.45681739563752 ];
     %dtsec = 0.25; % must be small step sizes!!
 
-    fprintf(fid,' r1 ' + r1(1), r1(2), r1(3),               'v1 ' + v1(1), v1(2), v1(3));
+    fprintf(fid,'r1  %15.11f  %15.11f  %15.11f v1 %15.11f  %15.11f  %15.11f  \n', r1(1), r1(2), r1(3), v1(1), v1(2), v1(3));
 
     for i = 0:5
 
@@ -2640,29 +2625,30 @@ function testfindfandg(fid)
         end
 
         [r2, v2, c2, c3, x, z] = keplerc2c3(r1, v1, dtsec);
-        fprintf(fid,' r2 ' + r2(1), r2(2), r2(3),                    'v2 ' + v2(1), v2(2), v2(3));
-        fprintf(fid,'c2 ' + c2,' c3 ' + c3,' x ' +                    x,' z ' + z,' dtsec ' + dtsec);
+        fprintf(fid,'r2  %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f  \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
+        fprintf(fid,'c2 %11.7f c3 %11.7f x %11.7f z %11.7f dtsec %11.7f \n', c2, c3, x, z,dtsec);
 
         opt = 'pqw';
         [f, g, fdot, gdot] = findfandg(r1, v1, r2, v2, dtsec, x, c2, c3, z, opt);
          ansr = f * gdot - g * fdot;
-        fprintf(fid,'f and g pqw    ' + f, g,                    fdot, gdot, ansr);
+        fprintf(fid,'f and g pqw  %11.7f %11.7f %11.7f %11.7f %11.7f  \n', f, g, fdot, gdot, ansr);
 
         opt = 'series';  %  pqw, series, c2c3
         [f, g, fdot, gdot] = findfandg(r1, v1, r2, v2, dtsec, x, c2, c3, z, opt);
         ansr = f * gdot - g * fdot;
-        fprintf(fid,'f and g series ' + f, g,                    fdot, gdot, ansr);
+        fprintf(fid,'f and g series  %11.7f %11.7f %11.7f %11.7f %11.7f  \n', f, g, fdot, gdot, ansr);
 
         opt = 'c2c3';  %  pqw, series, c2c3
         [f, g, fdot, gdot] = findfandg(r1, v1, r2, v2, dtsec, x, c2, c3, z, opt);
         ansr = f * gdot - g * fdot;
-
-        fprintf(fid,'f and g c2c3   ' + f, g,                    fdot, gdot, ansr,'\n');
+        fprintf(fid,'f and g c2c3  %11.7f %11.7f %11.7f %11.7f %11.7f  \n', f, g, fdot, gdot, ansr);
     end
 end
 
 
 function testcheckhitearth(fid)
+    constastro;
+
     nrev = 0;
     r1 = [ 2.500000 * re; 0.000000; 0.000000 ];
     r2 = [ 1.9151111 * re; 1.6069690 * re; 0.000000 ];
@@ -2676,12 +2662,14 @@ function testcheckhitearth(fid)
     magr2 = mag(r2);
     cosdeltanu = dot(r1, r2) / (magr1 * magr2);
 
-    [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nrev )
+    [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nrev );
 
     fprintf(fid,'hitearth? %s, %15.11f \n', hitearthstr, (cos(cosdeltanu) * 180.0 / pi));
 end
 
 function testcheckhitearthc(fid)
+    constastro;
+
     nrev = 0;
     r1c = [ 2.500000; 0.000000; 0.000000 ];
     r2c = [ 1.9151111; 1.6069690; 0.000000 ];
@@ -2701,6 +2689,7 @@ end
 
 
 function testgibbs(fid)
+    constastro;
     rad = 180.0 / pi;
 
     r1 = [ 0.0000000; 0.000000; re ];
@@ -2715,6 +2704,7 @@ end
 
 
 function testhgibbs(fid)
+    constastro;
     rad = 180.0 / pi;
 
     r1 = [ 0.0000000; 0.000000; re ];
@@ -2732,6 +2722,7 @@ end
 
 
 function testgeo(fid)
+    constastro;
     rad = 180.0 / pi;
 
     % misc test
@@ -2760,14 +2751,27 @@ function testgeo(fid)
 end
 
 
-function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess)
+function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, fida, fidas)
+    constastro;
+    eqeterms = 2;
 
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
+
+    % read existing data - this does not find x, y, s!
+    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt';
+    [eoparr] = readeop(eopFileName);
+  
+    asecef1 = [0.0; 0.0; 0.0];
+    asecef2 = [0.0; 0.0; 0.0];
+    asecef3 = [0.0; 0.0; 0.0];
+    
     %jd1 = jd(1) + jdf(1);
     %jd2 = jd(2) + jdf(2);
     %jd3 = jd(3) + jdf(3);
 
     [rsecef1, vsecef1] = site(latgd(1), lon(1), alt(1));
-    [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd(1), jdFrac(1), 's', eoparr);
+    [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd(1), jdf(1), 's', eoparr);
     %convtime(year(1), mon(1), day(1), hr(1), minute(1), second(1), 0, dut1, dat,
     %    out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
     %    out tt, out ttt, out jdtt, out jdttfrac, out tdb, out ttdb, out jdtdb, out jdtdbfrac);
@@ -2780,7 +2784,7 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess)
     [rseci1, vseci1, aseci1] = ecef2eci(rsecef1, vsecef1, asecef1, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
 
     [rsecef2, vsecef2] = site(latgd(2), lon(2), alt(2));
-    [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd(2), jdFrac, 's', eoparr);
+    [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd(2), jdf(2), 's', eoparr);
     %convtime(year(2), mon(2), day(2), hr(2), minute(2), second(2), 0, dut1, dat,
     %    out ut1, out tut1, out jdut1, out jdut1frac, out utc, out tai,
     %    out tt, out ttt, out jdtt, out jdttfrac, out tdb, out ttdb, out jdtdb, out jdtdbfrac);
@@ -2790,11 +2794,11 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess)
     jdut1 = jd(2) + jdf(2) + dut1 / 86400.0;
     [rseci2, vseci2, aseci2] = ecef2eci(rsecef2, vsecef2, asecef2, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     [lst, gst] = lstime(lon(2), jdut1);
-    fprintf(3,'\nlst ' + lst, (lst * rad));
+    fprintf(fida,'\nlst  %11.7f  %11.7f \n', lst, (lst * rad));
 
 
     [rsecef3, vsecef3] = site(latgd(3), lon(3), alt(3));
-    [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd(3), jdFrac(3), 's', eoparr, mjdeopstart + 2400000.5);
+    [dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy] = findeopparam(jd(3), jdf(3), 's', eoparr);
     jdtt = jd(3);
     jdftt = jdf(3) + (dat + 32.184) / 86400.0;
     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
@@ -2809,9 +2813,9 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess)
     end
 
     % write output
-    fprintf(3,'rseci1  %15.11f  %15.11f  %15.11f \n', rseci1);
-    fprintf(3,'rseci2  %15.11f  %15.11f  %15.11f \n', rseci2);
-    fprintf(3,'rseci3  %15.11f  %15.11f  %15.11f \n', rseci3);
+    fprintf(fida,'rseci1  %15.11f  %15.11f  %15.11f \n', rseci1);
+    fprintf(fida,'rseci2  %15.11f  %15.11f  %15.11f \n', rseci2);
+    fprintf(fida,'rseci3  %15.11f  %15.11f  %15.11f \n', rseci3);
 
     los1(1) = cos(tdecl(1)) * cos(trtasc(1));
     los1(2) = cos(tdecl(1)) * sin(trtasc(1));
@@ -2825,9 +2829,9 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess)
     los3(2) = cos(tdecl(3)) * sin(trtasc(3));
     los3(3) = sin(tdecl(3));
 
-    fprintf(3,'los1  %15.11f  %15.11f  %15.11f  %15.11f \n', los1, mag(los1));
-    fprintf(3,'los2  %15.11f  %15.11f  %15.11f  %15.11f \n', los2, mag(los2));
-    fprintf(3,'los3  %15.11f  %15.11f  %15.11f  %15.11f \n', los3, mag(los3));
+    fprintf(fida,'los1  %15.11f  %15.11f  %15.11f  %15.11f \n', los1, mag(los1));
+    fprintf(fida,'los2  %15.11f  %15.11f  %15.11f  %15.11f \n', los2, mag(los2));
+    fprintf(fida,'los3  %15.11f  %15.11f  %15.11f  %15.11f \n', los3, mag(los3));
 
     % to get initial guess, take measurements (1/2 and 2/3), assume circular orbit
     % find velocity and compare - just distinguish between LEO, GPS and GEO for now
@@ -2838,66 +2842,65 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess)
     dtdecl1 = (tdecl(2) - tdecl(1)) / dt1;
     dtdecl2 = (tdecl(3) - tdecl(2)) / dt2;
 
-    fprintf(3,'rtasc  %15.11f  %15.11f  %15.11f  \n', trtasc(1)*rad, trtasc(3)*rad, trtasc(3)*rad);
-    fprintf(3,'decl  %15.11f  %15.11f  %15.11f  \n', tdecl(1)*rad, tdecl(3)*rad, tdecl(3)*rad);
+    fprintf(fida,'rtasc  %15.11f  %15.11f  %15.11f  \n', trtasc(1)*rad, trtasc(3)*rad, trtasc(3)*rad);
+    fprintf(fida,'decl  %15.11f  %15.11f  %15.11f  \n', tdecl(1)*rad, tdecl(3)*rad, tdecl(3)*rad);
 
+    fprintf(fida,'');
+    fprintf(fida,'Laplace -----------------------------------');
+    fprintf(fidas,'Laplace -----------------------------------');
 
-    fprintf(3,'');
-    strbuildallsum.AppendLine('Laplace -----------------------------------');
-    fprintf(3,'Laplace -----------------------------------');
-
-    fprintf(3,'\n\ninputs: \n');
-    fprintf(3,'Site obs1  %15.11f  %15.11f  %15.11f km lat %15.11f lon %15.11f  %15.11f \n', rseci1(1), rseci1(2), rseci1(3), latgd(1)*rad, lon(1)*rad, alt(1));
-    fprintf(3,'Site obs2  %15.11f  %15.11f  %15.11f km lat %15.11f lon %15.11f  %15.11f \n', rseci2(1), rseci2(2), rseci2(3), latgd(2)*rad, lon(2)*rad, alt(2));
-    fprintf(3,'Site obs3  %15.11f  %15.11f  %15.11f km lat %15.11f lon %15.11f  %15.11f \n', rseci3(1), rseci3(2), rseci3(3), latgd(3)*rad, lon(3)*rad, alt(3));
+    fprintf(fida,'\n\ninputs: \n');
+    fprintf(fida,'Site obs1  %15.11f  %15.11f  %15.11f km lat %15.11f lon %15.11f  %15.11f \n', rseci1(1), rseci1(2), rseci1(3), latgd(1)*rad, lon(1)*rad, alt(1));
+    fprintf(fida,'Site obs2  %15.11f  %15.11f  %15.11f km lat %15.11f lon %15.11f  %15.11f \n', rseci2(1), rseci2(2), rseci2(3), latgd(2)*rad, lon(2)*rad, alt(2));
+    fprintf(fida,'Site obs3  %15.11f  %15.11f  %15.11f km lat %15.11f lon %15.11f  %15.11f \n', rseci3(1), rseci3(2), rseci3(3), latgd(3)*rad, lon(3)*rad, alt(3));
 
     [iyear1, imon1, iday1, ihr1, iminute1, isecond1] = invjday(jd(1), jdf(1));
-    fprintf(3,'obs#1  %d %d %d %d:%d:%f  %15.11f  %15.11f \n', iyear1m, imon1, iday1, ihr1, iminute1, isecond1, trtasc1*rad, tdecl1*rad);
+    fprintf(fida,'obs#1  %d %d %d %d:%d:%f  %15.11f  %15.11f \n', iyear1, imon1, iday1, ihr1, iminute1, isecond1, trtasc(1)*rad, tdecl(1)*rad);
     [iyear2, imon2, iday2, ihr2, iminute2, isecond2] = invjday(jd(2), jdf(2));
-    fprintf(3,'obs#2  %d %d %d %d:%d:%f  %15.11f  %15.11f \n', iyear2m, imon2, iday2, ihr2, iminute2, isecond2, trtasc2*rad, tdecl2*rad);
+    fprintf(fida,'obs#2  %d %d %d %d:%d:%f  %15.11f  %15.11f \n', iyear2, imon2, iday2, ihr2, iminute2, isecond2, trtasc(2)*rad, tdecl(2)*rad);
     [iyear3, imon3, iday3, ihr3, iminute3, isecond3] = invjday(jd(3), jdf(3));
-    fprintf(3,'obs#3  %d %d %d %d:%d:%f  %15.11f  %15.11f \n', iyear3m, imon3, iday3, ihr3, iminute3, isecond3, trtasc3*rad, tdecl3*rad);
+    fprintf(fida,'obs#3  %d %d %d %d:%d:%f  %15.11f  %15.11f \n', iyear3, imon3, iday3, ihr3, iminute3, isecond3, trtasc(3)*rad, tdecl(3)*rad);
     %if (caseopt == 2)
     %    diffsites = 'y';
     %else
     %diffsites = 'n';
 
     [r2, v2] = anglesl(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
-         jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3);   
+         jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, fida);   
     
-    %fprintf(3,errstr);
-    fprintf(3,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
+    %fprintf(fida,errstr);
+    fprintf(fida,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
-    fprintf(fid,'\nlaplace coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
+    fprintf(fida,'\nlaplace coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
-    %fprintf(3,ansr);
-    fprintf(3,'\nlaplace coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
+    %fprintf(fida,ansr);
+    fprintf(fidas,'\nlaplace coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
 
-    strbuildallsum.AppendLine('Gauss  -----------------------------------');
-    fprintf(3,'Gauss  -----------------------------------');
-    if (caseopt == 23)
-        % curtis example -many mistakes!
-        rseci1 = [ 3489.8; 3430.2; 4078.5 ];
-        rseci2 = [ 3460.1; 3460.1; 4078.5 ];
-        rseci3 = [ 3429.9; 3490.1; 4078.5 ];
-    end
+    fprintf(fida,'Gauss  -----------------------------------');
+    fprintf(fidas,'Gauss  -----------------------------------');
+    % if (caseopt == 23)
+    %     % curtis example -many mistakes!
+    %     rseci1 = [ 3489.8; 3430.2; 4078.5 ];
+    %     rseci2 = [ 3460.1; 3460.1; 4078.5 ];
+    %     rseci3 = [ 3429.9; 3490.1; 4078.5 ];
+    % end
     [r2, v2] = anglesg(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
-         jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3);   
-    %fprintf(3,errstr);
-    fprintf(3,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
+         jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, fida);   
+    %fprintf(fida,errstr);
+    fprintf(fida,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
-    fprintf(3,'\nguass coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
+    fprintf(fida,'\nguass coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
-    %fprintf(3,ansr);
-    fprintf(fid,'\nguass coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
+    %fprintf(fida,ansr);
+    fprintf(fidas,'\nguass coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
 
      pctchg = 0.05;
-    strbuildallsum.AppendLine('-r -----------------------------------' );
-    fprintf(3,'-r -----------------------------------' );
+    fprintf(fida,'double-r -----------------------------------' );
+    fprintf(fidas,'double-r -----------------------------------' );
     % initial guesses needed for -r and Gooding
     % use result from Gauss as it's usually pretty good
     % this seems to really help Gooding!!
@@ -2911,19 +2914,19 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess)
     [r2, v2] = anglesdr(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
          jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg);   
 
-    %fprintf(3,errstr);
-    fprintf(3,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
+    %fprintf(fida,errstr);
+    fprintf(fida,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
-    fprintf(3,'\nr coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
+    fprintf(fida,'\nr coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
-    %fprintf(3,ansr);
-    fprintf(fid,'\nr coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
+    %fprintf(fida,ansr);
+    fprintf(fidas,'\nr coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
 
 
-    strbuildallsum.AppendLine('Gooding -----------------------------------');
-    fprintf(3,'Gooding -----------------------------------');
+    fprintf(fida,'Gooding -----------------------------------\n');
+    fprintf(fidas,'Gooding -----------------------------------\n');
     numhalfrev = 0;
 
     % [bigr2x] = getGaussRoot(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
@@ -2935,14 +2938,14 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess)
     % rng3 = initguess * 1.08;
     % 
     % [r2, v2] = anglesgood(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
-    %      jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg);   
+    %      jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg, fid);   
 
-    %fprintf(3,errstr);
-    % fprintf(3,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
+    %fprintf(fida,errstr);
+    % fprintf(fida,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f \n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
     % [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
-    % fprintf(3,'\ngooding coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
+    % fprintf(fida,'\ngooding coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
     %       a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
-    % %fprintf(3,ansr);
+    % %fprintf(fida,ansr);
     % fprintf(fid,'\ngooding coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f \n', ...
     %       a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
@@ -2966,6 +2969,10 @@ function testangles(fid)
     %StringBuilder strbuildall = new StringBuilder(fid);
     %StringBuilder strbuildallsum = new StringBuilder(fid);
 
+    directory = 'D:\Codes\LIBRARY\matlab\';
+    fida = fopen(strcat(directory,'testall-Anglesm.out'), 'wt');
+    fidas = fopen(strcat(directory,'testall-Anglessumm.out'), 'wt');
+
     fileLoc = 'D:\Codes\LIBRARY\DataLib\';
     [iau80arr] = iau80in(fileLoc);
 
@@ -2976,8 +2983,9 @@ function testangles(fid)
 
     % read input data
     % note the input data has a # line between each case
+    % special case needed so ony 3 obs for each case...
     infilename = 'D:\Codes\LIBRARY\DataLib\';
-    infile = fopen(append(infilename, 'anglestest.dat'), 'r');
+    infile = fopen(append(infilename, 'anglestestmat.dat'), 'r');
 
     % --- read obs data in
     %caseopt = 0;  % set this for whichever case to run
@@ -2995,7 +3003,8 @@ function testangles(fid)
     stp = 32;
     initguess = 0.0;
     for caseopt = strt: stp
-        fprintf(fid,'caseopt %d \n', caseopt);
+        fprintf(1,'caseopt %d \n', caseopt);
+        fprintf(fida,'caseopt %d \n', caseopt);
 
         while (~feof(infile))
 
@@ -3007,7 +3016,7 @@ function testangles(fid)
             % 20,  8,  2012,  11,  52,  28.00,    40.000,    -110.000,     2.0000,     67.886655 ,    36.996583, x
             if ~contains(longstr, '#')
                 for i=1:3
-                    longstr = fgets(infile);
+                    obsktr = i;
                     linesplt = split(longstr, ',');  % returns strings
                     day(obsktr) = str2num(cell2mat(linesplt(1)));
                     mon(obsktr) = str2num(cell2mat(linesplt(2)));
@@ -3027,13 +3036,14 @@ function testangles(fid)
                     %     initguess(tmpcase) = str2num(cell2mat(linesplt(12)));  % initial guess in km
                     % end
 
+                    longstr = fgets(infile);
                     obsktr = obsktr + 1;
                 end
 
-                fprintf(fid,'\n\n ================================ case number %d ================================\n', caseopt);
-                fprintf(3,'\n\n ================================ case number %d ================================\n', caseopt);
+                fprintf(fida,'\n\n ================================ case number %d ================================\n', caseopt);
+                fprintf(fidas,'\n\n ================================ case number %d ================================\n', caseopt);
 
-                doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess);
+                doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, fida, fidas);
 
             end  % if
 
@@ -3262,6 +3272,11 @@ function testAllLamb(fid)
     dein = 'x';
     obsktr = 0;
 
+    directory = 'D:\Codes\LIBRARY\matlab\';
+    fida = fopen(strcat(directory,'testall-Lambertm.out'), 'wt');
+    fidas = fopen(strcat(directory,'testall-Lambertsumm.out'), 'wt');
+
+
     % run all the tests
     for caseopt = strt: stp
         fprintf(fid,'caseopt %d \n', caseopt);
@@ -3305,7 +3320,7 @@ function testAllLamb(fid)
                 fprintf(fid,'\n\n ================================ case number %d ================================\n', caseopt);
 
                 % , ref strbuildall, ref strbuildsum, out caseerr
-                dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt, methodType);
+                dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt, methodType, fida, fidas);
 
             end  % if
 
@@ -3317,7 +3332,7 @@ end   % testAllLamb
 
 
 % test building the lambert envelope
-function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt, methodtype);
+function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt, methodtype, fida, fidas);
     constastro;
     detailSum = "";
     detailAll = "";
@@ -3363,7 +3378,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     % 1 normal prints
     % 3 sum prints
 
-    fprintf(fid,'lambertTest  %d %15.11f  %15.11f  %15.11f  \n %15.11f  %15.11f  %15.11f\n %15.11f  %15.11f  %15.11f\n %15.11f  %15.11f  %15.11f  \n %15.11f  %15.11f  %15.11f %15.11f %15.11f \n', ...
+    fprintf(fida,'lambertTest  %d %15.11f  %15.11f  %15.11f  \n %15.11f  %15.11f  %15.11f\n %15.11f  %15.11f  %15.11f\n %15.11f  %15.11f  %15.11f  \n %15.11f  %15.11f  %15.11f %15.11f %15.11f \n', ...
         caseopt, ...
         r1(1),  r1(2),  r1(3),  ...
         v1(1),  v1(2),  v1(3),  ...
@@ -3394,11 +3409,11 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     de = 'L';
     if (methodType == "lambertk" && (runopt == "all" || (dein == de && nrev == 0)))
         [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, outfile, show, 'n' )
-        fprintf(fid,' %s \n',detailAll);
-        fprintf(3,' %s \n', errorout);
-        %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
-        fprintf(fid,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
-        fprintf(fid,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
+        fprintf(fida,' %s \n',detailAll);
+        fprintf(fidas,' %s \n', errorout);
+        %fprintf(fida,'k#" + caseopt  detailSum + " diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
+        fprintf(fida,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
+        fprintf(fidas,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
         %fprintf(fid,'magv1t.ToString("0.0000000").PadLeft(12)  magv2t.ToString("0.0000000").PadLeft(12));
 
         [r3h, v3h] = kepler(r1, v1tk, dtsec);
@@ -3406,10 +3421,10 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dr(j) = r2(j) - r3h(j);
         end
         % switch for debugs
-        fprintf(fid,'r3h %15.11f  %15.11f  %15.11f dr %15.11f  \n', r3h(1),  r3h(2),  r3h(3), mag(dr));
+        fprintf(fida,'r3h %15.11f  %15.11f  %15.11f dr %15.11f  \n', r3h(1),  r3h(2),  r3h(3), mag(dr));
         if (mag(dr) > 0.05)
-            fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
         end
         [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tk);
 
@@ -3421,15 +3436,15 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         [kbi, tof] = lambertumins( r1, r2, 0, dm ) ;   
         [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, 0, 0.0, dtsec, kbi, outfile );
         %fprintf(fid,'detailSum);
-        fprintf(fid,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
-        fprintf(fid,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
+        fprintf(fida,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
+        fprintf(fidas,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
         [r3h, v3h] = kepler(r1, v1tu, dtsec);
         for j=1:3
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
         end
 
         for j=1:3
@@ -3437,7 +3452,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dv2(j) = v2tk(j) - v2tu(j);
         end
         if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-            fprintf(fid,'velk does not match velu \n\n');
+            fprintf(fida,'velk does not match velu \n\n');
 
             [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
         end
@@ -3446,15 +3461,15 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     if (methodType == "lambertb" && (runopt == "all" || (dein == de && nrev == 0)))
         [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, 0, 0.0, dtsec, altpadc, 'y');
         %fprintf(fid,'detailSum);
-        fprintf(fid,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
-        fprintf(fid,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
+        fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
+        fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
         [r3h, v3h] = kepler(r1, v1tb, dtsec);
         for j=1:3
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
         end
         %fprintf(fid,'diffs " + mag(dr).ToString("0.00000000000"));
 
@@ -3463,7 +3478,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dv2(j) = v2tk(j) - v2tb(j);
         end
         if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-            fprintf(fid,'velk does not match velb \n\n');
+            fprintf(fida,'velk does not match velb \n\n');
         end
         %fprintf(fid,'diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
 
@@ -3476,11 +3491,11 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     if (methodType == "lambertk" && (runopt == "all" || (dein == de && nrev == 0)))
         % k near 180 is about 53017 while battin is 30324!
         [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, 0, 0.0, dtsec, tbi, outfile, show, 'n' )
-        fprintf(fid,' %s \n',detailSum);
-        fprintf(3,' %s \n', errorout);
+        fprintf(fida,' %s \n',detailSum);
+        fprintf(fidas,' %s \n', errorout);
         %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
-        fprintf(fid,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
-        fprintf(fid,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
+        fprintf(fida,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
+        fprintf(fidas,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
         %fprintf(fid,'magv1t.ToString("0.0000000").PadLeft(12)  magv2t.ToString("0.0000000").PadLeft(12));
 
         [r3h, v3h] = kepler(r1, v1tk, dtsec);
@@ -3488,10 +3503,10 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dr(j) = r2(j) - r3h(j);
         end
         % switch for debugs
-        fprintf(fid,'r3h %15.11f  %15.11f  %15.11f dr %15.11f  \n', r3h(1),  r3h(2),  r3h(3), mag(dr));
+        fprintf(fida,'r3h %15.11f  %15.11f  %15.11f dr %15.11f  \n', r3h(1),  r3h(2),  r3h(3), mag(dr));
         if (mag(dr) > 0.05)
-            fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
         end
 
         [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tk);
@@ -3503,15 +3518,15 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         [kbi, tof] = lambertumins( r1, r2, 0, dm ) ;   
         [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, 0, 0.0, dtsec, kbi, outfile );
         %fprintf(fid,'detailSum);
-        fprintf(fid,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
-        fprintf(fid,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
+        fprintf(fida,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
+        fprintf(fidas,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
         [r3h, v3h] = kepler(r1, v1tu, dtsec);
         for j=1:3
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
         end
 
         for j=1:3
@@ -3519,7 +3534,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dv2(j) = v2tk(j) - v2tu(j);
         end
         if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-            fprintf(fid,'velk does not match velu \n\n');
+            fprintf(fida,'velk does not match velu \n\n');
         end
 
         [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
@@ -3528,15 +3543,15 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, 0, 0.0, dtsec, altpadc, 'y');
 
         %fprintf(fid,'detailSum);
-        fprintf(fid,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
-        fprintf(fid,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
+        fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
+        fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
         [r3h, v3h] = kepler(r1, v1tb, dtsec);
         for j=1:3
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
         end
         %fprintf(fid,'diffs " + mag(dr).ToString("0.00000000000"));
 
@@ -3545,7 +3560,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dv2(j) = v2tk(j) - v2tb(j);
         end
         if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-            fprintf(fid,'velk does not match velb \n\n');
+            fprintf(fida,'velk does not match velb \n\n');
         end
         %fprintf(fid,'diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
 
@@ -3577,8 +3592,8 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);
         [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, outfile, show, 'n' )
 
-        fprintf(fid,' %s \n',detailSum);
-        fprintf(3,' %s \n', errorout);
+        fprintf(fida,' %s \n',detailSum);
+        fprintf(fidas,' %s \n', errorout);
         if (~detailAll.Contains("not enough time"))
             %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
             fprintf(fid,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
@@ -3599,21 +3614,21 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             casearr = strrep(errorout,'\s+', tmpstr)
         end
     else
-        fprintf(3,'dm  %c de %c nrev %d %s \n', dm, de, nnrev, detailAll);
+        fprintf(fida,'dm  %c de %c nrev %d %s \n', dm, de, nnrev, detailAll);
     end
     if (methodType == "lambertu" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [kbi, tof] = lambertumins( r1, r2, nnrev, dm ) ;   
         [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, outfile );
         %fprintf(fid,'detailSum);
-        fprintf(fid,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
-        fprintf(fid,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
+        fprintf(fida,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
+        fprintf(fidas,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
         [r3h, v3h] = kepler(r1, v1tu, dtsec);
         for j=1:3
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
         end
 
         for j=1:3
@@ -3621,7 +3636,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dv2(j) = v2tk(j) - v2tu(j);
         end
         if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-            fprintf(fid,'velk does not match velu \n\n');
+            fprintf(fida,'velk does not match velu \n\n');
         end
 
         [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
@@ -3629,15 +3644,15 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     if (methodType == "lambertb" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
         %fprintf(fid,'detailSum);
-        fprintf(fid,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
-        fprintf(fid,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
+        fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
+        fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
         [r3h, v3h] = kepler(r1, v1tb, dtsec);
         for j=1:3
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
         end
         %fprintf(fid,'diffs " + mag(dr).ToString("0.00000000000"));
 
@@ -3646,7 +3661,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dv2(j) = v2tk(j) - v2tb(j);
         end
         if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-            fprintf(fid,'velk does not match velb \n\n');
+            fprintf(fida,'velk does not match velb \n\n');
         end
         %fprintf(fid,'diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
 
@@ -3664,12 +3679,12 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         %string outstr;
         %getmins(1, 'k', nrev, r1, r2, s, tau, dm, de, out tofk1, out kbik1, out tofk2, out kbik2, out outstr);
         [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, outfile, show, 'n' )
-        fprintf(fid,' %s \n',detailSum);
-        fprintf(3,' %s \n', errorout);
+        fprintf(fida,' %s \n',detailSum);
+        fprintf(fidas,' %s \n', errorout);
         if (~detailAll.Contains("not enough time"))
             %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
-            fprintf(fid,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
-            fprintf(fid,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
+            fprintf(fida,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
+            fprintf(fidas,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
             %fprintf(fid,'magv1t.ToString("0.0000000").PadLeft(12)  magv2t.ToString("0.0000000").PadLeft(12));
 
             [r3h, v3h] = kepler(r1, v1tk, dtsec);
@@ -3677,8 +3692,8 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                 dr(j) = r2(j) - r3h(j);
             end
             if (mag(dr) > 0.05)
-                fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-                fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
             end
 
             [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tk);
@@ -3686,20 +3701,20 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             casearr = strrep(errorout,'\s+', tmpstr)
         end
     else
-        fprintf(3,'dm  %c de %c nrev %d %s \n', dm, de, nnrev, detailAll);
+        fprintf(fida,'dm  %c de %c nrev %d %s \n', dm, de, nnrev, detailAll);
         if (methodType == "lambertu" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
             [kbi, tof] = lambertumins( r1, r2, nnrev, dm ) ;   
             [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, outfile );
             %fprintf(fid,'detailSum);
-            fprintf(fid,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
-            fprintf(fid,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
+            fprintf(fida,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
+            fprintf(fidas,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
             [r3h, v3h] = kepler(r1, v1tu, dtsec);
             for j=1:3
                 dr(j) = r2(j) - r3h(j);
             end
             if (mag(dr) > 0.05)
-                fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-                fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
             end
 
             for j=1:3
@@ -3707,7 +3722,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                 dv2(j) = v2tk(j) - v2tu(j);
             end
             if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                fprintf(fid,'velk does not match velu \n\n');
+                fprintf(fida,'velk does not match velu \n\n');
             end
 
             [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
@@ -3715,15 +3730,15 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         if (methodType == "lambertb" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
             [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
             %fprintf(fid,'detailSum);
-            fprintf(fid,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
-            fprintf(fid,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
+            fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
+            fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
             [r3h, v3h] = kepler(r1, v1tb, dtsec);
             for j=1:3
                 dr(j) = r2(j) - r3h(j);
             end
             if (mag(dr) > 0.05)
-                fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-                fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
             end
             %fprintf(fid,'diffs " + mag(dr).ToString("0.00000000000"));
 
@@ -3732,7 +3747,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                 dv2(j) = v2tk(j) - v2tb(j);
             end
             if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                fprintf(fid,'velk does not match velb \n\n');
+                fprintf(fida,'velk does not match velb \n\n');
             end
             %fprintf(fid,'diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
 
@@ -3748,11 +3763,11 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);  % 'L'
         [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, outfile, show, 'n' )
         fprintf(fid,' %s \n',detailSum);
-        fprintf(3,' %s \n', errorout);
+        fprintf(fida,' %s \n', errorout);
         if (~detailAll.Contains("not enough time"))
             %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
-            fprintf(fid,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
-            fprintf(fid,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
+            fprintf(fida,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
+            fprintf(fidas,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
             %fprintf(fid,'magv1t.ToString("0.0000000").PadLeft(12)  magv2t.ToString("0.0000000").PadLeft(12));
 
             [r3h, v3h] = kepler(r1, v1tk, dtsec);
@@ -3760,8 +3775,8 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                 dr(j) = r2(j) - r3h(j);
             end
             if (mag(dr) > 0.05)
-                fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-                fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
             end
 
             [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tk);
@@ -3769,20 +3784,20 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             casearr = strrep(errorout,'\s+', tmpstr)
         end
     else
-        fprintf(3,'dm  %c de %c nrev %d %s \n', dm, de, nnrev, detailAll);
+        fprintf(fida,'dm  %c de %c nrev %d %s \n', dm, de, nnrev, detailAll);
         if (methodType == "lambertu" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
             [kbi, tof] = lambertumins( r1, r2, nnrev, dm ) ;   
             [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, outfile );
             %fprintf(fid,'detailSum);
-            fprintf(fid,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
-            fprintf(fid,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
+            fprintf(fida,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
+            fprintf(fidas,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
             [r3h, v3h] = kepler(r1, v1tu, dtsec);
             for j=1:3
                 dr(j) = r2(j) - r3h(j);
             end
             if (mag(dr) > 0.05)
-                fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-                fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
             end
 
             for j=1:3
@@ -3790,7 +3805,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                 dv2(j) = v2tk(j) - v2tu(j);
             end
             if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                fprintf(fid,'velk does not match velu \n\n');
+                fprintf(fida,'velk does not match velu \n\n');
             end
 
             [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
@@ -3798,15 +3813,15 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         if (methodType == "lambertb" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
             [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
             %fprintf(fid,'detailSum);
-            fprintf(fid,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
-            fprintf(fid,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
+            fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
+            fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
             [r3h, v3h] = kepler(r1, v1tb, dtsec);
             for j=1:3
                 dr(j) = r2(j) - r3h(j);
             end
             if (mag(dr) > 0.05)
-                fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-                fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
             end
             %fprintf(fid,'diffs " + mag(dr).ToString("0.00000000000"));
 
@@ -3815,7 +3830,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                 dv2(j) = v2tk(j) - v2tb(j);
             end
             if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                fprintf(fid,'velk does not match velb \n\n');
+                fprintf(fida,'velk does not match velb \n\n');
             end
             %fprintf(fid,'diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
 
@@ -3829,12 +3844,12 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     if (methodType == "lambertk" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);
         [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, outfile, show, 'n' )
-        fprintf(fid,' %s \n',detailSum);
-        fprintf(3,' %s \n', errorout);
+        fprintf(fida,' %s \n',detailSum);
+        fprintf(fidsa,' %s \n', errorout);
         if (~detailAll.Contains("not enough time"))
             %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
-            fprintf(fid,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
-            fprintf(fid,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
+            fprintf(fida,'lamk v1t %15.11f  %15.11f  %15.11f  \n', v1tk(1),  v1tk(2),  v1tk(3));
+            fprintf(fidas,'lamk v2t %15.11f  %15.11f  %15.11f  \n', v2tk(1),  v2tk(2),  v2tk(3));
             %fprintf(fid,'magv1t.ToString("0.0000000").PadLeft(12)  magv2t.ToString("0.0000000").PadLeft(12));
 
             [r3h, v3h] = kepler(r1, v1tk, dtsec);
@@ -3842,7 +3857,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                 dr(j) = r2(j) - r3h(j);
             end
             if (mag(dr) > 0.05)
-                fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
                 fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
             end
 
@@ -3851,19 +3866,19 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             casearr = strrep(errorout,'\s+', tmpstr)
         end
     else
-        fprintf(3,'dm  %c de %c nrev %d %s \n', dm, de, nnrev, detailAll);
+        fprintf(fida,'dm  %c de %c nrev %d %s \n', dm, de, nnrev, detailAll);
     end
     if (methodType == "lambertu" && (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [kbi, tof] = lambertumins( r1, r2, nnrev, dm ) ;
         [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, kbi, outfile );
         %fprintf(fid,'detailSum);
-        fprintf(fid,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
-        fprintf(fid,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
+        fprintf(fida,'univ v1t %15.11f  %15.11f  %15.11f  \n', v1tu(1),  v1tu(2),  v1tu(3));
+        fprintf(fidas,'univ v2t %15.11f  %15.11f  %15.11f  \n', v2tu(1),  v2tu(2),  v2tu(3));
         [r3h, v3h] = kepler(r1, v1tu, dtsec);
         for j=1:3
             dr(j) = r2(j) - r3h(j);
             if (mag(dr) > 0.05)
-                fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
                 fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
             end
 
@@ -3872,7 +3887,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                 dv2(j) = v2tk(j) - v2tu(j);
             end
             if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                fprintf(fid,'velk does not match velu \n\n');
+                fprintf(fida,'velk does not match velu \n\n');
             end
 
             [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
@@ -3881,14 +3896,14 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
 
             %fprintf(fid,' %s \n',detailSum);
-            fprintf(fid,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
-            fprintf(fid,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
+            fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f  \n', v1tb(1),  v1tb(2),  v1tb(3));
+            fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f  \n', v2tb(1),  v2tb(2),  v2tb(3));
             [r3h, v3h] = kepler(r1, v1tb, dtsec);
             for j=1:3
                 dr(j) = r2(j) - r3h(j);
                 if (mag(dr) > 0.05)
-                    fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-                    fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                    fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                    fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
                 end
                 %fprintf(fid,'diffs " + mag(dr).ToString("0.00000000000"));
 
@@ -3897,7 +3912,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                     dv2(j) = v2tk(j) - v2tb(j);
                 end
                 if (mag(dv1) > 0.01 || mag(dv2) > 0.01)
-                    fprintf(fid,'velk does not match velb \n\n');
+                    fprintf(fida,'velk does not match velb \n\n');
                 end
                 %fprintf(fid,'diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
 
@@ -6158,7 +6173,7 @@ end
 %     reci = [ -605.79079600; -5870.23042200; 3493.05191600 ];
 %     veci = [ -1.568251000; -3.702348000; -6.479485000 ];
 %     % prout initial conditions
-%     fprintf(3,'reci %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
+%     fprintf(fida,'reci %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f \n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
 %     cd = 2.2;
 %     cr = 1.2;
 %     area = 40.0;     % m^2
@@ -6197,20 +6212,20 @@ end
 % 
 %        % method to do calculations in
 %        unitialized = 'y';
-%        fprintf(3,'unitialized = %c \n', unitialized);
+%        fprintf(fida,'unitialized = %c \n', unitialized);
 % 
-%      fprintf(3,'%4i  %3i  %3i  %2i:%2i:%6.4f  \n', year, mon, day, hr, minute, second);
-%        fprintf(3,'dat  %3i lod %8.6f \n', dat, lod);
-%     fprintf(3,'jdutc  %16.12f \n',jdutc + jdFutc );
-%        fprintf(3,'xp %15.11f  yp %15.11f arcsec \n', (xp / conv), (yp / conv));
-%        fprintf(3,'dpsi %15.11f  deps %15.11f arcsec \n', (ddpsi / conv), (ddeps / conv));
-%        fprintf(3,'ddx %15.11f  ddy %15.11f arcsec \n', ddx, ddy);
+%      fprintf(fida,'%4i  %3i  %3i  %2i:%2i:%6.4f  \n', year, mon, day, hr, minute, second);
+%        fprintf(fida,'dat  %3i lod %8.6f \n', dat, lod);
+%     fprintf(fida,'jdutc  %16.12f \n',jdutc + jdFutc );
+%        fprintf(fida,'xp %15.11f  yp %15.11f arcsec \n', (xp / conv), (yp / conv));
+%        fprintf(fida,'dpsi %15.11f  deps %15.11f arcsec \n', (ddpsi / conv), (ddeps / conv));
+%        fprintf(fida,'ddx %15.11f  ddy %15.11f arcsec \n', ddx, ddy);
 %        jdut1 = jdutc + jdFutc + dut1 / 86400.0;
-%        fprintf(3,'jdut1 %16.12f \n', jdut1);
+%        fprintf(fida,'jdut1 %16.12f \n', jdut1);
 % 
 %        % watch if getting tdb that j2000 is also tdb
 %        ttt = (jdutc + jdFutc + (dat + 32.184) / 86400.0 - 2451545.0) / 36525.0;
-%        fprintf(3,'jdttt ' + (jdutc + jdFutc + (dat + 32.184) / 86400.0), ' ttt ' + ttt, '\n');
+%        fprintf(fida,'jdttt ' + (jdutc + jdFutc + (dat + 32.184) / 86400.0), ' ttt ' + ttt, '\n');
 % 
 %        fundarg(ttt, opt, out fArgs);
 % 
@@ -6223,7 +6238,7 @@ end
 %        + 0.000010 * ttt * sin(628.3076 * ttt + 4.2490)) / 86400.0;  % USNO circ(14)
 %        jday(year, mon, day, hr, minute, second + tmptdb, out jdtdb, out jdFtdb);
 %        ttdb = (jdtdb + jdFtdb - 2451545.0) / 36525.0;
-%        fprintf(3,'jdttb ' + (jdtdb + jdFtdb), ' ttdb ' + ttdb);
+%        fprintf(fida,'jdttb ' + (jdtdb + jdFtdb), ' ttdb ' + ttdb);
 % 
 %        % get reduction matrices
 %        deltapsi = 0.0;
@@ -6247,14 +6262,14 @@ end
 %        temp1 = matmult(temp, nutp, 3, 3, 3);
 %        transreci2ecef = matmult(temp1, precp, 3, 3, 3);
 %        recef = matvecmult(transreci2ecef, reci, 3);
-%        fprintf(3,'recef  ' + recef(1), recef(2), recef(3),
+%        fprintf(fida,'recef  ' + recef(1), recef(2), recef(3),
 %        'v  ' + vecef(1), vecef(2), vecef(3));
 % 
 %        %----perform transrformations ecef to eci
 %        % note the rotations occur only for velocity so the full transrformation is fine here
 %        transrecef2eci = mattransr(transreci2ecef, 3);
 %        reci = matvecmult(transrecef2eci, recef, 3);
-%        fprintf(3,'reci  ' + reci(1), reci(2), reci(3),
+%        fprintf(fida,'reci  ' + reci(1), reci(2), reci(3),
 %        'v  ' + veci(1), veci(2), veci(3));
 % 
 %        eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
@@ -6262,9 +6277,9 @@ end
 %        jdtt, jdftt, jdut1, jdxysstart, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
 % 
 %        % prout initial conditions
-%        fprintf(3,'reci  ' + reci(1), reci(2), reci(3),
+%        fprintf(fida,'reci  ' + reci(1), reci(2), reci(3),
 %        'v  ' + veci(1), veci(2), veci(3));
-%        fprintf(3,'recef  ' + recef(1), recef(2), recef(3),
+%        fprintf(fida,'recef  ' + recef(1), recef(2), recef(3),
 %        'v  ' + vecef(1), vecef(2), vecef(3));
 % 
 %        [latgc, latgd, lon, hellp] = ecef2ll(recef);
@@ -6273,8 +6288,8 @@ end
 %        lon = 5.0 / rad;
 %        alt = 6880.0;
 %        site(latgd, lon, alt, out recef, out vecef);
-%        fprintf(3,'new site loc');
-%        fprintf(3,'recef  ' + recef(1), recef(2), recef(3),
+%        fprintf(fida,'new site loc');
+%        fprintf(fida,'recef  ' + recef(1), recef(2), recef(3),
 %        'v  ' + vecef(1), vecef(2), vecef(3));
 % 
 %        % ---------------------------------------------------------------------------------------------
@@ -6300,23 +6315,23 @@ end
 %        % 2    1   -0.206615509074176D-09    0.138441389137979D-08    0.7063781502D-11    0.7348347201D-11
 %        % 2    2    0.243938357328313D-05   -0.140027370385934D-05    0.7230231722D-11    0.7425816951D-11
 %        [gravarr] = readgravityfield(fname, 'y');
-%        fprintf(3,'\nread in gravity field %s --------------- \n', fname);
-%        fprintf(3,'\ncoefficents --------------- ');
-%        fprintf(3,'c  2  0  ' + gravData.c(3, 1), ' s ' + gravData.s(3, 1));
-%        fprintf(3,'c  4  0  ' + gravData.c(5, 1), ' s ' + gravData.s(5, 1));
-%        fprintf(3,'c  4  4  ' + gravData.c(5, 5), ' s ' + gravData.s(5, 5));
-%        fprintf(3,'c 21  1 ' + gravData.c[21, 1], ' s ' + gravData.s[21, 1]);
-%        fprintf(3,'\nunitalized coefficents --------------- ');
-%        fprintf(3,'c  2  0  ' + gravData.cNor(3, 1), ' s ' + gravData.sNor(3, 1));
-%        fprintf(3,'c  4  0  ' + gravData.cNor(5, 1), ' s ' + gravData.sNor(5, 1));
-%        fprintf(3,'c  4  4  ' + gravData.cNor(5, 5), ' s ' + gravData.sNor(5, 5));
-%        fprintf(3,'c 21  1 ' + gravData.cNor[21, 1], ' s ' + gravData.sNor[21, 1]);
-%        fprintf(3,'c 500  1 ' + gravData.cNor[500, 1], ' s ' + gravData.sNor[500, 1]);
+%        fprintf(fida,'\nread in gravity field %s --------------- \n', fname);
+%        fprintf(fida,'\ncoefficents --------------- ');
+%        fprintf(fida,'c  2  0  ' + gravData.c(3, 1), ' s ' + gravData.s(3, 1));
+%        fprintf(fida,'c  4  0  ' + gravData.c(5, 1), ' s ' + gravData.s(5, 1));
+%        fprintf(fida,'c  4  4  ' + gravData.c(5, 5), ' s ' + gravData.s(5, 5));
+%        fprintf(fida,'c 21  1 ' + gravData.c[21, 1], ' s ' + gravData.s[21, 1]);
+%        fprintf(fida,'\nunitalized coefficents --------------- ');
+%        fprintf(fida,'c  2  0  ' + gravData.cNor(3, 1), ' s ' + gravData.sNor(3, 1));
+%        fprintf(fida,'c  4  0  ' + gravData.cNor(5, 1), ' s ' + gravData.sNor(5, 1));
+%        fprintf(fida,'c  4  4  ' + gravData.cNor(5, 5), ' s ' + gravData.sNor(5, 5));
+%        fprintf(fida,'c 21  1 ' + gravData.cNor[21, 1], ' s ' + gravData.sNor[21, 1]);
+%        fprintf(fida,'c 500  1 ' + gravData.cNor[500, 1], ' s ' + gravData.sNor[500, 1]);
 % 
 %        % --------------------------------------------------------------------------------------------------
 %        % calculate legendre polynomials
 % 
-%        fprintf(3,'\nCalculate Legendre polynomial recursions Unn and Nor  --------------- ');
+%        fprintf(fida,'\nCalculate Legendre polynomial recursions Unn and Nor  --------------- ');
 %        degree = 500;
 %        order = 500;
 %        % GTDS version
@@ -6348,7 +6363,7 @@ end
 %        sumdr1 = 0.0;
 %        sumdr2 = 0.0;
 %        sumdr3 = 0.0;
-%        fprintf(3,'\nwrite out unitalized Legendre polynomials --------------- ');
+%        fprintf(fida,'\nwrite out unitalized Legendre polynomials --------------- ');
 % 
 %        % order xxxxxxxxxxxxxxxxxx
 %        for (L = 0; L <= 130; L++)
@@ -6383,10 +6398,10 @@ end
 %                , dr2, dr3;
 %            end
 %            % unitalized ones
-%            fprintf(3,tempstr2);
-%            fprintf(3,tempstr1);
-%            fprintf(3,tempstr5);
-%            fprintf(3,tempstr7 + '\n');
+%            fprintf(fida,tempstr2);
+%            fprintf(fida,tempstr1);
+%            fprintf(fida,tempstr5);
+%            fprintf(fida,tempstr7 + '\n');
 %            % ununitalized ones
 %            fprintf(fid,tempstr3);
 %            fprintf(fid,tempstr3a);
@@ -6396,89 +6411,89 @@ end
 %        strbuildplot.AppendLine(errstr);
 % 
 %        % -------------------- now accelerations -----------------------------------------------------
-%        fprintf(3,'\naccelerations --------------- ');
+%        fprintf(fida,'\naccelerations --------------- ');
 %        string straccum = '';
 % 
 %        %order = 4;
 %        order = 120; % 10;
 %        % GTDS acceleration for non-spherical portion
 %        FullGeopG(recef, order, unitalized, convArr, unitArr, gravData, out aPertG, 'y', out straccum);
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 %        aeci = matvecmult(transrecef2eci, aPertG, 3);
 %        straccum = straccum + 'apertG eci  ' + order, order, aeci(1), '     '
 %        + aeci(2), '     ' + aeci(3), '\n';
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 % 
 %        FullGeopG(recef, order, unitalized, convArr, unitArr, gravData, out aPertG, 'n', out straccum);
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 % 
 %        % Montenbruck acceleration
 %        FullGeopM(recef, order, unitalized, convArr, gravData, out aPertM, 'y', out straccum);
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 %        aeci = matvecmult(transrecef2eci, aPertM, 3);
 %        straccum = straccum + 'apertM eci  ' + order, order, aeci(1), '     '
 %        + aeci(2), '     ' + aeci(3), '\n';
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 % 
 %        FullGeopM(recef, order, unitalized, convArr, gravData, out aPertM, 'n', out straccum);
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 % 
 %        % Montenbruck code acceleration
 %        FullGeopMC(recef, order, unitalized, convArr, gravData, out aPertM1, 'y', out straccum);
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 %        aeci = matvecmult(transrecef2eci, aPertM1, 3);
 %        straccum = straccum + 'apertM1 eci ' + order, order, aeci(1), '     '
 %        + aeci(2), '     ' + aeci(3), '\n';
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 % 
 %        FullGeopMC(recef, order, unitalized, convArr, gravData, out aPertM1, 'n', out straccum);
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 % 
 %        % Gottlieb acceleration
-%        fprintf(3,'Gottlieb acceleration ');
+%        fprintf(fida,'Gottlieb acceleration ');
 %        G = new (4);
 %        aPertGt = new (4);
 %        FullGeopGot(gravData, recef, unitArr, order, out LegArrGott, out G, out straccum);
-%        fprintf(3,straccum);
+%        fprintf(fida,straccum);
 % 
 %        % Fukushima acceleration
-%        fprintf(3,'Fukushima acceleration ');
+%        fprintf(fida,'Fukushima acceleration ');
 %        %LegPolyFF(recef, latgc, order, 'y', unitArr, gravData, out LegArrF);
 %        [,] a = new [360, 360];
 %        [,] b = new [360, 360];
 %        xfsh2f(80, gravData, out a, out b);
-%        fprintf(3,a(3, 1));
-%        fprintf(3,'a  2  0  ' + a(3, 1), ' b ' + b(3, 1));
-%        fprintf(3,'a  2  1  ' + a(3, 2), ' b ' + b(3, 2));
-%        fprintf(3,'a  4  0  ' + a(5, 1), ' b ' + b(5, 1));
-%        fprintf(3,'a  4  1  ' + a(5, 1), ' b ' + b(5, 2));
-%        fprintf(3,'a  4  4  ' + a(5, 5), ' b ' + b(5, 5));
-%        fprintf(3,'a 10 10  ' + a[10, 0], ' b ' + b[10, 0]);
-% fprintf(3,'a 21  1 ' + a[21, 1], ' b ' + b[21, 1]);
+%        fprintf(fida,a(3, 1));
+%        fprintf(fida,'a  2  0  ' + a(3, 1), ' b ' + b(3, 1));
+%        fprintf(fida,'a  2  1  ' + a(3, 2), ' b ' + b(3, 2));
+%        fprintf(fida,'a  4  0  ' + a(5, 1), ' b ' + b(5, 1));
+%        fprintf(fida,'a  4  1  ' + a(5, 1), ' b ' + b(5, 2));
+%        fprintf(fida,'a  4  4  ' + a(5, 5), ' b ' + b(5, 5));
+%        fprintf(fida,'a 10 10  ' + a[10, 0], ' b ' + b[10, 0]);
+% fprintf(fida,'a 21  1 ' + a[21, 1], ' b ' + b[21, 1]);
 % 
 % % Pines approach
-% fprintf(3,'Pines acceleration ');
+% fprintf(fida,'Pines acceleration ');
 % FullGeopPines(jdutc, recef, latgc, order, order, gravData, out aeci);
-% fprintf(3,'apertP    4 4   ' + aeci(1), '     ' + aeci(2), '     ' + aeci(3));
+% fprintf(fida,'apertP    4 4   ' + aeci(1), '     ' + aeci(2), '     ' + aeci(3));
 % 
-% fprintf(3,straccum);
-% fprintf(3,'\ngravity field ' + fname, order, ' --------------- ');
-% fprintf(3,' summary accelerations ----------------------------------------------- ');
-% fprintf(3,'apertG bf  ' + order, order, aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
-% fprintf(3,'apertM bf  ' + order, order, aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
-% fprintf(3,'apertMC bf ' + order, order, aPertM1(1), '     ' + aPertM1(2), '     ' + aPertM1(3));
-% fprintf(3,'apertGt bf ' + order, order, G(1), '     ' + G(2), '     ' + G(3));
+% fprintf(fida,straccum);
+% fprintf(fida,'\ngravity field ' + fname, order, ' --------------- ');
+% fprintf(fida,' summary accelerations ----------------------------------------------- ');
+% fprintf(fida,'apertG bf  ' + order, order, aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
+% fprintf(fida,'apertM bf  ' + order, order, aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
+% fprintf(fida,'apertMC bf ' + order, order, aPertM1(1), '     ' + aPertM1(2), '     ' + aPertM1(3));
+% fprintf(fida,'apertGt bf ' + order, order, G(1), '     ' + G(2), '     ' + G(3));
 % 
 % aPertG = matvecmult(transrecef2eci, aPertG, 3);
 % aPertM = matvecmult(transrecef2eci, aPertM, 3);
 % aPertM1 = matvecmult(transrecef2eci, aPertM1, 3);
 % aPertGt = matvecmult(transrecef2eci, G, 3);
-% fprintf(3,'apertG  eci ' + order, order, aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
-% fprintf(3,'apertM  eci ' + order, order, aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
-% fprintf(3,'apertMC eci ' + order, order, aPertM1(1), '     ' + aPertM1(2), '     ' + aPertM1(3));
-% fprintf(3,'apertGt eci ' + order, order, aPertGt(1), '     ' + aPertGt(2), '     ' + aPertGt(3));
+% fprintf(fida,'apertG  eci ' + order, order, aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
+% fprintf(fida,'apertM  eci ' + order, order, aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
+% fprintf(fida,'apertMC eci ' + order, order, aPertM1(1), '     ' + aPertM1(2), '     ' + aPertM1(3));
+% fprintf(fida,'apertGt eci ' + order, order, aPertGt(1), '     ' + aPertGt(2), '     ' + aPertGt(3));
 % 
-% fprintf(3,'STK ansr 4x4         -0.0000003723020	-0.0000031362090   	-0.0000102647170\n');  % no 2-body
+% fprintf(fida,'STK ansr 4x4         -0.0000003723020	-0.0000031362090   	-0.0000102647170\n');  % no 2-body
 % 
 % 
 % % -------------------------- add in two body term since full geop is only disturbing part
@@ -6488,7 +6503,7 @@ end
 % aeci2(1) = -mu * reci(1) / (Math.Pow(mag(reci), 3));
 % aeci2(2) = -mu * reci(2) / (Math.Pow(mag(reci), 3));
 % aeci2(3) = -mu * reci(3) / (Math.Pow(mag(reci), 3));
-% fprintf(3,'a2body      ' + aeci2(1), '     ' + aeci2(2), '     ' + aeci2(3));
+% fprintf(fida,'a2body      ' + aeci2(1), '     ' + aeci2(2), '     ' + aeci2(3));
 % 
 % aPertG(1) = aPertG(1) + aeci2(1);
 % aPertG(2) = aPertG(2) + aeci2(2);
@@ -6507,50 +6522,50 @@ end
 % aPertM1(2) = aPertM1(2) + aeci2(2);
 % aPertM1(3) = aPertM1(3) + aeci2(3);
 % 
-% fprintf(3,' now with two body included');
-% fprintf(3,'apertG ' + order, order, aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
-% fprintf(3,'apertM ' + order, order, aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
-% fprintf(3,'apertMC ' + order, order, aPertM1(1), '     ' + aPertM1(2), '     ' + aPertM1(3));
-% fprintf(3,'STK ansr 4x4 w2   0.0007483593980          0.0072522125910         -0.0043275195170\n');  % no 2-body
+% fprintf(fida,' now with two body included');
+% fprintf(fida,'apertG ' + order, order, aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
+% fprintf(fida,'apertM ' + order, order, aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
+% fprintf(fida,'apertMC ' + order, order, aPertM1(1), '     ' + aPertM1(2), '     ' + aPertM1(3));
+% fprintf(fida,'STK ansr 4x4 w2   0.0007483593980          0.0072522125910         -0.0043275195170\n');  % no 2-body
 % %                    4x4 j2000   0.00074835849281         0.00725221243453        -0.00432751993509
 % %                    4x4 icrf    0.00074835939828         0.00725221259059        -0.00432751951698
 % %                    all j2000   0.00074845403274         0.00725223127396        -0.00432750265312
 % %                    all icrf    0.00074845493821         0.00725223143002        -0.00432750223499
 % 
 % 
-% fprintf(3,'------------------ find drag acceleration');
+% fprintf(fida,'------------------ find drag acceleration');
 %  density = 1.5e-12;  % kg / m3
 %  magv = mag(vecef);
 % vrel(1) = vecef(1); % vecef unital is veci to tod, then - wxr
 % vrel(2) = vecef(2);
 % vrel(3) = vecef(3);
-% fprintf(3,' vrel ' + vrel(1), vrel(2), vrel(3));
+% fprintf(fida,' vrel ' + vrel(1), vrel(2), vrel(3));
 % %                 kg / m3        m2  /  kg     km / s  km / s
 % adrag(1) = -0.5 * density * cd * area / mass * magv * vrel(1) * 1000.0;  % simplify vel, get units to km/s2
 % adrag(2) = -0.5 * density * cd * area / mass * magv * vrel(2) * 1000.0;  % simplify vel, get units to km/s2
 % adrag(3) = -0.5 * density * cd * area / mass * magv * vrel(3) * 1000.0;  % simplify vel, get units to km/s2
 % 
-% fprintf(3,' adrag ecef' + adrag(1), adrag(2), adrag(3));
+% fprintf(fida,' adrag ecef' + adrag(1), adrag(2), adrag(3));
 % 
-% fprintf(3,' agrav + drag ecef' +(temm(1)+ adrag(1)),
+% fprintf(fida,' agrav + drag ecef' +(temm(1)+ adrag(1)),
 % (temm(2) + adrag(2)), (temm(3) + adrag(3)));
 % 
 % 
 % transrecef2eci = matmult(temp1, pm, 3, 3, 3);
 % aeci = matvecmult(transrecef2eci, adrag, 3);
-% fprintf(3,' adrag eci ' + aeci(1), aeci(2), aeci(3));
-% fprintf(3,'ansr drag JR spline      0.0000000001040	0.0000000002090	0.0000000003550\n');
-% fprintf(3,'ansr drag JR daily       0.0000000000840	0.0000000001720	0.0000000002900\n');
-% fprintf(3,'ansr drag MSIS daily     0.0000000000730	0.0000000001510	0.0000000002530\n');
+% fprintf(fida,' adrag eci ' + aeci(1), aeci(2), aeci(3));
+% fprintf(fida,'ansr drag JR spline      0.0000000001040	0.0000000002090	0.0000000003550\n');
+% fprintf(fida,'ansr drag JR daily       0.0000000000840	0.0000000001720	0.0000000002900\n');
+% fprintf(fida,'ansr drag MSIS daily     0.0000000000730	0.0000000001510	0.0000000002530\n');
 % 
 % temmm = new (4);
 % temmm(1) = temm(1) + adrag(1);
 % temmm(2) = temm(2) + adrag(2);
 % temmm(3) = temm(3) + adrag(3);
 % aeci = matvecmult(transrecef2eci, temmm, 3);
-% fprintf(3,' agrav+drag eci ' + aeci(1), aeci(2), aeci(3));
+% fprintf(fida,' agrav+drag eci ' + aeci(1), aeci(2), aeci(3));
 % 
-% fprintf(3,' ------------------ find third body acceleration');
+% fprintf(fida,' ------------------ find third body acceleration');
 % AstroLib.jpldedataClass[] jpldearr = jpldearr;
 %  musun, mumoon, rsmag, rmmag;
 % musun = 1.32712428e11;    % km3 / s2
@@ -6568,19 +6583,19 @@ end
 % rsunj = [ 126921698.4134; -69564121.8695; -30156263.9220 ];
 % 
 % addvec(1.0, rsuns, -1.0, rsun, out tempvec1);
-% fprintf(3,' diff rsun stk-mine ' + tempvec1(1), tempvec1(2),
+% fprintf(fida,' diff rsun stk-mine ' + tempvec1(1), tempvec1(2),
 % tempvec1(3), mag(tempvec1));
 % addvec(1.0, rsunj, -1.0, rsun, out tempvec1);
-% fprintf(3,' diff rsun jpl-mine ' + tempvec1(1), tempvec1(2),
+% fprintf(fida,' diff rsun jpl-mine ' + tempvec1(1), tempvec1(2),
 % tempvec1(3), mag(tempvec1));
 % addvec(1.0, rsuns, -1.0, rsunj, out tempvec1);
-% fprintf(3,' diff rsun stk-jpl  ' + tempvec1(1), tempvec1(2),
+% fprintf(fida,' diff rsun stk-jpl  ' + tempvec1(1), tempvec1(2),
 % tempvec1(3), mag(tempvec1));
 % addvec(1.0, rmoonj, -1.0, rmoon, out tempvec1);
-% fprintf(3,' diff rmoon jpl-mine ' + tempvec1(1), tempvec1(2),
+% fprintf(fida,' diff rmoon jpl-mine ' + tempvec1(1), tempvec1(2),
 % tempvec1(3), mag(tempvec1));
-% fprintf(3,' rsun  ' + rsun(1), rsun(2), rsun(3));
-% fprintf(3,' rmoon ' + rmoon(1), rmoon(2), rmoon(3));
+% fprintf(fida,' rsun  ' + rsun(1), rsun(2), rsun(3));
+% fprintf(fida,' rmoon ' + rmoon(1), rmoon(2), rmoon(3));
 % 
 %  mu3 = musun;
 % rsat3(1) = rsun(1) - reci(1);
@@ -6594,22 +6609,22 @@ end
 % athirdbody(1) = mu3 * (rsat3(1) / Math.Pow(magrsat3, 3) - rearth3(1) / Math.Pow(magrearth3, 3));
 % athirdbody(2) = mu3 * (rsat3(2) / Math.Pow(magrsat3, 3) - rearth3(2) / Math.Pow(magrearth3, 3));
 % athirdbody(3) = mu3 * (rsat3(3) / Math.Pow(magrsat3, 3) - rearth3(3) / Math.Pow(magrearth3, 3));
-% fprintf(3,' a3bodyS  eci ' + athirdbody(1), athirdbody(2), athirdbody(3));
+% fprintf(fida,' a3bodyS  eci ' + athirdbody(1), athirdbody(2), athirdbody(3));
 % athirdbody2(1) = -mu3 / Math.Pow(magrearth3, 3) * (rearth3(1) - 3.0 * rearth3(1) * (dot(reci, rearth3) / Math.Pow(magrearth3, 2))
 % - 7.5 * rearth3(1) * Math.Pow(((dot(reci, rearth3) / Math.Pow(magrearth3, 2))), 2));
 % athirdbody2(2) = -mu3 / Math.Pow(magrearth3, 3) * (rearth3(2) - 3.0 * rearth3(2) * (dot(reci, rearth3) / Math.Pow(magrearth3, 2))
 % - 7.5 * rearth3(2) * Math.Pow(((dot(reci, rearth3) / Math.Pow(magrearth3, 2))), 2));
 % athirdbody2(3) = -mu3 / Math.Pow(magrearth3, 3) * (rearth3(3) - 3.0 * rearth3(3) * (dot(reci, rearth3) / Math.Pow(magrearth3, 2))
 % - 7.5 * rearth3(3) * Math.Pow(((dot(reci, rearth3) / Math.Pow(magrearth3, 2))), 2));
-% fprintf(3,' a3bodyS2 eci' + athirdbody2(1), athirdbody2(2), athirdbody2(3));
+% fprintf(fida,' a3bodyS2 eci' + athirdbody2(1), athirdbody2(2), athirdbody2(3));
 % q = (Math.Pow(mag(reci), 2) + 2.0 * dot(reci, rsat3)) *
 % (Math.Pow(magrearth3, 2) + magrearth3 * magrsat3 + Math.Pow(magrsat3, 2)) /
 % (Math.Pow(magrearth3, 3) * Math.Pow(magrsat3, 3) * (magrearth3 + magrsat3));
 % athirdbody1(1) = mu3 * (rsat3(1) * q - reci(1) / Math.Pow(magrearth3, 3));
 % athirdbody1(2) = mu3 * (rsat3(2) * q - reci(2) / Math.Pow(magrearth3, 3));
 % athirdbody1(3) = mu3 * (rsat3(3) * q - reci(3) / Math.Pow(magrearth3, 3));
-% fprintf(3,' a3bodyS1 eci' + athirdbody1(1), athirdbody1(2), athirdbody1(3));
-% fprintf(3,'ansr sun        0.0000000001820	0.0000000001620	-0.0000000001800\n');
+% fprintf(fida,' a3bodyS1 eci' + athirdbody1(1), athirdbody1(2), athirdbody1(3));
+% fprintf(fida,'ansr sun        0.0000000001820	0.0000000001620	-0.0000000001800\n');
 % a3body(1) = athirdbody1(1);
 % a3body(2) = athirdbody1(2);
 % a3body(3) = athirdbody1(3);
@@ -6627,29 +6642,29 @@ end
 % athirdbody(1) = mu3 * (rsat3(1) / Math.Pow(magrsat3, 3) - rearth3(1) / Math.Pow(magrearth3, 3));
 % athirdbody(2) = mu3 * (rsat3(2) / Math.Pow(magrsat3, 3) - rearth3(2) / Math.Pow(magrearth3, 3));
 % athirdbody(3) = mu3 * (rsat3(3) / Math.Pow(magrsat3, 3) - rearth3(3) / Math.Pow(magrearth3, 3));
-% fprintf(3,' a3bodyM  eci ' + athirdbody(1), athirdbody(2), athirdbody(3));
+% fprintf(fida,' a3bodyM  eci ' + athirdbody(1), athirdbody(2), athirdbody(3));
 % athirdbody2(1) = -mu3 / Math.Pow(magrearth3, 3) * (rearth3(1) - 3.0 * rearth3(1) * (dot(reci, rearth3) / Math.Pow(magrearth3, 2))
 % - 7.5 * rearth3(1) * Math.Pow(((dot(reci, rearth3) / Math.Pow(magrearth3, 2))), 2));
 % athirdbody2(2) = -mu3 / Math.Pow(magrearth3, 3) * (rearth3(2) - 3.0 * rearth3(2) * (dot(reci, rearth3) / Math.Pow(magrearth3, 2))
 % - 7.5 * rearth3(2) * Math.Pow(((dot(reci, rearth3) / Math.Pow(magrearth3, 2))), 2));
 % athirdbody2(3) = -mu3 / Math.Pow(magrearth3, 3) * (rearth3(3) - 3.0 * rearth3(3) * (dot(reci, rearth3) / Math.Pow(magrearth3, 2))
 % - 7.5 * rearth3(3) * Math.Pow(((dot(reci, rearth3) / Math.Pow(magrearth3, 2))), 2));
-% fprintf(3,' a3bodyM2 eci' + athirdbody2(1), athirdbody2(2), athirdbody2(3));
+% fprintf(fida,' a3bodyM2 eci' + athirdbody2(1), athirdbody2(2), athirdbody2(3));
 % q = (Math.Pow(mag(reci), 2) + 2.0 * dot(reci, rsat3)) *
 % (Math.Pow(magrearth3, 2) + magrearth3 * magrsat3 + Math.Pow(magrsat3, 2)) /
 % (Math.Pow(magrearth3, 3) * Math.Pow(magrsat3, 3) * (magrearth3 + magrsat3));
 % athirdbody1(1) = mu3 * (rsat3(1) * q - reci(1) / Math.Pow(magrearth3, 3));
 % athirdbody1(2) = mu3 * (rsat3(2) * q - reci(2) / Math.Pow(magrearth3, 3));
 % athirdbody1(3) = mu3 * (rsat3(3) * q - reci(3) / Math.Pow(magrearth3, 3));
-% fprintf(3,' a3bodyM1 eci' + athirdbody1(1), athirdbody1(2), athirdbody1(3));
-% fprintf(3,'ansr moon        0.0000000000860	-0.0000000004210	-0.0000000006980\n');
+% fprintf(fida,' a3bodyM1 eci' + athirdbody1(1), athirdbody1(2), athirdbody1(3));
+% fprintf(fida,'ansr moon        0.0000000000860	-0.0000000004210	-0.0000000006980\n');
 % a3body(1) = a3body(1) + athirdbody1(1);
 % a3body(2) = a3body(2) + athirdbody1(2);
 % a3body(3) = a3body(3) + athirdbody1(3);
-% fprintf(3,'ansr sun/moon    0.0000000002730	-0.0000000002680	-0.0000000008800\n');
+% fprintf(fida,'ansr sun/moon    0.0000000002730	-0.0000000002680	-0.0000000008800\n');
 % 
 % 
-% fprintf(3,' ------------------ find srp acceleration\n');
+% fprintf(fida,' ------------------ find srp acceleration\n');
 %  psrp = 4.56e-6;  % N/m2 = kgm/s2 / m2 = kg/ms2
 % rsatsun(1) = rsun(1) - reci(1);
 % rsatsun(2) = rsun(2) - reci(2);
@@ -6659,37 +6674,37 @@ end
 % asrp(1) = -(psrp * cr * area / mass * rsatsun(1) / magrsatsun) / 1000.0;  % result in km/s
 % asrp(2) = -(psrp * cr * area / mass * rsatsun(2) / magrsatsun) / 1000.0;
 % asrp(3) = -(psrp * cr * area / mass * rsatsun(3) / magrsatsun) / 1000.0;
-% fprintf(3,' asrp eci ' + asrp(1), asrp(2), asrp(3));
-% fprintf(3,'ansr srp        -0.0000000001970	0.0000000001150	0.0000000000480\n');
+% fprintf(fida,' asrp eci ' + asrp(1), asrp(2), asrp(3));
+% fprintf(fida,'ansr srp        -0.0000000001970	0.0000000001150	0.0000000000480\n');
 % 
-% fprintf(3,' ------------------ add perturbing accelerations\n');
+% fprintf(fida,' ------------------ add perturbing accelerations\n');
 % aecef(1) = adrag(1);  % plus gravity xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 % aecef(2) = adrag(2);
 % aecef(3) = adrag(3);
-% fprintf(3,' aecef ' + aecef(1), aecef(2), aecef(3));
+% fprintf(fida,' aecef ' + aecef(1), aecef(2), aecef(3));
 % 
 % % ---- move acceleration from earth fixed coordinates to eci
 % % there are no cross products here as unital
 % aeci = matvecmult(transrecef2eci, aecef, 3);
-% fprintf(3,' aeci ' + aeci(1), aeci(2), aeci(3));
+% fprintf(fida,' aeci ' + aeci(1), aeci(2), aeci(3));
 % 
 % % find two body component of eci acceleration
 % aeci2(1) = -mu * reci(1) / (Math.Pow(mag(reci), 3));
 % aeci2(2) = -mu * reci(2) / (Math.Pow(mag(reci), 3));
 % aeci2(3) = -mu * reci(3) / (Math.Pow(mag(reci), 3));
-% fprintf(3,' aeci2body ' + aeci2(1), aeci2(2), aeci2(3));
+% fprintf(fida,' aeci2body ' + aeci2(1), aeci2(2), aeci2(3));
 % 
 % % totla acceleration
 % aeci(1) = aeci2(1) + a3body(1) + asrp(1) + aeci(1);
 % aeci(2) = aeci2(2) + a3body(2) + asrp(2) + aeci(2);
 % aeci(3) = aeci2(3) + a3body(3) + asrp(3) + aeci(3);
-% fprintf(3,'total aeci ' + aeci(1), aeci(2), aeci(3));
+% fprintf(fida,'total aeci ' + aeci(1), aeci(2), aeci(3));
 % 
 
 
 
 % % ------------------------------------------- timing comparisons
-% fprintf(3,'\n ===================================== Timing Comparisons =====================================');
+% fprintf(fida,'\n ===================================== Timing Comparisons =====================================');
 % % timing of routines
 % var watch = System.Diagnostics.Stopwatch.StartNew(fid);
 % 
@@ -6703,7 +6718,7 @@ end
 % %  stop timer
 % watch.Stop(fid);
 % var elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(3,'Done with Montenbruck calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
+% fprintf(fida,'Done with Montenbruck calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
 % 
 % watch = System.Diagnostics.Stopwatch.StartNew(fid);
 % for (i = 0; i < 500; i++)
@@ -6716,7 +6731,7 @@ end
 % %  stop timer
 % watch.Stop(fid);
 % elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(3,'Done with GTDS calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
+% fprintf(fida,'Done with GTDS calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
 % 
 % 
 % watch = System.Diagnostics.Stopwatch.StartNew(fid);
@@ -6731,7 +6746,7 @@ end
 % %  stop timer
 % watch.Stop(fid);
 % elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(3,'Done with GTDS ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
+% fprintf(fida,'Done with GTDS ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
 % 
 % 
 % watch = System.Diagnostics.Stopwatch.StartNew(fid);
@@ -6746,7 +6761,7 @@ end
 % %  stop timer
 % watch.Stop(fid);
 % elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(3,'Done with Gott ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
+% fprintf(fida,'Done with Gott ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
 % 
 % watch = System.Diagnostics.Stopwatch.StartNew(fid);
 % for (i = 0; i < 500; i++)
@@ -6760,7 +6775,7 @@ end
 % %  stop timer
 % watch.Stop(fid);
 % elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(3,'Done with Mont ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
+% fprintf(fida,'Done with Mont ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
 % 
 % 
 % watch = System.Diagnostics.Stopwatch.StartNew(fid);
@@ -6775,12 +6790,12 @@ end
 % %  stop timer
 % watch.Stop(fid);
 % elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(3,'Done with Fukushima ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
+% fprintf(fida,'Done with Fukushima ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
 % 
 
 
 % ------------------------------------------- pole test case comparisons
-% fprintf(3,'\n ===================================== Pole Test Comparisons =====================================');
+% fprintf(fida,'\n ===================================== Pole Test Comparisons =====================================');
 % 
 % rad = 180.0 / pi;
 % for i = 0:500
@@ -6798,7 +6813,7 @@ end
 % % unitalized calcs, show
 % [straccum] = FullGeopG(recef, order, 'y', convArr, unitArr, gravData, out aPertG, 'n');
 % 
-% fprintf(3,'test pole ' + (latgc * rad), (lon * rad), aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
+% fprintf(fida,'test pole ' + (latgc * rad), (lon * rad), aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
 % end
 
 
@@ -6827,8 +6842,8 @@ end
 %string fname = 'D:\Dataorig\Gravity\egm2008_gfc.txt';  % unit
 
 % % --------------------gottlieb 1993 test
-% fprintf(3,'===================================== Gottlieb 1993 test case ===================================== ');
-% fprintf(3,'GEM-10B ununitalized 36x36 ');
+% fprintf(fida,'===================================== Gottlieb 1993 test case ===================================== ');
+% fprintf(fida,'GEM-10B ununitalized 36x36 ');
 % % get past text in each file
 % %if (fname.Contains('GEM'))    % GEM10bununit36.grv, GEMT3unit50.grv
 % %    startKtr = 17;
@@ -6850,7 +6865,7 @@ end
 % %AstroLib.gravityModelData gravData;
 % 
 % recef = [ 5489.1500, 802.2220, 3140.9160 ];  % km
-% fprintf(3,'recef = ' + recef(1), recef(2), recef(3));
+% fprintf(fida,'recef = ' + recef(1), recef(2), recef(3));
 % % these are from the vector
 % latgc = Math.Asin(recef(3) / mag(recef));
 %  templ = sqrt(recef(1) * recef(1) + recef(2) * recef(2));
@@ -6860,20 +6875,20 @@ end
 % else
 % rtasc = atan2(recef(2), recef(1));
 % lon = rtasc;
-% fprintf(3,'latgc lon ' + (latgc * rad), (lon * rad));
+% fprintf(fida,'latgc lon ' + (latgc * rad), (lon * rad));
 % 
 % 
 % [gravarr] = readgravityfield(fname, normal);
-% fprintf(3,'\ncoefficents --------------- ');
-% fprintf(3,'c  2  0  ' + gravData.c(3, 1), ' s ' + gravData.s(3, 1));
-% fprintf(3,'c  4  0  ' + gravData.c(5, 1), ' s ' + gravData.s(5, 1));
-% fprintf(3,'c  4  4  ' + gravData.c(5, 5), ' s ' + gravData.s(5, 5));
-% fprintf(3,'c 21  1 ' + gravData.c[21, 1], ' s ' + gravData.s[21, 1]);
-% fprintf(3,'\nunitalized coefficents --------------- ');
-% fprintf(3,'c  2  0  ' + gravData.cNor(3, 1), ' s ' + gravData.sNor(3, 1));
-% fprintf(3,'c  4  0  ' + gravData.cNor(5, 1), ' s ' + gravData.sNor(5, 1));
-% fprintf(3,'c  4  4  ' + gravData.cNor(5, 5), ' s ' + gravData.sNor(5, 5));
-% fprintf(3,'c 21  1 ' + gravData.cNor[21, 1], ' s ' + gravData.sNor[21, 1]);
+% fprintf(fida,'\ncoefficents --------------- ');
+% fprintf(fida,'c  2  0  ' + gravData.c(3, 1), ' s ' + gravData.s(3, 1));
+% fprintf(fida,'c  4  0  ' + gravData.c(5, 1), ' s ' + gravData.s(5, 1));
+% fprintf(fida,'c  4  4  ' + gravData.c(5, 5), ' s ' + gravData.s(5, 5));
+% fprintf(fida,'c 21  1 ' + gravData.c[21, 1], ' s ' + gravData.s[21, 1]);
+% fprintf(fida,'\nunitalized coefficents --------------- ');
+% fprintf(fida,'c  2  0  ' + gravData.cNor(3, 1), ' s ' + gravData.sNor(3, 1));
+% fprintf(fida,'c  4  0  ' + gravData.cNor(5, 1), ' s ' + gravData.sNor(5, 1));
+% fprintf(fida,'c  4  4  ' + gravData.cNor(5, 5), ' s ' + gravData.sNor(5, 5));
+% fprintf(fida,'c 21  1 ' + gravData.cNor[21, 1], ' s ' + gravData.sNor[21, 1]);
 % 
 % 
 % degree = 36;  % 36
@@ -6888,7 +6903,7 @@ end
 % errstr = ' ';
 % sumdr1 = 0.0;
 % sumdr2 = 0.0;
-% fprintf(3,'\nLegendre polynomials --------------- ');
+% fprintf(fida,'\nLegendre polynomials --------------- ');
 % for (L = 1; L <= 6; L++)  % order xxxxxxxxxxxxxxxxxx
 % 
 % string tempstr1 = 'MN ';  % montenbruck
@@ -6908,15 +6923,15 @@ end
 % %errstr = errstr + '\n' + L, '  ' + m, '   ' + dr1
 % %   , dr2;
 % end
-% fprintf(3,tempstr1);
-% fprintf(3,tempstr2);
+% fprintf(fida,tempstr1);
+% fprintf(fida,tempstr2);
 % %  fprintf(fid,tempstr3);
-% fprintf(3,tempstr4 + '\n');
+% fprintf(fida,tempstr4 + '\n');
 % end
-% fprintf(3,'totals gtds ' + sumdr1, ' montenbruck ' + sumdr2);
+% fprintf(fida,'totals gtds ' + sumdr1, ' montenbruck ' + sumdr2);
 % strbuildplot.AppendLine(errstr);
 % 
-% fprintf(3,'\naccelerations --------------- ');
+% fprintf(fida,'\naccelerations --------------- ');
 % jdutc = 2451573.0;
 % jdF = 0.1;
 % straccum = '';
@@ -6942,19 +6957,19 @@ end
 % aPertM(3) = aPertM(3) + aeci2(3);
 % 
 % 
-% fprintf(3,straccum);
+% fprintf(fida,straccum);
 % %   fprintf(fid,'apertG 4 4   ' + aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
-% fprintf(3,'apertM 4 4   ' + aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
-% fprintf(3,'ansr          -0.00844269212018857E+00 -0.00123393633785485E+00 -0.00484659352346614E+00  km/s2  \n');
+% fprintf(fida,'apertM 4 4   ' + aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
+% fprintf(fida,'ansr          -0.00844269212018857E+00 -0.00123393633785485E+00 -0.00484659352346614E+00  km/s2  \n');
 % 
 % straccum = '';
 % order = 5;
 % % unitalized calcs, show
 % FullGeopG(recef, order, 'y', convArr, unitArr, gravData, out aPertG, 'y', out straccum);
-% fprintf(3,straccum);
-% fprintf(3,'apertG 5 5   ' + aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
+% fprintf(fida,straccum);
+% fprintf(fida,'apertG 5 5   ' + aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
 % % fprintf(fid,'apertM 5 5   ' + aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
-% fprintf(3,'ansr          -0.00844260633555472E+00 -0.00123393243051834E+00 -0.00484652486332608E+00  km/s2  \n');
+% fprintf(fida,'ansr          -0.00844260633555472E+00 -0.00123393243051834E+00 -0.00484652486332608E+00  km/s2  \n');
 % 
 % 
 % 

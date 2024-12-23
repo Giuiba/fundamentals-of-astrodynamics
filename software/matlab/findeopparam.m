@@ -55,7 +55,7 @@ function [dut1, dat, lod, xp, yp, ddpsi, ddeps, dx, dy] = findeopparam( jdtdb, j
 
     % ---- read data for day of interest
     jdeopstarto = floor(jdtdb + jdtdbF - eoparr(1).mjd - 2400000.5);
-    recnum = floor(jdeopstarto) + 1;
+    recnum = floor(jdeopstarto)+1;
 
     % check for out of bound values
     if ((recnum >= 1) && (recnum <= 51830))  % eopsize
