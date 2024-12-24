@@ -269,7 +269,7 @@ function [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
 
     rootarr = roots( poly );
     if show == 'y'
-        rootarr
+        rootarr;
         %fprintf(1,'rootarr %11.7f \n',rootarr);
     end
 

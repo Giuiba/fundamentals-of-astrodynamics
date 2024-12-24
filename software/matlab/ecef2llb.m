@@ -1,55 +1,53 @@
-    %
-    % ------------------------------------------------------------------------------
-    %
-    %                           function ecef2llb
-    %
-    %  these subroutines convert a geocentric equatorial (ijk) position vector into
-    %    latitude and longitude.  geodetic and geocentric latitude are found.
-    %
-    %  author        : david vallado                  719-573-2600    9 jun 2002
-    %
-    %  revisions
-    %                -
-    %
-    %  inputs          description                    range / units
-    %    r           - ijk position vector            km
-    %
-    %  outputs       :
-    %    latgc       - geocentric latitude            -pi to pi rad
-    %    latgd       - geodetic latitude              -pi to pi rad
-    %    lon         - longitude (west -)             -2pi to 2pi rad
-    %    hellp       - height above the ellipsoid     km
-    %
-    %  locals        :
-    %    rc          - range of site wrt earth center er
-    %    height      - height above earth wrt site    er
-    %    alpha       - angle from iaxis to point, lst rad
-    %    olddelta    - previous value of deltalat     rad
-    %    deltalat    - diff between delta and
-    %                  geocentric lat                 rad
-    %    delta       - declination angle of r in ijk  rad
-    %    rsqrd       - magnitude of r squared         er2
-    %    sintemp     - sine of temp                   rad
-    %    c           -
-    %
-    %  coupling      :
-    %    mag         - magnitude of a vector
-    %    gcgd        - converts between geocentric and geodetic latitude
-    %
-    %  references    :
-    %    vallado       2001, 174-179, alg 12 and alg 13, ex 3-3
-    %
-    % [latgc,latgd,lon,hellp] = ecef2llb ( r );
-    % ------------------------------------------------------------------------------
 
-    function [latgc,latgd,lon,hellp] = ecef2llb ( r );
+% ------------------------------------------------------------------------------
+%
+%                           function ecef2llb
+%
+%  these subroutines convert a geocentric equatorial (ijk) position vector into
+%    latitude and longitude.  geodetic and geocentric latitude are found.
+%
+%  author        : david vallado                  719-573-2600    9 jun 2002
+%
+%  revisions
+%                -
+%
+%  inputs          description                    range / units
+%    r           - ijk position vector            km
+%
+%  outputs       :
+%    latgc       - geocentric latitude            -pi to pi rad
+%    latgd       - geodetic latitude              -pi to pi rad
+%    lon         - longitude (west -)             -2pi to 2pi rad
+%    hellp       - height above the ellipsoid     km
+%
+%  locals        :
+%    rc          - range of site wrt earth center er
+%    height      - height above earth wrt site    er
+%    alpha       - angle from iaxis to point, lst rad
+%    olddelta    - previous value of deltalat     rad
+%    deltalat    - diff between delta and
+%                  geocentric lat                 rad
+%    delta       - declination angle of r in ijk  rad
+%    rsqrd       - magnitude of r squared         er2
+%    sintemp     - sine of temp                   rad
+%    c           -
+%
+%  coupling      :
+%    mag         - magnitude of a vector
+%    gcgd        - converts between geocentric and geodetic latitude
+%
+%  references    :
+%    vallado       2001, 174-179, alg 12 and alg 13, ex 3-3
+%
+% [latgc,latgd,lon,hellp] = ecef2llb ( r )
+% ------------------------------------------------------------------------------
+
+function [latgc,latgd,lon,hellp] = ecef2llb ( r )
 
     twopi =     2.0*pi;
     small =     0.00000001;
 
     % -------------------------  implementation   -------------------------
-    magr = mag( r );
-
     % ---------------- find longitude value  ----------------------
     temp = sqrt( r(1)*r(1) + r(2)*r(2) );
     if ( abs( temp ) < small )
@@ -91,6 +89,6 @@
     latgd= atan(a*(1.0 -t*t)/(2.0 *b*t));
     hellp= (temp-a*t)*cos( latgd) + (r(3)-b)*sin(latgd);
 
-    latgc = asin(r(3)/magr);   % all locations
+    latgc = asin(r(3)/mag(r));   % all locations
     %latgc = gd2gc(latgd);  % surface of the Earth locations
 

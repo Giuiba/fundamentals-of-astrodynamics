@@ -252,14 +252,9 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
         poly( 8)=  0.0;
         poly( 9)=  -4.0*d2c*d2c/(d*d);
         rootarr = roots( poly );
-        poly(3);
-        poly(6);
-        poly(9);
-        rootarr;
 
         x = rootarr(1,1);
-        rootarr;
-        poly(1)*x^8 + poly(3)*x^6+poly(6)*x^3+poly(9)
+        poly(1)*x^8 + poly(3)*x^6+poly(6)*x^3+poly(9);
 
 
         % ------------------ find correct (xx) root ----------------

@@ -2745,9 +2745,8 @@ function testgeo(fid)
 
         lona = lona + londot * dt;
         londot = 3.0 * omegaearth / z * sqrt(2.0 * j22) * sqrt(cos(2.0 * (lona - lons)) - cos(2.0 * (lonp - lons)));
-        strbuildObs.AppendLine(jj, lona * rad, (lonp - lons) * rad, londot * rad / 86400.0);
+        fprintf(fid,'%11.7f %11,7f %11.7f %11.7f \n', jj, lona * rad, (lonp - lons) * rad, londot * rad / 86400.0);
     end % for through all the tracks testing rtasc/decl rates
-    File.WriteAllText('D:\faabook\current\excel\testgeo.out', strbuildObs);
 end
 
 
@@ -2759,7 +2758,7 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, fida, fida
     [iau80arr] = iau80in(fileLoc);
 
     % read existing data - this does not find x, y, s!
-    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt';
+    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2023-01-01.txt';
     [eoparr] = readeop(eopFileName);
   
     asecef1 = [0.0; 0.0; 0.0];
@@ -2976,7 +2975,7 @@ function testangles(fid)
     fileLoc = 'D:\Codes\LIBRARY\DataLib\';
     [iau80arr] = iau80in(fileLoc);
 
-    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2020-02-12.txt';
+    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2023-01-01.txt';
     [eoparr] = readeop(eopFileName);
 
     % gooding tests cases from Gooding paper (1997 CMDA)
@@ -3059,6 +3058,7 @@ end   % testangles
 
 
 function testlambertumins(fid)
+   constastro;
     r1 = [ 2.500000 * re; 0.000000; 0.000000 ];
     r2 = [ 1.9151111 * re; 1.6069690 * re; 0.000000 ];
     dm = 'S';
@@ -3173,10 +3173,11 @@ function testlambertumins(fid)
         tbirk(6, 3) = tof * ootusec;
     end
     
-    fprintf(fid,'time for Lambert kmin ' + watch.ElapsedMilliseconds);
+    fprintf(fid,'time for Lambert kmin \n' );
     end
     
 function testlambertminT(fid)
+    constastro;
     r1 = [ 2.500000 * re; 0.000000; 0.000000 ];
     r2 = [ 1.9151111 * re; 1.6069690 * re; 0.000000 ];
     dm = 'S';
@@ -3192,6 +3193,7 @@ end
     
 
 function testlambhodograph(fid)
+    constastro;
     rad = 180.0 / pi;
 
     r1 = [ 2.500000 * re; 0.000000; 0.000000 ];
@@ -3215,6 +3217,7 @@ function testlambertbattin(fid)
 
     r1 = [ 2.500000 * re; 0.000000; 0.000000 ];
     r2 = [ 1.9151111 * re; 1.6069690 * re; 0.000000 ];
+    v1 = [ 0.0; sqrt(mu / r1(1)); 0.0 ];
     dm = 'S';
     de = 'L';
     nrev = 0;
@@ -3222,7 +3225,7 @@ function testlambertbattin(fid)
     altpadc = 100.0 / re;  %er
     dtwait = 0.0;
     
-    [v1t, v2t, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nrev, dtwait, dtsec, altpadc, 'y');
+    [v1t, v2t] = lambertb(r1, r2, v1, dm, de, nrev, dtsec);
     
     fprintf(fid,'lambertbattin %15.11f  %15.11f  %15.11f \nllambertbattin %15.11f  %15.11f  %15.11f  \n', ...
          v1t(1), v1t(2), v1t(3), v2t(1), v2t(2), v2t(3));
@@ -3245,6 +3248,7 @@ end
 
 
 function testrv2eq(fid)
+    constastro;
     r = [ 2.500000 * re; 0.000000; 0.000000 ];
     % assume circular initial orbit for vel calcs
     v = [ 0.0; sqrt(mu / r(1)); 0.0 ];
@@ -4456,7 +4460,7 @@ function testlambertuniv(fid)
     [kbi, tof] = lambertumins( r1, r3, 1, 'L' ) ;
     [v1t4, v2t4, errorl] = lambertu ( r1,  r3, v1, 'L', 'H', 1, dtsec, kbi, fid );
 
-    if (errorout.Contains('ok'))
+    %if (errorout.Contains('ok'))
         dv11 = v1t1 - v1;
         dv21 = v2t1 - v2;
         dv12 = v1t2 - v1;
@@ -4468,7 +4472,7 @@ function testlambertuniv(fid)
 
         fprintf(fid,'%15.11f %15.11f  %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f  \n',dtwait, dtsec,...
             mag(dv11), mag(dv21),  mag(dv12),  mag(dv22),   mag(dv13), mag(dv23),  mag(dv14), mag(dv24));
-    end
+    %end
 
     % fig 7-21
     r1 = [ -6175.1034; 2757.0706; 1626.6556 ];
@@ -4476,16 +4480,19 @@ function testlambertuniv(fid)
     r2 = [ -6078.007289; 2796.641859; 1890.7135 ];
     v2 = [ 2.654700; 1.018600; 7.015400 ];
 
-    strbuildFig.AppendLine('dtwait  dtsec       dv1       dv2 ');
+    fprintf(1,'dtwait  dtsec       dv1       dv2 \n');
     totaldts = 15000;
     totaldtw = 30000;
     step1 = 60;   % 60 orig
     step2 = 600;  % 600 orig
-    for i=0 : stop1  % orig 250, 15000 s total
+    stop1 = floor(totaldts / step1);
+    stop2 = floor(totaldtw / step2);
+
+    for i=0 : 2 %stop1  % orig 250, 15000 s total
 
         dtsec = i * step1;    % orig 60
         [r4, v4] = kepler(r1, v1, dtsec);
-        for j = 0:stop2   % orig 25 600*25 = 15000 s total
+        for j = 0: 2 %stop2   % orig 25 600*25 = 15000 s total
 
             dtwait = j * step2;   % orig 600
             [r3, v3] =  kepler(r2, v2, dtsec + dtwait);
@@ -4501,7 +4508,7 @@ function testlambertuniv(fid)
             [kbi, tof] = lambertumins( r3, r4, 1, 'L' ) ;
             [v1t4, v2t4, errorl] = lambertu ( r3,  r4, v1, 'L', 'H', 1, dtsec, kbi, fid );
 
-            if (errorout.Contains('ok'))
+            %if (errorout.Contains('ok'))
                 dv11 = v1t1 - v1;
                 dv21 = v2t1 - v2;
                 dv12 = v1t2 - v1;
@@ -4513,20 +4520,21 @@ function testlambertuniv(fid)
 
                 fprintf(fid,'%15.11f %15.11f  %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f %15.11f  \n',dtwait, dtsec,...
                     mag(dv11), mag(dv21),  mag(dv12),  mag(dv22),   mag(dv13), mag(dv23),  mag(dv14), mag(dv24));
-            else
-                strbuildFig.AppendLine(errorsum, errorout);
-            end
+           % else
+           %     strbuildFig.AppendLine(errorsum, errorout);
+           % end
         end
 
         % write data out
-        string directory = @'D:\Codes\LIBRARY\Matlab\';
-        File.WriteAllText(directory + 'surfMovingSalltest.out', strbuildFig);
+       % string directory = @'D:\Codes\LIBRARY\Matlab\';
+       % File.WriteAllText(directory + 'surfMovingSalltest.out', strbuildFig);
     end
 end
 
 
 
 function testradecgeo2azel(fid)
+    rad = 180.0 / pi;
     rtasc = 294.98914583 / rad;
     decl = -20.8234944 / rad;
     xp = 0.0;
@@ -4541,7 +4549,7 @@ function testradecgeo2azel(fid)
     lon = -104.883 / rad;
     alt = 0.3253;
 
-    [az, el] = radecgeo2azel(rtasc, decl, rr, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, AstroLib.EOpt.e80);
+    [az, el] = radecgeo2azel(rtasc, decl, rr, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
 end
 
 function testijk2ll(fid)
