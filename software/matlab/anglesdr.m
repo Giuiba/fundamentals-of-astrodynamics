@@ -133,10 +133,10 @@ function [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
         g  = tau32 - sqrt(a^3/mu)*(deltae32-sin(deltae32));
         v2 = (r3 - f*r2)/g;
         [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r2,v2);
-        %if show == 'y'
+        if show == 'y'
             fprintf(1,'coes %11.4f%11.4f%13.9f%13.7f%11.5f%11.5f%11.5f%11.5f\n',...
                 p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad );
-        %end
+        end
 
         % -------------- re-calculate f1 and f2 with r1 = r1 + delta r1
         deltar1 = pctchg * magr1o;
