@@ -48,7 +48,7 @@ function [f, g, fdot, gdot] = findfandg (r1, v1, r2, v2, dtsec, x, c2, c3, z, op
     % -------------------------  implementation    % ----------------
     switch (opt)
 
-        case "pqw"
+        case 'pqw'
             [hbar] = cross(r1, v1);
             h = mag(hbar);
             % find vectors in PQW frame
@@ -61,7 +61,7 @@ function [f, g, fdot, gdot] = findfandg (r1, v1, r2, v2, dtsec, x, c2, c3, z, op
             g = (rpqw1(1) * rpqw2(2) - rpqw2(1) * rpqw1(2)) / h;
             gdot = (rpqw1(1) * vpqw2(2) - vpqw2(1) * rpqw1(2)) / h;
             fdot = (vpqw2(1) * vpqw1(2) - vpqw2(2) * vpqw1(1)) / h;
-        case "series"
+        case 'series'
             u = mu / (magr1 * magr1 * magr1);
             p = dot(r1, v1) / (magr1 * magr1);
             q = (magv1 * magv1 - magr1 * magr1 * u) / (magr1 * magr1);
@@ -124,7 +124,7 @@ function [f, g, fdot, gdot] = findfandg (r1, v1, r2, v2, dtsec, x, c2, c3, z, op
             %gdot = dt7 * p * u * (495 * p4 - 450 * p2 * q - 100 * p2 * u + 75 * q2 + 24 * q * u + u2) / 40 + dt6 * u * (-4725 * p4 + 3150 * p2 * q + 630 * p2 * u - 225 * q2 - 54 * q * u - u2) / 720
             %+ dt5 * p * u * (14 * p2 - 6 * q - u) / 4 + dt4 * u * (-45 * p2 + 9 * q + u) / 24 + dt3 * p * u - dt2 * u / 2 + 1;
 
-        case "c2c3"
+        case 'c2c3'
             xsqrd = x * x;
             magr2 = mag(r2);
             f = 1.0 - (xsqrd * c2 / magr1);

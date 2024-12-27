@@ -41,7 +41,7 @@ function [x, y, s] = findxysparam( jdtdb, jdtdbF, interp, xys06table)
 
     % ---- read recnum for day of interest
     jdxysstarto = floor(jdtdb + jdtdbF - xys06table.jd(1) - xys06table.jdf(1));
-    recnum = floor(jdxysstarto);
+    recnum = floor(jdxysstarto) + 1;
 
     % check for out of bound values
     if ((recnum >= 1) && (recnum <= 51830))  % xyssize
