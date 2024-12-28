@@ -140,14 +140,16 @@ namespace AstroLibMethods
         //
         //  inputs          description                              range / units
         //    jdut1       - julian date in ut1                       days from 4713 bc
+        //    deltapsi    -
+        //    ttt         - julian centuries  
+        //    iau06arr    - array of iau06 values
+        //    
         //
         //  outputs       :
-        //    gstime      - greenwich sidereal time                  0 to 2pi rad
+        //    gst         - greenwich sidereal time                  0 to 2pi rad
         //
         //  locals        :
         //    temp        - temporary variable for doubles           rad
-        //    tut1        - julian centuries from the
-        //                  jan 1, 2000 12 h epoch (ut1)
         //
         //  coupling      :
         //    none
@@ -248,13 +250,13 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    jdut1       - julian date in ut1             days from 4713 bc
+        //    jdut1       - julian date in ut1                       days from 4713 bc
         //
         //  outputs       :
-        //    gstime      - greenwich sidereal time        0 to 2pi rad
+        //    gstime      - greenwich sidereal time                  0 to 2pi rad
         //
         //  locals        :
-        //    temp        - temporary variable for doubles   rad
+        //    temp        - temporary variable for doubles           rad
         //    tut1        - julian centuries from the
         //                  jan 1, 2000 12 h epoch (ut1)
         //
@@ -296,12 +298,12 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    lon         - site longitude (west -)        -2pi to 2pi rad
-        //    jdut1       - julian date in ut1             days from 4713 bc
+        //    lon         - site longitude (west -)                  -2pi to 2pi rad
+        //    jdut1       - julian date in ut1                       days from 4713 bc
         //
         //  outputs       :
-        //    lst         - local sidereal time            0.0 to 2pi rad
-        //    gst         - greenwich sidereal time        0.0 to 2pi rad
+        //    lst         - local sidereal time                      0.0 to 2pi rad
+        //    gst         - greenwich sidereal time                  0.0 to 2pi rad
         //
         //  locals        :
         //    none.
@@ -341,7 +343,7 @@ namespace AstroLibMethods
         //
         //  inputs          description                              range / units
         //    ttt         - julian centuries of tt   
-        //    opt         - method option                                  e00cio, e00a, e96, e80
+        //    opt         - method option                            e00cio, e80, e00a, e96
         //
         //  outputs       :
         //    fArgs       - fundamental arguments in an array[14]                 
@@ -550,38 +552,39 @@ namespace AstroLibMethods
         //
         //                           function iau06xysS
         //
-        //  this function calculates the XYS parameters for the iau2006 cio theory.
+        //  this function calculates the XYS parameters for the iau2006 cio theory directly
+        //  from the summations.
         //
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
         //    ttt         - julian centuries of tt
         //    fArgs       - fundamental arguments in an array                 
-        //      l           - mean anomaly of the moon                          rad
-        //      l1          - mean anomaly of the Sun                           rad
-        //      f           - mean longitude of the Moon minus that of asc node rad
-        //      d           - mean elongation of the Moon from the Sun          rad
-        //      omega       - mean longitude of the ascending node of the Moon  rad
-        //      planetary longitudes                                            rad
+        //    1  l        - mean anomaly of the moon                              rad
+        //    2  l1       - mean anomaly of the Sun                               rad
+        //    3  f        - mean longitude of the Moon minus that of asc node     rad
+        //    4  d        - mean elongation of the Moon from the Sun              rad
+        //    5  omega    - mean longitude of the ascending node of the Moon      rad
+        //    6-14  planetary longitudes                                          rad
         //
         //  outputs       :
-        //    x           - coordinate of cip                                rad
-        //    y           - coordinate of cip                                rad
-        //    s           - coordinate                                       rad
+        //    x           - coordinate of cip                                     rad
+        //    y           - coordinate of cip                                     rad
+        //    s           - coordinate                                            rad
         //
         //  locals        :
-        //    axs0        - real coefficients for x                          rad
-        //    ax0i        - integer coefficients for x
-        //    ays0        - real coefficients for y                          rad
-        //    ay0i        - integer coefficients for y
-        //    ass0        - real coefficients for s                          rad
+        //    axs0        - real coefficients for x                               rad
+        //    ax0i        - integer coefficients for x     
+        //    ays0        - real coefficients for y                               rad
+        //    ay0i        - integer coefficients for y     
+        //    ass0        - real coefficients for s                               rad
         //    as0i        - integer coefficients for s
-        //    apn0         - real coefficients for nutation                  rad
+        //    apn0         - real coefficients for nutation                       rad
         //    apn0i        - integer coefficients for nutation
-        //    appl        - real coefficients for planetary nutation rad
+        //    appl        - real coefficients for planetary nutation              rad
         //    appli       - integer coefficients for planetary nutation
         //    ttt2,ttt3,  - powers of ttt
-        //    deltaeps    - change in obliquity                              rad
+        //    deltaeps    - change in obliquity                                   rad
         //    many others
         //
         //  coupling      :
@@ -813,11 +816,13 @@ namespace AstroLibMethods
         //
         //  inputs          description                              range / units
         //    jdtt        - julian date in tt                           days from 4713 bc
-        //    ttt         - julian centuries of tt
+        //    jdftt       - fractional julian date in tt                     days
         //    ddx         - delta x correction to gcrf                       rad
         //    ddy         - delta y correction to gcrf                       rad
         //    interp      - interpolation type (x for full series)           x, n, l, s
         //                  none, linear, spline
+        //    iau06arr    - iau06 array of values
+        //    fArgs06     - fundamental arguments in an array                 
         //
         //  outputs       :
         //    nut         - transformation matrix for ire-gcrf
@@ -826,10 +831,9 @@ namespace AstroLibMethods
         //    s           - coordinate                                       rad
         //
         //  locals        :
-        //    a           - 
+        //    ttt         - julian centuries of tt
         //
         //  coupling      :
-        //    iau06in     - initialize the arrays
         //
         //  references    : 
         //    vallado       2022, 214, 221
@@ -903,16 +907,13 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    xysLoc      - location for xys data file  
-        //    infilename  - file name
+        //    outLoc      - location for xys data file  
+        //    fArgs06     - fundamental arguments in an array                 
         //
         //  outputs       :
-        //    xysarr      - array of xys data records
-        //    jdxysstart  - julian date of the start of the xysarr data
-        //    jdfxysstart - julian date fraction of the start of the xysarr data
+        //    iau06arr    - array of xys data records
         //
         //  locals        :
-        //                -
         //
         //  coupling      :
         //
@@ -963,7 +964,7 @@ namespace AstroLibMethods
         //
         //                           function readXYS
         //
-        //  this function initializes the xys iau2006 iau data. the input data files
+        //  this function initializes the xys iau2006 data. the input data files
         //  are from processing the ascii files into a text file of xys calcualtion over
         //  many years.
         //
@@ -972,14 +973,12 @@ namespace AstroLibMethods
         //  inputs          description                              range / units
         //    xysLoc      - location for xys data file  
         //    infilename  - file name
+        //    iau06arr    - fundamental arguments in an array                 
         //
         //  outputs       :
         //    xysarr      - array of xys data records
-        //    jdxysstart  - julian date of the start of the xysarr data
-        //    jdfxysstart - julian date fraction of the start of the xysarr data
         //
         //  locals        :
-        //    pattern     - regex expression format
         //
         //  references    :
         //
@@ -1039,9 +1038,9 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    jdttt         - epoch julian date                     days from 4713 BC
-        //    jdftt         - epoch julian date fraction            day fraction from jdtt
-        //    interp        - interpolation                        n-none, l-linear, s-spline
+        //    jdttt         - epoch julian date                      days from 4713 BC
+        //    jdftt         - epoch julian date fraction             day fraction from jdtt
+        //    interp        - interpolation                          n-none, l-linear, s-spline
         //    xysarr        - array of xys data records
         //
         //  outputs       :
@@ -1056,7 +1055,7 @@ namespace AstroLibMethods
         //    none        -
         //
         //  references    :
-        //    vallado       2013,
+        //
         // -----------------------------------------------------------------------------
 
         public void findxysparam
@@ -1148,6 +1147,10 @@ namespace AstroLibMethods
         //
         //  inputs          description                              range / units
         //    ttt         - julian centuries of tt
+        //    ddx         - delta x correction to gcrf                       rad
+        //    ddy         - delta y correction to gcrf                       rad
+        //    iau06arr    - array of iau06 values
+        //    fArgs06     - fundamental arguments in an array                 
         //
         //  outputs       :
         //    nut         - transformation matrix for ire-gcrf
@@ -1173,13 +1176,11 @@ namespace AstroLibMethods
         //    fArgs[3]    - delaunay element                                 rad
         //    fArgs[4]    - delaunay element                                 rad
         //    deltaeps    - change in obliquity                              rad
-        //    many others
         //
         //  coupling      :
-        //    iau06in     - initialize the arrays
         //
         //  references    : 
-        //    vallado       2013, 212-214
+        //    vallado       2022, 214
         // ------------------------------------------------------------------------------
 
         public double[,] iau06pn  // may not be needed now
@@ -1238,7 +1239,6 @@ namespace AstroLibMethods
             //  fArgs[3] = atan(sqrt((x^2 + y^2) / (1.0-x^2-y^2)) );
             //  nut1 = rot3mat(-e)*rot2mat(-fArgs[3])*rot3mat(e+s)
         }  // iau06pn
-
 
 
 
@@ -1413,7 +1413,8 @@ namespace AstroLibMethods
         //    ttt         - julian centuries of tt
         //    ddpsi       - delta psi correction to gcrf                      rad
         //    ddeps       - delta eps correction to gcrf                      rad
-        //    iau80arr    - record containing the iau80 constants rad
+        //    iau80arr    - array of iau80 values
+        //    fArgs       - fundamental arguments in an array                 
         //    opt         - method option                                 e00cio, e00a, e96, e80
         //
         //  outputs       :
@@ -1435,7 +1436,7 @@ namespace AstroLibMethods
         //  coupling      :
         //
         //  references    :
-        //    vallado       2013, 213, 224
+        //    vallado       2022, 214, 225
         // -----------------------------------------------------------------------------
 
         public double[,] nutation
@@ -1512,10 +1513,14 @@ namespace AstroLibMethods
         //
         //  inputs          description                              range / units
         //    ttt         - julian centuries of tt
+        //    ddpsi       - delta psi correction to gcrf                      rad
+        //    ddeps       - delta eps correction to gcrf                      rad
         //
         //  outputs       :
         //    nut         - transformation matrix for ire-gcrf
         //    deltapsi    - change in longitude rad
+        //    iau06arr    - array of iau06 values
+        //    fArgs06     - fundamental arguments in an array                 
         //    fArgs[0]    - delaunay element                                 rad
         //    fArgs[1]    - delaunay element                                 rad
         //    fArgs[2]    - delaunay element                                 rad
@@ -1544,7 +1549,7 @@ namespace AstroLibMethods
         //    precess     - find the precession quantities
         //
         //  references    :
-        //    vallado       2004, 212-214
+        //    vallado       2022, 214
         // ------------------------------------------------------------------------------
 
         public double[,] precnutbias00a
@@ -1763,7 +1768,8 @@ namespace AstroLibMethods
         //
         //  inputs          description                              range / units
         //    ttt         - julian centuries of tt
-        //    iau80arr    - record containing the iau80 constants rad
+        //    iau80arr    - array of iau80 values
+        //    fArgs       - fundamental arguments in an array                 
         //    opt         - method option                               e00a, e00cio, e96, e80
         //
         //  outputs       :
@@ -1785,7 +1791,7 @@ namespace AstroLibMethods
         //  coupling      :
         //
         //  references    :
-        //    vallado       2013, 213, 224
+        //    vallado       2022, 224
         // -----------------------------------------------------------------------------
 
         public double[,] nutationqmod
@@ -1863,9 +1869,11 @@ namespace AstroLibMethods
         //  inputs          description                              range / units
         //    jdut1       - julian centuries of ut1                           days
         //    deltapsi    - nutation angle                                    rad
+        //    fArgs       - fundamental arguments in an array                 
         //    meaneps     - mean obliquity of the ecliptic                    rad
         //    lod         - length of day                                     sec
         //    eqeterms    - terms for ast calculation                         0,2
+        //    opt         - method option                               e00a, e00cio, e96, e80
         //
         //  outputs       :
         //    st          - transformation matrix for pef - tod
@@ -1883,7 +1891,7 @@ namespace AstroLibMethods
         //  coupling      :
         //
         //  references    :
-        //    vallado       2013, 212, 223
+        //    vallado       2022, 214, 225
         // -----------------------------------------------------------------------------
 
         public double[,] sidereal
@@ -1971,7 +1979,7 @@ namespace AstroLibMethods
         //    xp          - polar motion coefficient                         rad
         //    yp          - polar motion coefficient                         rad
         //    ttt         - julian centuries of tt (00 theory only)
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    opt         - method option                                   e80, e96, e00a, e06cio, e06eq
         //
         //  outputs       :
         //    pm          - transformation matrix for itrf - pef
@@ -1984,7 +1992,7 @@ namespace AstroLibMethods
         //    none.
         //
         //  references    :
-        //    vallado       2013, 212, 223
+        //    vallado       2022, 213, 224
         // -----------------------------------------------------------------------------
 
         public double[,] polarm
@@ -2075,7 +2083,7 @@ namespace AstroLibMethods
         //    none.
         //
         //  references    :
-        //    vallado       2013, 217
+        //    vallado       2022, 219
         // -----------------------------------------------------------------------------
 
         public double[,] framebias
@@ -2138,13 +2146,12 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    recef       - position vector earth fixed                   km
-        //    vecef       - velocity vector earth fixed                   km/s
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    reci        - position vector eci                           km
+        //    veci        - velocity vector eci                           km/s
+        //    enum        - direction                                     eto, efrom
         //    iau80arr    - iau76/fk5 eop constants
-        //    iau06arr    - iau2006 eop constants
         //    jdtt        - julian date of tt                             days from 4713 bc
-        //    ttt         - julian centuries of tt                        centuries
+        //    jdftt       - fractional julian centuries of tt             days
         //    jdut1       - julian date of ut1                            days from 4713 bc
         //    lod         - excess length of day                          sec
         //    xp          - polar motion coefficient                      rad
@@ -2153,8 +2160,8 @@ namespace AstroLibMethods
         //    ddeps       - delta eps correction to gcrf                  rad
         //
         //  outputs       :
-        //    reci        - position vector eci                           km
-        //    veci        - velocity vector eci                           km/s
+        //    recef       - position vector earth fixed                   km
+        //    vecef       - velocity vector earth fixed                   km/s
         //
         //  locals        :
         //    eqeterms    - terms for ast calculation                     0,2
@@ -2174,7 +2181,7 @@ namespace AstroLibMethods
         //   polarm       - rotation for polar motion      
         //
         //  references    :
-        //    vallado       2013, 223-231
+        //    vallado       2022, 223-231
         // ------------------------------------------------------------------------------
 
         public void eci_ecef
@@ -2289,16 +2296,14 @@ namespace AstroLibMethods
         //  inputs          description                              range / units
         //    reci        - position vector eci                           km
         //    veci        - velocity vector eci                           km/s
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    enum        - direction                                     eto, efrom
         //    iau80arr    - iau76/fk5 eop constants
-        //    iau06arr    - iau2006 eop constants
-        //    ttt         - julian centuries of tt                        centuries
+        //    jdtt        - julian date of tt                             days from 4713 bc
+        //    jdftt       - fractional julian centuries of tt             days
         //    jdut1       - julian date of ut1                            days from 4713 bc
         //    lod         - excess length of day                          sec
         //    ddpsi       - delta psi correction to gcrf                  rad
         //    ddeps       - delta eps correction to gcrf                  rad
-        //    ddx         - delta x correction to gcrf                    rad
-        //    ddy         - delta y correction to gcrf                    rad
         //
         //  outputs       :
         //    rpef       - position vector pef                            km
@@ -2320,7 +2325,7 @@ namespace AstroLibMethods
         //   sidereal     - rotation for sidereal time     
         //
         //  references    :
-        //    vallado       2013, 223-231
+        //    vallado       2022, 224
         // ------------------------------------------------------------------------------
 
         public void eci_pef
@@ -2412,15 +2417,14 @@ namespace AstroLibMethods
         //  inputs          description                              range / units
         //    reci        - position vector eci                           km
         //    veci        - velocity vector eci                           km/s
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    enum        - direction                                     eto, efrom
         //    iau80arr    - iau76/fk5 eop constants
-        //    ttt         - julian centuries of tt                        centuries
+        //    jdtt        - julian date of tt                             days from 4713 bc
+        //    jdftt       - fractional julian centuries of tt             days
         //    jdut1       - julian date of ut1                            days from 4713 bc
         //    lod         - excess length of day                          sec
         //    ddpsi       - delta psi correction to eci                  rad
         //    ddeps       - delta eps correction to eci                  rad
-        //    ddx         - delta x correction to eci                    rad
-        //    ddy         - delta y correction to eci                    rad
         //
         //  outputs       :
         //    rtod       - position vector tod                            km
@@ -2438,7 +2442,7 @@ namespace AstroLibMethods
         //   nutation     - rotation for nutation          
         //
         //  references    :
-        //    vallado       2013, 223-231
+        //    vallado       2022, 225
         // ------------------------------------------------------------------------------
 
         public void eci_tod
@@ -2503,9 +2507,9 @@ namespace AstroLibMethods
         //  inputs          description                              range / units
         //    reci        - position vector eci                           km
         //    veci        - velocity vector eci                           km/s
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    enum        - direction                                     eto, efrom
         //    iau80arr    - iau76/fk5 eop constants
-        //    iau06arr    - iau2006 eop constants
+        //    ddy         - delta y correction to eci                    rad
         //    ttt         - julian centuries of tt                        centuries
         //    jdut1       - julian date of ut1                            days from 4713 bc
         //
@@ -2520,7 +2524,7 @@ namespace AstroLibMethods
         //   precess      - rotation for precession       
         //
         //  references    :
-        //    vallado       2013, 223-231
+        //    vallado       2022, 226
         // ------------------------------------------------------------------------------
 
         public void eci_mod
@@ -2568,8 +2572,7 @@ namespace AstroLibMethods
         //  inputs          description                              range / units
         //    recef       - position vector earth fixed                   km
         //    vecef       - velocity vector earth fixed                   km/s
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        //    iau80arr    - iau76/fk5 eop constants
+        //    enum        - direction                                     eto, efrom
         //    iau06arr    - iau2006 eop constants
         //    jdtt        - julian date of tt                             days from 4713 bc
         //    ttt         - julian centuries of tt                        centuries
@@ -2577,8 +2580,8 @@ namespace AstroLibMethods
         //    lod         - excess length of day                          sec
         //    xp          - polar motion coefficient                      rad
         //    yp          - polar motion coefficient                      rad
-        //    ddpsi       - delta psi correction to gcrf                  rad
-        //    ddeps       - delta eps correction to gcrf                  rad
+        //    ddx         - delta x correction to gcrf                    rad
+        //    ddy         - delta y correction to gcrf                    rad
         //
         //  outputs       :
         //    reci        - position vector eci                           km
@@ -2602,7 +2605,7 @@ namespace AstroLibMethods
         //   polarm       - rotation for polar motion      
         //
         //  references    :
-        //    vallado       2013, 223-231
+        //    vallado       2022, 211
         // ------------------------------------------------------------------------------
 
         public void eci_ecef06
@@ -2776,14 +2779,11 @@ namespace AstroLibMethods
         //  inputs          description                              range / units
         //    reci        - position vector eci                           km
         //    veci        - velocity vector eci                           km/s
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        //    iau80arr    - iau76/fk5 eop constants
+        //    enum        - direction                                     eto, efrom
         //    iau06arr    - iau2006 eop constants
         //    ttt         - julian centuries of tt                        centuries
         //    jdut1       - julian date of ut1                            days from 4713 bc
         //    lod         - excess length of day                          sec
-        //    ddpsi       - delta psi correction to gcrf                  rad
-        //    ddeps       - delta eps correction to gcrf                  rad
         //    ddx         - delta x correction to gcrf                    rad
         //    ddy         - delta y correction to gcrf                    rad
         //
@@ -2807,7 +2807,7 @@ namespace AstroLibMethods
         //   sidereal     - rotation for sidereal time     
         //
         //  references    :
-        //    vallado       2013, 223-231
+        //    vallado       2022, 213
         // ------------------------------------------------------------------------------
 
         public void eci_tirs
@@ -2916,14 +2916,11 @@ namespace AstroLibMethods
         //  inputs          description                              range / units
         //    reci        - position vector eci                           km
         //    veci        - velocity vector eci                           km/s
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
-        //    iau80arr    - iau76/fk5 eop constants
+        //    enum        - direction                                     eto, efrom
         //    iau06arr    - iau2006 eop constants
         //    ttt         - julian centuries of tt                        centuries
         //    jdut1       - julian date of ut1                            days from 4713 bc
         //    lod         - excess length of day                          sec
-        //    ddpsi       - delta psi correction to eci                  rad
-        //    ddeps       - delta eps correction to eci                  rad
         //    ddx         - delta x correction to eci                    rad
         //    ddy         - delta y correction to eci                    rad
         //
@@ -3027,7 +3024,7 @@ namespace AstroLibMethods
         //    recef       - position vector earth fixed                   km
         //    vecef       - velocity vector earth fixed                   km/s
         //    direct      - direction of transfer                         eto, efrom
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau80arr    - iau80 eop constants
         //    ttt         - julian centuries of tt                        centuries
         //    jdut1       - julian date of ut1                            days from 4713 bc
         //    lod         - excess length of day                          sec
@@ -3035,8 +3032,6 @@ namespace AstroLibMethods
         //    yp          - polar motion coefficient                      rad
         //    ddpsi       - delta psi correction to gcrf                  rad
         //    ddeps       - delta eps correction to gcrf                  rad
-        //    ddx         - delta x correction to gcrf                    rad
-        //    ddy         - delta y correction to gcrf                    rad
         //
         //  outputs       :
         //    rmod        - position vector mod                           km
@@ -3057,7 +3052,7 @@ namespace AstroLibMethods
         //   polarm       - rotation for polar motion      
         //
         //  references    :
-        //    vallado       2013, 228-236
+        //    vallado       2022 227
         // ------------------------------------------------------------------------------
 
         public void ecef_mod
@@ -3153,7 +3148,7 @@ namespace AstroLibMethods
         //    recef       - position vector earth fixed                   km
         //    vecef       - velocity vector earth fixed                   km/s
         //    direct      - direction of transfer                         eto, efrom
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau80arr    - iau80 eop constants
         //    ttt         - julian centuries of tt                        centuries
         //    jdut1       - julian date of ut1                            days from 4713 bc
         //    lod         - excess length of day                          sec
@@ -3161,8 +3156,6 @@ namespace AstroLibMethods
         //    yp          - polar motion coefficient                      rad
         //    ddpsi       - delta psi correction to gcrf                  rad
         //    ddeps       - delta eps correction to gcrf                  rad
-        //    ddx         - delta x correction to gcrf                    rad
-        //    ddy         - delta y correction to gcrf                    rad
         //
         //  outputs       :
         //    rtod        - position vector eci                           km
@@ -3183,7 +3176,7 @@ namespace AstroLibMethods
         //   polarm       - rotation for polar motion      
         //
         //  references    :
-        //    vallado       2013, 228-236
+        //    vallado       2022 226
         // ------------------------------------------------------------------------------
 
         public void ecef_tod
@@ -3271,20 +3264,18 @@ namespace AstroLibMethods
         //    recef       - position vector earth fixed                   km
         //    vecef       - velocity vector earth fixed                   km/s
         //    direct      - direction of transfer                         eto, efrom
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    iau06arr    - iau2006 eop constants
         //    ttt         - julian centuries of tt                        centuries
         //    jdut1       - julian date of ut1                            days from 4713 bc
         //    lod         - excess length of day                          sec
         //    xp          - polar motion coefficient                      rad
         //    yp          - polar motion coefficient                      rad
-        //    ddpsi       - delta psi correction to gcrf                  rad
-        //    ddeps       - delta eps correction to gcrf                  rad
         //    ddx         - delta x correction to gcrf                    rad
         //    ddy         - delta y correction to gcrf                    rad
         //
         //  outputs       :
-        //    rtod        - position vector eci                           km
-        //    vtod        - velocity vector eci                           km/s
+        //    rcirs       - position vector eci                           km
+        //    vcirs       - velocity vector eci                           km/s
         //
         //  locals        :
         //    deltapsi    - nutation angle                                rad
@@ -3301,7 +3292,7 @@ namespace AstroLibMethods
         //   polarm       - rotation for polar motion      
         //
         //  references    :
-        //    vallado       2013, 228-236
+        //    vallado       2022, 227
         // ------------------------------------------------------------------------------
 
         public void ecef_cirs
@@ -3422,7 +3413,7 @@ namespace AstroLibMethods
         //   polarm       - rotation for polar motion      
         //
         //  references    :
-        //    vallado       2013, 228-236
+        //    vallado       2022, 224
         // ------------------------------------------------------------------------------
 
         public void ecef_pef
@@ -3469,6 +3460,7 @@ namespace AstroLibMethods
         //    recef       - position vector earth fixed                   km
         //    vecef       - velocity vector earth fixed                   km/s
         //    direct      - direction of transfer                         eto, efrom
+        //    iau06arr    - iau2006 eop constants
         //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
         //    ttt         - julian centuries of tt                        centuries
         //    lod         - excess length of day                          sec
@@ -3492,7 +3484,7 @@ namespace AstroLibMethods
         //   polarm       - rotation for polar motion      
         //
         //  references    :
-        //    vallado       2013, 228-236
+        //    vallado       2022, 213
         // ------------------------------------------------------------------------------
 
         public void ecef_tirs
@@ -3563,8 +3555,8 @@ namespace AstroLibMethods
         //   polarm        - rotation for polar motion                      pef - ecef
         //
         //  references :
-        //    vallado       2013, 231 - 233
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 232
+        // ----------------------------------------------------------------------------
 
         public void teme_ecef
             (
@@ -3616,7 +3608,7 @@ namespace AstroLibMethods
             st[0, 1] = -Math.Sin(gmstg);
             st[0, 2] = 0.0;
             st[1, 0] = Math.Sin(gmstg);
-            st[1, 1] = Math.Cos(gmstg);
+            st[1, 1] = Math.Cos(gmst);
             st[1, 2] = 0.0;
             st[2, 0] = 0.0;
             st[2, 1] = 0.0;
@@ -3685,9 +3677,8 @@ namespace AstroLibMethods
         //                  true equator, mean equinox                     km
         //    vteme       - velocity vector of date
         //                  true equator, mean equinox                     km / s
-        //    ateme       - acceleration vector of date
-        //                  true equator, mean equinox                     km / s2
         //    ttt         - julian centuries of tt                         centuries
+        //    iau80arr     - iau80 array of values
         //    ddpsi       - delta psi correction to gcrf                   rad
         //    ddeps       - delta eps correction to gcrf                   rad
         //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
@@ -3695,7 +3686,6 @@ namespace AstroLibMethods
         //  outputs       :
         //    reci        - position vector eci                            km
         //    veci        - velocity vector eci                            km / s
-        //    aeci        - acceleration vector eci                        km / s2
         //
         //  locals :
         //    prec        - matrix for eci - mod
@@ -3708,8 +3698,8 @@ namespace AstroLibMethods
         //   nutation     - rotation for nutation                          eci - tod
         //
         //  references :
-        //    vallado       2013, 231 - 233
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 233
+        // ----------------------------------------------------------------------------
 
         public void teme_eci
             (
@@ -3787,6 +3777,7 @@ namespace AstroLibMethods
         //    rqmod       - position vector qmod                          km
         //    vqmod       - velocity vector qmod                          km/s
         //    ttt         - julian centuries of tt                        centuries
+        //    iau80arr    - iau80 eop constants
         //    jdutc       - julian date of utc                            days from 4713 bc
         //
         //  outputs       :
@@ -3803,7 +3794,7 @@ namespace AstroLibMethods
         //   nutationqmod - rotation for nutation (qmod)                   qmod - tod
         //
         //  references    :
-        //    vallado       2007, 239-248
+        //    vallado       2022, 225
         // ------------------------------------------------------------------------------
 
         public void qmod2ecef
@@ -3871,32 +3862,32 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r1pef       - pos vector pseudo earth fixed    km
-        //    v1pef       - vel vector pseude earth fixed    km/s
-        //    r2ric       - rel pos vector eci               km
-        //    v2ric       - rel vel vector eci               km/s
-        //    ttt         - julian centuries of tt           centuries
-        //   jdut1       - julian date of ut1               days from 4713 bc
-        //    lod         - excess length of day             sec
-        //   xp          - polar motion coefficient         rad
-        //    yp          - polar motion coefficient         rad
-        //    eqeterms    - terms for ast calculation        0,2
-        //    ddpsi       - delta psi correction to gcrf     rad
-        //    ddeps       - delta eps correction to gcrf     rad
-        //    opt         - method option                           e80, e96, e00a, e06cio, e06eq
+        //    r1pef       - pos vector pseudo earth fixed            km
+        //    v1pef       - vel vector pseude earth fixed            km/s
+        //    r2ric       - rel pos vector eci                       km
+        //    v2ric       - rel vel vector eci                       km/s
+        //    ttt         - julian centuries of tt                   centuries
+        //    jdut1       - julian date of ut1                       days from 4713 bc
+        //    lod         - excess length of day                     sec
+        //    xp          - polar motion coefficient                 rad
+        //    yp          - polar motion coefficient                 rad
+        //    eqeterms    - terms for ast calculation                0,2
+        //    ddpsi       - delta psi correction to gcrf             rad
+        //    ddeps       - delta eps correction to gcrf             rad
+        //    opt         - method option                            e80, e96, e00a, e06cio, e06eq
         //
         //  outputs       :
-        //    r1ecef      - position vector earth fixed      km
-        //    v1ecef      - velocity vector earth fixed      km/s
-        //    r2ecef      - position vector earth fixed      km
-        //    v2ecef      - velocity vector earth fixed      km/s
+        //    r1ecef      - position vector earth fixed              km
+        //    v1ecef      - velocity vector earth fixed              km/s
+        //    r2ecef      - position vector earth fixed              km
+        //    v2ecef      - velocity vector earth fixed              km/s
         //
         //  locals        :
-        //    reci        - position vector eci              km
-        //    veci        - velocity vector eci              km/s
-        //    deltapsi    - nutation angle                   rad
-        //    trueeps     - true obliquity of the ecliptic   rad
-        //    meaneps     - mean obliquity of the ecliptic   rad
+        //    reci        - position vector eci                      km
+        //    veci        - velocity vector eci                      km/s
+        //    deltapsi    - nutation angle                           rad
+        //    trueeps     - true obliquity of the ecliptic           rad
+        //    meaneps     - mean obliquity of the ecliptic           rad
         //    prec        - matrix for mod - eci 
         //    nut         - matrix for tod - mod 
         //    st          - matrix for pef - tod 
@@ -3910,7 +3901,7 @@ namespace AstroLibMethods
         //   polarm       - rotation for polar motion      
         //
         //  references    :
-        //    vallado       2007, 228-236
+        //    vallado       2022, 228
         //------------------------------------------------------------------------------
 
         public void csm2efg
@@ -4076,7 +4067,7 @@ namespace AstroLibMethods
         //    newtonnu    - find the mean anomaly
         //
         //  references    :
-        //    vallado       2007, 126, alg 9, ex 2-5
+        //    vallado       2022, 115, alg 9, ex 2-5
         // -----------------------------------------------------------------------------
 
         public void rv2coe
@@ -4259,24 +4250,24 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    p           - semilatus rectum               km
+        //    p           - semilatus rectum                          km
         //    ecc         - eccentricity
         //    incl        - inclination                               0.0 to pi rad
         //    raan        - rtasc of ascending node                   0.0 to 2pi rad
-        //    argp        - argument of perigee            0.0 to 2pi rad
-        //    nu          - true anomaly                   0.0 to 2pi rad
-        //    arglat      - argument of latitude      (ci) 0.0 to 2pi rad
-        //    lamtrue     - true longitude            (ce) 0.0 to 2pi rad
-        //    lonper      - longitude of periapsis    (ee) 0.0 to 2pi rad
+        //    argp        - argument of perigee                       0.0 to 2pi rad
+        //    nu          - true anomaly                              0.0 to 2pi rad
+        //    arglat      - argument of latitude                      (ci) 0.0 to 2pi rad
+        //    lamtrue     - true longitude                            (ce) 0.0 to 2pi rad
+        //    lonper      - longitude of periapsis                    (ee) 0.0 to 2pi rad
         //
         //  outputs       :
-        //    r           - ijk position vector            km
-        //    v           - ijk velocity vector            km / s
+        //    r           - ijk position vector                        km
+        //    v           - ijk velocity vector                        km / s
         //
         //  locals        :
         //    temp        - temporary real*8 value
-        //    rpqw        - pqw position vector            km
-        //    vpqw        - pqw velocity vector            km / s
+        //    rpqw        - pqw position vector                        km
+        //    vpqw        - pqw velocity vector                        km / s
         //    sinnu       - sine of nu
         //    cosnu       - cosine of nu
         //    tempvec     - pqw velocity vector
@@ -4286,7 +4277,7 @@ namespace AstroLibMethods
         //    rot1        - rotation about the 1st axis
         //
         //  references    :
-        //    vallado       2007, 126, alg 10, ex 2-5
+        //    vallado       2022, 120, alg 10, ex 2-5
         // --------------------------------------------------------------------------- 
 
         public void coe2rv
@@ -4375,18 +4366,19 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r           - eci position vector            km
-        //    v           - eci velocity vector            km/s
+        //    r           - eci position vector                        km
+        //    v           - eci velocity vector                        km/s
         //
         //  outputs       :
-        //    n           - mean motion                    rad
-        //    a           - semi major axis                km
+        //    n           - mean motion                                rad
+        //    a           - semi major axis                            km
         //    af          - component of ecc vector
         //    ag          - component of ecc vector
         //    chi         - component of node vector in eqw
         //    psi         - component of node vector in eqw
-        //    meanlon     - mean longitude                 rad
-        //    truelon     - true longitude                 rad
+        //    meanlon     - mean longitude                             rad
+        //    truelon     - true longitude                             rad
+        //    fr          - retrograde factor, neg if incl > 179 deg 1, -1
         //
         //  locals        :
         //    none        -
@@ -4395,7 +4387,7 @@ namespace AstroLibMethods
         //    none        -
         //
         //  references    :
-        //    vallado       2013, 108
+        //    vallado       2022, 110
         //    chobotov            30
         // ----------------------------------------------------------------------------
 
@@ -4488,36 +4480,36 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    a           - semimajor axis                 km
+        //    a           - semimajor axis                             km
         //    af          - component of ecc vector
         //    ag          - component of ecc vector
         //    chi         - component of node vector in eqw
         //    psi         - component of node vector in eqw
-        //    meanlon     - mean longitude                 rad
-        //    fr          - retrograde factor, neg if incl > 90 deg 1, -1
+        //    meanlon     - mean longitude                             rad
+        //    fr          - retrograde factor, neg if incl > 179 deg 1, -1
         //
         //  outputs       :
-        //    r           - position vector                km
-        //    v           - velocity vector                km/s
+        //    r           - position vector                            km
+        //    v           - velocity vector                            km/s
         //
         //  locals        :
-        //    n           - mean motion                    rad
+        //    n           - mean motion                                rad
         //    temp        - temporary variable
-        //    p           - semilatus rectum               km
-        //    ecc         - eccentricity
-        //    incl        - inclination                    0.0  to pi rad
-        //    raan        - rtasc of ascending node    0.0  to 2pi rad
-        //    argp        - argument of perigee            0.0  to 2pi rad
-        //    nu          - true anomaly                   0.0  to 2pi rad
-        //    m           - mean anomaly                   0.0  to 2pi rad
-        //    arglat      - argument of latitude      (ci) 0.0  to 2pi rad
-        //    truelon     - true longitude            (ce) 0.0  to 2pi rad
-        //    lonper      - longitude of periapsis    (ee) 0.0  to 2pi rad
+        //    p           - semilatus rectum                           km
+        //    ecc         - eccentricity            
+        //    incl        - inclination                                0.0  to pi rad
+        //    raan        - rtasc of ascending node                    0.0  to 2pi rad
+        //    argp        - argument of perigee                        0.0  to 2pi rad
+        //    nu          - true anomaly                               0.0  to 2pi rad
+        //    m           - mean anomaly                               0.0  to 2pi rad
+        //    arglat      - argument of latitude      (ci)             0.0  to 2pi rad
+        //    truelon     - true longitude            (ce)             0.0  to 2pi rad
+        //    lonper      - longitude of periapsis    (ee)             0.0  to 2pi rad
         //
         //  coupling      :
         //
         //  references    :
-        //    vallado 2013:108
+        //    vallado 2022 : 110
         // ------------------------------------------------------------------------------
 
         public void eq2rv
@@ -4627,6 +4619,7 @@ namespace AstroLibMethods
         //    yp          - polar motion coefficient                        arc sec
         //    terms       - number of terms for ast calculation             0,2
         //    ddpsi, ddeps - corrections for fk5 to gcrf                    rad
+        //    iau80arr     - iau80 coefficients of eop
         //
         //  outputs       :
         //    magr        - eci position vector magnitude                   km
@@ -4639,10 +4632,9 @@ namespace AstroLibMethods
         //  locals        :
         //    fpav        - sat flight path anglefrom vert                  rad
         //
-        //    none        -
         //  references    :
-        //    vallado       2013, xx
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 111
+        // ----------------------------------------------------------------------------
 
         public void rv2flt
             (
@@ -4711,20 +4703,20 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    rijk        - ijk position vector            er
-        //    vijk        - ijk velocity vector            er/tu
-        //    direction   - which set of vars to output    from  too
+        //    rijk        - ijk position vector                      km
+        //    vijk        - ijk velocity vector                      km / s
+        //    direction   - which set of vars to output              efrom  eto
         //
         //  outputs       :
-        //    rr          - radius of the sat              er
-        //    ecllat      - ecliptic latitude              -Math.PI/2 to Math.PI/2 rad
-        //    ecllon      - ecliptic longitude             -Math.PI/2 to Math.PI/2 rad
-        //    drr         - radius of the sat rate         er/tu
-        //    decllat     - ecliptic latitude rate         -Math.PI/2 to Math.PI/2 rad
-        //    eecllon     - ecliptic longitude rate        -Math.PI/2 to Math.PI/2 rad
+        //    rr          - radius of the sat                        km
+        //    ecllat      - ecliptic latitude                        -PI/2 to PI/2 rad
+        //    ecllon      - ecliptic longitude                       -2PI to 2PI rad
+        //    drr         - radius of the sat rate                   km/s
+        //    decllat     - ecliptic latitude rate                   -PI/2 to PI/2 rad
+        //    eecllon     - ecliptic longitude rate                  -2PI to 2PI rad
         //
         //  locals        :
-        //    obliquity   - obliquity of the ecliptic      rad
+        //    obliquity   - obliquity of the ecliptic                rad
         //    temp        -
         //    temp1       -
         //    re          - position vec in eclitpic frame
@@ -4738,8 +4730,8 @@ namespace AstroLibMethods
         //    Math.Atan2       - arc tangent function that resolves quadrant ambiguites
         //
         //  references    :
-        //    vallado       2013, 268, eq 4-15
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022 268, eq 4-15
+        // ----------------------------------------------------------------------------
 
         public void rv_elatlon
         (
@@ -4813,8 +4805,8 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //     r           - position vector eci                       km, er
-        //     v           - velocity vector eci                       km/s, er/tu
+        //     r           - position vector eci                       km 
+        //     v           - velocity vector eci                       km/s 
         //     direct      -  direction to convert                     eFrom  eTo
         //
         //   outputs       :
@@ -4833,7 +4825,7 @@ namespace AstroLibMethods
         //     none
         // 
         //   references    :
-        //    vallado       2013, 259, alg 25
+        //    vallado       2022, 256, alg 25
         // --------------------------------------------------------------------------------
 
         public void rv_radec
@@ -4938,7 +4930,7 @@ namespace AstroLibMethods
         //    sign        - returns the sign of a variable
         //
         //  references    :
-        //    vallado       2013, 265, alg 27
+        //    vallado       2022, 262, alg 27
         // -----------------------------------------------------------------------------
 
         public void rv_razel
@@ -4973,7 +4965,7 @@ namespace AstroLibMethods
                 tempvec = MathTimeLibr.rot2(drhosez, latgd - halfpi);
                 drhoecef = MathTimeLibr.rot3(tempvec, -lon);
 
-                // ---------  find ecef range and velocity vectors -----------*/
+                // ---------  find ecef range and velocity vectors -----------
                 MathTimeLibr.addvec(1.0, rhoecef, 1.0, rsecef, out recef);
                 vecef[0] = drhoecef[0];
                 vecef[1] = drhoecef[1];
@@ -5040,23 +5032,23 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    reci        - eci position vector                    km
-        //    veci        - eci velocity vector                    km/s
-        //    rseci       - eci site position vector               km
-        //    direct      - direction to convert                   eFrom  eTo
+        //    reci        - eci position vector                      km
+        //    veci        - eci velocity vector                      km/s
+        //    rseci       - eci site position vector                 km
+        //    direct      - direction to convert                     efrom  eto
         //
         //  outputs       :
-        //    rho         - topo radius of the sat                 km
-        //    trtasc      - topo right ascension                   rad
-        //    tdecl       - topo declination                       rad
-        //    drho        - topo radius of the sat rate            km/s
-        //    tdrtasc     - topo right ascension rate              rad/s
-        //    tddecl      - topo declination rate                  rad/s
+        //    rho         - topo radius of the sat                   km
+        //    trtasc      - topo right ascension                     rad
+        //    tdecl       - topo declination                         rad
+        //    drho        - topo radius of the sat rate              km/s
+        //    tdrtasc     - topo right ascension rate                rad/s
+        //    tddecl      - topo declination rate                    rad/s
         //
         //  locals        :
-        //    rhov        - eci range vector from site             km
-        //    drhov       - eci velocity vector from site          km/s
-        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    rhov        - eci range vector from site               km
+        //    drhov       - eci velocity vector from site            km/s
+        //    latgc       - geocentric lat of satellite, not nadir point  -pi/2 to pi/2 rad          
         //
         //  coupling      :
         //    mag         - magnitude of a vector
@@ -5064,7 +5056,7 @@ namespace AstroLibMethods
         //    dot         - dot product of two vectors
         //
         //  references    :
-        //    vallado       2022, 254-257, eq 4-1, 4-2, alg 26
+        //    vallado       2022, 257, eq 4-1, 4-2, alg 26
         // ----------------------------------------------------------------------------
 
         public void rv_tradec
@@ -5155,17 +5147,17 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    rhovec      - sez satellite range vector           km
-        //    drhovec     - sez satellite velocity vector        km/s
-        //    direct      - direction to convert                 eFrom  eTo
+        //    rhovec      - sez satellite range vector               km
+        //    drhovec     - sez satellite velocity vector            km/s
+        //    direct      - direction to convert                     eFrom  eTo
         //
         //  outputs       :
-        //    rho         - satellite range from site            km
-        //    az          - azimuth                              0.0 to 2pi rad
-        //    el          - elevation                            -Math.PI/2 to Math.PI/2 rad
-        //    drho        - range rate                           km/s
-        //    daz         - azimuth rate                         rad/s
-        //    del         - elevation rate                       rad/s
+        //    rho         - satellite range from site                km
+        //    az          - azimuth                                  0.0 to 2pi rad
+        //    el          - elevation                                -PI/2 to PI/2 rad
+        //    drho        - range rate                               km/s
+        //    daz         - azimuth rate                             rad/s
+        //    del         - elevation rate                           rad/s
         //
         //  locals        :
         //    sinel       - variable for Math.Sin( el )
@@ -5183,8 +5175,8 @@ namespace AstroLibMethods
         //    atan2       - arc tangent function that resolves quadrant ambiguites
         //
         //  references    :
-        //    vallado       2013, 261, eq 4-4, eq 4-5
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 269, eq 4-4, eq 4-5
+        // ----------------------------------------------------------------------------
 
         public void rvsez_razel
         (
@@ -5391,12 +5383,12 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r           - position vector                km
-        //    v           - velocity vector                km/s
+        //    r           - position vector                          km
+        //    v           - velocity vector                          km/s
         //
         //  outputs       :
-        //    rrsw        - position vector                km
-        //    vrsw        - velocity vector                km/s
+        //    rrsw        - position vector                          km
+        //    vrsw        - velocity vector                          km/s
         //    transmat    - transformation matrix
         //
         //  locals        :
@@ -5406,7 +5398,7 @@ namespace AstroLibMethods
         //  coupling      :
         //
         //  references    :
-        //    vallado       2007, 163
+        //    vallado       2022, 166
         // -----------------------------------------------------------------------------
 
         public double[,] rv2rsw
@@ -5488,7 +5480,7 @@ namespace AstroLibMethods
         //  coupling      :
         //
         //  references    :
-        //    vallado       2013, 164
+        //    vallado       2022, 166
         // -----------------------------------------------------------------------------
 
         public double[,] rv2ntw
@@ -5589,7 +5581,7 @@ namespace AstroLibMethods
         //    angle       - find the angle between two vectors
         //
         //  references    :
-        //    vallado       2007, 126, alg 9, ex 2-5
+        //    vallado       2022, 126, alg 9, ex 2-5
         // -----------------------------------------------------------------------------
 
         public void rv2pqw
@@ -5775,7 +5767,7 @@ namespace AstroLibMethods
         //  coupling      :
         //
         //  references    :
-        //    vallado       2013, 73, alg 2, ex 2-1
+        //    vallado       2022, 65, alg 2, ex 2-1
         // -------------------------------------------------------------------
 
         public void newtone
@@ -5843,15 +5835,15 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    ecc         - eccentricity                         0.0 to
-        //    m           - mean anomaly                         0.0 to 2pi rad
+        //    ecc         - eccentricity                             0.0 to
+        //    m           - mean anomaly                             0.0 to 2pi rad
         //
         //  outputs       :
-        //    eccanom     - eccentric anomaly                    0.0 to 2pi rad
-        //    nu          - true anomaly                         0.0 to 2pi rad
+        //    eccanom     - eccentric anomaly                        0.0 to 2pi rad
+        //    nu          - true anomaly                             0.0 to 2pi rad
         //
         //  locals        :
-        //    e1          - eccentric anomaly, next value  rad
+        //    e1          - eccentric anomaly, next value            rad
         //    sinv        - sine of nu
         //    cosv        - cosine of nu
         //    ktr         - index
@@ -5869,7 +5861,7 @@ namespace AstroLibMethods
         //    power       - raises a base number to an arbitrary power
         //
         //  references    :
-        //    vallado       2013, 73, alg 2, ex 2-1
+        //    vallado       2022, 67, alg 2, ex 2-1
         //    oltrogge      JAS 2015
         // -------------------------------------------------------------------
 
@@ -5987,20 +5979,20 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    ecc         - eccentricity                   0.0 to
-        //    m           - mean anomaly                   0.0 to 2pi rad
+        //    ecc         - eccentricity                             0.0 to
+        //    m           - mean anomaly                             0.0 to 2pi rad
         //
         //  outputs       :
-        //    eccanom     - eccentric anomaly              0.0 to 2pi rad
-        //    nu          - true anomaly                   0.0 to 2pi rad
+        //    eccanom     - eccentric anomaly                        0.0 to 2pi rad
+        //    nu          - true anomaly                             0.0 to 2pi rad
         //
         //  locals        :
-        //    e1          - eccentric anomaly, next value  rad
+        //    e1          - eccentric anomaly, next value            rad
         //    sinv        - sine of nu
         //    cosv        - cosine of nu
         //    ktr         - index
         //    r1r         - cubic roots - 1 to 3
-        //    r1i         - MathTimeLibr imaginary component
+        //    r1i         - imaginary component
         //    r2r         -
         //    r2i         -
         //    r3r         -
@@ -6017,7 +6009,7 @@ namespace AstroLibMethods
         //    sgn         - returns the sign of an argument
         //
         //  references    :
-        //    vallado       2013, 73, alg 2, ex 2-1
+        //    vallado       2022, 66, alg 2, ex 2-1
         // -------------------------------------------------------------------
 
         public void newtonm
@@ -6148,7 +6140,7 @@ namespace AstroLibMethods
         //    sinh        - hyperbolic Math.Sine
         //
         //  references    :
-        //    vallado       2007, 85, alg 5
+        //    vallado       2022, 78, alg 5
         // -----------------------------------------------------------------------------
 
         public void newtonnu
@@ -6227,17 +6219,17 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    jdut1       - julian date in ut1             days from 4713 bc
-        //    lon         - longitude                      0 to 2pi rad
-        //    incl        - inclination                    0 to 2pi rad
-        //    raan        - right ascenion of the node     0 to 2pi rad
-        //    argp        - argument of perigee            0 to 2pi rad
+        //    jdut1       - julian date in ut1                       days from 4713 bc
+        //    lon         - longitude                                0 to 2pi rad
+        //    incl        - inclination                              0 to 2pi rad
+        //    raan        - right ascenion of the node               0 to 2pi rad
+        //    argp        - argument of perigee                      0 to 2pi rad
         //
         //  outputs       :
-        //    nu          - true anomaly                   0 to 2pi rad
+        //    nu          - true anomaly                             0 to 2pi rad
         //
         //  locals        :
-        //    temp        - temporary variable for doubles   rad
+        //    temp        - temporary variable for doubles           rad
         //    tut1        - julian centuries from the
         //                  jan 1, 2000 12 h epoch (ut1)
         //
@@ -6245,7 +6237,7 @@ namespace AstroLibMethods
         //    none
         //
         //  references    :
-        //    vallado       2013, 110, eq 2-101
+        //    vallado       2022, 112, eq 2-103
         // -----------------------------------------------------------------------------
 
         public double lon2nu
@@ -6320,7 +6312,7 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    znew        - z variable                     rad2
+        //    znew        - z variable                               rad2
         //
         //  outputs       :
         //    c2new       - c2 function value
@@ -6334,7 +6326,7 @@ namespace AstroLibMethods
         //    Math.Cosh        - hyperbolic Math.Cosine
         //
         //  references    :
-        //    vallado       2013, 63, alg 1
+        //    vallado       2022, 63, alg 1
         // -----------------------------------------------------------------------------
 
         public void findc2c3
@@ -6383,15 +6375,15 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r1          - position vector                     km
-        //    v1          - velocity vector                     km/s
-        //    r2          - position vector                     km
-        //    v2          - velocity vector                     km/s
+        //    r1          - position vector                          km
+        //    v1          - velocity vector                          km/s
+        //    r2          - position vector                          km
+        //    v2          - velocity vector                          km/s
         //    x           - universal variable
         //    c2          - stumpff function
         //    c3          - stumpff function
-        //    dtsec       - step size                          sec (SMALL time steps only!!)
-        //    opt         - calculation method                 pqw, series, c2c3
+        //    dtsec       - step size                                sec (SMALL time steps only!!)
+        //    opt         - calculation method                       pqw, series, c2c3
         //    
         //  outputs       :
         //    f, g        - f and g functions                 
@@ -6402,7 +6394,7 @@ namespace AstroLibMethods
         //  coupling      :
         //
         //  references    :
-        //    vallado       2013, 83, 87, 813
+        //    vallado       2022, 83, 87, 813
         //  findfandg(r1, v1t, r2, v2t, 0.0, 0.0, 0.0, 0.0, 0.0, "pqw", out f, out g, out fdot, out gdot);
         //  findfandg(r1, v1t, r2, v2t, dtsec, 0.0, 0.0, 0.0, 0.0, "series", out f, out g, out fdot, out gdot);
         //  findfandg(r1, v1t, r2, v2t, dtsec, 0.35987, 0.6437, 0.2378, -0.0239, "c2c3", out f, out g, out fdot, out gdot);
@@ -6693,7 +6685,7 @@ namespace AstroLibMethods
         //    findc2c3    - find c2 and c3 functions
         //
         //  references    :
-        //    vallado       2004, 95-103, alg 8, ex 2-4
+        //    vallado       2022, 94, alg 8, ex 2-4
         // -------------------------------------------------------------------------------
 
         public void kepler
@@ -6907,21 +6899,21 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r           - ecef position vector           km
+        //    r           - ecef position vector                     km
         //
         //  outputs       :
-        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        //    latgd       - geodetic latitude              -pi/2 to pi/2 rad
-        //    lon         - longitude (west -)             0 to 2pi rad
-        //    hellp       - height above the ellipsoid     km
+        //    latgc       - geocentric lat of satellite, not nadir point  -pi/2 to pi/2 rad          
+        //    latgd       - geodetic latitude                        -pi/2 to pi/2 rad
+        //    lon         - longitude (west -)                       0 to 2pi rad
+        //    hellp       - height above the ellipsoid               km
         //
         //  locals        :
         //    temp        - diff between geocentric/
-        //                  geodetic lat                   rad
+        //                  geodetic lat                             rad
         //    Math.Sintemp     - Math.Sine of temp                   rad
-        //    olddelta    - previous value of deltalat     rad
-        //    rtasc       - right ascension                rad
-        //    decl        - declination                    rad
+        //    olddelta    - previous value of deltalat               rad
+        //    rtasc       - right ascension                          rad
+        //    decl        - declination                              rad
         //    i           - index
         //
         //  coupling      :
@@ -6929,7 +6921,7 @@ namespace AstroLibMethods
         //    gcgd        - converts between geocentric and geodetic latitude
         //
         //  references    :
-        //    vallado       2001, 174-179, alg 12 and alg 13, ex 3-3
+        //    vallado       2022, 174, alg 12 and alg 13, ex 3-3
         //
         // -------------------------------------------------------------------------------
 
@@ -7006,24 +6998,24 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r           - ecef position vector                km
+        //    r           - ecef position vector                     km
         //
         //  outputs       :
         //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        //    latgd       - geodetic latitude                   -pi/2 to pi/2 rad  
-        //    lon         - longitude (west -)                  0 to 2pi rad
-        //    hellp       - height above the ellipsoid           km
+        //    latgd       - geodetic latitude                        -pi/2 to pi/2 rad  
+        //    lon         - longitude (west -)                       0 to 2pi rad
+        //    hellp       - height above the ellipsoid               km
         //
         //  locals        :
-        //    rc          - range of site wrt earth center      er
-        //    height      - height above earth wrt site         er
-        //    alpha       - angle from iaxis to point, lst      rad
-        //    olddelta    - previous value of deltalat          rad
+        //    rc          - range of site wrt earth center           er
+        //    height      - height above earth wrt site              er
+        //    alpha       - angle from iaxis to point, lst           rad
+        //    olddelta    - previous value of deltalat               rad
         //    deltalat    - diff between delta and
-        //                  geocentric lat                      rad
-        //    delta       - declination angle of r in ecef      rad
-        //    rsqrd       - magnitude of r squared              er2
-        //    sintemp     - sine of temp                        rad
+        //                  geocentric lat                           rad
+        //    delta       - declination angle of r in ecef           rad
+        //    rsqrd       - magnitude of r squared                   er2
+        //    sintemp     - sine of temp                             rad
         //    c           -
         //
         //  coupling      :
@@ -7031,7 +7023,7 @@ namespace AstroLibMethods
         //    gcgd        - converts between geocentric and geodetic latitude
         //
         //  references    :
-        //    vallado       2022, 174-179, alg 12 and alg 13, ex 3-3
+        //    vallado       2022, 174, alg 12 and alg 13, ex 3-3
         //
         // -------------------------------------------------------------------------------
 
@@ -7104,10 +7096,10 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    latgd       - geodetic latitude              -Math.PI to Math.PI rad
+        //    latgd       - geodetic latitude                        -PI to PI rad
         //
         //  outputs       :
-        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    latgc       - geocentric lat of satellite, not nadir point  -pi/2 to pi/2 rad          
         //
         //  locals        :
         //    none.
@@ -7116,9 +7108,7 @@ namespace AstroLibMethods
         //    none.
         //
         //  references    :
-        //    vallado       2001, 146, eq 3-11
-        //
-        // [latgc] = gd2gc ( latgd );
+        //    vallado       2022, 146, eq 3-14
         // --------------------------------------------------------------------------------
 
         public double gd2gc
@@ -7145,26 +7135,26 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    altPad      - pad for alt above surface       km  
-        //    r1          - initial position vector of int  km   
-        //    v1t         - initial velocity vector of trns km/s
-        //    r2          - final position vector of int    km
-        //    v2t         - final velocity vector of trns   km/s
-        //    nrev        - number of revolutions           0, 1, 2,  
+        //    altPad      - pad for alt above surface                km  
+        //    r1          - initial position vector of int           km   
+        //    v1t         - initial velocity vector of trns          km/s
+        //    r2          - final position vector of int             km
+        //    v2t         - final velocity vector of trns            km/s
+        //    nrev        - number of revolutions                    0, 1, 2,  
         //
         //  outputs       :
-        //    hitearth    - is earth was impacted           'y' 'n'
-        //    hitearthstr - is earth was impacted           "y - radii" "no"
+        //    hitearth    - is earth was impacted                    'y' 'n'
+        //    hitearthstr - is earth was impacted                    "y - radii" "no"
+        //    a           - semimajor axis of transfer               km
         //
         //  locals        :
         //    sme         - specific mechanical energy
-        //    rp          - radius of perigee               km
-        //    a           - semimajor axis of transfer      km
+        //    rp          - radius of perigee                        km
         //    ecc         - eccentricity of transfer
-        //    p           - semi-paramater of transfer      km
+        //    p           - semi-paramater of transfer               km
         //    hbar        - angular momentum vector of
         //                  transfer orbit
-        //    radiuspad   - radius including user pad       km
+        //    radiuspad   - radius including user pad                km
         //
         //  coupling      :
         //    dot         - dot product of vectors
@@ -7172,8 +7162,8 @@ namespace AstroLibMethods
         //    MathTimeLibr.cross       - MathTimeLibr.cross product of vectors
         //
         //  references    :
-        //    vallado       2013, 503, alg 60
-        // ------------------------------------------------------------------------------*/
+        //    vallado       2022, 483, alg 58
+        // ------------------------------------------------------------------------------
 
         public void checkhitearth
             (
@@ -7334,35 +7324,35 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    altPadc     - pad for alt above surface       er  
-        //    r1c         - initial position vector of int  er   
-        //    v1tc        - initial velocity vector of trns er/tu
-        //    r2c         - final position vector of int    er
-        //    v2tc        - final velocity vector of trns   er/tu
-        //    nrev        - number of revolutions           0, 1, 2,  
+        //    altPadc     - pad for alt above surface                 er  
+        //    r1c         - initial position vector of int            er   
+        //    v1tc        - initial velocity vector of trns           er/tu
+        //    r2c         - final position vector of int              er
+        //    v2tc        - final velocity vector of trns             er/tu
+        //    nrev        - number of revolutions                     0, 1, 2,  
         //
         //  outputs       :
-        //    hitearth    - is earth was impacted           'y' 'n'
-        //    hitearthstr - is earth was impacted           "y - radii" "no"
+        //    hitearth    - is earth was impacted                     'y' 'n'
+        //    hitearthstr - is earth was impacted                     "y - radii" "no"
+        //    a           - semimajor axis of transfer                er
         //
         //  locals        :
         //    sme         - specific mechanical energy
-        //    rp          - radius of perigee               er
-        //    a           - semimajor axis of transfer      er
+        //    rp          - radius of perigee                         er
         //    ecc         - eccentricity of transfer
-        //    p           - semi-paramater of transfer      er
+        //    p           - semi-paramater of transfer                er
         //    hbar        - angular momentum vector of
         //                  transfer orbit
-        //    radiuspadc  - radius including user pad       er
+        //    radiuspadc  - radius including user pad                 er
         //
         //  coupling      :
         //    dot         - dot product of vectors
         //    mag         - magnitude of a vector
-        //    MathTimeLibr.cross       - MathTimeLibr.cross product of vectors
+        //    cross       - cross product of vectors
         //
         //  references    :
-        //    vallado       2013, 503, alg 60
-        // ------------------------------------------------------------------------------*/
+        //    vallado       2022, 483, alg 58
+        // ------------------------------------------------------------------------------
 
         public void checkhitearthc
             (
@@ -7522,19 +7512,19 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r1          - ijk position vector 1                 km
-        //    r2          - ijk position vector 2                 km
-        //    nrev        - multiple revolutions                  0, 1,  
-        //    dm          - direction of motion                  'S', 'L'
+        //    r1          - ijk position vector 1                    km
+        //    r2          - ijk position vector 2                    km
+        //    nrev        - multiple revolutions                     0, 1,  
+        //    dm          - direction of motion                     'S', 'L'
         //                  this is the inclination discriminator
         //
         //  outputs       :
         //    kbi         - k values for min tof for each nrev
-        //    tof         - min time of flight for each nrev      sec
+        //    tof         - min time of flight for each nrev         sec
         //
         //  references    :
         //    Arora and Russell AAS 10-198
-        // ------------------------------------------------------------------------------*/
+        // ------------------------------------------------------------------------------
 
         public void lambertumins
             (
@@ -7666,16 +7656,16 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r1          - ijk position vector 1                km
-        //    r2          - ijk position vector 2                km
-        //    dm          - direction of motion                  'L', 'S'
-        //    de          - orbital energy                       'L', 'H'
-        //    nrev        - number of revs to complete           0, 1, 2, 3,  
+        //    r1          - ijk position vector 1                   km
+        //    r2          - ijk position vector 2                   km
+        //    dm          - direction of motion                     'L', 'S'
+        //    de          - orbital energy                          'L', 'H'
+        //    nrev        - number of revs to complete              0, 1, 2, 3,  
         //
         //  outputs       :
-        //    tmin        - minimum time of flight               sec
-        //    tminp       - minimum parabolic tof                sec
-        //    tminenergy  - minimum energy tof                   sec
+        //    tmin        - minimum time of flight                  sec
+        //    tminp       - minimum parabolic tof                   sec
+        //    tminenergy  - minimum energy tof                      sec
         //
         //  locals        :
         //    i           - index
@@ -7691,9 +7681,9 @@ namespace AstroLibMethods
         //    dot         - dot product
         //
         //  references    :
-        //    vallado       2013, 494, Alg 59, ex 7-5
+        //    vallado       2022, 481, Alg 57, ex 7-5
         //    prussing      JAS 2000
-        // ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
 
         public void lambertminT
         (
@@ -7792,16 +7782,16 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r1          - ijk position vector 1          km
-        //    r2          - ijk position vector 2          km
-        //    dm          - direction of motion                  'L', 'S'
-        //    de          - orbital energy                       'L', 'H'
-        //    nrev        - number of revs to complete     0, 1, 2, 3,  
+        //    r1          - ijk position vector 1                    km
+        //    r2          - ijk position vector 2                    km
+        //    dm          - direction of motion                      'L', 'S'
+        //    de          - orbital energy                           'L', 'H'
+        //    nrev        - number of revs to complete               0, 1, 2, 3,  
         //
         //  outputs       :
-        //    tmin        - minimum time of flight         sec
-        //    tminp       - minimum parabolic tof          sec
-        //    tminenergy  - minimum energy tof             sec
+        //    tmin        - minimum time of flight                   sec
+        //    tminp       - minimum parabolic tof                    sec
+        //    tminenergy  - minimum energy tof                       sec
         //
         //  locals        :
         //    i           - index
@@ -7818,7 +7808,7 @@ namespace AstroLibMethods
         //
         //  references    :
         //    thompson       2019
-        //     // ----------------------------------------------------------------------------*/
+        //     // ----------------------------------------------------------------------------
 
         public void lambertTmaxrp
         (
@@ -7944,23 +7934,23 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r1          - ijk position vector 1                km
-        //    r2          - ijk position vector 2                km
-        //    v1          - ijk velocity vector 1 if avail       km/s
-        //    dm          - direction of motion                  'L', 'S'
-        //    de          - orbital energy                       'L', 'H'
+        //    r1          - ijk position vector 1                     km
+        //    r2          - ijk position vector 2                     km
+        //    v1          - ijk velocity vector 1 if avail            km/s
+        //    dm          - direction of motion                       'L', 'S'
+        //    de          - orbital energy                            'L', 'H'
         //                  only affects nrev >= 1 upper/lower bounds
-        //    dtsec       - time between r1 and r2               sec
-        //    nrev        - number of revs to complete           0, 1, 2, 3,  
+        //    dtsec       - time between r1 and r2                    sec
+        //    nrev        - number of revs to complete                0, 1, 2, 3,  
         //    kbi         - psi value for min                     
-        //    altpad      - altitude pad for hitearth calc       km
+        //    altpad      - altitude pad for hitearth calc            km
         //    show        - control output don't output for speed      'y', 'n'
         //
         //  outputs       :
-        //    v1t         - ijk transfer velocity vector         km/s
-        //    v2t         - ijk transfer velocity vector         km/s
-        //    hitearth    - flag if hit or not                   'y', 'n'
-        //    error       - error flag                           1, 2, 3,   use numbers since c++ is so horrible at strings
+        //    v1t         - ijk transfer velocity vector              km/s
+        //    v2t         - ijk transfer velocity vector              km/s
+        //    hitearth    - flag if hit or not                        'y', 'n'
+        //    error       - error flag                                1, 2, 3,   use numbers since c++ is so horrible at strings
         //
         //  locals        :
         //    vara        - variable of the iteration,
@@ -7968,7 +7958,7 @@ namespace AstroLibMethods
         //    y           - area between position vectors
         //    upper       - upper bound for z
         //    lower       - lower bound for z
-        //    cosdeltanu  - cosine of true anomaly change        rad
+        //    cosdeltanu  - cosine of true anomaly change             rad
         //    f           - f expression
         //    g           - g expression
         //    gdot        - g dot expression
@@ -7978,7 +7968,7 @@ namespace AstroLibMethods
         //    znew        - new value of z
         //    c2new       - c2(z) function
         //    c3new       - c3(z) function
-        //    timenew     - new time                             sec
+        //    timenew     - new time                                  sec
         //    small       - tolerance for roundoff errors
         //    i, j        - index
         //
@@ -7988,8 +7978,8 @@ namespace AstroLibMethods
         //    findc2c3    - find c2 and c3 functions
         //
         //  references    :
-        //    vallado       2013, 492, alg 58, ex 7-5
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 499, alg 60, ex 7-5
+        // ----------------------------------------------------------------------------
 
         public void lambertuniv
                (
@@ -8530,13 +8520,11 @@ namespace AstroLibMethods
         //    k2          -
         //    s           -
         //
-        //  coupling      :
-        //    mag         - magnitude of a vector
         //
         //  references    :
-        //    vallado       2013, 494, Alg 59, ex 7-5
+        //    vallado       2022, 505, Alg 61, ex 7-5
         //    thompson      AAS GNC 2018
-        // ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
 
         public void lambertbattin
                (
@@ -8751,26 +8739,26 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    r           - init rel position of int              m or km
-        //    v           - init rel velocity of int              m or km/s
-        //    alt         - altitude of tgt satellite               km
-        //    dts         - desired time                            s
+        //    r           - init rel position of int                 m or km
+        //    v           - init rel velocity of int                 m or km/s
+        //    alt         - altitude of tgt satellite                km
+        //    dts         - desired time                             s
         //
         //  outputs       :
-        //    rinit       - final rel position of int             m or km
-        //    vinit       - final rel velocity of int             m or km/s
+        //    rinit       - final rel position of int                m or km
+        //    vinit       - final rel velocity of int                m or km/s
         //
         //  locals        :
-        //    nt          - angular velocity times time             rad
+        //    nt          - angular velocity times time              rad
         //    omega       -
         //    sinnt       - sine of nt
         //    cosnt       - cosine of nt
-        //    radius      - magnitude of range vector               km
+        //    radius      - magnitude of range vector                km
         //
         //  coupling      :
         //
         //  references    :
-        //    vallado       2007, 397, alg 47, ex 6-14
+        //    vallado       2022, 401, alg 48, ex 6-14
         // ------------------------------------------------------------------------------
 
         public void hillsr
@@ -8836,7 +8824,7 @@ namespace AstroLibMethods
         //    none.
         //
         //  references    :
-        //    vallado       2007, 410, eq 6-60, ex 6-15
+        //    vallado       2022, 410, eq 6-60, ex 6-15
         // ------------------------------------------------------------------------------
 
         public void hillsv
@@ -8881,27 +8869,27 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    latgd       - geodetic latitude              -Math.PI/2 to Math.PI/2 rad
-        //    lon         - longitude of site              -2pi to 2pi rad
-        //    alt         - altitude                       km
+        //    latgd       - geodetic latitude                        -PI/2 to PI/2 rad
+        //    lon         - longitude of site                        -2pi to 2pi rad
+        //    alt         - altitude                                 km
         //
         //  outputs       :
-        //    rsecef      - ecef site position vector      km
-        //    vsecef      - ecef site velocity vector      km/s
+        //    rsecef      - ecef site position vector                km
+        //    vsecef      - ecef site velocity vector                km/s
         //
         //  locals        :
-        //    Math.Sinlat      - variable containing  Math.Sin(lat)  rad
+        //    sinlat      - variable containing sin(lat)             rad
         //    temp        - temporary real value
-        //    rdel        - rdel component of site vector  km
-        //    rk          - rk component of site vector    km
+        //    rdel        - rdel component of site vector            km
+        //    rk          - rk component of site vector              km
         //    cearth      -
         //
         //  coupling      :
         //    none
         //
         //  references    :
-        //    vallado       2013, 430, alg 51, ex 7-1
-        // ---------------------------------------------------------------------------*/
+        //    vallado       2022, 436, alg 51, ex 7-1
+        // ---------------------------------------------------------------------------
 
         public void site
             (
@@ -9014,8 +9002,8 @@ namespace AstroLibMethods
         //    factor       - find the roots of a polynomial
         //
         //  references     :
-        //    vallado       2013, 435
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 441
+        // ----------------------------------------------------------------------------
 
         public void angleslaplace
         (
@@ -9557,8 +9545,8 @@ namespace AstroLibMethods
         //    angle        - angle between two vectors
         //
         //  references     :
-        //    vallado       2013, 442, alg 52, ex 7-2
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 448, alg 52, ex 7-2
+        // ----------------------------------------------------------------------------
 
         public void anglesgauss
         (
@@ -10069,8 +10057,8 @@ namespace AstroLibMethods
         //    dot, cross, mag
         //
         //  references     :
-        //    vallado       2013
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 450 Alg 53
+        // ----------------------------------------------------------------------------
 
         void doubler
         (
@@ -10384,8 +10372,8 @@ namespace AstroLibMethods
         //    angle        - angle between two vectors
         //
         //  references     :
-        //    vallado       2013, 442, alg 52, ex 7-2
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 450, alg 53, ex 7-2
+        // ----------------------------------------------------------------------------
 
         public void anglesdoubler
         (
@@ -10698,8 +10686,7 @@ namespace AstroLibMethods
         //   a, e, i, bom, q = computed orbital elements
         //   xs(6)  = computed pos/vel at time t2
         //
-        //  references     :
-        //    vallado 2021 Chap 7
+        //  references    2022, 452
         //    gooding tr 93004, april 1993. 
         //    cmda 1997
         // --------------------------------------------------------------------------------
@@ -11635,8 +11622,6 @@ namespace AstroLibMethods
         //    
         //  locals        :
         //  
-        //  
-        //  
         // --------------------------------------------------------------------------------
 
         public void calcps
@@ -11824,7 +11809,7 @@ namespace AstroLibMethods
         //    angle       - angle between two vectors
         //
         //  references    :
-        //    vallado       2013, 460, alg 54, ex 7-3
+        //    vallado       2022, 460, alg 54, ex 7-3
         // ---------------------------------------------------------------------------- 
 
         public void gibbs
@@ -11941,8 +11926,8 @@ namespace AstroLibMethods
         //    angle       - angle between two vectors
         //
         //  references    :
-        //    vallado       2013, 466, alg 55, ex 7-4
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 472, alg 55, ex 7-4
+        // ----------------------------------------------------------------------------
 
         public void herrgibbs
         (
@@ -12046,7 +12031,7 @@ namespace AstroLibMethods
         //
         //  references    :
         //    vallado       2013, 503, alg 61
-        // ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
 
         public void target
         (
@@ -12210,9 +12195,9 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    jdtdb         - epoch julian date                     days from 4713 BC
-        //    jdtdbF        - epoch julian date fraction            day fraction from jdutc
-        //    interp        - interpolation                        n-none, l-linear, s-spline
+        //    jdtdb         - epoch julian date                      days from 4713 BC
+        //    jdtdbF        - epoch julian date fraction             day fraction from jdutc
+        //    interp        - interpolation                          n-none, l-linear, s-spline
         //    jpldearr      - array of jplde data records
         //    jdjpldestart  - julian date of the start of the jpldearr data (set in initjplde)
         //
@@ -12239,7 +12224,7 @@ namespace AstroLibMethods
         //    none        -
         //
         //  references    :
-        //    vallado       2013,
+        //    vallado       2022, 612
         // -----------------------------------------------------------------------------
 
         public void findjpldeparam
@@ -12272,7 +12257,7 @@ namespace AstroLibMethods
             // ---- read data for day of interest
             jdjpldestarto = Math.Floor(jdtdb + jdtdbF - 2400000.5 - jpldearr[0].mjd);
             //recnum = Convert.ToInt32(jdjpldestarto);  // for 1 day centers
-            recnum = Convert.ToInt32(jdjpldestarto) * 2;  // for 12 hr centers
+            recnum = Convert.ToInt32(jdjpldestarto) * 2 + 2;  // for 12 hr centers
 
             // check for out of bound values
             if ((recnum >= 1) && (recnum < jpldesize - 2))
@@ -12402,7 +12387,7 @@ namespace AstroLibMethods
         //    none.
         //
         //  references    :
-        //    vallado       2013, 279, alg 29, ex 5-1
+        //    vallado       2022, 285, alg 29, ex 5-1
         // -----------------------------------------------------------------------------
 
         public void sunmoonjpl
@@ -12481,7 +12466,7 @@ namespace AstroLibMethods
         //    none.
         //
         //  references    :
-        //    vallado       2013, 279, alg 29, ex 5-1
+        //    vallado       2022, 285, alg 29, ex 5-1
         // -----------------------------------------------------------------------------
 
         public void sun
@@ -12582,7 +12567,7 @@ namespace AstroLibMethods
         //    none.
         //
         //  references    :
-        //    vallado       2013, 288, alg 31, ex 5-3
+        //    vallado       2022, 294, alg 31, ex 5-3
         // -----------------------------------------------------------------------------
 
         public void moon
@@ -12789,7 +12774,7 @@ namespace AstroLibMethods
         //
         //  references :
         //    vallado       2022, 500, Eq 8-56
-        // ---------------------------------------------------------------------------*/
+        // ---------------------------------------------------------------------------
 
         public void LegPolyGTDS
            (
@@ -12892,7 +12877,7 @@ namespace AstroLibMethods
         //
         //  references :
         //    vallado       2022, 600
-        // ---------------------------------------------------------------------------*/
+        // ---------------------------------------------------------------------------
 
         public void LegPolyMont
            (
@@ -12996,7 +12981,7 @@ namespace AstroLibMethods
         //  references :
         //    eckman, brown, adamo 2016 paper and code in matlab
         //    vallado       2022, 600, Eq 8-56
-        // ---------------------------------------------------------------------------*/
+        // ---------------------------------------------------------------------------
 
         public void LegPolyGottN
            (
@@ -13065,7 +13050,7 @@ namespace AstroLibMethods
         //
         //  references :
         //    vallado       2022, 600, Eq 8-56
-        // ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
 
         public void TrigPoly
            (
@@ -13127,7 +13112,7 @@ namespace AstroLibMethods
         //
         //  references :
         //    vallado       2022, 602
-        // ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
 
         public void TrigPolyLeg
            (
@@ -13255,7 +13240,7 @@ namespace AstroLibMethods
         //
         //  references :
         //    vallado       2022, 600, Eq 8-56
-        // ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
 
         public void FullGeopG
         (
@@ -13419,8 +13404,8 @@ namespace AstroLibMethods
         //   TrigPoly     - find the trigonmetric terms through recursion
         //
         //  references :
-        //    vallado       2013, 597, Eq 8-57
-        // ----------------------------------------------------------------------------*/
+        //    vallado       2022, 601, Eq 8-59
+        // ----------------------------------------------------------------------------
 
         public void FullGeopM
         (
@@ -13614,7 +13599,7 @@ namespace AstroLibMethods
         //  references :
         //    montenbruck   2012
         //    vallado       2022, 602
-        // ----------------------------------------------------------------------------*/
+        // ----------------------------------------------------------------------------
 
         public void FullGeopMC
         (
@@ -13853,7 +13838,7 @@ namespace AstroLibMethods
         //  references :
         //    eckman, brown, adamo 2016 paper and code in matlab
         //    vallado       2022, 600-601, Eq 8-62
-        // ---------------------------------------------------------------------------*/
+        // ---------------------------------------------------------------------------
 
         public void FullGeopGott
            (
@@ -14006,14 +13991,14 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    llat        - start geocentric latitude              -pi/2 to pi/2 rad
-        //    llon        - start longitude (west -)               0.0  to 2pi rad
+        //    llat        - start geocentric latitude                -pi/2 to pi/2 rad
+        //    llon        - start longitude (west -)                 0.0  to 2pi rad
         //    range       - range between points er
-        //    az          - azimuth                                0.0  to 2pi rad
+        //    az          - azimuth                                  0.0  to 2pi rad
         //
         //  outputs       :
-        //    tlat        - end geocentric latitude                -pi/2 to pi/2 rad
-        //    tlon        - end longitude(west -)                 0.0  to 2pi rad
+        //    tlat        - end geocentric latitude                  -pi/2 to pi/2 rad
+        //    tlon        - end longitude(west -)                    0.0  to 2pi rad
         //
         //  locals        :
         //    sindeltan   - sine of delta n                              rad
@@ -14024,7 +14009,7 @@ namespace AstroLibMethods
         //    none.
         //
         //  references    :
-        //    vallado       2013, 774-776, eq 11-6, eq 11-7
+        //    vallado       2022, 872, eq 11-6, eq 11-7
         // --------------------------------------------------------------------------------
 
         public void pathm
@@ -14095,15 +14080,15 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    llat        - start geocentric latitude             -pi/2 to pi/2 rad
-        //    llon        - start longitude (west -)               0.0  to 2pi rad
-        //    tlat        - end geocentric latitude               -pi/2 to pi/2 rad
-        //    tlon        - end longitude(west -)                  0.0  to 2pi rad
-        //    tof         - time of flight if icbm, or             0.0 min
+        //    llat        - start geocentric latitude               -pi/2 to pi/2 rad
+        //    llon        - start longitude (west -)                 0.0  to 2pi rad
+        //    tlat        - end geocentric latitude                 -pi/2 to pi/2 rad
+        //    tlon        - end longitude(west -)                    0.0  to 2pi rad
+        //    tof         - time of flight if icbm, or               0.0 min
         //
         //  outputs       :
-        //    range       - range between points km
-        //    az          - azimuth                                0.0  to 2pi rad
+        //    range       - range between points                     km
+        //    az          - azimuth                                  0.0  to 2pi rad
         //
         //  locals        :
         //    none.
@@ -14112,7 +14097,7 @@ namespace AstroLibMethods
         //    site, rot3, binomial, cross, atan2, dot, unit
         //
         //  references    :
-        //    vallado       2001, 774-775, eq 11-3, eq 11-4, eq 11-5
+        //    vallado       2022, 872, eq 11-3, eq 11-4, eq 11-5
         // --------------------------------------------------------------------------------
         public void rngaz
             (
@@ -14262,7 +14247,7 @@ namespace AstroLibMethods
         //
         //  references    :
         //    vallado       2022, 819
-        // --------------------------------------------------------------------------- - */
+        // --------------------------------------------------------------------------- - 
 
         public void partObs2State
             (
@@ -14348,9 +14333,8 @@ namespace AstroLibMethods
         //
         //  references        :
         //    Alfano original code
-        //    
-        //  sigmapts = posvelcov2pts(reci, veci, cov);
-        // --------------------------------------------------------------------------- - */
+        //    vallado 2022, 814
+        // --------------------------------------------------------------------------- - 
 
         public void posvelcov2pts
             (
@@ -14409,9 +14393,8 @@ namespace AstroLibMethods
         //
         //  references        :
         //    Alfano original code
-        //
-        //  sigmapts = poscov2pts(reci, cov);
-        // --------------------------------------------------------------------------- - */
+        //    vallado 2022, 814
+        // --------------------------------------------------------------------------- - 
 
         public void poscov2pts
             (
@@ -14470,9 +14453,10 @@ namespace AstroLibMethods
         //    n_dim          dimension of vector
         //    n_pts          total number of points
         //    
-        //    references :
-        //      alfano original code
-        // --------------------------------------------------------------------------- - */
+        //  references :
+        //    alfano original code
+        //    vallado 2022, 814
+        // --------------------------------------------------------------------------- - 
 
         public void remakecovpv
             (
@@ -14534,9 +14518,10 @@ namespace AstroLibMethods
         //    n_dim          dimension of vector
         //    n_pts          total number of points
         //    
-        //    references  :
-        //     alfano original code
-        // --------------------------------------------------------------------------- - */
+        //  references  :
+        //    alfano original code
+        //    vallado 2022, 814
+        // --------------------------------------------------------------------------- - 
 
         public void remakecovp
             (
@@ -14615,8 +14600,7 @@ namespace AstroLibMethods
         //    rv2coe      - position and velocity vectors to classical elements
         //
         //  references    :
-        //    Vallado and Alfano 2015
-        //
+        //    Vallado and Alfano AAS 15-537
         // ------------------------------------------------------------------------------
 
         public void covct2cl(double[,] cartcov, double[] cartstate, string anomclass, out double[,] classcov, out double[,] tm)
@@ -14862,7 +14846,7 @@ namespace AstroLibMethods
         //    newtonnu    - newton iteration for nu and ecc to m
         //
         //  references    :
-        //    Vallado and Alfano 2015
+        //    Vallado and Alfano AAS 15-537
         // ------------------------------------------------------------------------------
 
         public void covcl2ct
@@ -15104,7 +15088,7 @@ namespace AstroLibMethods
         //    constastro
         //
         //  references    :
-        //    Vallado and Alfano 2015
+        //    Vallado and Alfano AAS 15-537
         // ------------------------------------------------------------------------------
 
         public void covct2eq
@@ -15355,7 +15339,7 @@ namespace AstroLibMethods
         //    constastro
         //
         //  references    :
-        //    Vallado and Alfano 2015
+        //    Vallado and Alfano AAS 15-537
         // ------------------------------------------------------------------------------
 
         public void coveq2ct
@@ -15697,8 +15681,8 @@ namespace AstroLibMethods
         //  coupling      :
         //
         //  references    :
-        //    Vallado and Alfano 2015
-        // ----------------------------------------------------------------------------*/
+        //    Vallado and Alfano AAS 15-537
+        // ----------------------------------------------------------------------------
 
         public void covcl2eq
             (
@@ -15853,8 +15837,8 @@ namespace AstroLibMethods
         //    constastro
         //
         //  references    :
-        //    Vallado and Alfano 2015
-        // ----------------------------------------------------------------------------*/
+        //    Vallado and Alfano AAS 15-537
+        // ----------------------------------------------------------------------------
 
         public void coveq2cl
             (
@@ -16043,7 +16027,7 @@ namespace AstroLibMethods
         //    ecef2eci    - convert eci vectors to ecef
         //
         // references    :
-        //    Vallado and Alfano 2015
+        //    Vallado and Alfano AAS 15-537
         // -----------------------------------------------------------------------------
 
         public void covct2fl
@@ -16263,7 +16247,7 @@ namespace AstroLibMethods
         //    ecef2eci    - convert eci vectors to ecef
         //
         //  references    :
-        //    Vallado and Alfano 2015
+        //    Vallado and Alfano AAS 15-537
         // ------------------------------------------------------------------------------
 
         public void covfl2ct
@@ -16503,7 +16487,7 @@ namespace AstroLibMethods
         //    none
         //
         //  references    :
-        //    Vallado and Alfano 2015
+        //    Vallado and Alfano AAS 15-537
         // ------------------------------------------------------------------------------
 
         public void covct_rsw
@@ -16597,7 +16581,7 @@ namespace AstroLibMethods
         //    none
         //
         //  references    :
-        //    Vallado and Alfano 2015
+        //    Vallado and Alfano AAS 15-537
         // ------------------------------------------------------------------------------
 
         public void covct_ntw
@@ -16690,7 +16674,7 @@ namespace AstroLibMethods
         //    none
         //
         //  references    :
-        //    Vallado and Alfano 2015
+        //    Vallado and Alfano AAS 15-537
         // ------------------------------------------------------------------------------
 
         public void coveci_ecef
