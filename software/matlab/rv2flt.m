@@ -54,8 +54,8 @@ function [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
     magv = mag(veci);
 
     % -------- convert r to ecef for lat/lon calculation
-    aeci = [0.0, 0.0, 0.0];
-    [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+    aeci = [0.0; 0.0; 0.0];
+    [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
 
     % ----------------- find longitude value  ----------------- uses ecef
     temp = sqrt( recef(1)*recef(1) + recef(2)*recef(2) );

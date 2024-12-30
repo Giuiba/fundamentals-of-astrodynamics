@@ -38,8 +38,8 @@
 %    none        -
 %
 %  references    :
-%    vallado       2013,
-%  [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb, jdtdbF, 'l', jpldearr)
+%    vallado       2022,
+%  [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb, jdtdbF, 'l', jpldearr);
 % --------------------------------------------------------------------------- 
 
 function [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb, jdtdbF, interp, jpldearr)
@@ -54,8 +54,8 @@ function [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb, jdtdbF, interp, jp
     %printf("jdtdb %lf  %lf  %lf  %lf \n ", jdtdb, jdtdbF, jdb, mfme);x[recnum]
 
     % ---- read data for day of interest
-    jdjpldestarto = floor(jdtdb + jdtdbF - jpldearr.mjd(1) - 2400000.5 + 1);
-    recnum = floor(jdjpldestarto);
+    jdjpldestarto = floor(jdtdb + jdtdbF - jpldearr.mjd(1) - 2400000.5);
+    recnum = floor(jdjpldestarto) * 2 + 3;
 
     % check for out of bound values
     if ((recnum >= 1) && (recnum <= 51830))  % jpldesize

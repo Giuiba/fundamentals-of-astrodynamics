@@ -17,8 +17,8 @@ function fid = testall
     testnum = -10;
 
     if (testnum == -10)
-        optstart = 1;  % 1
-        optstop = 90; % 102
+        optstart = 90;  % 1
+        optstop = 99; % 102
     else
         optstart = testnum;
         optstop = testnum;
@@ -234,16 +234,16 @@ function fid = testall
             case 92
                 testcovct2rsw(fid);
                 testcovct2ntw(fid);
-                testcovcl2eq('truea');
-                testcovcl2eq('truen');
-                testcovcl2eq('meana');
-                testcovcl2eq('meann');
-                testcovct2eq('truea');
-                testcovct2eq('truen');
-                testcovct2eq('meana');
-                testcovct2eq('meann');
-                testcovct2fl('latlon');
-                testcovct2fl('radec');
+                testcovcl2eq('truea', fid);
+                testcovcl2eq('truen', fid);
+                testcovcl2eq('meana', fid);
+                testcovcl2eq('meann', fid);
+                testcovct2eq('truea', fid);
+                testcovct2eq('truen', fid);
+                testcovct2eq('meana', fid);
+                testcovct2eq('meann', fid);
+                testcovct2fl('latlon', fid);
+                testcovct2fl('radec', fid);
             case 93
             case 94
             case 95
@@ -2737,7 +2737,7 @@ function testgeo(fid)
 end
 
 
-function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, fida, fidas)
+function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, ansrlongstr, fida, fidas)
     constastro;
     eqeterms = 2;
 
@@ -2859,7 +2859,7 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, fida, fida
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
     fprintf(fida,'\nlaplace coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
-    %fprintf(fida,ansr);
+    fprintf(fida,'%s\n', ansrlongstr);
     fprintf(fidas,'\nlaplace coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
@@ -2879,7 +2879,7 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, fida, fida
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
     fprintf(fida,'\nguass coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
-    %fprintf(fida,ansr);
+    fprintf(fida,'%s\n', ansrlongstr);
     fprintf(fidas,'\nguass coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
@@ -2903,10 +2903,10 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, fida, fida
     %fprintf(fida,errstr);
     fprintf(fida,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f\n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
-    fprintf(fida,'\nr coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
+    fprintf(fida,'\ndouble r coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
-    %fprintf(fida,ansr);
-    fprintf(fidas,'\nr coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
+    fprintf(fida,'%s\n', ansrlongstr);
+    fprintf(fidas,'\ndouble r coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
           a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
 
@@ -2995,6 +2995,7 @@ function testangles(fid)
         while (~feof(infile))
 
             longstr = fgets(infile);
+            ansrlongstr = longstr;
 
             % # 0 ansr a 12246.023  e 0.2000  i 40.00  W 330.000  w 0.0  nu 0.0
             % 20,  8,  2012,  11,  40,  28.00,    40.000,    -110.000,     2.0000,     0.939913  ,    18.667717, x
@@ -3029,7 +3030,7 @@ function testangles(fid)
                 fprintf(fida,'\n\n ================================ case number %d ================================\n', caseopt);
                 fprintf(fid,'\n\n ================================ case number %d ================================\n', caseopt);
                 % write summary results to fid
-                doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, fida, fid);
+                doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, ansrlongstr, fida, fid);
 
             end  % if
 
@@ -3399,8 +3400,10 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     hitearth = ' ';
     dm = 'S';
     de = 'L';
-    if (methodType == "lambertk" && (runopt == "all" || (dein == de && nrev == 0)))
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, show, 'n' )
+    if (methodType == "lambertk" || (runopt == "all" || (dein == de && nrev == 0)))
+        tbi(1,1) = 0.0;
+        tbi(1,2) = 0.0;
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nrev, 0.0, dtsec, tbi, show, 'n' )
         fprintf(fida,' %s\n',detailAll);
         fprintf(fidas,' %s\n', errorout);
         %fprintf(fida,'k#" + caseopt  detailSum + " diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
@@ -3415,8 +3418,8 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         % switch for debugs
         fprintf(fida,'r3h %15.11f  %15.11f  %15.11f dr %15.11f\n', r3h(1),  r3h(2),  r3h(3), mag(dr));
         if (mag(dr) > 0.05)
-            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
         end
         [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tk);
 
@@ -3435,8 +3438,8 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
         end
 
         for j=1:3
@@ -3460,8 +3463,8 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
         end
         %fprintf(fid,'diffs " + mag(dr).ToString("0.00000000000"));
 
@@ -3482,7 +3485,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     de = 'H';
     if (methodType == "lambertk" || (runopt == "all" || (dein == de && nrev == 0)))
         % k near 180 is about 53017 while battin is 30324!
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, 0, 0.0, dtsec, tbi, show, 'n' )
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, 0, 0.0, dtsec, 0.0, show, 'n' )
         fprintf(fida,' %s\n',detailSum);
         fprintf(fidas,' %s\n', errorout);
         %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
@@ -3497,8 +3500,8 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         % switch for debugs
         fprintf(fida,'r3h %15.11f  %15.11f  %15.11f dr %15.11f\n', r3h(1),  r3h(2),  r3h(3), mag(dr));
         if (mag(dr) > 0.05)
-            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
         end
 
         [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tk);
@@ -3517,8 +3520,8 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
         end
 
         for j=1:3
@@ -3542,8 +3545,8 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             dr(j) = r2(j) - r3h(j);
         end
         if (mag(dr) > 0.05)
-            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
-            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+            fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
+            fprintf(fidas,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nrev, mag(dr));
         end
         %fprintf(fid,'diffs " + mag(dr).ToString("0.00000000000"));
 
@@ -3582,7 +3585,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     de = 'L';
     if (methodType == "lambertk" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, show, 'n' )
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, show, 'n' )
 
         fprintf(fida,' %s\n',detailSum);
         fprintf(fidas,' %s\n', errorout);
@@ -3670,7 +3673,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         % tofk1, kbik2, tofk2, kbik1;
         %string outstr;
         %getmins(1, 'k', nrev, r1, r2, s, tau, dm, de, out tofk1, out kbik1, out tofk2, out kbik2, out outstr);
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, show, 'n' )
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, show, 'n' )
         fprintf(fida,' %s\n',detailSum);
         fprintf(fidas,' %s\n', errorout);
         if (~detailAll.Contains("not enough time"))
@@ -3753,7 +3756,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     % switch tdi!!  tdirk to tdidk  'L'
     if (methodType == "lambertk" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);  % 'L'
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, show, 'n' )
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, show, 'n' )
         fprintf(fid,' %s\n',detailSum);
         fprintf(fida,' %s\n', errorout);
         if (~detailAll.Contains("not enough time"))
@@ -3835,7 +3838,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     de = 'H';
     if (methodType == "lambertk" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tbi, show, 'n' )
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, show, 'n' )
         fprintf(fida,' %s\n',detailSum);
         fprintf(fidsa,' %s\n', errorout);
         if (~detailAll.Contains("not enough time"))
@@ -4675,23 +4678,22 @@ function testsunmoonjpl(fid)
     [jpldearr] = readjplde(infilename);
 
     [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 0.0, 'l', jpldearr);
-    fprintf(fid,'findjpldeephem 0000 hrs l %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, rsun(1), ...
+    fprintf(fid,'findjpldeephem 0000 hrs l \n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, 0.0, rsun(1), ...
         rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
 
     [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 0.0, 's', jpldearr);
-    fprintf(fid,'findjpldeephem 0000 hrs s %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, rsun(1), ...
+    fprintf(fid,'findjpldeephem 0000 hrs s \n %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, 0.0,rsun(1), ...
         rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
 
-    [rsun, rtascs, decls, rmoon, rtascm, declm] = sunmoonjpl(jd, 0.0, 's', jpldearr);
+    [rsun, rtascs, decls, rmoon, rtascm, declm] = sunmoonjpl(jd, jdF, 's', jpldearr);
     fprintf(fid,'sunmoon 0000 hrs s\n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n',...
         jd, jdF, rsun(1), rsun(2), rsun(3),rmoon(1), rmoon(2), rmoon(3));
 
-
-    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 0.0, 'l', jpldearr);
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 'l', jpldearr);
     fprintf(fid,'findjpldeephem hrs l\n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n',...
         jd, jdF, rsun(1), rsun(2), rsun(3),rmoon(1), rmoon(2), rmoon(3));
 
-    [rsun, rtascs, decls, rmoon, rtascm, declm] = sunmoonjpl(jd, 0.0, 'l', jpldearr);
+    [rsun, rtascs, decls, rmoon, rtascm, declm] = sunmoonjpl(jd, jdF, 'l', jpldearr);
     fprintf(fid,'sunmoon hrs l\n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n',...
         jd, jdF, rsun(1), rsun(2), rsun(3),rmoon(1), rmoon(2), rmoon(3));
 
@@ -4701,32 +4703,32 @@ function testsunmoonjpl(fid)
 
 
     % ex 8.5 test
-    [jd, jdF] = jday(2020, 2, 18, 15, 8, 47.23847)
-    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 0.0, 's', jpldearr);
-    fprintf(fid,'findjpldeephem 0000 hrs s %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, rsun(1), ...
+    [jd, jdF] = jday(2020, 2, 18, 15, 8, 47.23847);
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 's', jpldearr);
+    fprintf(fid,'findjpldeephem 0000 hrs s \n%16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, rsun(1), ...
         rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
 
     % test interpolation of vectors
     % shows spline is MUCH better - 3 km sun variation in mid day linear, 60m diff with spline.
     [jd, jdF] = jday(2017, 5, 11, 3, 51, 42.7657);
     [jd, jdF] = jday(2000, 1, 1, 0, 0, 0.0);
-    fprintf(fid,'findjplde  mfme     rsun x             y                 z             rmoon x             y                z      (km)');
+    fprintf(fid,'findjplde  mfme     rsun x             y                 z             rmoon x             y                z      (km)\n');
 
     % the code that you want to measure comes here
     % read in jpl sun moon files - seems to be the slowest part (800 msec)
-    infilename = append('D:\Codes\LIBRARY\DataLib\', 'sunmooneph_430t.txt');
-    [jpldearr, jdjpldestart, jdjpldestartFrac] = initjplde(infilename);
+    infilename = append('D:\Codes\LIBRARY\DataLib\', 'sunmooneph_430t12.txt');
+    [jpldearr] = readjplde(infilename);
 
-    for ii = 0: 36500
-        % seems pretty fast (45 msec)
-        for jj = 0:24
-
-    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd + ii, (jj * 1.0) / 24.0, 's', jpldearr);
-            % the write takes some time (160 msec)
-    fprintf(fid,'sunmoon 0000 hrs s\n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n',...
-        jd,  (ii * 60.0), rsun(1), rsun(2), rsun(3),rmoon(1), rmoon(2), rmoon(3));
-        end
-    end
+    % for ii = 0: 36500
+    %     % seems pretty fast (45 msec)
+    %     for jj = 0:24
+    % 
+    % [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd + ii, (jj * 1.0) / 24.0, 's', jpldearr);
+    %         % the write takes some time (160 msec)
+    % fprintf(fid,'sunmoon 0000 hrs s\n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n',...
+    %     jd,  (ii * 60.0), rsun(1), rsun(2), rsun(3),rmoon(1), rmoon(2), rmoon(3));
+    %     end
+    % end
 
 end
 
@@ -7033,22 +7035,22 @@ end
 % % fprintf(fid,'ansr 21  0 0.385389365005720                                                                      21  5   354542.107743601  354542.1077435970657340');
 % % fprintf(fid,'ansr 21 20         -2442182686.11423  -2442182686.11409981594');
 % % fprintf(fid,'ansr 21 21          405012060.632803  405012060.6327805324689' + '\n');
-% 
+%
 % % fprintf(fid,'\naccelerations --------------- ');
 % % FullGeop(recef, jd, jdF, order, gravData, out aPert, out aPert1);
-% 
+%
 % % fprintf(fid,'apertG 21 21   ' + aPert(1), aPert(2), aPert(3));
 % % fprintf(fid,'apertM 21 21   ' + aPert1(1), '     ' + aPert1(2), '     ' + aPert1(3));
 % % fprintf(fid,'ansr             8.653210294968294E-7  -6.515584998975128E-6  -1.931032474628621E-5 ');
 % % fprintf(fid,'ansr             8.653210294968E-7     -6.5155849989750E-6    -1.931032474628616E-5');
-% 
+%
 % % % --------------------fonte 1993 test
 % % fprintf(fid,'\n===================================== Fonte 1993 test case =====================================');
 % % fprintf(fid,'GEM-T3 unitalized 50x50 ');
 % % fname = 'D:/Dataorig/Gravity/GEMT3unit50.grv';          % unit only released as 36x36 though...
 % % unital = 'y';
-% 
-% 
+%
+%
 % % [gravarr] = readgravityfield(fname, normal);
 % % fprintf(fid,'\ncoefficients --------------- ');
 % % fprintf(fid,'c  4  0   ' + gravData.c(5, 1), gravData.s(5, 1));
@@ -7056,61 +7058,61 @@ end
 % % fprintf(fid,'c 50  0   ' + gravData.c[50, 0], gravData.s[50, 0]);
 % % fprintf(fid,'c 50 50   ' + gravData.c[50, 50], gravData.s[50, 50]);
 % % fprintf(fid,'c 50  5   ' + gravData.c[50, 5], gravData.s[50, 5]);
-% 
+%
 % % fprintf(fid,'\nLegendre polynomials --------------- ');
 % % % GTDS Emulation vs Lundberg Truth (21x21 GEM10B)
 % % degree = 50;
 % % order = 50;
-% 
+%
 % % LegPoly(latgc, order, out LegArr, out LegArrG, out LegArrN, out LegArrGN);
 % % % get geodyn version
 % % geodynlegp(latgc, degree, order, out LegArr1);
 % % % get exact
 % % %  LegPolyEx(latgc, order, out LegArrEx);
-% 
+%
 % % fprintf(fid,'legarr4    0   ' + LegArrN(5, 1), LegArrN(5, 2));
-% 
+%
 % % fprintf(fid,'50  0          ' + LegArrN[50, 0]);
 % % fprintf(fid,'50  0 alt      ' + LegArrGN[50, 0]);
 % % fprintf(fid,'ansr 50  0      0.09634780379822722     9.634780379823085162E-02');
 % % fprintf(fid,'50  0 geody    ' + LegArr1[50, 0], '\n');
 % % %   fprintf(fid,'50  0 exact    ' + LegArrEx[50, 0], '\n');
 % % %    fprintf(fid,'50  0 exact    ' + LegArrEx[50, 0], '\n');
-% 
+%
 % % fprintf(fid,'50 21       ' + LegArrN[50, 21]);
 % % fprintf(fid,'50 21 alt   ' + LegArrGN[50, 21]);
 % % fprintf(fid,'ansr 50  21  -1.443200082785759E+28  -14432000827857661203015450149.6553');
 % % fprintf(fid,'50 21 geody ' + LegArr1[50, 21], '\n');
 % % %   fprintf(fid,'50 21 exact  ' + LegArrEx[50, 21], '\n');
-% 
+%
 % % fprintf(fid,'50 49       ' + LegArrN[50, 49]);
 % % fprintf(fid,'50 49 alt   ' + LegArrGN[50, 49]);
 % % fprintf(fid,'ansr 50  49  -8.047341511222794E+39  -8.047341511222872818E+39');
 % % fprintf(fid,'50 49 geody ' + LegArr1[50, 49], '\n');
 % % % fprintf(fid,'50 49 exact ' + ex5049, '\n');
-% 
+%
 % % fprintf(fid,'50 50       ' + LegArrN[50, 50]);
 % % fprintf(fid,'50 50 alt   ' + LegArrGN[50, 50]);
 % % fprintf(fid,'ansr 50 50      1.334572710963763E+39   1.334572710963775698E+39' + '\n');
 % % fprintf(fid,'50 50 geody ' + LegArr1[50, 50], '\n');
 % % %fprintf(fid,'50 50 exact ' + ex550, '\n');
-% 
+%
 % % fprintf(fid,'\naccelerations --------------- ');
 % % unitalized calcs, show
 % % FullGeop(recef, order, unitalized, gravData, out aPert, out aPert1);
 % % fprintf(fid,'apert 50 50   ' + aPert(1), aPert(2), aPert(3));
 % % fprintf(fid,'ansr           8.683465146150188E-007    -6.519678538340073E-006   -1.931876804829165E-005');
 % % fprintf(fid,'ansr           8.68346514615019361E-07   -6.51967853834008023E-06  -1.93187680482916393E-05');
-% 
+%
 % % recef = [ 487.0696937, -5330.5022406, 4505.7372146 ];  % m
 % % vecef = [ -2.101083975, 4.624581986, 5.688300377 ];
-% 
+%
 % % write out results
 % string directory = @'d:\codes\library\matlab\';
 % File.WriteAllText(directory + 'legpoly.txt', strbuildall);
-% 
+%
 % File.WriteAllText(directory + 'legendreAcc.txt', strbuildplot);
-% 
+%
 % end
 %                                        end
 %                                end
@@ -7121,10 +7123,11 @@ end
 %            end
 %     end
 % end
-% 
+%
 
 
 function testhill(fid)
+    constastro;
     dts = 1400.0; % second
 
     % circular orbit
@@ -7180,72 +7183,71 @@ end  % test hill
 % [strout] = printcov(covin, covtype, cu, anom)
 % ----------------------------------------------------------------------------*/
 
-function [strout] = printcov(covin, covtype, cu, anom)
+function [strout] = printcov(covin, covtype, cu, anom, fid)
 
-    if (anom.Equals('truea') || anom.Equals('meana'))
-        semi = 'a m  ';
-    else
+    strout = '';
+    % if (strcmp(anom, 'truea') == 1) || (strcmp(anom, 'meana') == 1)
+    %     semi = 'a m  ';
+    % else
+    %     if (strcmp(anom, 'truen') == 1) || (strcmp(anom, 'meann') == 1)
+    %         semi = 'n rad';
+    %     end
+    % end
+    % 
+    % if (strcmp(covtype, 'ct') == 1)
+    %     append (strout,'cartesian covariance\n');
+    %     append(strout,'        x  m            y m             z  m           xdot  m/s       ydot  m/s       zdot  m/s\n');
+    % end
+    % 
+    % if (strcmp(covtype, 'cl') == 1)
+    % 
+    %     append(strout, 'classical covariance\n');
+    %     if (cu == 'm')
+    % 
+    %         append(strout, '          ' + semi + '          ecc           incl rad      raan rad         argp rad        ');
+    %         if (contains(anom, 'mean') == 1) % 'meana' 'meann'
+    %             append(strout, 'm rad\n');
+    %         else     % 'truea' 'truen'
+    %             append(strout, ' nu rad\n');
+    %         end
+    %     else
+    % 
+    %         append(strout, '          ' + semi + '           ecc           incl deg      raan deg         argp deg        ');
+    %         if (contains(anom, 'mean') == 1) % 'meana' 'meann'
+    %             append(strout, ' m deg\n');
+    %         else     % 'truea' 'truen'
+    %             append(strout, ' nu deg\n');
+    %         end
+    %     end
+    % end
+    % 
+    % if (strcmp(covtype, 'eq') == 1)
+    %
+    %     append(strout, 'equinoctial covariance\n');
+    %     %            if (cu == 'm')
+    %     if (contains(anom, 'mean') == 1) % 'meana' 'meann'
+    %         append(strout, '         ' + semi + '           af              ag           chi             psi         meanlonM rad\n');
+    %     else     % 'truea' 'truen'
+    %         append(strout, '         ' + semi + '           af              ag           chi             psi         meanlonNu rad\n');
+    %     end
+    % end
+    % if (strcmp(covtype, 'fl') == 1)
+    %     append(strout, 'flight covariance\n');
+    %     append(strout, '       lon  rad      latgc rad        fpa rad         az rad           r  m           v  m/s\n');
+    % end
+    %
+    % if (strcmp(covtype, 'sp') == 1)
+    %     append(strout, 'spherical covariance\n');
+    %     append(strout, '      rtasc deg       decl deg        fpa deg         az deg           r  m           v  m/s\n');
+    % end
 
-        if (anom.Equals('truen') || anom.Equals('meann'))
-            semi = 'n rad';
-        end
-
-        if (covtype.Equals('ct'))
-
-            strout = 'cartesian covariance\n';
-            strout = strout + '        x  m            y m             z  m           xdot  m/s       ydot  m/s       zdot  m/s\n';
-        end
-
-        if (covtype.Equals('cl'))
-
-            strout = strout + 'classical covariance\n';
-            if (cu == 'm')
-
-                strout = strout + '          ' + semi + '          ecc           incl rad      raan rad         argp rad        ';
-                if (anom.Contains('mean')) % 'meana' 'meann'
-                    strout = strout + 'm rad\n';
-                else     % 'truea' 'truen'
-                    strout = strout + ' nu rad\n';
-                end
-            else
-
-                strout = strout + '          ' + semi + '           ecc           incl deg      raan deg         argp deg        ';
-                if (anom.Contains('mean')) % 'meana' 'meann'
-                    strout = strout + ' m deg\n';
-                else     % 'truea' 'truen'
-                    strout = strout + ' nu deg\n';
-                end
-            end
-
-            if (covtype.Equals('eq'))
-
-                strout = strout + 'equinoctial covariance\n';
-                %            if (cu == 'm')
-                if (anom.Contains('mean')) % 'meana' 'meann'
-                    strout = strout + '         ' + semi + '           af              ag           chi             psi         meanlonM rad\n';
-                else     % 'truea' 'truen'
-                    strout = strout + '         ' + semi + '           af              ag           chi             psi         meanlonNu rad\n';
-                end
-
-                if (covtype.Equals('fl'))
-                    strout = strout + 'flight covariance\n';
-                    strout = strout + '       lon  rad      latgc rad        fpa rad         az rad           r  m           v  m/s\n';
-                end
-
-                if (covtype.Equals('sp'))
-                    strout = strout + 'spherical covariance\n';
-                    strout = strout + '      rtasc deg       decl deg        fpa deg         az deg           r  m           v  m/s\n';
-                end
-
-                % format strings to show signs 'and' to not round off if trailing 0!!
-                string fmt = '+#.#########0E+00;-#.#########0E+00';
-                for i=1:6
-                    strout = append(strout, covin(i, 1), covin(i, 2), covin(i, 3),covin(i, 4), covin(i, 5), covin(i, 6),'\n');
-                end  % printcov
-            end
-        end
+    % format strings to show signs 'and' to not round off if trailing 0!!
+    for i=1:6
+        %    append(strout, covin(i, 1), num2str(covin(i, 2)), num2str(covin(i, 3)), num2str(covin(i, 4)), num2str(covin(i, 5)), num2str(covin(i, 6)),'\n');
     end
-end
+    fprintf(fid,'%17.10g %17.10g %17.10g %17.10g %17.10g %17.10g\n', covin);
+
+end  % printcov
 
 
 %----------------------------------------------------------------------------
@@ -7269,40 +7271,42 @@ end
 %
 % ----------------------------------------------------------------------------*/
 
-function [strout] = printdiff(strin, mat1, mat2)
+function [strout] = printdiff(strin, mat1, mat2, fid)
 
     small = 1e-18;
 
     % format strings to show signs 'and' to not round off if trailing 0!!
 
-    strout = 'diff ' + strin + '\n';
-    for i = 1: 6
+    strout = '';
+    %strout = 'diff ' + strin + '\n';
+    dr = mat1-mat2;
+    %for i = 1: 6
+        %    for j=1:6
+        %        dr(i, j) = mat1(i, j) - mat2(i, j);
+        %        strout = append(strout, dr(i, 1), dr(i, 2), dr(i, 3), dr(i, 4), dr(i, 5), dr(i, 6),'\n');
+%        fprintf(fid,' diff %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \,', dr(:, i));
+ %   end
 
+    fprintf(fid,'%17.10g %17.10g %17.10g %17.10g %17.10g %17.10g\n', dr);
+
+    %    append(strout, 'pctdiff % ',strin , ' pct over 1e-18\n');
+    % fprintf(fid, '%14.4f%14.4f%14.4f%14.4f%14.4f%14.4f\n', 100.0 * ((mat1' - mat2') / mat1'));
+    % fprintf(fid, 'Check consistency of both approaches tmct2cl-inv(tmcl2ct) diff pct over 1e-18\n');
+    % fprintf(fid, '-------- accuracy of tm comparing ct2cl and cl2ct ---------\n');
+    %tm1 = mat1';
+    %tm2 = mat2';
+    for i=1:6
         for j=1:6
-            dr(i, j) = mat1(i, j) - mat2(i, j);
-            strout = append(strout, dr(i, 1), dr(i, 2), dr(i, 3), dr(i, 4), dr(i, 5), dr(i, 6),'\n');
-        end
-
-        strout = strout + 'pctdiff % ' + strin + ' pct over 1e-18\n';
-        % fprintf(fid, '%14.4f%14.4f%14.4f%14.4f%14.4f%14.4f\n', 100.0 * ((mat1' - mat2') / mat1'));
-        % fprintf(fid, 'Check consistency of both approaches tmct2cl-inv(tmcl2ct) diff pct over 1e-18\n');
-        % fprintf(fid, '-------- accuracy of tm comparing ct2cl and cl2ct ---------\n');
-        %tm1 = mat1';
-        %tm2 = mat2';
-        for i=1:6
-
-            for j=1:6
-
-                if (abs(dr(i, j)) < small || abs(mat1(i, j)) < small)
-                    diffmm(i, j) = 0.0;
-                else
-                    diffmm(i, j) = 100.0 * (dr(i, j) / mat1(i, j));
-                end
-                strout = append(strout, diffmm(i, 1), diffmm(i, 2), diffmm(i, 3), diffmm(i, 4), diffmm(i, 5), diffmm(i, 6),'\n');
+            if (abs(dr(i, j)) < small || abs(mat1(i, j)) < small)
+                diffmm(i, j) = 0.0;
+            else
+                diffmm(i, j) = 100.0 * (dr(i, j) / mat1(i, j));
             end
+            %           strout = append(strout, diffmm(i, 1), diffmm(i, 2), diffmm(i, 3), diffmm(i, 4), diffmm(i, 5), diffmm(i, 6),'\n');
         end
     end
-
+    
+    fprintf(fid,'%17.10g %17.10g %17.10g %17.10g %17.10g %17.10g\n', diffmm);
 end  % printdiff
 
 
@@ -7339,6 +7343,8 @@ function testcovct2rsw(fid)
     ddeps = 0.0;
     ddx = 0.0;
     ddy = 0.0;
+    eqeterms = 2;
+
 
     [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
         = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
@@ -7376,7 +7382,7 @@ function testcovct2rsw(fid)
         1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6;...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6;...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001];
-    cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
+    cartstate = [ reci(1); reci(2); reci(3); veci(1); veci(2); veci(3) ];  % in km
 
 
     % test position and velocity going back
@@ -7385,18 +7391,18 @@ function testcovct2rsw(fid)
     [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     fprintf(fid,'==================== do the sensitivity tests\n');
     fprintf(fid,'1.  Cartesian Covariance\n');
-    [strout ] = printcov(cartcov, 'ct', 'm', anom);
-    fprintf(fid,strout);
+    [strout ] = printcov(cartcov, 'ct', 'm', anom, fid);
+    %%fprintf(fid,strout);
 
     fprintf(fid,'2.  RSW Covariance from Cartesian #1 above  -------------------\n');
     [cartcovrsw, tmct2cl] = covct2rsw(cartcov, cartstate);
-    [strout ] = printcov(cartcovrsw, 'ct', 'm', ano);
-    fprintf(fid,strout);
+    [strout ] = printcov(cartcovrsw, 'ct', 'm', anom, fid);
+    %%fprintf(fid,strout);
 
     fprintf(fid,'2.  NTW Covariance from Cartesian #1 above  -------------------\n');
     [cartcovntw, tmct2cl] = covct2ntw(cartcov, cartstate);
-    [strout ] = printcov(cartcovntw, 'ct', 'm', anom);
-    fprintf(fid,strout);
+    [strout ] = printcov(cartcovntw, 'ct', 'm', anom, fid);
+    %fprintf(fid,strout);
 end
 
 
@@ -7450,7 +7456,7 @@ function testcovct2clmean(fid)
         1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001 ];
-    cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
+    cartstate = [ reci(1); reci(2); reci(3); veci(1); veci(2); veci(3) ];  % in km
 
     % --------convert to a classical orbit state
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (reci, veci);
@@ -7475,7 +7481,7 @@ function testcovct2clmean(fid)
     eqstate(3) = ag;
     eqstate(4) = chi;
     eqstate(5) = psi;
-    if (contains(anom, 'mean')) %  meana or meann
+    if (contains(anom, 'mean')==1) %  meana or meann
         eqstate(6) = meanlonM;
     else % truea or truen
         eqstate(6) = meanlonNu;
@@ -7483,12 +7489,12 @@ function testcovct2clmean(fid)
     % --------convert to a flight orbit state
 [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
         ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
-    if (anomflt =='radec')
+    if (strcmp(anomflt, 'radec')==1)
 
         fltstate(1) = rtasc;
         fltstate(2) = decl;
     else
-        if (anomflt=='latlon')
+        if (strcmp(anomflt, 'latlon') == 1)
 
             fltstate(1) = lon;
             fltstate(2) = latgc;
@@ -7514,16 +7520,16 @@ function testcovct2clmean(fid)
     fprintf(fid,'==================== do the sensitivity tests\n');
 
     fprintf(fid,'1.  Cartesian Covariance\n');
-    [strout ] = printcov(cartcov, 'ct', 'm', anom);
+    [strout ] = printcov(cartcov, 'ct', 'm', anom,fid);
 
     fprintf(fid,'2.  Classical Covariance from Cartesian #1 above (%s) -------------------\n', anom);
 
     [classcovmeana, tmct2cl] = covct2cl(cartcov, cartstate, anom);
-    [strout ] = printcov(classcovmeana, 'cl', 'm', anom);
+    [strout ] = printcov(classcovmeana, 'cl', 'm', anom,fid);
 
     fprintf(fid,'  Cartesian Covariance from Classical #2 above\n');
     [cartcovmeanarev, tmcl2ct] = covcl2ct(classcovmeana, classstate, anom);
-    [strout ] = printcov(cartcovmeanarev, 'ct', 'm', anom);
+    [strout ] = printcov(cartcovmeanarev, 'ct', 'm', anom,fid);
     fprintf(fid,'\n');
 
     printdiff(' cartcov - cartcovmeanarev\n', cartcov, cartcovmeanarev);
@@ -7531,7 +7537,7 @@ function testcovct2clmean(fid)
     %coveci_ecef(ref cartcov, cartstate, MathTimeLib.Edirection.eto,  ref ecefcartcov, out tm, iau80arr,
     %            ttt, jdut1, lod, xp, yp, 2, ddpsi, ddeps, AstroLib.EOpt.e80);
     %printcov(cartcovmeanarev, 'ct', 'm', anom, out strout);
-    fprintf(fid,strout);
+    %fprintf(fid,strout);
     fprintf(fid,'\n');
 
 end  % testcovct2clmean
@@ -7581,7 +7587,7 @@ function testcovct2cltrue(fid)
         1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001 ];
-    cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
+    cartstate = [ reci(1); reci(2); reci(3); veci(1); veci(2); veci(3) ];  % in km
 
     % --------convert to a classical orbit state
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (reci, veci);
@@ -7590,14 +7596,14 @@ function testcovct2cltrue(fid)
     classstate(3) = incl;
     classstate(4) = raan;
     classstate(5) = argp;
-    if (anom.Contains('mean')) % meann or meana
+    if (contains(anom, 'mean')) % meann or meana
         classstate(6) = m;
     else  % truea or truen
         classstate(6) = nu;
     end
     % -------- convert to an equinoctial orbit state
     [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq(reci, veci);
-    if (anom.Equals('meana') || anom.Equals('truea'))
+    if (strcmp(anom, 'meana') || strcmp(anom, 'truea'))
         eqstate(1) = a;  % km
     else % meann or truen
         eqstate(1) = n;
@@ -7606,7 +7612,7 @@ function testcovct2cltrue(fid)
     eqstate(3) = ag;
     eqstate(4) = chi;
     eqstate(5) = psi;
-    if (anom.Contains('mean')) %  meana or meann
+    if (contains(anom, 'mean')) %  meana or meann
         eqstate(6) = meanlonM;
     else % truea or truen
         eqstate(6) = meanlonNu;
@@ -7645,28 +7651,28 @@ function testcovct2cltrue(fid)
     fprintf(fid,'==================== do the sensitivity tests\n');
 
     fprintf(fid,'1.  Cartesian Covariance\n');
-    [strout ] = printcov(cartcov, 'ct', 'm', anom);
-    fprintf(fid,strout);
+    [strout ] = printcov(cartcov, 'ct', 'm', anom,fid);
+    %fprintf(fid,strout);
 
-    fprintf(fid,'2.  Classical Covariance from Cartesian #1 above (' + anom + ') -------------------\n');
+    fprintf(fid,'2.  Classical Covariance from Cartesian #1 above (%s) -------------------\n', anom);
 
     [classcovtruea, tmct2cl] = covct2cl(cartcov, cartstate, anom);
-    [strout ] = printcov(classcovtruea, 'cl', 'm', anom);
-    fprintf(fid,strout);
+    [strout ] = printcov(classcovtruea, 'cl', 'm', anom,fid);
+    %fprintf(fid,strout);
 
     fprintf(fid,'  Cartesian Covariance from Classical #2 above\n');
     [cartcovtruearev, tmcl2ct] = covcl2ct(classcovtruea, classstate, anom);
-    [strout ] = printcov(cartcovtruearev, 'ct', 'm', anom);
-    fprintf(fid,strout);
+    [strout ] = printcov(cartcovtruearev, 'ct', 'm', anom,fid);
+    %fprintf(fid,strout);
     fprintf(fid,'\n');
 
     printdiff(' cartcov - cartcovtruearev\n', cartcov, cartcovtruearev);
-    fprintf(fid,strout);
+    %fprintf(fid,strout);
 end  % testcovct2cltrue
 
 
 
-function testcovcl2eq(anom)
+function testcovcl2eq(anom, fid)
     anomflt = 'latlon'; % latlon  radec
 
     reci = [ -605.79221660; -5870.22951108; 3493.05319896 ];
@@ -7697,6 +7703,7 @@ function testcovcl2eq(anom)
     ddeps = 0.0;
     ddx = 0.0;
     ddy = 0.0;
+    eqeterms = 2;
 
     [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
         = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
@@ -7709,7 +7716,7 @@ function testcovcl2eq(anom)
         1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001 ];
-    cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
+    cartstate = [ reci(1); reci(2); reci(3); veci(1); veci(2); veci(3) ];  % in km
 
     % --------convert to a classical orbit state
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (reci, veci);
@@ -7718,7 +7725,7 @@ function testcovcl2eq(anom)
     classstate(3) = incl;
     classstate(4) = raan;
     classstate(5) = argp;
-    if (anom.Contains('mean')) % meann or meana
+    if (contains(anom, 'mean')) % meann or meana
         classstate(6) = m;
     else  % truea or truen
         classstate(6) = nu;
@@ -7726,7 +7733,7 @@ function testcovcl2eq(anom)
 
     % -------- convert to an equinoctial orbit state
     [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq(reci, veci);
-    if (anom.Equals('meana') || anom.Equals('truea'))
+    if (strcmp(anom, 'meana')==1) || (strcmp(anom, 'truea')==1)
         eqstate(1) = a;  % km
     else % meann or truen
         eqstate(1) = n;
@@ -7735,20 +7742,20 @@ function testcovcl2eq(anom)
     eqstate(3) = ag;
     eqstate(4) = chi;
     eqstate(5) = psi;
-    if (anom.Contains('mean')) %  meana or meann
+    if (contains(anom, 'mean')==1) %  meana or meann
         eqstate(6) = meanlonM;
     else % truea or truen
         eqstate(6) = meanlonNu;
     end
     % --------convert to a flight orbit state
-[lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
-    if (anomflt.Equals('radec'))
+   [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
 
+   if (strcmp(anomflt, 'radec')==1)
         fltstate(1) = rtasc;
         fltstate(2) = decl;
     else
-        if (anomflt.Equals('latlon'))
+        if (strcmp(anomflt, 'latlon')==1)
 
             fltstate(1) = lon;
             fltstate(2) = latgc;
@@ -7761,7 +7768,7 @@ function testcovcl2eq(anom)
     fltstate(6) = magv;
 
     % test position and velocity going back
-    avec = [ 0.0, 0.0, 0.0 ];
+    aeci = [ 0.0; 0.0; 0.0 ];
 
     [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
@@ -7775,31 +7782,31 @@ function testcovcl2eq(anom)
     fprintf(fid,'==================== do the sensitivity tests\n');
 
     fprintf(fid,'1.  Cartesian Covariance\n');
-    [strout] = printcov(cartcov, 'ct', 'm', anom);
-    fprintf(fid,strout);
+    [strout] = printcov(cartcov, 'ct', 'm', anom,fid);
+    %fprintf(fid,strout);
 
-    fprintf(fid,'3.  Equinoctial Covariance from Classical (Cartesian) #1 above (' + anom + ') -------------------\n');
+    fprintf(fid,'3.  Equinoctial Covariance from Classical (Cartesian) #1 above (%s) -------------------\n', anom);
     [classcovmeana, tmct2cl] = covct2cl(cartcov, cartstate, anom);
-    [eqcovmeana, tmcl2eq] = covcl2eq(classcovmeana, classstate, anom, anom, fr);
+    [eqcovmeana, tmcl2eq] = covcl2eq(classcovmeana, classstate, anom, fr);
 
-    [strout] =printcov(eqcovmeana, 'eq', 'm', anom);
-    fprintf(fid,strout);
+    [strout] =printcov(eqcovmeana, 'eq', 'm', anom,fid);
+    %fprintf(fid,strout);
 
     fprintf(fid,'  Cartesian Covariance from Classical #3 above\n');
-    [classcovmeana, tmeq2cl] = coveq2cl(eqcovmeana, eqstate, anom, anom, fr);
-    [strout] =printcov(classcovmeana, 'cl', 'm', anom);
-    fprintf(fid,strout);
+    [classcovmeana, tmeq2cl] = coveq2cl(eqcovmeana, eqstate, anom, fr);
+    [strout] =printcov(classcovmeana, 'cl', 'm', anom,fid);
+    %fprintf(fid,strout);
 
     [cartcovmeanarev, tmcl2ct] = covcl2ct(classcovmeana, classstate, anom);
-    [strout] =printcov(cartcovmeanarev, 'ct', 'm', anom);
-    fprintf(fid,strout);
+    [strout] =printcov(cartcovmeanarev, 'ct', 'm', anom,fid);
+    %fprintf(fid,strout);
     fprintf(fid,'\n');
 
-    [strout] = printdiff(' cartcov - cartcov' + anom + 'rev\n', cartcov, cartcovmeanarev);
-    fprintf(fid,strout);
+    [strout] = printdiff(append(' cartcov - cartcov', anom, 'rev\n'), cartcov, cartcovmeanarev, fid);
+    %fprintf(fid,strout);
 end  % testcovcl2eq
 
-function testcovct2eq(anom)
+function testcovct2eq(anom, fid)
     anomflt = 'latlon'; % latlon  radec
 
 
@@ -7831,6 +7838,7 @@ function testcovct2eq(anom)
     ddeps = 0.0;
     ddx = 0.0;
     ddy = 0.0;
+    eqeterms = 2;
 
     [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
         = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
@@ -7843,7 +7851,7 @@ function testcovct2eq(anom)
         1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001 ];
-    cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
+    cartstate = [ reci(1); reci(2); reci(3); veci(1); veci(2); veci(3) ];  % in km
 
     % --------convert to a classical orbit state
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (reci, veci);
@@ -7852,14 +7860,14 @@ function testcovct2eq(anom)
     classstate(3) = incl;
     classstate(4) = raan;
     classstate(5) = argp;
-    if (anom.Contains('mean')) % meann or meana
+    if (contains(anom, 'mean')==1) % meann or meana
         classstate(6) = m;
     else  % truea or truen
         classstate(6) = nu;
     end
     % -------- convert to an equinoctial orbit state
     [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq(reci, veci);
-    if (anom.Equals('meana') || anom.Equals('truea'))
+    if (strcmp(anom, 'meana')==1) || (strcmp(anom, 'truea')==1)
         eqstate(1) = a;  % km
     else % meann or truen
         eqstate(1) = n;
@@ -7868,7 +7876,7 @@ function testcovct2eq(anom)
     eqstate(3) = ag;
     eqstate(4) = chi;
     eqstate(5) = psi;
-    if (anom.Contains('mean')) %  meana or meann
+    if (contains(anom, 'mean')==1) %  meana or meann
         eqstate(6) = meanlonM;
     else % truea or truen
         eqstate(6) = meanlonNu;
@@ -7876,13 +7884,13 @@ function testcovct2eq(anom)
 
     % --------convert to a flight orbit state
 [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
-    if (anomflt.Equals('radec'))
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    if (strcmp(anomflt, 'radec')==1)
 
         fltstate(1) = rtasc;
         fltstate(2) = decl;
     else
-        if (anomflt.Equals('latlon'))
+        if (strcmp(anomflt, 'latlon')==1)
 
             fltstate(1) = lon;
             fltstate(2) = latgc;
@@ -7894,7 +7902,7 @@ function testcovct2eq(anom)
     fltstate(6) = magv;
 
     % test position and velocity going back
-    avec = [ 0.0, 0.0, 0.0 ];
+    avec = [ 0.0; 0.0; 0.0 ];
 
     [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
@@ -7908,28 +7916,28 @@ function testcovct2eq(anom)
     fprintf(fid,'==================== do the sensitivity tests\n');
 
     fprintf(fid,'1.  Cartesian Covariance\n');
-    [strout] =printcov(cartcov, 'ct', 'm', anom);
-    fprintf(fid,strout);
+    [strout] =printcov(cartcov, 'ct', 'm', anom,fid);
+    %fprintf(fid,strout);
 
-    fprintf(fid,'3.  Equinoctial Covariance from Cartesian #1 above (' + anom + ') -------------------\n');
+    fprintf(fid,'3.  Equinoctial Covariance from Cartesian #1 above (%s) -------------------\n', anom);
     [eqcovmeana, tmct2eq] = covct2eq(cartcov, cartstate, anom, fr);
 
-    [strout] =printcov(eqcovmeana, 'eq', 'm', anom);
-    fprintf(fid,strout);
+    [strout] =printcov(eqcovmeana, 'eq', 'm', anom, fid);
+    %fprintf(fid,strout);
 
     fprintf(fid,'  Cartesian Covariance from Classical #3 above\n');
     [cartcovmeanarev, tmeq2ct] = coveq2ct(eqcovmeana, eqstate, anom, fr);
 
-    [strout] =printcov(cartcovmeanarev, 'ct', 'm', anom);
-    fprintf(fid,strout);
+    [strout] =printcov(cartcovmeanarev, 'ct', 'm', anom, fid);
+    %fprintf(fid,strout);
     fprintf(fid,'\n');
 
-    [strout] = printdiff(' cartcov - cartcov' + anom + 'rev\n', cartcov, cartcovmeanarev);
-    fprintf(fid,strout);
+    [strout] = printdiff(append(' cartcov - cartcov', anom, 'rev\n'), cartcov, cartcovmeanarev, fid);
+    %fprintf(fid,strout);
 end  % testcoveq2clmeann
 
 
-function testcovct2fl(anomflt)
+function testcovct2fl(anomflt, fid)
     anom = 'meann';
 
     reci = [ -605.79221660; -5870.22951108; 3493.05319896 ];
@@ -7965,6 +7973,7 @@ function testcovct2fl(anomflt)
     ddeps = 0.0;
     ddx = 0.0;
     ddy = 0.0;
+    eqeterms = 2;
 
     [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
         = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
@@ -7977,7 +7986,7 @@ function testcovct2fl(anomflt)
         1.0e-4, 1.0e-4, 1.0e-4, 0.0001,   1.0e-6,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   0.0001,   1.0e-6; ...
         1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6,   1.0e-6,   0.0001 ];
-    cartstate = [ reci(1), reci(2), reci(3), veci(1), veci(2), veci(3) ];  % in km
+    cartstate = [ reci(1); reci(2); reci(3); veci(1); veci(2); veci(3) ];  % in km
 
     % --------convert to a classical orbit state
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (reci, veci);
@@ -7986,14 +7995,14 @@ function testcovct2fl(anomflt)
     classstate(3) = incl;
     classstate(4) = raan;
     classstate(5) = argp;
-    if (anom.Contains('mean')) % meann or meana
+    if (contains(anom, 'mean')==1) % meann or meana
         classstate(6) = m;
     else  % truea or truen
         classstate(6) = nu;
     end
     % -------- convert to an equinoctial orbit state
     [a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr] = rv2eq(reci, veci);
-    if (anom.Equals('meana') || anom.Equals('truea'))
+    if (strcmp(anom, 'meana')==1) || (strcmp(anom, 'truea')==1)
         eqstate(1) = a;  % km
     else % meann or truen
         eqstate(1) = n;
@@ -8002,20 +8011,20 @@ function testcovct2fl(anomflt)
     eqstate(3) = ag;
     eqstate(4) = chi;
     eqstate(5) = psi;
-    if (anom.Contains('mean')) %  meana or meann
+    if (contains(anom, 'mean')==1) %  meana or meann
         eqstate(6) = meanlonM;
     else % truea or truen
         eqstate(6) = meanlonNu;
     end
     % --------convert to a flight orbit state
 [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
-    if (anomflt.Equals('radec'))
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    if (strcmp(anomflt,'radec')==1)
 
         fltstate(1) = rtasc;
         fltstate(2) = decl;
     else
-        if (anomflt.Equals('latlon'))
+        if (strcmp(anomflt, 'latlon')==1)
 
             fltstate(1) = lon;
             fltstate(2) = latgc;
@@ -8027,7 +8036,7 @@ function testcovct2fl(anomflt)
     fltstate(6) = magv;
 
     % test position and velocity going back
-    avec = [ 0.0, 0.0, 0.0 ];
+    avec = [ 0.0; 0.0; 0.0 ];
 
     [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
@@ -8041,30 +8050,28 @@ function testcovct2fl(anomflt)
     fprintf(fid,'==================== do the sensitivity tests\n');
 
     fprintf(fid,'1.  Cartesian Covariance\n');
-    [strout] =printcov(cartcov, 'ct', 'm', anomflt);
-    fprintf(fid,strout);
+    [strout] =printcov(cartcov, 'ct', 'm', anomflt, fid);
+    %fprintf(fid,strout);
 
-    fprintf(fid,'7.  Flight Covariance from Cartesian #1 above (' + anomflt + ') -------------------\n');
-    [fltcovmeana, tmct2fl] = covct2fl(cartcov, cartstate, anomflt, jdtt, jdttfrac, jdut1, jdxysstart,...
-        lod, xp, yp, 2, ddpsi, ddeps, ddx, ddy, iau80arr, '80');
-
-    if (anomflt.Equals('latlon'))
-        [strout] =printcov(fltcovmeana, 'fl', 'm', anomflt);
+    fprintf(fid,'7.  Flight Covariance from Cartesian #1 above (%s) -------------------\n', anomflt);
+    [fltcovmeana, tmct2fl] = covct2fl( cartcov, cartstate, anomflt, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps);
+    
+    if (strcmp(anomflt,'latlon')==1)
+        [strout] =printcov(fltcovmeana, 'fl', 'm', anomflt, fid);
     else
-        [strout] =printcov(fltcovmeana, 'sp', 'm', anomflt);
+        [strout] =printcov(fltcovmeana, 'sp', 'm', anomflt, fid);
     end
-    fprintf(fid,strout);
+    %fprintf(fid,strout);
 
     fprintf(fid,'  Cartesian Covariance from Flight #7 above\n');
-    [cartcovmeanarev, tmfl2ct] = covfl2ct(fltcovmeana, fltstate, anomflt, jdtt, jdttfrac, jdut1, ...
-        lod, xp, yp, 2, ddpsi, ddeps, ddx, ddy, iau80arr, '80');
+    [cartcovmeanarev, tmfl2ct] = covfl2ct( fltcovmeana, fltstate, anomflt, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps);
 
-    [strout] = printcov(cartcovmeanarev, 'ct', 'm', anomflt);
-    fprintf(fid,strout);
+    [strout] = printcov(cartcovmeanarev, 'ct', 'm', anomflt, fid);
+    %fprintf(fid,strout);
     fprintf(fid,'\n');
 
-    [strout] = printdiff(' cartcov - cartcov' + anomflt + 'rev\n', cartcov, cartcovmeanarev);
-    fprintf(fid,strout);
+    [strout] = printdiff(append(' cartcov - cartcov', anomflt, 'rev\n'), cartcov, cartcovmeanarev, fid);
+    %fprintf(fid,strout);
 end  % testcovct2fl
 
 
