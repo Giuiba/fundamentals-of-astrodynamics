@@ -6862,168 +6862,168 @@ namespace TestAllTool
         //
         // -----------------------------------------------------------------------------------------------\
 
-        public void FullGeopGot
-    (
-        AstroLib.gravityConst gravData,
-        double[] recef,
-        double[,,] normArr,
-        int order,
-        out double[,] legarrGot,
-        out double[] G,
-        out string straccum
-    )
-        {
-            straccum = "";
+    //    public void FullGeopGot
+    //(
+    //    AstroLib.gravityConst gravData,
+    //    double[] recef,
+    //    double[,,] normArr,
+    //    int order,
+    //    out double[,] legarrGot,
+    //    out double[] G,
+    //    out string straccum
+    //)
+    //    {
+    //        straccum = "";
 
-            legarrGot = new double[order + 2, order + 2];
-            G = new double[3];
+    //        legarrGot = new double[order + 2, order + 2];
+    //        G = new double[3];
 
-            //normArr = new double[order + 2, order + 2, 7];
-            double[] zeta, eta, xi;
-            zeta = new double[order + 1];
-            eta = new double[order + 1];
-            xi = new double[order + 1];
-            double[] ctrigArr = new double[order + 1];
-            double[] strigArr = new double[order + 1];
+    //        //normArr = new double[order + 2, order + 2, 7];
+    //        double[] zeta, eta, xi;
+    //        zeta = new double[order + 1];
+    //        eta = new double[order + 1];
+    //        xi = new double[order + 1];
+    //        double[] ctrigArr = new double[order + 1];
+    //        double[] strigArr = new double[order + 1];
 
-            double Ri, Xovr, Yovr, Zovr, sinlat, magr;
-            double muor, muor2, Reor, Reorn;
-            double Sumh, Sumgam, Sumj, Sumk, Lambda;
-            double Sumh_N, Sumgam_N, Sumj_N, Sumk_N, Mxpnm;
-            double BnmVal, pnm, snm, cnm;
-            Int32 mm1, mp1, nm1, nm2, npmp1, Lim, Sum_Init;
-            double cn;
+    //        double Ri, Xovr, Yovr, Zovr, sinlat, magr;
+    //        double muor, muor2, Reor, Reorn;
+    //        double Sumh, Sumgam, Sumj, Sumk, Lambda;
+    //        double Sumh_N, Sumgam_N, Sumj_N, Sumk_N, Mxpnm;
+    //        double BnmVal, pnm, snm, cnm;
+    //        Int32 mm1, mp1, nm1, nm2, npmp1, Lim, Sum_Init;
+    //        double cn;
 
-            magr = MathTimeLibr.mag(recef);
-            Ri = 1.0 / magr;
-            Xovr = recef[0] * Ri;
-            Yovr = recef[1] * Ri;
-            Zovr = recef[2] * Ri;
-            sinlat = Zovr;
-            double coslat = Math.Cos(Math.Asin(sinlat));
-            Reor = AstroLibr.gravConst.re * Ri;
-            Reorn = Reor;
-            muor = AstroLibr.gravConst.mu * Ri;
-            muor2 = muor * Ri;
+    //        magr = MathTimeLibr.mag(recef);
+    //        Ri = 1.0 / magr;
+    //        Xovr = recef[0] * Ri;
+    //        Yovr = recef[1] * Ri;
+    //        Zovr = recef[2] * Ri;
+    //        sinlat = Zovr;
+    //        double coslat = Math.Cos(Math.Asin(sinlat));
+    //        Reor = AstroLibr.gravConst.re * Ri;
+    //        Reorn = Reor;
+    //        muor = AstroLibr.gravConst.mu * Ri;
+    //        muor2 = muor * Ri;
 
-            // include two-body or not
-            //if (Want_Central_force == true)
-            //    Sum_Init = 1;
-            //else
-            // note, 1 makes the two body pretty close, except for the 1st component
-            Sum_Init = 0;
+    //        // include two-body or not
+    //        //if (Want_Central_force == true)
+    //        //    Sum_Init = 1;
+    //        //else
+    //        // note, 1 makes the two body pretty close, except for the 1st component
+    //        Sum_Init = 0;
 
-            // initial values
-            // ctrigArr[0] = 1.0;    
-            ctrigArr[1] = Xovr;
-            //  strigArr[0] = 0.0;
-            strigArr[1] = Yovr;
-            Sumh = 0.0;
-            Sumj = 0.0;
-            Sumk = 0.0;
-            Sumgam = Sum_Init;
+    //        // initial values
+    //        // ctrigArr[0] = 1.0;    
+    //        ctrigArr[1] = Xovr;
+    //        //  strigArr[0] = 0.0;
+    //        strigArr[1] = Yovr;
+    //        Sumh = 0.0;
+    //        Sumj = 0.0;
+    //        Sumk = 0.0;
+    //        Sumgam = Sum_Init;
 
-            // normArr(L, m, 0) xi Gottlieb eta
-            // normArr(L, m, 1) eta Gottlieb zeta
-            // normArr(L, m, 2) alpha Gottlieb alpha
-            // normArr(L, m, 3) beta Gottlieb beta
-            // normArr(L, m, 5) delta Gottlieb zn
-            legarrGot[0, 0] = 1.0;
-            legarrGot[0, 1] = 0.0;
-            legarrGot[1, 0] = Math.Sqrt(3) * sinlat;
-            legarrGot[1, 1] = Math.Sqrt(3); // * coslat;
+    //        // normArr(L, m, 0) xi Gottlieb eta
+    //        // normArr(L, m, 1) eta Gottlieb zeta
+    //        // normArr(L, m, 2) alpha Gottlieb alpha
+    //        // normArr(L, m, 3) beta Gottlieb beta
+    //        // normArr(L, m, 5) delta Gottlieb zn
+    //        legarrGot[0, 0] = 1.0;
+    //        legarrGot[0, 1] = 0.0;
+    //        legarrGot[1, 0] = Math.Sqrt(3) * sinlat;
+    //        legarrGot[1, 1] = Math.Sqrt(3); // * coslat;
 
-            for (int n = 2; n <= order; n++)
-            {
-                // get the power for each n
-                Reorn = Reorn * Reor;
-                //pn = legPoly[n, 0];
-                cn = gravData.cNor[n, 0];
-                //sn = gravData.sNor[n, 0];
+    //        for (int n = 2; n <= order; n++)
+    //        {
+    //            // get the power for each n
+    //            Reorn = Reorn * Reor;
+    //            //pn = legPoly[n, 0];
+    //            cn = gravData.cNor[n, 0];
+    //            //sn = gravData.sNor[n, 0];
 
-                nm1 = n - 1;
-                nm2 = n - 2;
+    //            nm1 = n - 1;
+    //            nm2 = n - 2;
 
-                // eq 3-17, eq 7-14  alpha(n) beta(n)
-                legarrGot[n, 0] = sinlat * normArr[n, 0, 2] * legarrGot[nm1, 0] - normArr[n, 0, 3] * legarrGot[nm2, 0];
-                // inner diagonal eq 7-16
-                // n-1,n-2, 6, not 5, no nm1
-                legarrGot[n, nm1] = normArr[n - 1, nm2, 6] * sinlat * legarrGot[n, n];
-                //      legPoly[n, nm1] = normArr[n, nm1, 7] * sinlat * legPoly[n, n];
-                // diagonal eq 7-8
-                legarrGot[n, n] = normArr[n, n, 4] * coslat * legarrGot[nm1, nm1];
+    //            // eq 3-17, eq 7-14  alpha(n) beta(n)
+    //            legarrGot[n, 0] = sinlat * normArr[n, 0, 2] * legarrGot[nm1, 0] - normArr[n, 0, 3] * legarrGot[nm2, 0];
+    //            // inner diagonal eq 7-16
+    //            // n-1,n-2, 6, not 5, no nm1
+    //            legarrGot[n, nm1] = normArr[n - 1, nm2, 6] * sinlat * legarrGot[n, n];
+    //            //      legPoly[n, nm1] = normArr[n, nm1, 7] * sinlat * legPoly[n, n];
+    //            // diagonal eq 7-8
+    //            legarrGot[n, n] = normArr[n, n, 4] * coslat * legarrGot[nm1, nm1];
 
-                Sumh_N = normArr[1, 0, 6] * legarrGot[n, 0] * cn;  // 0 by 2016 paper
-                Sumgam_N = legarrGot[n, 0] * cn * (n + 1);  // double
+    //            Sumh_N = normArr[1, 0, 6] * legarrGot[n, 0] * cn;  // 0 by 2016 paper
+    //            Sumgam_N = legarrGot[n, 0] * cn * (n + 1);  // double
 
-                if (order > 0)
-                {
-                    for (int m = 1; m <= nm2; m++)
-                    {
-                        // eq 3-18, eq 7-12   xin(m) eta(m)
-                        legarrGot[n, m] = normArr[n, m, 0] * sinlat * legarrGot[nm1, m] - normArr[n, m, 1] * legarrGot[nm2, m];
-                    }
-                    // got all the Legendre functions now
+    //            if (order > 0)
+    //            {
+    //                for (int m = 1; m <= nm2; m++)
+    //                {
+    //                    // eq 3-18, eq 7-12   xin(m) eta(m)
+    //                    legarrGot[n, m] = normArr[n, m, 0] * sinlat * legarrGot[nm1, m] - normArr[n, m, 1] * legarrGot[nm2, m];
+    //                }
+    //                // got all the Legendre functions now
 
-                    Sumj_N = 0.0;
-                    Sumk_N = 0.0;
-                    ctrigArr[n] = ctrigArr[1] * ctrigArr[nm1] - strigArr[1] * strigArr[nm1]; // mm1????
-                    strigArr[n] = strigArr[1] * ctrigArr[nm1] + ctrigArr[1] * strigArr[nm1];
+    //                Sumj_N = 0.0;
+    //                Sumk_N = 0.0;
+    //                ctrigArr[n] = ctrigArr[1] * ctrigArr[nm1] - strigArr[1] * strigArr[nm1]; // mm1????
+    //                strigArr[n] = strigArr[1] * ctrigArr[nm1] + ctrigArr[1] * strigArr[nm1];
 
-                    if (n < order)
-                        Lim = n;
-                    else
-                        Lim = order;
+    //                if (n < order)
+    //                    Lim = n;
+    //                else
+    //                    Lim = order;
 
-                    for (int m = 1; m <= Lim; m++)
-                    {
-                        mm1 = m - 1;
-                        mp1 = m + 1;
-                        npmp1 = (n + mp1);  // double
-                        pnm = legarrGot[n, m];
-                        cnm = gravData.cNor[n, m];
-                        snm = gravData.sNor[n, m];
-                        //ctmm1 = gravData.cNor[n, mm1];
-                        //stmm1 = gravData.sNor[n, mm1];
+    //                for (int m = 1; m <= Lim; m++)
+    //                {
+    //                    mm1 = m - 1;
+    //                    mp1 = m + 1;
+    //                    npmp1 = (n + mp1);  // double
+    //                    pnm = legarrGot[n, m];
+    //                    cnm = gravData.cNor[n, m];
+    //                    snm = gravData.sNor[n, m];
+    //                    //ctmm1 = gravData.cNor[n, mm1];
+    //                    //stmm1 = gravData.sNor[n, mm1];
 
-                        Mxpnm = m * pnm;  // double
-                        BnmVal = cnm * ctrigArr[m] + snm * strigArr[m];
-                        Sumh_N = Sumh_N + legarrGot[n, mp1] * BnmVal * normArr[n, m, 6];  // zn(m)
-                        Sumgam_N = Sumgam_N + npmp1 * pnm * BnmVal;
-                        Sumj_N = Sumj_N + Mxpnm * (cnm * ctrigArr[m] + snm * strigArr[m]);
-                        Sumk_N = Sumk_N - Mxpnm * (cnm * strigArr[m] - snm * ctrigArr[m]);
-                    }   // for through m
+    //                    Mxpnm = m * pnm;  // double
+    //                    BnmVal = cnm * ctrigArr[m] + snm * strigArr[m];
+    //                    Sumh_N = Sumh_N + legarrGot[n, mp1] * BnmVal * normArr[n, m, 6];  // zn(m)
+    //                    Sumgam_N = Sumgam_N + npmp1 * pnm * BnmVal;
+    //                    Sumj_N = Sumj_N + Mxpnm * (cnm * ctrigArr[m] + snm * strigArr[m]);
+    //                    Sumk_N = Sumk_N - Mxpnm * (cnm * strigArr[m] - snm * ctrigArr[m]);
+    //                }   // for through m
 
-                    Sumj = Sumj + Reorn * Sumj_N;
-                    Sumk = Sumk + Reorn * Sumk_N;
-                }  // if order > 0
+    //                Sumj = Sumj + Reorn * Sumj_N;
+    //                Sumk = Sumk + Reorn * Sumk_N;
+    //            }  // if order > 0
 
-                // ---- Sums bleow here have values when N m = 0
-                Sumh = Sumh + Reorn * Sumh_N;
-                Sumgam = Sumgam + Reorn * Sumgam_N;
-            }  // loop
+    //            // ---- Sums bleow here have values when N m = 0
+    //            Sumh = Sumh + Reorn * Sumh_N;
+    //            Sumgam = Sumgam + Reorn * Sumgam_N;
+    //        }  // loop
 
-            Lambda = Sumgam + sinlat * Sumh;
-            G[0] = -muor2 * (Lambda * Xovr - Sumj);
-            G[1] = -muor2 * (Lambda * Yovr - Sumk);
-            G[2] = -muor2 * (Lambda * Zovr - Sumh);
+    //        Lambda = Sumgam + sinlat * Sumh;
+    //        G[0] = -muor2 * (Lambda * Xovr - Sumj);
+    //        G[1] = -muor2 * (Lambda * Yovr - Sumk);
+    //        G[2] = -muor2 * (Lambda * Zovr - Sumh);
 
-            // if (show == 'y')
-            {
-                straccum = straccum + "Gottlieb case nonspherical, no two-body ---------- " + "\n";
-                straccum = straccum + "legarrGot 4 0   " + legarrGot[4, 0].ToString() + "  4 1   "
-                   + legarrGot[4, 1].ToString() + "  4 4   " + legarrGot[4, 4].ToString() + "\n";
-                straccum = straccum + "legarrGot 5 0   " + legarrGot[5, 0].ToString() + "  5 1   "
-                    + ctrigArr[2].ToString() + "  Tan   " + strigArr[2].ToString() + "\n";
-                straccum = straccum + "legarrGot" + order + " 0   " + legarrGot[order, 0].ToString() + "  " + order + " 1   "
-                    + legarrGot[order, 1].ToString() + " + order + " + legarrGot[order, order].ToString() + "\n";
-                //straccum = straccum + "trigarr " + order + " Sin  " + trigArr[order, 0].ToString() + "  Cos   "
-                //    + trigArr[order, 1].ToString() + "  Tan   " + trigArr[order, 3].ToString() + "\n";
-                straccum = straccum + "apertGot ecef " + order + " " + order + " " + G[0].ToString() + "     "
-                        + G[1].ToString() + "     " + G[2].ToString() + "\n";
-            }
+    //        // if (show == 'y')
+    //        {
+    //            straccum = straccum + "Gottlieb case nonspherical, no two-body ---------- " + "\n";
+    //            straccum = straccum + "legarrGot 4 0   " + legarrGot[4, 0].ToString() + "  4 1   "
+    //               + legarrGot[4, 1].ToString() + "  4 4   " + legarrGot[4, 4].ToString() + "\n";
+    //            straccum = straccum + "legarrGot 5 0   " + legarrGot[5, 0].ToString() + "  5 1   "
+    //                + ctrigArr[2].ToString() + "  Tan   " + strigArr[2].ToString() + "\n";
+    //            straccum = straccum + "legarrGot" + order + " 0   " + legarrGot[order, 0].ToString() + "  " + order + " 1   "
+    //                + legarrGot[order, 1].ToString() + " + order + " + legarrGot[order, order].ToString() + "\n";
+    //            //straccum = straccum + "trigarr " + order + " Sin  " + trigArr[order, 0].ToString() + "  Cos   "
+    //            //    + trigArr[order, 1].ToString() + "  Tan   " + trigArr[order, 3].ToString() + "\n";
+    //            straccum = straccum + "apertGot ecef " + order + " " + order + " " + G[0].ToString() + "     "
+    //                    + G[1].ToString() + "     " + G[2].ToString() + "\n";
+    //        }
 
-        }  // FullGeopGot;
+    //    }  // FullGeopGot;
 
 
 
@@ -7299,16 +7299,17 @@ namespace TestAllTool
 
             // --------------------------------------------------------------------------------------------------
             // calculate legendre polynomials
-            this.opsStatus.Text = "Status: Calculate Legendre polynomial recursions Unn and Nor ";
-            Refresh();
+            //this.opsStatus.Text = "Status: Calculate Legendre polynomial recursions Unn and Nor ";
+            //Refresh();
 
             strbuildall.AppendLine("\nCalculate Legendre polynomial recursions Unn and Nor  --------------- ");
             order = 21;
+
             // GTDS version
             // does with  unnormalized elements, then normalized from there. But unnormalized only go to about 170
             AstroLibr.LegPolyGTDS(latgc, order, normalized, out LegArrGU, out LegArrGN);
 
-            // Gottlieb version
+            // Gottlieb version does large versions  ------------------------------------------------
             double[] norm1 = new double[order + 2];
             double[] norm2 = new double[order + 2];
             double[] norm10 = new double[order + 2];
@@ -7317,10 +7318,13 @@ namespace TestAllTool
             double[,] normn1 = new double[order + 2, order + 2];
             double[,] norm1m = new double[order + 2, order + 2];
             double[,] norm2m = new double[order + 2, order + 2];
-
             AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
+            double[] aPertGt = new double[3];
+            AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
+                  norm1m, norm2m, normn1, out LegGottN, out aPertGot);
 
             // Montenbruck version
+            // does with  unnormalized elements, then normalized from there. But unnormalized only go to about 170
             AstroLibr.LegPolyMont(latgc, order, normalized, out LegArrMU, out LegArrMN);
 
             // Geodyn version
@@ -7338,7 +7342,7 @@ namespace TestAllTool
             //alfsx(Math.Cos(latgc), 6, normArr, out psm, out ipsm);
             //alfmx(Math.Sin(latgc), 3, 6, normArr, psm[3], ipsm[3], out pmm);
 
-            strbuildall.AppendLine("latgc = " + latgc * rad);
+            //strbuildall.AppendLine("latgc = " + latgc * rad);
             //double[,] P = AstroLibr.legendre(degree, order, latgc);
             //double P = AstroLibr.legendreS(degree, order, latgc);
             //AstroLibr.legendreMa(degree, order, latgc);
@@ -7355,9 +7359,9 @@ namespace TestAllTool
             {
                 string tempstr1 = "MN  ";  // montenbruck
                 string tempstr2 = "GN  ";  // gtds
-                string tempstr3 = "MU  ";
-                string tempstr3a = "LU  ";  // exact
-                string tempstr4 = "OU  ";  // geodyn\
+                //string tempstr3 = "MU  ";
+                //string tempstr3a = "LU  ";  // exact
+                //string tempstr4 = "OU  ";  // geodyn\
                 string tempstr5 = "GtN ";  // gottlieb\
                 //string tempstr6 = "GtU ";  // gottlieb
                 //string tempstr7 = "FN  ";  // Fukushima, test ones
@@ -7366,12 +7370,12 @@ namespace TestAllTool
                 {
                     tempstr1 = tempstr1 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMN[L, m].ToString();
                     tempstr2 = tempstr2 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGN[L, m].ToString();
-                    //tempstr5 = tempstr5 + " " + L.ToString() + "  " + m.ToString() + "   " + LegGottN[L, m].ToString();
+                    tempstr5 = tempstr5 + " " + L.ToString() + "  " + m.ToString() + "   " + LegGottN[L, m].ToString();
                     //tempstr7 = tempstr7 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrF[L, m].ToString();
-                    tempstr3 = tempstr3 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMU[L, m].ToString();
-                    tempstr3a = tempstr3a + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrEx[L, m].ToString();
+                    //tempstr3 = tempstr3 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMU[L, m].ToString();
+                    //tempstr3a = tempstr3a + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrEx[L, m].ToString();
                     //   tempstr6 = tempstr6 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGotU[L, m].ToString();
-                    tempstr4 = tempstr4 + " " + L.ToString() + "  " + m.ToString() + "   "; // + LegArrOU[L + 1, m + 1].ToString();
+                    //tempstr4 = tempstr4 + " " + L.ToString() + "  " + m.ToString() + "   "; // + LegArrOU[L + 1, m + 1].ToString();
                     // check error values
                     //dr1 = 100.0 * (LegArrF[L, m] - LegGottN[L, m]) / LegArrF[L, m];
                     //dr2 = 100.0 * (LegArrF[L, m] - LegArrGN[L, m]) / LegArrF[L, m];
@@ -7388,10 +7392,10 @@ namespace TestAllTool
                 strbuildall.AppendLine(tempstr5 + "\n");
                 // strbuildall.AppendLine(tempstr7 + "\n");
                 // unnormalized ones
-                strbuildall.AppendLine(tempstr3);
-                strbuildall.AppendLine(tempstr3a);
+                //strbuildall.AppendLine(tempstr3);
+                //strbuildall.AppendLine(tempstr3a);
                 //strbuildall.AppendLine(tempstr6);
-                strbuildall.AppendLine(tempstr4 + "\n");
+                //strbuildall.AppendLine(tempstr4 + "\n");
             }
             strbuildplot.AppendLine(errstr);
 
@@ -7439,8 +7443,8 @@ namespace TestAllTool
             }
 
             // Pines acceleration
-            strbuildall.AppendLine("Pines acceleration ");
-            //double[] G = new double[3];
+            //strbuildall.AppendLine("Pines acceleration ");
+            //double[,] LegPineN = new double[order+2, order+2];
             //double[] aPertPi = new double[3];
             //AstroLibr.FullGeopPines(latgc, order, gravData, recef, out LegPineN, out aPertPi);
             //strbuildall.AppendLine(straccum);
@@ -7473,10 +7477,7 @@ namespace TestAllTool
             // this part can be done one time
             AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m,
                 out norm2m, out normn1);
-
-            double[] G = new double[3];
-            double[] aPertGt = new double[3];
-            AstroLibr.FullGeopGott(latgc, order, gravData, recef, norm1, norm2, norm11, normn10,
+            AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
                   norm1m, norm2m, normn1, out LegGottN, out aPertGot);
             strbuildall.AppendLine(straccum);
             strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());
@@ -7489,19 +7490,19 @@ namespace TestAllTool
                 + " " + aPertGot[2]);
 
             // Fukushima acceleration
-            strbuildall.AppendLine("Fukushima acceleration ");
+            //strbuildall.AppendLine("Fukushima acceleration ");
             //LegPolyFF(recef, latgc, order, 'y', normArr, gravData, out LegArrF);
-            double[,] a = new double[360, 360];
-            double[,] b = new double[360, 360];
-            xfsh2f(80, gravData, out a, out b);
-            strbuildall.AppendLine(a[2, 0].ToString());
-            strbuildall.AppendLine("a  2  0  " + a[2, 0].ToString() + " b " + b[2, 0].ToString());
-            strbuildall.AppendLine("a  2  1  " + a[2, 1].ToString() + " b " + b[2, 1].ToString());
-            strbuildall.AppendLine("a  4  0  " + a[4, 0].ToString() + " b " + b[4, 0].ToString());
-            strbuildall.AppendLine("a  4  1  " + a[4, 0].ToString() + " b " + b[4, 1].ToString());
-            strbuildall.AppendLine("a  4  4  " + a[4, 4].ToString() + " b " + b[4, 4].ToString());
-            strbuildall.AppendLine("a 10 10  " + a[10, 0].ToString() + " b " + b[10, 0].ToString());
-            strbuildall.AppendLine("a 21  1 " + a[21, 1].ToString() + " b " + b[21, 1].ToString());
+            //double[,] a = new double[360, 360];
+            //double[,] b = new double[360, 360];
+            //xfsh2f(80, gravData, out a, out b);
+            //strbuildall.AppendLine(a[2, 0].ToString());
+            //strbuildall.AppendLine("a  2  0  " + a[2, 0].ToString() + " b " + b[2, 0].ToString());
+            //strbuildall.AppendLine("a  2  1  " + a[2, 1].ToString() + " b " + b[2, 1].ToString());
+            //strbuildall.AppendLine("a  4  0  " + a[4, 0].ToString() + " b " + b[4, 0].ToString());
+            //strbuildall.AppendLine("a  4  1  " + a[4, 0].ToString() + " b " + b[4, 1].ToString());
+            //strbuildall.AppendLine("a  4  4  " + a[4, 4].ToString() + " b " + b[4, 4].ToString());
+            //strbuildall.AppendLine("a 10 10  " + a[10, 0].ToString() + " b " + b[10, 0].ToString());
+            //strbuildall.AppendLine("a 21  1 " + a[21, 1].ToString() + " b " + b[21, 1].ToString());
 
             // Pines approach
             //strbuildall.AppendLine("Pines acceleration ");
@@ -7518,13 +7519,13 @@ namespace TestAllTool
                 + aPertM[1].ToString() + "     " + aPertM[2].ToString());
             strbuildall.AppendLine("apertMC bf " + order + " " + order + " " + aPertM1[0].ToString() + "     "
                 + aPertM1[1].ToString() + "     " + aPertM1[2].ToString());
-            strbuildall.AppendLine("apertGt bf " + order + " " + order + " " + G[0].ToString() + "     "
-                + G[1].ToString() + "     " + G[2].ToString());
+            strbuildall.AppendLine("apertGt bf " + order + " " + order + " " + aPertGot[0].ToString() + "     "
+                + aPertGot[1].ToString() + "     " + aPertGot[2].ToString());
 
             aPertG = MathTimeLibr.matvecmult(transecef2eci, aPertG, 3);
             aPertM = MathTimeLibr.matvecmult(transecef2eci, aPertM, 3);
             aPertM1 = MathTimeLibr.matvecmult(transecef2eci, aPertM1, 3);
-            aPertGt = MathTimeLibr.matvecmult(transecef2eci, G, 3);
+            aPertGt = MathTimeLibr.matvecmult(transecef2eci, aPertGot, 3);
             strbuildall.AppendLine("apertG  eci " + order + " " + order + " " + aPertG[0].ToString() + "     "
                 + aPertG[1].ToString() + "     " + aPertG[2].ToString());
             strbuildall.AppendLine("apertM  eci " + order + " " + order + " " + aPertM[0].ToString() + "     "
@@ -7754,117 +7755,117 @@ namespace TestAllTool
 
 
             // ------------------------------------------- timing comparisons
-            strbuildall.AppendLine("\n ===================================== Timing Comparisons =====================================");
-            // timing of routines
-            var watch = System.Diagnostics.Stopwatch.StartNew();
+            //strbuildall.AppendLine("\n ===================================== Timing Comparisons =====================================");
+            //// timing of routines
+            //var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            for (int i = 0; i < 500; i++)
-            {
-                straccum = "";
-                order = 50;
-                // normalized calcs, show
-                AstroLibr.FullGeopM(recef, order, 'y', convArr, gravData, out aPertM, 'n', out straccum);
-            }
-            //  stop timer
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with Montenbruck calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
+            //for (int i = 0; i < 500; i++)
+            //{
+            //    straccum = "";
+            //    order = 50;
+            //    // normalized calcs, show
+            //    AstroLibr.FullGeopM(recef, order, 'y', convArr, gravData, out aPertM, 'n', out straccum);
+            //}
+            ////  stop timer
+            //watch.Stop();
+            //var elapsedMs = watch.ElapsedMilliseconds;
+            //strbuildall.AppendLine("Done with Montenbruck calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
-            watch = System.Diagnostics.Stopwatch.StartNew();
-            for (int i = 0; i < 500; i++)
-            {
-                straccum = "";
-                order = 50;
-                // normalized calcs, show
-                AstroLibr.FullGeopG(recef, order, 'y', convArr, normArr, gravData, out aPertG, 'n', out straccum);
-            }
-            //  stop timer
-            watch.Stop();
-            elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with GTDS calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
-
-
-            watch = System.Diagnostics.Stopwatch.StartNew();
-            for (int i = 0; i < 500; i++)
-            {
-                straccum = "";
-                order = 100;
-                // normalized calcs, show
-                // GTDS version
-                AstroLibr.LegPolyGTDS(latgc, order, 'y', out LegArrGU, out LegArrGN);
-            }
-            //  stop timer
-            watch.Stop();
-            elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with GTDS ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
+            //watch = System.Diagnostics.Stopwatch.StartNew();
+            //for (int i = 0; i < 500; i++)
+            //{
+            //    straccum = "";
+            //    order = 50;
+            //    // normalized calcs, show
+            //    AstroLibr.FullGeopG(recef, order, 'y', convArr, normArr, gravData, out aPertG, 'n', out straccum);
+            //}
+            ////  stop timer
+            //watch.Stop();
+            //elapsedMs = watch.ElapsedMilliseconds;
+            //strbuildall.AppendLine("Done with GTDS calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
 
-            watch = System.Diagnostics.Stopwatch.StartNew();
-            for (int i = 0; i < 500; i++)
-            {
-                straccum = "";
-                order = 100;
-                // normalized calcs, show
-                // Gottlieb version
-                AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
-            }
-            //  stop timer
-            watch.Stop();
-            elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with Gott ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
-
-            watch = System.Diagnostics.Stopwatch.StartNew();
-            for (int i = 0; i < 500; i++)
-            {
-                straccum = "";
-                order = 100;
-                // normalized calcs, show
-                // Montenbruck version
-                AstroLibr.LegPolyMont(latgc, order, 'y', out LegArrMU, out LegArrMN);
-            }
-            //  stop timer
-            watch.Stop();
-            elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with Mont ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
+            //watch = System.Diagnostics.Stopwatch.StartNew();
+            //for (int i = 0; i < 500; i++)
+            //{
+            //    straccum = "";
+            //    order = 100;
+            //    // normalized calcs, show
+            //    // GTDS version
+            //    AstroLibr.LegPolyGTDS(latgc, order, 'y', out LegArrGU, out LegArrGN);
+            //}
+            ////  stop timer
+            //watch.Stop();
+            //elapsedMs = watch.ElapsedMilliseconds;
+            //strbuildall.AppendLine("Done with GTDS ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
 
-            watch = System.Diagnostics.Stopwatch.StartNew();
-            for (int i = 0; i < 500; i++)
-            {
-                straccum = "";
-                order = 100;
-                // normalized calcs, show
-                // Fukushima version
-                //AstroLibr.LegPolyFN(latgc, order, 'y', out LegArrF);
-            }
-            //  stop timer
-            watch.Stop();
-            elapsedMs = watch.ElapsedMilliseconds;
-            strbuildall.AppendLine("Done with Fukushima ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
+            //watch = System.Diagnostics.Stopwatch.StartNew();
+            //for (int i = 0; i < 500; i++)
+            //{
+            //    straccum = "";
+            //    order = 100;
+            //    // normalized calcs, show
+            //    // Gottlieb version
+            //    AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
+            //}
+            ////  stop timer
+            //watch.Stop();
+            //elapsedMs = watch.ElapsedMilliseconds;
+            //strbuildall.AppendLine("Done with Gott ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
+
+            //watch = System.Diagnostics.Stopwatch.StartNew();
+            //for (int i = 0; i < 500; i++)
+            //{
+            //    straccum = "";
+            //    order = 100;
+            //    // normalized calcs, show
+            //    // Montenbruck version
+            //    AstroLibr.LegPolyMont(latgc, order, 'y', out LegArrMU, out LegArrMN);
+            //}
+            ////  stop timer
+            //watch.Stop();
+            //elapsedMs = watch.ElapsedMilliseconds;
+            //strbuildall.AppendLine("Done with Mont ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
+
+
+            //watch = System.Diagnostics.Stopwatch.StartNew();
+            //for (int i = 0; i < 500; i++)
+            //{
+            //    straccum = "";
+            //    order = 100;
+            //    // normalized calcs, show
+            //    // Fukushima version
+            //    //AstroLibr.LegPolyFN(latgc, order, 'y', out LegArrF);
+            //}
+            ////  stop timer
+            //watch.Stop();
+            //elapsedMs = watch.ElapsedMilliseconds;
+            //strbuildall.AppendLine("Done with Fukushima ALF calcs " + (watch.ElapsedMilliseconds * 0.001).ToString() + " second  ");
 
 
 
-            // ------------------------------------------- pole test case comparisons
-            strbuildall.AppendLine("\n ===================================== Pole Test Comparisons =====================================");
+            //// ------------------------------------------- pole test case comparisons
+            //strbuildall.AppendLine("\n ===================================== Pole Test Comparisons =====================================");
 
-            rad = 180.0 / Math.PI;
-            for (int i = 0; i < 500; i++)
-            {
-                lon = 154.0 / rad;
-                latgc = (89.9 + (i / 1000.0)) / rad;
-                double magr = 7378.382745;
+            //rad = 180.0 / Math.PI;
+            //for (int i = 0; i < 500; i++)
+            //{
+            //    lon = 154.0 / rad;
+            //    latgc = (89.9 + (i / 1000.0)) / rad;
+            //    double magr = 7378.382745;
 
-                recef[0] = (magr * Math.Cos(latgc) * Math.Cos(lon));
-                recef[1] = (magr * Math.Cos(latgc) * Math.Sin(lon));
-                recef[2] = (magr * Math.Sin(latgc));
+            //    recef[0] = (magr * Math.Cos(latgc) * Math.Cos(lon));
+            //    recef[1] = (magr * Math.Cos(latgc) * Math.Sin(lon));
+            //    recef[2] = (magr * Math.Sin(latgc));
 
-                straccum = "";
-                order = 50;
-                // normalized calcs, show
-                AstroLibr.FullGeopG(recef, order, 'y', convArr, normArr, gravData, out aPertG, 'n', out straccum);
+            //    straccum = "";
+            //    order = 50;
+            //    // normalized calcs, show
+            //    AstroLibr.FullGeopG(recef, order, 'y', convArr, normArr, gravData, out aPertG, 'n', out straccum);
 
-                strbuildall.AppendLine("test pole " + (latgc * rad).ToString() + " " + (lon * rad).ToString() + " " + aPertM[0].ToString() + "     " + aPertM[1].ToString() + "     " + aPertM[2].ToString());
-            }
+            //    strbuildall.AppendLine("test pole " + (latgc * rad).ToString() + " " + (lon * rad).ToString() + " " + aPertM[0].ToString() + "     " + aPertM[1].ToString() + "     " + aPertM[2].ToString());
+            //}
 
 
             // available files:
@@ -7892,136 +7893,136 @@ namespace TestAllTool
             //string fname = "D:\Dataorig\Gravity\egm2008_gfc.txt";  // norm
 
             // --------------------gottlieb 1993 test
-            strbuildall.AppendLine("===================================== Gottlieb 1993 test case ===================================== ");
-            strbuildall.AppendLine("GEM-10B unnormalized 36x36 ");
-            // get past text in each file
-            //if (fname.Contains("GEM"))    // GEM10bunnorm36.grv, GEMT3norm50.grv
-            //    startKtr = 17;
-            //if (fname.Contains("EGM-96")) // EGM-96norm70.grv
-            //    startKtr = 73;
-            //if (fname.Contains("EGM-08")) // EGM-08norm100.grv
-            //    startKtr = 83;  // or 21 for the larger file... which has gfc in the first col too
-            fname = "D:/Dataorig/Gravity/GEM10Bunnorm36.grv";
-            normalized = 'n';
-            //double latgc;
-            //Int32 degree, order;
-            //double[,] LegArr;  // montenbruck
-            //double[,] LegArrN;
-            //double[,] LegArrG;  // gtds
-            //double[,] LegArrGN;
-            ////  double[,] LegArrEx;
-            //double[,] LegArr1;  // geodyn
+        //    strbuildall.AppendLine("===================================== Gottlieb 1993 test case ===================================== ");
+        //    strbuildall.AppendLine("GEM-10B unnormalized 36x36 ");
+        //    // get past text in each file
+        //    //if (fname.Contains("GEM"))    // GEM10bunnorm36.grv, GEMT3norm50.grv
+        //    //    startKtr = 17;
+        //    //if (fname.Contains("EGM-96")) // EGM-96norm70.grv
+        //    //    startKtr = 73;
+        //    //if (fname.Contains("EGM-08")) // EGM-08norm100.grv
+        //    //    startKtr = 83;  // or 21 for the larger file... which has gfc in the first col too
+        //    fname = "D:/Dataorig/Gravity/GEM10Bunnorm36.grv";
+        //    normalized = 'n';
+        //    //double latgc;
+        //    //Int32 degree, order;
+        //    //double[,] LegArr;  // montenbruck
+        //    //double[,] LegArrN;
+        //    //double[,] LegArrG;  // gtds
+        //    //double[,] LegArrGN;
+        //    ////  double[,] LegArrEx;
+        //    //double[,] LegArr1;  // geodyn
 
-            //AstroLib.gravityModelData gravData;
+        //    //AstroLib.gravityModelData gravData;
 
-            recef = new double[] { 5489.1500, 802.2220, 3140.9160 };  // km
-            strbuildall.AppendLine("recef = " + recef[0].ToString() + " " + recef[1].ToString() + " " + recef[2].ToString());
-            // these are from the vector
-            latgc = Math.Asin(recef[2] / MathTimeLibr.mag(recef));
-            double templ = Math.Sqrt(recef[0] * recef[0] + recef[1] * recef[1]);
-            double rtasc;
-            if (Math.Abs(templ) < 0.0000001)
-                rtasc = Math.Sign(recef[2]) * Math.PI * 0.5;
-            else
-                rtasc = Math.Atan2(recef[1], recef[0]);
-            lon = rtasc;
-            strbuildall.AppendLine("latgc lon " + (latgc * rad).ToString() + " " + (lon * rad).ToString());
+        //    recef = new double[] { 5489.1500, 802.2220, 3140.9160 };  // km
+        //    strbuildall.AppendLine("recef = " + recef[0].ToString() + " " + recef[1].ToString() + " " + recef[2].ToString());
+        //    // these are from the vector
+        //    latgc = Math.Asin(recef[2] / MathTimeLibr.mag(recef));
+        //    double templ = Math.Sqrt(recef[0] * recef[0] + recef[1] * recef[1]);
+        //    double rtasc;
+        //    if (Math.Abs(templ) < 0.0000001)
+        //        rtasc = Math.Sign(recef[2]) * Math.PI * 0.5;
+        //    else
+        //        rtasc = Math.Atan2(recef[1], recef[0]);
+        //    lon = rtasc;
+        //    strbuildall.AppendLine("latgc lon " + (latgc * rad).ToString() + " " + (lon * rad).ToString());
 
-            this.opsStatus.Text = "Status: Reading gravity field Gottlieb test";
-            Refresh();
+        //    this.opsStatus.Text = "Status: Reading gravity field Gottlieb test";
+        //    Refresh();
 
-            AstroLibr.readGravityField(fname, normalized, 17, out order, out gravData);
-            strbuildall.AppendLine("\ncoefficents --------------- ");
-            strbuildall.AppendLine("c  2  0  " + gravData.c[2, 0].ToString() + " s " + gravData.s[2, 0].ToString());
-            strbuildall.AppendLine("c  4  0  " + gravData.c[4, 0].ToString() + " s " + gravData.s[4, 0].ToString());
-            strbuildall.AppendLine("c  4  4  " + gravData.c[4, 4].ToString() + " s " + gravData.s[4, 4].ToString());
-            strbuildall.AppendLine("c 21  1 " + gravData.c[21, 1].ToString() + " s " + gravData.s[21, 1].ToString());
-            strbuildall.AppendLine("\nnormalized coefficents --------------- ");
-            strbuildall.AppendLine("c  2  0  " + gravData.cNor[2, 0].ToString() + " s " + gravData.sNor[2, 0].ToString());
-            strbuildall.AppendLine("c  4  0  " + gravData.cNor[4, 0].ToString() + " s " + gravData.sNor[4, 0].ToString());
-            strbuildall.AppendLine("c  4  4  " + gravData.cNor[4, 4].ToString() + " s " + gravData.sNor[4, 4].ToString());
-            strbuildall.AppendLine("c 21  1 " + gravData.cNor[21, 1].ToString() + " s " + gravData.sNor[21, 1].ToString());
+        //    AstroLibr.readGravityField(fname, normalized, 17, out order, out gravData);
+        //    strbuildall.AppendLine("\ncoefficents --------------- ");
+        //    strbuildall.AppendLine("c  2  0  " + gravData.c[2, 0].ToString() + " s " + gravData.s[2, 0].ToString());
+        //    strbuildall.AppendLine("c  4  0  " + gravData.c[4, 0].ToString() + " s " + gravData.s[4, 0].ToString());
+        //    strbuildall.AppendLine("c  4  4  " + gravData.c[4, 4].ToString() + " s " + gravData.s[4, 4].ToString());
+        //    strbuildall.AppendLine("c 21  1 " + gravData.c[21, 1].ToString() + " s " + gravData.s[21, 1].ToString());
+        //    strbuildall.AppendLine("\nnormalized coefficents --------------- ");
+        //    strbuildall.AppendLine("c  2  0  " + gravData.cNor[2, 0].ToString() + " s " + gravData.sNor[2, 0].ToString());
+        //    strbuildall.AppendLine("c  4  0  " + gravData.cNor[4, 0].ToString() + " s " + gravData.sNor[4, 0].ToString());
+        //    strbuildall.AppendLine("c  4  4  " + gravData.cNor[4, 4].ToString() + " s " + gravData.sNor[4, 4].ToString());
+        //    strbuildall.AppendLine("c 21  1 " + gravData.cNor[21, 1].ToString() + " s " + gravData.sNor[21, 1].ToString());
 
-            this.opsStatus.Text = "Status: Gottlieb test legpoly calcs";
-            Refresh();
+        //    this.opsStatus.Text = "Status: Gottlieb test legpoly calcs";
+        //    Refresh();
 
-            order = 36;
-            AstroLibr.LegPolyGTDS(latgc, order, normalized, out LegArrGU, out LegArrGN);
-            // get geodyn version
-            //AstroLibr.geodynlegp(latgc, degree, order, out LegArrOU, out LegArrON);
-            // get exact values
-            // LegPolyEx(latgc, order, out LegArrEx);
+        //    order = 36;
+        //    AstroLibr.LegPolyGTDS(latgc, order, normalized, out LegArrGU, out LegArrGN);
+        //    // get geodyn version
+        //    //AstroLibr.geodynlegp(latgc, degree, order, out LegArrOU, out LegArrON);
+        //    // get exact values
+        //    // LegPolyEx(latgc, order, out LegArrEx);
 
-            errstr = " ";
-            //sumdr1 = 0.0;
-            //sumdr2 = 0.0;
-            strbuildall.AppendLine("\nLegendre polynomials --------------- ");
-            for (int L = 1; L <= 6; L++)  // order xxxxxxxxxxxxxxxxxx
-            {
-                string tempstr1 = "MN ";  // montenbruck
-                string tempstr2 = "GN ";  // gtds
-                //string tempstr3 = "MU ";
-                string tempstr4 = "OU ";  // geodyn
-                for (int m = 0; m <= L; m++)
-                {
-                    tempstr1 = tempstr1 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMN[L, m].ToString();
-                    tempstr2 = tempstr2 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGN[L, m].ToString();
-                    //tempstr3 = tempstr3 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMU[L, m].ToString();
-                    //tempstr4 = tempstr4 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrOU[L + 1, m + 1].ToString();
-                    //dr1 = 100.0 * (LegArr[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
-                    //dr2 = 100.0 * (LegArr1[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
-                    //sumdr1 = sumdr1 + dr1;
-                    //sumdr2 = sumdr2 + dr2;
-                    //errstr = errstr + "\n" + L.ToString() + "  " + m.ToString() + "   " + dr1.ToString()
-                    //    + " " + dr2.ToString();
-                }
-                strbuildall.AppendLine(tempstr1);
-                strbuildall.AppendLine(tempstr2);
-                //  strbuild.AppendLine(tempstr3);
-                strbuildall.AppendLine(tempstr4 + "\n");
-            }
-        //    strbuildall.AppendLine("totals gtds " + sumdr1.ToString() + " montenbruck " + sumdr2.ToString());
-            strbuildplot.AppendLine(errstr);
+        //    errstr = " ";
+        //    //sumdr1 = 0.0;
+        //    //sumdr2 = 0.0;
+        //    strbuildall.AppendLine("\nLegendre polynomials --------------- ");
+        //    for (int L = 1; L <= 6; L++)  // order xxxxxxxxxxxxxxxxxx
+        //    {
+        //        string tempstr1 = "MN ";  // montenbruck
+        //        string tempstr2 = "GN ";  // gtds
+        //        //string tempstr3 = "MU ";
+        //        string tempstr4 = "OU ";  // geodyn
+        //        for (int m = 0; m <= L; m++)
+        //        {
+        //            tempstr1 = tempstr1 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMN[L, m].ToString();
+        //            tempstr2 = tempstr2 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGN[L, m].ToString();
+        //            //tempstr3 = tempstr3 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMU[L, m].ToString();
+        //            //tempstr4 = tempstr4 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrOU[L + 1, m + 1].ToString();
+        //            //dr1 = 100.0 * (LegArr[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
+        //            //dr2 = 100.0 * (LegArr1[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
+        //            //sumdr1 = sumdr1 + dr1;
+        //            //sumdr2 = sumdr2 + dr2;
+        //            //errstr = errstr + "\n" + L.ToString() + "  " + m.ToString() + "   " + dr1.ToString()
+        //            //    + " " + dr2.ToString();
+        //        }
+        //        strbuildall.AppendLine(tempstr1);
+        //        strbuildall.AppendLine(tempstr2);
+        //        //  strbuild.AppendLine(tempstr3);
+        //        strbuildall.AppendLine(tempstr4 + "\n");
+        //    }
+        ////    strbuildall.AppendLine("totals gtds " + sumdr1.ToString() + " montenbruck " + sumdr2.ToString());
+        //    strbuildplot.AppendLine(errstr);
 
-            strbuildall.AppendLine("\naccelerations --------------- ");
-            jdutc = 2451573.0;
-            jdF = 0.1;
-            straccum = "";
-            order = 4;
-            // normalized calcs, show
-            AstroLibr.FullGeopM(recef, order, 'y', convArr, gravData, out aPertM, 'y', out straccum);
-            // add in two body term since full geop is only disturbing part
-            jdut1 = jdutc + jdF;
-            //AstroLibr.eci_ecef(ref reci, ref veci, iau80arr, MathTimeLib.Edirection.efrom, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps, AstroLib.EOpt.e80, ref recef, ref vecef);
-            // time is not given, so let ecef and eci be =
-            reci[0] = recef[0];
-            reci[1] = recef[1];
-            reci[2] = recef[2];
+        //    strbuildall.AppendLine("\naccelerations --------------- ");
+        //    jdutc = 2451573.0;
+        //    jdF = 0.1;
+        //    straccum = "";
+        //    order = 4;
+        //    // normalized calcs, show
+        //    AstroLibr.FullGeopM(recef, order, 'y', convArr, gravData, out aPertM, 'y', out straccum);
+        //    // add in two body term since full geop is only disturbing part
+        //    jdut1 = jdutc + jdF;
+        //    //AstroLibr.eci_ecef(ref reci, ref veci, iau80arr, MathTimeLib.Edirection.efrom, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps, AstroLib.EOpt.e80, ref recef, ref vecef);
+        //    // time is not given, so let ecef and eci be =
+        //    reci[0] = recef[0];
+        //    reci[1] = recef[1];
+        //    reci[2] = recef[2];
 
-            aeci2[0] = -398600.47 * reci[0] / (Math.Pow(MathTimeLibr.mag(reci), 3));
-            aeci2[1] = -398600.47 * reci[1] / (Math.Pow(MathTimeLibr.mag(reci), 3));
-            aeci2[2] = -398600.47 * reci[2] / (Math.Pow(MathTimeLibr.mag(reci), 3));
-            //aPertG[0] = aPertG[0] + aeci2[0];
-            //aPertG[1] = aPertG[1] + aeci2[1];
-            //aPertG[2] = aPertG[2] + aeci2[2];
-            aPertM[0] = aPertM[0] + aeci2[0];
-            aPertM[1] = aPertM[1] + aeci2[1];
-            aPertM[2] = aPertM[2] + aeci2[2];
+        //    aeci2[0] = -398600.47 * reci[0] / (Math.Pow(MathTimeLibr.mag(reci), 3));
+        //    aeci2[1] = -398600.47 * reci[1] / (Math.Pow(MathTimeLibr.mag(reci), 3));
+        //    aeci2[2] = -398600.47 * reci[2] / (Math.Pow(MathTimeLibr.mag(reci), 3));
+        //    //aPertG[0] = aPertG[0] + aeci2[0];
+        //    //aPertG[1] = aPertG[1] + aeci2[1];
+        //    //aPertG[2] = aPertG[2] + aeci2[2];
+        //    aPertM[0] = aPertM[0] + aeci2[0];
+        //    aPertM[1] = aPertM[1] + aeci2[1];
+        //    aPertM[2] = aPertM[2] + aeci2[2];
 
 
-            strbuildall.AppendLine(straccum);
-            //   strbuild.AppendLine("apertG 4 4   " + aPertG[0].ToString() + "     " + aPertG[1].ToString() + "     " + aPertG[2].ToString());
-            strbuildall.AppendLine("apertM 4 4   " + aPertM[0].ToString() + "     " + aPertM[1].ToString() + "     " + aPertM[2].ToString());
-            strbuildall.AppendLine("ans          -0.00844269212018857E+00 -0.00123393633785485E+00 -0.00484659352346614E+00  km/s2  \n");
+        //    strbuildall.AppendLine(straccum);
+        //    //   strbuild.AppendLine("apertG 4 4   " + aPertG[0].ToString() + "     " + aPertG[1].ToString() + "     " + aPertG[2].ToString());
+        //    strbuildall.AppendLine("apertM 4 4   " + aPertM[0].ToString() + "     " + aPertM[1].ToString() + "     " + aPertM[2].ToString());
+        //    strbuildall.AppendLine("ans          -0.00844269212018857E+00 -0.00123393633785485E+00 -0.00484659352346614E+00  km/s2  \n");
 
-            straccum = "";
-            order = 5;
-            // normalized calcs, show
-            AstroLibr.FullGeopG(recef, order, 'y', convArr, normArr, gravData, out aPertG, 'y', out straccum);
-            strbuildall.AppendLine(straccum);
-            strbuildall.AppendLine("apertG 5 5   " + aPertG[0].ToString() + "     " + aPertG[1].ToString() + "     " + aPertG[2].ToString());
-            // strbuild.AppendLine("apertM 5 5   " + aPertM[0].ToString() + "     " + aPertM[1].ToString() + "     " + aPertM[2].ToString());
-            strbuildall.AppendLine("ans          -0.00844260633555472E+00 -0.00123393243051834E+00 -0.00484652486332608E+00  km/s2  \n");
+        //    straccum = "";
+        //    order = 5;
+        //    // normalized calcs, show
+        //    AstroLibr.FullGeopG(recef, order, 'y', convArr, normArr, gravData, out aPertG, 'y', out straccum);
+        //    strbuildall.AppendLine(straccum);
+        //    strbuildall.AppendLine("apertG 5 5   " + aPertG[0].ToString() + "     " + aPertG[1].ToString() + "     " + aPertG[2].ToString());
+        //    // strbuild.AppendLine("apertM 5 5   " + aPertM[0].ToString() + "     " + aPertM[1].ToString() + "     " + aPertM[2].ToString());
+        //    strbuildall.AppendLine("ans          -0.00844260633555472E+00 -0.00123393243051834E+00 -0.00484652486332608E+00  km/s2  \n");
 
 
 
@@ -9306,7 +9307,7 @@ namespace TestAllTool
             AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m,
                 out norm2m, out normn1);
 
-            AstroLibr.FullGeopGott(latgc, order, gravData, recef, norm1, norm2, norm11, normn10,
+            AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
                    norm1m, norm2m, normn1, out LegGottN, out aPertGot);
 
             strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());

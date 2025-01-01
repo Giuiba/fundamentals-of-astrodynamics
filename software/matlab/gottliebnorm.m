@@ -1,16 +1,16 @@
 % inputs
 %    mu       gravitaional paramater
-%    xin      position cvector of satellite km
+%    xin      position ecef vector of satellite km
 %    c, s     gravity coefficients normalized
 %    nax      degree
 %    max      order
 %    rnp      3x3 identity matrix
 % 
 % outputs
-%    accel    acceeration (km/s^2
+%    accel    eci frame acceeration (km/s^2
 %    p        normalized alfs
 %
-function [p, accel] = gottliebnorm(mu, re, xin, c, s, nax, max, rnp)
+function [LegGottN, accel] = gottliebnorm(mu, re, recef, c, s, nax, max)
     constastro;
     
     for n = 2:nax+1 %RAE
@@ -26,29 +26,29 @@ function [p, accel] = gottliebnorm(mu, re, xin, c, s, nax, max, rnp)
         end %RAE
     end %RAE
     
-    x = rnp*xin; %RAE
-    r = sqrt(x(1)^2 + x(2)^2 + x(3)^2);
+    %x = rnp*xin; %RAE
+    r = sqrt(recef(1)^2 + recef(2)^2 + recef(3)^2);
     ri = 1.0/r;
-    xor = x(1)*ri;
-    yor = x(2)*ri;
-    zor = x(3)*ri;
-    ep = zor;
+    xor = recef(1)*ri;
+    yor = recef(2)*ri;
+    zor = recef(3)*ri;
+    sinlat = zor;
     reor = re*ri;
     reorn = reor;
     muor2 = mu*ri*ri;
-    p(1,1) = 1.0; %RAE
-    p(1,2) = 0.0; %RAE
-    p(1,3) = 0.0; %RAE
-    p(2,2) = sqrt(3); %RAE %norm
-    p(2,3) = 0.0; %RAE
-    p(2,4) = 0.0; %RAE
+    LegGottN(1,1) = 1.0; %RAE
+    LegGottN(1,2) = 0.0; %RAE
+    LegGottN(1,3) = 0.0; %RAE
+    LegGottN(2,2) = sqrt(3.0); %RAE %norm 
+    LegGottN(2,3) = 0.0; %RAE
+    LegGottN(2,4) = 0.0; %RAE
 
     % --------------- sectoral 
     for n = 2:nax %RAE
         ni = n+1; %RAE
-        p(ni,ni) = norm11(n)*p(n,n)*(2*n-1); %eq 3-15 RAE %norm
-        p(ni,ni+1) = 0.0; %RAE
-        p(ni,ni+2) = 0.0; %RAE
+        LegGottN(ni,ni) = norm11(n)*LegGottN(n,n)*(2*n-1); %eq 3-15 RAE %norm
+        LegGottN(ni,ni+1) = 0.0; %RAE
+        LegGottN(ni,ni+2) = 0.0; %RAE
     end
 
     ctil(1) = 1.0; %RAE
@@ -59,9 +59,7 @@ function [p, accel] = gottliebnorm(mu, re, xin, c, s, nax, max, rnp)
     sumgm = 1.0;  
     sumj = 0.0;
     sumk = 0.0;
-    p(2,1) = sqrt(3)*ep; %RAE %norm
-
-    %p(2,2) = sqrt(3)*cos(30.6103084/(180.0/pi)); % try to match. Only matches first 2 cols
+    LegGottN(2,1) = sqrt(3)*sinlat; %RAE %norm 
 
     for n=2:nax
         ni = n + 1; %RAE
@@ -71,22 +69,22 @@ function [p, accel] = gottliebnorm(mu, re, xin, c, s, nax, max, rnp)
         np1 = n + 1;
 
         % --------------- tesserals(ni, m=ni-1) initial value
-        p(ni,n) = normn1(n,n-1)*ep*p(ni,ni); %RAE %norm
+        LegGottN(ni,n) = normn1(n,n-1)*sinlat*LegGottN(ni,ni); %RAE %norm
 
         % --------------- zonals (ni, m=1)
-        p(ni,1) = (n2m1*ep*norm1(n)*p(n,1) - nm1*norm2(n)*p(nm1,1))/n; % eq 3-17 RAE %norm
+        LegGottN(ni,1) = (n2m1*sinlat*norm1(n)*LegGottN(n,1) - nm1*norm2(n)*LegGottN(nm1,1))/n; % eq 3-17 RAE %norm
 
         % --------------- tesseral (n,m=2) initial value
-        p(ni,2) = (n2m1*ep*norm1m(n,1)*p(n,2) - n*norm2m(n,1)*p(nm1,2))/(nm1); %RAE %norm
+        LegGottN(ni,2) = (n2m1*sinlat*norm1m(n,1)*LegGottN(n,2) - n*norm2m(n,1)*LegGottN(nm1,2))/(nm1); %RAE %norm
         
-        sumhn = normn10(n)*p(ni,2)*c(ni,1); %norm %RAE
-        sumgmn = p(ni,1)*c(ni,1)*np1; %RAE
+        sumhn = normn10(n)*LegGottN(ni,2)*c(ni,1); %norm %RAE
+        sumgmn = LegGottN(ni,1)*c(ni,1)*np1; %RAE
         if (max>0)
             for m = 2:n-2
                 mi = m+1; %RAE
                 % --------------- tesseral (n,m)
-                p(ni,mi) = (n2m1*ep*norm1m(n,m)*p(n,mi) - ...
-                           (nm1+m)*norm2m(n,m)*p(nm1,mi)) / (n-m); % eq 3-18 RAE %norm
+                LegGottN(ni,mi) = (n2m1*sinlat*norm1m(n,m)*LegGottN(n,mi) - ...
+                           (nm1+m)*norm2m(n,m)*LegGottN(nm1,mi)) / (n-m); % eq 3-18 RAE %norm
             end
             
             sumjn = 0;
@@ -103,10 +101,10 @@ function [p, accel] = gottliebnorm(mu, re, xin, c, s, nax, max, rnp)
                 mi = m+1; %RAE
                 mm1 = mi-1; %RAE
                 mp1 = mi+1; %RAE
-                mxpnm = m*p(ni,mi); %RAE
+                mxpnm = m*LegGottN(ni,mi); %RAE
                 bnmtil = c(ni,mi)*ctil(mi) + s(ni,mi)*stil(mi); %RAE
-                sumhn = sumhn + normn1(n,m)*p(ni,mp1)*bnmtil; %RAE %norm
-                sumgmn = sumgmn + (n+m+1)*p(ni,mi)*bnmtil; %RAE
+                sumhn = sumhn + normn1(n,m)*LegGottN(ni,mp1)*bnmtil; %RAE %norm
+                sumgmn = sumgmn + (n+m+1)*LegGottN(ni,mi)*bnmtil; %RAE
                 bnmtm1 = c(ni,mi)*ctil(mm1) + s(ni,mi)*stil(mm1); %RAE
                 anmtm1 = c(ni,mi)*stil(mm1) - s(ni,mi)*ctil(mm1); %RAE
                 sumjn = sumjn + mxpnm*bnmtm1;
@@ -119,10 +117,10 @@ function [p, accel] = gottliebnorm(mu, re, xin, c, s, nax, max, rnp)
         sumh = sumh + reorn*sumhn;
         sumgm = sumgm + reorn*sumgmn;
     end
-    lambda = sumgm + ep*sumh;
-    g(1,1) = -muor2*(lambda*xor - sumj);
-    g(2,1) = -muor2*(lambda*yor - sumk);
-    g(3,1) = -muor2*(lambda*zor - sumh);
-    accel = rnp'*g; %RAE
+    lambda = sumgm + sinlat*sumh;
+    accel(1) = -muor2*(lambda*xor - sumj);
+    accel(2) = -muor2*(lambda*yor - sumk);
+    accel(3) = -muor2*(lambda*zor - sumh);
+    %accel = rnp'*g; %RAE
 
 end
