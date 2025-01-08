@@ -160,8 +160,10 @@ namespace TestAllTool
         {
             double[] rsecef = new double[3];
             double[] vsecef = new double[3];
+            double[] asecef = new double[3];
             double[] rseci = new double[3];
             double[] vseci = new double[3];
+            double[] aseci = new double[3];
             double magr, latgc;
             double jd, jdf, second;
             double dut1, lod, xp, yp, ddpsi, ddeps, ddx, ddy, jdtt, jdftt, ttt, jdut1;
@@ -203,7 +205,7 @@ namespace TestAllTool
             jdut1 = jd + jdf + dut1 / 86400.0;
 
             // -------- convert r to ecef for lat/lon calculation
-            AstroLibr.eci_ecef(ref rseci, ref vseci, MathTimeLib.Edirection.eto, ref rsecef, ref vsecef,
+            AstroLibr.eci_ecef(ref rseci, ref vseci, ref aseci, MathTimeLib.Edirection.eto, ref rsecef, ref vsecef, ref asecef,
                 EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             AstroLibr.ecef2ll(rsecef, out latgc, out latgd, out lon, out alt);
@@ -1248,12 +1250,18 @@ namespace TestAllTool
             double[] vseci1 = new double[3];
             double[] vseci2 = new double[3];
             double[] vseci3 = new double[3];
+            double[] aseci1 = new double[3];
+            double[] aseci2 = new double[3];
+            double[] aseci3 = new double[3];
             double[] rsecef1 = new double[3];
             double[] rsecef2 = new double[3];
             double[] rsecef3 = new double[3];
             double[] vsecef1 = new double[3];
             double[] vsecef2 = new double[3];
             double[] vsecef3 = new double[3];
+            double[] asecef1 = new double[3];
+            double[] asecef2 = new double[3];
+            double[] asecef3 = new double[3];
             double[] jd = new double[50];
             double[] jdf = new double[50];
             double[] trtasc = new double[50];
@@ -1465,7 +1473,7 @@ namespace TestAllTool
                     // note you have to use tdb for time of interst AND j2000 (when dat = 32)
                     //  ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
                     jdut1 = jd[idx1] + jdf[idx1] + dut1 / 86400.0;
-                    AstroLibr.eci_ecef(ref rseci1, ref vseci1, MathTimeLib.Edirection.efrom, ref rsecef1, ref vsecef1,
+                    AstroLibr.eci_ecef(ref rseci1, ref vseci1, ref aseci1, MathTimeLib.Edirection.efrom, ref rsecef1, ref vsecef1, ref asecef1,
                          iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                     // get new site info
@@ -1487,7 +1495,7 @@ namespace TestAllTool
                     jdftt = jdf[idx2] + (dat + 32.184) / 86400.0;
                     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                     jdut1 = jd[idx2] + jdf[idx2] + dut1 / 86400.0;
-                    AstroLibr.eci_ecef(ref rseci2, ref vseci2, MathTimeLib.Edirection.efrom, ref rsecef2, ref vsecef2,
+                    AstroLibr.eci_ecef(ref rseci2, ref vseci2, ref aseci2, MathTimeLib.Edirection.efrom, ref rsecef2, ref vsecef2, ref asecef2,
                          iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
                     double gst, lst;
                     AstroLibr.lstime(lon[idx2], jdut1, out lst, out gst);
@@ -1510,7 +1518,7 @@ namespace TestAllTool
                     jdftt = jdf[idx3] + (dat + 32.184) / 86400.0;
                     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                     jdut1 = jd[idx3] + jdf[idx3] + dut1 / 86400.0;
-                    AstroLibr.eci_ecef(ref rseci3, ref vseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3,
+                    AstroLibr.eci_ecef(ref rseci3, ref vseci3, ref aseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3, ref asecef3,
                          iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                     //if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
@@ -1614,7 +1622,7 @@ namespace TestAllTool
                 // note you have to use tdb for time of interst AND j2000 (when dat = 32)
                 //  ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
                 jdut1 = jd[idx1] + jdf[idx1] + dut1 / 86400.0;
-                AstroLibr.eci_ecef(ref rseci1, ref vseci1, MathTimeLib.Edirection.efrom, ref rsecef1, ref vsecef1,
+                AstroLibr.eci_ecef(ref rseci1, ref vseci1, ref aseci1, MathTimeLib.Edirection.efrom, ref rsecef1, ref vsecef1, ref asecef1,
                          iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 // get new site info
@@ -1636,7 +1644,7 @@ namespace TestAllTool
                 jdftt = jdf[idx2] + (dat + 32.184) / 86400.0;
                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                 jdut1 = jd[idx2] + jdf[idx2] + dut1 / 86400.0;
-                AstroLibr.eci_ecef(ref rseci2, ref vseci2, MathTimeLib.Edirection.efrom, ref rsecef2, ref vsecef2,
+                AstroLibr.eci_ecef(ref rseci2, ref vseci2, ref aseci2, MathTimeLib.Edirection.efrom, ref rsecef2, ref vsecef2, ref asecef2,
                          iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
                 double gst, lst;
                 AstroLibr.lstime(lon[idx2], jdut1, out lst, out gst);
@@ -1659,7 +1667,7 @@ namespace TestAllTool
                 jdftt = jdf[idx3] + (dat + 32.184) / 86400.0;
                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                 jdut1 = jd[idx3] + jdf[idx3] + dut1 / 86400.0;
-                AstroLibr.eci_ecef(ref rseci3, ref vseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3,
+                AstroLibr.eci_ecef(ref rseci3, ref vseci3, ref aseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3, ref asecef3,
                          iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 //if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
@@ -1957,8 +1965,10 @@ namespace TestAllTool
             string[] linedata;
             double[] rseci = new double[3];
             double[] vseci = new double[3];
+            double[] aseci = new double[3];
             double[] rsecef = new double[3];
             double[] vsecef = new double[3];
+            double[] asecef = new double[3];
 
             double rtasc0, decl0, t0;
 
@@ -2060,7 +2070,7 @@ namespace TestAllTool
                     double jdftt = obsClassArr[numobs].jdf + (dat + 32.184) / 86400.0;
                     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                     jdut1 = obsClassArr[numobs].jd + obsClassArr[numobs].jdf + dut1 / 86400.0;
-                    AstroLibr.eci_ecef(ref rseci, ref vseci, MathTimeLib.Edirection.efrom, ref rsecef, ref vsecef,
+                    AstroLibr.eci_ecef(ref rseci, ref vseci, ref aseci, MathTimeLib.Edirection.efrom, ref rsecef, ref vsecef, ref asecef, 
                          iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
                     obsClassArr[numobs].rsecef[0] = rsecef[0];
                     obsClassArr[numobs].rsecef[1] = rsecef[1];

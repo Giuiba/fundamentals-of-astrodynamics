@@ -898,13 +898,14 @@ namespace AstroLibMethods
         public void createXYS
             (
                string outLoc,
-               EOPSPWLib.iau06Class iau06arr, double[] fArgs06
+               EOPSPWLib.iau06Class iau06arr
             )
         {
-            fArgs06 = new double[14];
+            double[] fArgs06 = new double[14];
 
             Int32 i;
             double dt, jdtt, jdftt, ttt, x, y, s;
+            
             StringBuilder strbuild = new StringBuilder();
             // 000. gives leading 0's
             // ;+00.;-00. gives signs in front
@@ -1114,7 +1115,7 @@ namespace AstroLibMethods
         //                           function iau06pn
         //
         //  this function calculates the transformation matrix that accounts for the
-        //    effects of precession-nutation in the iau2010 theory.
+        //    effects of precession-nutation in the iau2006 theory.
         //
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
@@ -1388,7 +1389,6 @@ namespace AstroLibMethods
         //    ddeps       - delta eps correction to gcrf                      rad
         //    iau80arr    - array of iau80 values
         //    fArgs       - fundamental arguments in an array                 
-        //    opt         - method option                                 e00cio, e96, e80
         //
         //  outputs       :
         //    deltapsi    - nutation in longitude angle                       rad
@@ -1489,7 +1489,6 @@ namespace AstroLibMethods
         //    ttt         - julian centuries of tt
         //    iau80arr    - array of iau80 values
         //    fArgs       - fundamental arguments in an array                 
-        //    opt         - method option                               e00cio, e96, e80
         //
         //  outputs       :
         //    deltapsi    - nutation in longiotude angle                   rad
@@ -1809,7 +1808,7 @@ namespace AstroLibMethods
             (
             char opt,
             out double term1, out double term2, out double term3
-                )
+            )
         {
             double[,] fb = new double[3, 3];
             double convrt;
@@ -1905,9 +1904,9 @@ namespace AstroLibMethods
 
         public void eci_ecef
             (
-            ref double[] reci, ref double[] veci,
+            ref double[] reci, ref double[] veci, ref double[] aeci,
             Enum direct,
-            ref double[] recef, ref double[] vecef,
+            ref double[] recef, ref double[] vecef, ref double[] aecef,
             EOPSPWLib.iau80Class iau80arr,
             double jdtt, double jdftt, double jdut1, double lod,
             double xp, double yp, double ddpsi, double ddeps
@@ -1919,10 +1918,13 @@ namespace AstroLibMethods
             double[] omegaearth = new double[3];
             double[] rpef = new double[3];
             double[] vpef = new double[3];
+            double[] apef = new double[3];
             double[] rtod = new double[3];
             double[] vtod = new double[3];
-            double[] crossr = new double[3];
+            double[] omgxr = new double[3];
             double[] tempvec1 = new double[3];
+            double[] omgxomgxr = new double[3];
+            double[] omgxv = new double[3];
             double[,] a1 = new double[3, 3];
             double[,] a2 = new double[3, 3];
             double[,] a3 = new double[3, 3];
@@ -1939,6 +1941,7 @@ namespace AstroLibMethods
             double[,] pmp = new double[3, 3];
             double[,] temp = new double[3, 3];
             double[,] trans = new double[3, 3];
+            double[,] transp = new double[3, 3];
 
             int eqeterms = 2;
             deltapsi = 0.0;
@@ -1968,7 +1971,6 @@ namespace AstroLibMethods
                 stp = MathTimeLibr.mattrans(st, 3);
                 nutp = MathTimeLibr.mattrans(nut, 3);
                 precp = MathTimeLibr.mattrans(prec, 3);
-                //pnp = MathTimeLibr.mattrans(pn, 3);
 
                 temp = MathTimeLibr.matmult(stp, nutp, 3, 3, 3);
                 //trans = MathTimeLibr.matmult(stp, pnp, 3, 3, 3);
@@ -1977,11 +1979,21 @@ namespace AstroLibMethods
                 recef = MathTimeLibr.matvecmult(pmp, rpef, 3);
 
                 tempvec1 = MathTimeLibr.matvecmult(trans, veci, 3);
-                MathTimeLibr.cross(omegaearth, rpef, out crossr);
-                vpef[0] = tempvec1[0] - crossr[0];
-                vpef[1] = tempvec1[1] - crossr[1];
-                vpef[2] = tempvec1[2] - crossr[2];
+                MathTimeLibr.cross(omegaearth, rpef, out omgxr);
+                vpef[0] = tempvec1[0] - omgxr[0];
+                vpef[1] = tempvec1[1] - omgxr[1];
+                vpef[2] = tempvec1[2] - omgxr[2];
                 vecef = MathTimeLibr.matvecmult(pmp, vpef, 3);
+
+                // two additional terms not needed if satellite is not on surface of the Earth
+                transp = MathTimeLibr.mattrans(trans, 3);
+                MathTimeLibr.cross(omegaearth, omgxr, out omgxomgxr);
+                MathTimeLibr.cross(omegaearth, vpef, out omgxv);
+                tempvec1 = MathTimeLibr.matvecmult(transp, aeci, 3);
+                apef[0] = tempvec1[0] - omgxomgxr[0] - 2.0 * omgxv[0];
+                apef[1] = tempvec1[1] - omgxomgxr[1] - 2.0 * omgxv[1];
+                apef[2] = tempvec1[2] - omgxomgxr[2] - 2.0 * omgxv[2];
+                aecef = MathTimeLibr.matvecmult(pmp, apef, 3);
             }
             else
             {
@@ -1993,12 +2005,20 @@ namespace AstroLibMethods
                 reci = MathTimeLibr.matvecmult(trans, rpef, 3);
 
                 vpef = MathTimeLibr.matvecmult(pm, vecef, 3);
-                MathTimeLibr.cross(omegaearth, rpef, out crossr);
-                tempvec1[0] = vpef[0] + crossr[0];
-                tempvec1[1] = vpef[1] + crossr[1];
-                tempvec1[2] = vpef[2] + crossr[2];
+                MathTimeLibr.cross(omegaearth, rpef, out omgxr);
+                tempvec1[0] = vpef[0] + omgxr[0];
+                tempvec1[1] = vpef[1] + omgxr[1];
+                tempvec1[2] = vpef[2] + omgxr[2];
                 veci = MathTimeLibr.matvecmult(trans, tempvec1, 3);
 
+                // two additional terms not needed if satellite is not on surface of the Earth
+                apef = MathTimeLibr.matvecmult(pm, aecef, 3);
+                MathTimeLibr.cross(omegaearth, omgxr, out omgxomgxr);
+                MathTimeLibr.cross(omegaearth, vpef, out omgxv);
+                aeci[0] = apef[0] + omgxomgxr[0] + 2.0 * omgxv[0];
+                aeci[1] = apef[1] + omgxomgxr[1] + 2.0 * omgxv[1];
+                aeci[2] = apef[2] + omgxomgxr[2] + 2.0 * omgxv[2];
+                aeci = MathTimeLibr.matvecmult(trans, apef, 3);
             }
         }//  eci_ecef 
 
@@ -4110,7 +4130,7 @@ namespace AstroLibMethods
 
         public void rv2flt
             (
-            double[] reci, double[] veci, double jdtt, double jdftt,
+            double[] reci, double[] veci, double[] aeci, double jdtt, double jdftt,
             double jdut1, double lod,
             double xp, double yp, int terms, double ddpsi, double ddeps,
             EOPSPWLib.iau80Class iau80arr,
@@ -4121,6 +4141,7 @@ namespace AstroLibMethods
             double[] avec = new double[3];
             double[] recef = new double[3];
             double[] vecef = new double[3];
+            double[] aecef = new double[3];
             double[] h = new double[3];
             double[] hcrossr = new double[3];
             double small = 0.00000001;
@@ -4130,7 +4151,7 @@ namespace AstroLibMethods
             magv = MathTimeLibr.mag(veci);
 
             // -------- convert r to ecef for lat/lon calculation
-            eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
+            eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
                 EOPSPWLibr.iau80arr,
                 jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
@@ -15517,8 +15538,10 @@ namespace AstroLibMethods
             double rx, ry, rz, vx, vy, vz, rxf, ryf, rzf, magr, magv, rdotv, rdot, k1, k2, p0, p1, p2, h;
             double[] reci = new double[3];
             double[] veci = new double[3];
+            double[] aeci = new double[3];
             double[] recef = new double[3];
             double[] vecef = new double[3];
+            double[] aecef = new double[3];
             tm = new double[,] { { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0 } };
             // initialize
@@ -15539,7 +15562,8 @@ namespace AstroLibMethods
                 // -------- convert r to eci
                 reci = new double[] { rx * 0.001, ry * 0.001, rz * 0.001 };
                 veci = new double[] { vx * 0.001, vy * 0.001, vz * 0.001 };
-                eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
+                aeci = new double[] { 0.0, 0.0, 0.0 };
+                eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
                     EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 recef[0] = recef[0] * 1000.0;  // in m
@@ -15734,8 +15758,10 @@ namespace AstroLibMethods
                 cd, sd, cra, sra, temp, rtasc;
             double[] recef = new double[3];
             double[] vecef = new double[3];
+            double[] aecef = new double[3];
             double[] reci = new double[3];
             double[] veci = new double[3];
+            double[] aeci = new double[3];
 
             // initialize
             cd = 0.0;
@@ -15781,8 +15807,9 @@ namespace AstroLibMethods
                 vecef[0] = magv * 0.001 * (-Math.Cos(lon) * Math.Sin(latgc) * caz * cfpa - Math.Sin(lon) * saz * cfpa + Math.Cos(lon) * Math.Cos(latgc) * sfpa); // m/s
                 vecef[1] = magv * 0.001 * (-Math.Sin(lon) * Math.Sin(latgc) * caz * cfpa + Math.Cos(lon) * saz * cfpa + Math.Sin(lon) * Math.Cos(latgc) * sfpa);
                 vecef[2] = magv * 0.001 * (Math.Sin(lon) * sfpa + Math.Cos(latgc) * caz * cfpa);
-                double[] aecef = new double[] { 0, 0, 0 };
-                eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+                aecef = new double[] { 0.0, 0.0, 0.0 };
+
+                eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.efrom, ref recef, ref vecef, ref aecef,
                    EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 reci[0] = reci[0] * 1000.0;  // in m

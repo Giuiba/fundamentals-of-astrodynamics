@@ -928,7 +928,7 @@ namespace TestAllTool
             strbuild.AppendLine("prec = " + prec[1, 0].ToString(fmt).PadLeft(4) + " " + prec[1, 1].ToString(fmt).PadLeft(4) + " " + prec[1, 2].ToString(fmt).PadLeft(4));
             strbuild.AppendLine("prec = " + prec[2, 0].ToString(fmt).PadLeft(4) + " " + prec[2, 1].ToString(fmt).PadLeft(4) + " " + prec[2, 2].ToString(fmt).PadLeft(4));
 
-            prec = AstroLibr.precess(ttt, AstroLib.EOpt.e06eq, out psia, out wa, out epsa, out chia);
+            prec = AstroLibr.precess(ttt, AstroLib.EOpt.e06cio, out psia, out wa, out epsa, out chia);
 
             strbuild.AppendLine("prec00 = " + prec[0, 0].ToString(fmt).PadLeft(4) + " " + prec[0, 1].ToString(fmt).PadLeft(4) + " " + prec[0, 2].ToString(fmt).PadLeft(4));
             strbuild.AppendLine("prec00 = " + prec[1, 0].ToString(fmt).PadLeft(4) + " " + prec[1, 1].ToString(fmt).PadLeft(4) + " " + prec[1, 2].ToString(fmt).PadLeft(4));
@@ -961,11 +961,11 @@ namespace TestAllTool
             strbuild.AppendLine("nut = " + nut[1, 0].ToString(fmt).PadLeft(4) + " " + nut[1, 1].ToString(fmt).PadLeft(4) + " " + nut[1, 2].ToString(fmt).PadLeft(4));
             strbuild.AppendLine("nut = " + nut[2, 0].ToString(fmt).PadLeft(4) + " " + nut[2, 1].ToString(fmt).PadLeft(4) + " " + nut[2, 2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.fundarg(ttt, AstroLib.EOpt.e06cio, out fArgs);
-            nut00 = AstroLibr.precnutbias00a(ttt, ddpsi, ddeps, EOPSPWLibr.iau06arr, AstroLib.EOpt.e06cio, fArgs);
-            strbuild.AppendLine("nut06 c= " + nut[0, 0].ToString(fmt).PadLeft(4) + " " + nut[0, 1].ToString(fmt).PadLeft(4) + " " + nut[0, 2].ToString(fmt).PadLeft(4));
-            strbuild.AppendLine("nut06 c= " + nut[1, 0].ToString(fmt).PadLeft(4) + " " + nut[1, 1].ToString(fmt).PadLeft(4) + " " + nut[1, 2].ToString(fmt).PadLeft(4));
-            strbuild.AppendLine("nut06 c= " + nut[2, 0].ToString(fmt).PadLeft(4) + " " + nut[2, 1].ToString(fmt).PadLeft(4) + " " + nut[2, 2].ToString(fmt).PadLeft(4));
+            //AstroLibr.fundarg(ttt, AstroLib.EOpt.e06cio, out fArgs);
+            //nut00 = AstroLibr.precnutbias00a(ttt, ddpsi, ddeps, EOPSPWLibr.iau06arr, AstroLib.EOpt.e06cio, fArgs);
+            //strbuild.AppendLine("nut06 c= " + nut[0, 0].ToString(fmt).PadLeft(4) + " " + nut[0, 1].ToString(fmt).PadLeft(4) + " " + nut[0, 2].ToString(fmt).PadLeft(4));
+            //strbuild.AppendLine("nut06 c= " + nut[1, 0].ToString(fmt).PadLeft(4) + " " + nut[1, 1].ToString(fmt).PadLeft(4) + " " + nut[1, 2].ToString(fmt).PadLeft(4));
+            //strbuild.AppendLine("nut06 c= " + nut[2, 0].ToString(fmt).PadLeft(4) + " " + nut[2, 1].ToString(fmt).PadLeft(4) + " " + nut[2, 2].ToString(fmt).PadLeft(4));
 
             //AstroLibr.fundarg(ttt, AstroLib.EOpt.e00a, out fArgs);
             //nut00 = AstroLibr.nutation00a(ttt, ddpsi, ddeps, EOPSPWLibr.iau06arr, AstroLib.EOpt.e00a);
@@ -1022,7 +1022,7 @@ namespace TestAllTool
             strbuild.AppendLine("st = " + st[2, 0].ToString(fmt).PadLeft(4) + " " + st[2, 1].ToString(fmt).PadLeft(4) + " " + st[2, 2].ToString(fmt).PadLeft(4));
 
 
-            st = AstroLibr.sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, AstroLib.EOpt.e06eq);
+            st = AstroLibr.sidereal(jdut1, deltapsi, meaneps, fArgs, lod, eqeterms, AstroLib.EOpt.e06cio);
             strbuild.AppendLine("st00 = " + st[0, 0].ToString(fmt).PadLeft(4) + " " + st[0, 1].ToString(fmt).PadLeft(4) + " " + st[0, 2].ToString(fmt).PadLeft(4));
             strbuild.AppendLine("st00 = " + st[1, 0].ToString(fmt).PadLeft(4) + " " + st[1, 1].ToString(fmt).PadLeft(4) + " " + st[1, 2].ToString(fmt).PadLeft(4));
             strbuild.AppendLine("st00 = " + st[2, 0].ToString(fmt).PadLeft(4) + " " + st[2, 1].ToString(fmt).PadLeft(4) + " " + st[2, 2].ToString(fmt).PadLeft(4));
@@ -1045,7 +1045,7 @@ namespace TestAllTool
             strbuild.AppendLine("pm = " + pm[1, 0].ToString(fmt).PadLeft(4) + " " + pm[1, 1].ToString(fmt).PadLeft(4) + " " + pm[1, 2].ToString(fmt).PadLeft(4));
             strbuild.AppendLine("pm = " + pm[2, 0].ToString(fmt).PadLeft(4) + " " + pm[2, 1].ToString(fmt).PadLeft(4) + " " + pm[2, 2].ToString(fmt).PadLeft(4));
 
-            pm = AstroLibr.polarm(xp, yp, ttt, AstroLib.EOpt.e06eq);
+            pm = AstroLibr.polarm(xp, yp, ttt, AstroLib.EOpt.e06cio);
 
             strbuild.AppendLine("pm06 = " + pm[0, 0].ToString(fmt).PadLeft(4) + " " + pm[0, 1].ToString(fmt).PadLeft(4) + " " + pm[0, 2].ToString(fmt).PadLeft(4));
             strbuild.AppendLine("pm06 = " + pm[1, 0].ToString(fmt).PadLeft(4) + " " + pm[1, 1].ToString(fmt).PadLeft(4) + " " + pm[1, 2].ToString(fmt).PadLeft(4));
@@ -1155,8 +1155,10 @@ namespace TestAllTool
             double[] veci = new double[3];
             double[] recii = new double[3];
             double[] vecii = new double[3];
+            double[] aecii = new double[3];
             double[] recef = new double[3];
             double[] vecef = new double[3];
+            double[] aecef = new double[3];
             double conv;
             Int32 year, mon, day, hr, minute, dat;
             double jd, jdFrac, jdut1, second, dut1, ttt, lod, xp, yp, ddx, ddy, ddpsi, ddeps,
@@ -1251,7 +1253,7 @@ namespace TestAllTool
             // get more accurate vaules for now
             AstroLibr.iau06xysS(ttt, EOPSPWLibr.iau06arr, fArgs, out x, out y, out s);
 
-            AstroLibr.eci_ecef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref recii, ref vecii, ref aecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef, ref aecef, 
                  EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("GCRF          IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
                 + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
@@ -1263,7 +1265,7 @@ namespace TestAllTool
 
 
             // try backwards
-            AstroLibr.eci_ecef(ref recii, ref vecii, MathTimeLib.Edirection.eto, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref recii, ref vecii, ref aecii, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
                 EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("ITRF rev       IAU-76/FK5   " + recef[0].ToString(fmt).PadLeft(4) + " " + recef[1].ToString(fmt).PadLeft(4) + " " + recef[2].ToString(fmt).PadLeft(4) + " "
                 + vecef[0].ToString(fmt).PadLeft(4) + " " + vecef[1].ToString(fmt).PadLeft(4) + " " + vecef[2].ToString(fmt).PadLeft(4));
@@ -1355,8 +1357,10 @@ namespace TestAllTool
             double[] fArgs = new double[14];
             double[] reci = new double[3];
             double[] veci = new double[3];
+            double[] aeci = new double[3];
             double[] recii = new double[3];
             double[] vecii = new double[3];
+            double[] aecii = new double[3];
             double[] rmod = new double[3];
             double[] vmod = new double[3];
             double[] rtod = new double[3];
@@ -1369,8 +1373,10 @@ namespace TestAllTool
             double[] vpef = new double[3];
             double[] recef = new double[3];
             double[] vecef = new double[3];
+            double[] aecef = new double[3];
             double[] recefi = new double[3];
             double[] vecefi = new double[3];
+            double[] aecefi = new double[3];
             double[] rtemp = new double[3];
             double[] vtemp = new double[3];
             double conv;
@@ -1481,29 +1487,34 @@ namespace TestAllTool
 
 
             // J2000
-            AstroLibr.eci_ecef(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref recii, ref vecii, ref aecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef, ref aecef, 
                  iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, 0.0, 0.0);
             strbuild.AppendLine("J2000 wo corr IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
-                + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
+                + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4)
+                + aecii[0].ToString(fmt).PadLeft(4) + " " + aecii[1].ToString(fmt).PadLeft(4) + " " + aecii[2].ToString(fmt).PadLeft(4));
 
             // GCRF
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.efrom, ref recef, ref vecef, ref aecef,
                   iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("GCRF w corr   IAU-76/FK5   " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " "
-                + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recefi, ref vecefi,
+                + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4)
+                + aeci[0].ToString(fmt).PadLeft(4) + " " + aeci[1].ToString(fmt).PadLeft(4) + " " + aeci[2].ToString(fmt).PadLeft(4));
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recefi, ref vecefi, ref aecefi,
                   iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             strbuild.AppendLine("ITRF rev      IAU-76/FK5   " + recefi[0].ToString(fmt).PadLeft(4) + " " + recefi[1].ToString(fmt).PadLeft(4) + " " + recefi[2].ToString(fmt).PadLeft(4) + " "
-                + vecef[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
+                + vecefi[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4)
+                + aecefi[0].ToString(fmt).PadLeft(4) + " " + aecefi[1].ToString(fmt).PadLeft(4) + " " + aecefi[2].ToString(fmt).PadLeft(4));
 
             AstroLibr.eci_ecef06(ref recii, ref vecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
                  AstroLib.EOpt.e06cio, iau06arr, AstroLibr.xysarr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("GCRF          IAU-2006 CIO " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
-                + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4));
+                + vecii[0].ToString(fmt).PadLeft(4) + " " + vecii[1].ToString(fmt).PadLeft(4) + " " + vecii[2].ToString(fmt).PadLeft(4)
+                + aecii[0].ToString(fmt).PadLeft(4) + " " + aecii[1].ToString(fmt).PadLeft(4) + " " + aecii[2].ToString(fmt).PadLeft(4));
             AstroLibr.eci_ecef06(ref recii, ref vecii, MathTimeLib.Edirection.eto, ref recefi, ref vecefi,
                  AstroLib.EOpt.e06cio, iau06arr, AstroLibr.xysarr, jdtt, jdftt, jdut1, lod, xp, yp, ddx, ddy);
             strbuild.AppendLine("ITRF rev      IAU-2006 CIO " + recefi[0].ToString(fmt).PadLeft(4) + " " + recefi[1].ToString(fmt).PadLeft(4) + " " + recefi[2].ToString(fmt).PadLeft(4) + " "
-                + vecefi[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4));
+                + vecefi[0].ToString(fmt).PadLeft(4) + " " + vecefi[1].ToString(fmt).PadLeft(4) + " " + vecefi[2].ToString(fmt).PadLeft(4)
+                + aecefi[0].ToString(fmt).PadLeft(4) + " " + aecefi[1].ToString(fmt).PadLeft(4) + " " + aecefi[2].ToString(fmt).PadLeft(4));
 
             // sofa
             strbuild.AppendLine("SOFA ECI CIO  5102.508959486507   6123.011392959787   6378.136934384333");
@@ -2595,16 +2606,22 @@ namespace TestAllTool
         {
             double[] rseci1 = new double[3];
             double[] vseci1 = new double[3];
+            double[] aseci1 = new double[3];
             double[] rseci2 = new double[3];
             double[] vseci2 = new double[3];
+            double[] aseci2 = new double[3];
             double[] rseci3 = new double[3];
             double[] vseci3 = new double[3];
+            double[] aseci3 = new double[3];
             double[] rsecef1 = new double[3];
-            double[] rsecef2 = new double[3];
-            double[] rsecef3 = new double[3];
             double[] vsecef1 = new double[3];
+            double[] asecef1 = new double[3];
+            double[] rsecef2 = new double[3];
             double[] vsecef2 = new double[3];
+            double[] asecef2 = new double[3];
+            double[] rsecef3 = new double[3];
             double[] vsecef3 = new double[3];
+            double[] asecef3 = new double[3];
             double[] r2 = new double[3];
             double[] v2 = new double[3];
             double rad, lod;
@@ -2932,7 +2949,7 @@ namespace TestAllTool
                 // note you have to use tdb for time of ineterst AND j2000 (when dat = 32)
                 //  ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
                 jdut1 = jd[idx1] + jdf[idx1] + dut1 / 86400.0;
-                AstroLibr.eci_ecef(ref rseci1, ref vseci1, MathTimeLib.Edirection.efrom, ref rsecef1, ref vsecef1,
+                AstroLibr.eci_ecef(ref rseci1, ref vseci1, ref aseci1, MathTimeLib.Edirection.efrom, ref rsecef1, ref vsecef1, ref asecef1,
                      iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 AstroLibr.site(latgd[idx2], lon[idx2], alt[idx2], out rsecef2, out vsecef2);
@@ -2945,7 +2962,7 @@ namespace TestAllTool
                 jdftt = jdf[idx2] + (dat + 32.184) / 86400.0;
                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                 jdut1 = jd[idx2] + jdf[idx2] + dut1 / 86400.0;
-                AstroLibr.eci_ecef(ref rseci2, ref vseci2, MathTimeLib.Edirection.efrom, ref rsecef2, ref vsecef2,
+                AstroLibr.eci_ecef(ref rseci2, ref vseci2, ref aseci2, MathTimeLib.Edirection.efrom, ref rsecef2, ref vsecef2, ref asecef2,
                     iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
                 double gst, lst;
                 AstroLibr.lstime(lon[idx2], jdut1, out lst, out gst);
@@ -2959,7 +2976,7 @@ namespace TestAllTool
                 jdftt = jdf[idx3] + (dat + 32.184) / 86400.0;
                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                 jdut1 = jd[idx3] + jdf[idx3] + dut1 / 86400.0;
-                AstroLibr.eci_ecef(ref rseci3, ref vseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3,
+                AstroLibr.eci_ecef(ref rseci3, ref vseci3, ref aseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3, ref asecef3,
                    iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
@@ -5445,12 +5462,16 @@ namespace TestAllTool
             double rad = 180.0 / Math.PI;
             double[] reci = new double[3];
             double[] veci = new double[3];
+            double[] aeci = new double[3];
             double[] recef = new double[3];
             double[] vecef = new double[3];
+            double[] aecef = new double[3];
             double[] rsecef = new double[3];
             double[] vsecef = new double[3];
+            double[] asecef = new double[3];
             double[] rseci = new double[3];
             double[] vseci = new double[3];
+            double[] aseci = new double[3];
             double rho, az, el, drho, daz, del, alt, latgd, lon;
             double rr, rtasc, decl, drr, drtasc, ddecl;
             double trtasc, tdecl, dtrtasc, dtdecl;
@@ -5491,7 +5512,7 @@ namespace TestAllTool
             recef = new double[] { -605.79221660, -5870.22951108, 3493.05319896 };
             //recef = new double[] { -100605.79221660, -1005870.22951108, 1003493.05319896 };
             vecef = new double[] { -1.56825429, -3.70234891, -6.47948395 };
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.efrom, ref recef, ref vecef, ref aecef,
                 iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             lon = -104.883 / rad;
@@ -5499,7 +5520,7 @@ namespace TestAllTool
             alt = 2.102;
             AstroLibr.site(latgd, lon, alt, out rsecef, out vsecef);
 
-            AstroLibr.eci_ecef(ref rseci, ref vseci, MathTimeLib.Edirection.efrom, ref rsecef, ref vsecef,
+            AstroLibr.eci_ecef(ref rseci, ref vseci, ref aseci, MathTimeLib.Edirection.efrom, ref rsecef, ref vsecef, ref asecef,
                  iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             AstroLibr.lstime(lon, jdut1, out lst, out gst);
@@ -7223,7 +7244,7 @@ namespace TestAllTool
             strbuildall.AppendLine("reci  " + reci[0].ToString(fmt).PadLeft(4) + " " + reci[1].ToString(fmt).PadLeft(4) + " " + reci[2].ToString(fmt).PadLeft(4) + " " +
                                 "v  " + veci[0].ToString(fmt).PadLeft(4) + " " + veci[1].ToString(fmt).PadLeft(4) + " " + veci[2].ToString(fmt).PadLeft(4));
 
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
                   iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             // print out initial conditions
@@ -7521,7 +7542,7 @@ namespace TestAllTool
 
 
             // -------------------------- add in two body term since full geop is only disturbing part
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.efrom, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.efrom, ref recef, ref vecef, ref aecef, 
                   iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
             aeci2[0] = -AstroLibr.gravConst.mu * reci[0] / (Math.Pow(MathTimeLibr.mag(reci), 3));
             aeci2[1] = -AstroLibr.gravConst.mu * reci[1] / (Math.Pow(MathTimeLibr.mag(reci), 3));
@@ -8372,7 +8393,7 @@ namespace TestAllTool
             double[] cartstate = new double[6];
             double[] recef = new double[3];
             double[] vecef = new double[3];
-            double[] avec = new double[3];
+            double[] aecef = new double[3];
 
             double[,] cartcovrsw = new double[6, 6];
             double[,] cartcovntw = new double[6, 6];
@@ -8425,9 +8446,9 @@ namespace TestAllTool
 
 
             // test position and velocity going back
-            avec = new double[] { 0.0, 0.0, 0.0 };
+            aecef = new double[] { 0.0, 0.0, 0.0 };
 
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
                   iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             strbuild.AppendLine("==================== do the sensitivity tests \n");
@@ -8473,7 +8494,7 @@ namespace TestAllTool
             double[] fltstate = new double[6];
             double[] recef = new double[3];
             double[] vecef = new double[3];
-            double[] avec = new double[3];
+            double[] aecef = new double[3];
 
             double[,] classcovmeana = new double[6, 6];
             double[,] cartcovmeanarev = new double[6, 6];
@@ -8554,7 +8575,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -8573,9 +8594,9 @@ namespace TestAllTool
             fltstate[5] = magv;
 
             // test position and velocity going back
-            avec = new double[] { 0.0, 0.0, 0.0 };
+            aecef = new double[] { 0.0, 0.0, 0.0 };
 
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef, 
                 iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  
@@ -8635,7 +8656,7 @@ namespace TestAllTool
             double[] fltstate = new double[6];
             double[] recef = new double[3];
             double[] vecef = new double[3];
-            double[] avec = new double[3];
+            double[] aecef = new double[3];
 
             double[,] classcovtruea = new double[6, 6];
             double[,] cartcovtruearev = new double[6, 6];
@@ -8716,7 +8737,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -8735,9 +8756,9 @@ namespace TestAllTool
             fltstate[5] = magv;
 
             // test position and velocity going back
-            avec = new double[] { 0.0, 0.0, 0.0 };
+            aecef = new double[] { 0.0, 0.0, 0.0 };
 
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
                 iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  
@@ -8788,7 +8809,7 @@ namespace TestAllTool
             double[] fltstate = new double[6];
             double[] recef = new double[3];
             double[] vecef = new double[3];
-            double[] avec = new double[3];
+            double[] aecef = new double[3];
 
             double[,] classcovmeana = new double[6, 6];
             double[,] cartcovmeanarev = new double[6, 6];
@@ -8872,7 +8893,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -8891,10 +8912,10 @@ namespace TestAllTool
             fltstate[5] = magv;
 
             // test position and velocity going back
-            avec = new double[] { 0.0, 0.0, 0.0 };
+            aecef = new double[] { 0.0, 0.0, 0.0 };
 
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                  iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
+                   iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  
             //vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -8947,7 +8968,7 @@ namespace TestAllTool
             double[] fltstate = new double[6];
             double[] recef = new double[3];
             double[] vecef = new double[3];
-            double[] avec = new double[3];
+            double[] aecef = new double[3];
 
             double[,] classcovmeana = new double[6, 6];
             double[,] cartcovmeanarev = new double[6, 6];
@@ -9031,7 +9052,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -9050,10 +9071,10 @@ namespace TestAllTool
             fltstate[5] = magv;
 
             // test position and velocity going back
-            avec = new double[] { 0.0, 0.0, 0.0 };
+            aecef = new double[] { 0.0, 0.0, 0.0 };
 
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
-                  iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
+                   iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  
             //vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -9103,7 +9124,7 @@ namespace TestAllTool
             double[] fltstate = new double[6];
             double[] recef = new double[3];
             double[] vecef = new double[3];
-            double[] avec = new double[3];
+            double[] aecef = new double[3];
 
             double[,] classcovmeana = new double[6, 6];
             double[,] cartcovmeanarev = new double[6, 6];
@@ -9187,7 +9208,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -9206,9 +9227,9 @@ namespace TestAllTool
             fltstate[5] = magv;
 
             // test position and velocity going back
-            avec = new double[] { 0.0, 0.0, 0.0 };
+            aecef = new double[] { 0.0, 0.0, 0.0 };
 
-            AstroLibr.eci_ecef(ref reci, ref veci, MathTimeLib.Edirection.eto, ref recef, ref vecef,
+            AstroLibr.eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
                   iau80arr, jdtt, jdttfrac, jdut1, lod, xp, yp, ddpsi, ddeps);
             //vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) ); 
             //vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );  

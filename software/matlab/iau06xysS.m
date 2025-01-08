@@ -42,7 +42,7 @@
 %  references    :
 %     vallado       2022, 214-216
 %
-% [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt )
+% [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt );
 % ----------------------------------------------------------------------------
 
 function [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt )

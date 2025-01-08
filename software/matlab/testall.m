@@ -1266,7 +1266,7 @@ function testeci_ecef(fid)
     % test creating xys file
     %fileLoc = 'D:\Codes\LIBRARY\DataLib\';
     % done, works in c#. :-)
-    %createXYS(fileLoc, iau06arr, fArgs);
+    createXYS(fileLoc, iau06arr, fArgs);
 
     % now read it in
     fileLoc = 'D:\Codes\LIBRARY\DataLib\';
