@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 import scipy
 
-from ...conftest import custom_allclose
+from ...conftest import custom_isclose, custom_allclose
 
 
 def load_matlab_data(file_path: str, keys: list) -> dict:
@@ -113,3 +113,55 @@ def test_readxys(iau06xysarr, xys_data):
     assert custom_allclose(iau06xysarr.y, xys_data.y)
     assert custom_allclose(iau06xysarr.s, xys_data.s)
     assert custom_allclose(iau06xysarr.mjd_tt, xys_data.mjd_tt)
+
+
+def test_readeop(eoparr):
+    # Check that the first line is correct
+    assert int(eoparr.mjd[0]) == 37665
+    assert custom_isclose(eoparr.xp[0], -0.0127)
+    assert custom_isclose(eoparr.yp[0], 0.213)
+    assert custom_isclose(eoparr.dut1[0], 0.0326338)
+    assert custom_isclose(eoparr.lod[0], 0.001723)
+    assert custom_isclose(eoparr.ddpsi[0], 0.064261)
+    assert custom_isclose(eoparr.ddeps[0], 0.006067)
+    assert custom_isclose(eoparr.dx[0], 0)
+    assert custom_isclose(eoparr.dy[0], 0)
+    assert eoparr.dat[0] == 2
+
+    # Check that the last line is correct
+    assert int(eoparr.mjd[-1]) == 60126
+    assert custom_isclose(eoparr.xp[-1], 0.203662)
+    assert custom_isclose(eoparr.yp[-1], 0.492913)
+    assert custom_isclose(eoparr.dut1[-1], -0.0114449)
+    assert custom_isclose(eoparr.lod[-1], -0.0009071)
+    assert custom_isclose(eoparr.ddpsi[-1], -0.113661)
+    assert custom_isclose(eoparr.ddeps[-1], -0.009266)
+    assert custom_isclose(eoparr.dx[-1], 0.000121)
+    assert custom_isclose(eoparr.dy[-1], -0.000211)
+    assert eoparr.dat[-1] == 37
+
+
+def test_readspw(spwarr):
+    # Check that the first line is correct
+    assert custom_isclose(spwarr.mjd[0], 36112)
+    assert custom_allclose(spwarr.kparray[0], [43, 40, 30, 20, 37, 23, 43, 37])
+    assert custom_isclose(spwarr.sumkp[0], 273)
+    assert custom_allclose(spwarr.aparray[0], [32, 27, 15, 7, 22, 9, 32, 22])
+    assert custom_isclose(spwarr.avgap[0], 21)
+    assert custom_isclose(spwarr.adjf107[0], 268.0)
+    assert custom_isclose(spwarr.adjctrf81[0], 265.2)
+    assert custom_isclose(spwarr.obsf107[0], 269.3)
+    assert custom_isclose(spwarr.obsctrf81[0], 266.6)
+    assert custom_isclose(spwarr.obslstf81[0], 230.9)
+
+    # Check that the last line is correct
+    assert custom_isclose(spwarr.mjd[-1], 59467)
+    assert custom_allclose(spwarr.kparray[-1], [13, 13, 13, 13, 13, 13, 13, 13])
+    assert custom_isclose(spwarr.sumkp[-1], 104)
+    assert custom_allclose(spwarr.aparray[-1], [5, 5, 5, 5, 5, 5, 5, 5])
+    assert custom_isclose(spwarr.avgap[-1], 5)
+    assert custom_isclose(spwarr.adjf107[-1], 80.0)
+    assert custom_isclose(spwarr.adjctrf81[-1], 69.0)
+    assert custom_isclose(spwarr.obsf107[-1], 78.9)
+    assert custom_isclose(spwarr.obsctrf81[-1], 68.3)
+    assert custom_isclose(spwarr.obslstf81[-1], 78.9)
