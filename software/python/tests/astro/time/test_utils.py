@@ -277,3 +277,11 @@ def test_nutation_qmod(iau80arr, use_eutelsat_approx, nut_expected):
 def test_polarm(xp, yp, ttt, use_iau80, pm_expected):
     pm = utils.polarm(xp, yp, ttt, use_iau80)
     assert custom_allclose(pm, pm_expected)
+
+
+def test_kp_ap_conversions():
+    kp, ap = 2.5, 10.438011223107981
+    assert custom_isclose(utils.kp2ap(kp), ap)
+    assert custom_isclose(utils.ap2kp(ap), kp)
+    assert utils.kp2ap(-0.5) is None
+    assert utils.ap2kp(-0.5) is None

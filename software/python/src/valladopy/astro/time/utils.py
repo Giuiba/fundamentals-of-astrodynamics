@@ -6,15 +6,22 @@
 # For license information, see LICENSE file
 # --------------------------------------------------------------------------------------
 
+import logging
 import math
 from dataclasses import dataclass
 from typing import Tuple
 
 import numpy as np
+from scipy.interpolate import CubicSpline
+from scipy.optimize import root_scalar
 
 from .data import IAU80Array
 from ...constants import ARCSEC2RAD, DEG2ARCSEC, TWOPI, HR2SEC
 from ...mathtime.vector import rot1mat, rot2mat
+
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -526,3 +533,98 @@ def polarm(xp: float, yp: float, ttt: float, use_iau80: bool = True) -> np.ndarr
         )
 
     return pm
+
+
+def ap_kp_table() -> Tuple[np.ndarray, np.ndarray]:
+    """Generates the Kp to Ap index conversion table.
+
+    References:
+        Vallado: 2022, p. 562, Table 8-3
+
+    Returns:
+        tuple: (ap, kp)
+            ap (np.ndarray): Ap index values
+            kp (np.ndarray): Kp index values
+    """
+    # Define Kp and Ap arrays
+    # fmt: off
+    ap = np.array([-0.001, -0.00001, 0, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 22, 27, 32, 39,
+                   48, 56, 67, 80, 94, 111, 132, 154, 179, 207, 236, 300, 400, 900])
+
+    kp = np.array([-0.66666667, -0.33333, 0, 0.33333, 0.66667, 1, 1.33333, 1.66667,
+                   2, 2.33333, 2.66667, 3, 3.33333, 3.66667, 4, 4.33333, 4.66667,
+                   5, 5.33333, 5.66667, 6, 6.33333, 6.66667, 7, 7.33333, 7.66667,
+                   8, 8.33333, 8.66667, 9, 9.33333])
+    # fmt: on
+
+    return ap, kp
+
+
+def kp2ap(kpin: float) -> float | None:
+    """Converts Kp index to Ap index using cubic spline interpolation.
+
+    References:
+        Vallado: 2022, p. 560-562, Table 8-3
+
+    Args:
+        kpin (float): Kp index value
+
+    Returns:
+        float: Corresponding Ap index value, or None if out of bounds
+    """
+    # Get Ap and Kp arrays
+    ap, kp = ap_kp_table()
+
+    # Ensure kpin is within bounds
+    if kpin < kp[2] or kpin > kp[-3]:
+        logger.warning(
+            "Kp index out of bounds for conversion to Ap index using cubic spline "
+            "interpolation."
+        )
+        return None
+
+    return float(CubicSpline(kp, ap)(kpin))
+
+
+def ap2kp(apin: float) -> float | None:
+    """Converts Ap index to Kp index using cubic spline interpolation and root-finding.
+
+    References:
+        Vallado: 2022, p. 560-562, Table 8-3
+
+    Args:
+        apin (float): Ap index value
+
+    Returns:
+        float: Corresponding Kp index value, or None if out of bounds
+
+    Notes:
+        - Root-finding is used for Ap-to-Kp conversion due to the non-linear and uneven
+          spacing in the Ap scale.
+    """
+    # Get Ap and Kp arrays
+    ap, kp = ap_kp_table()
+
+    # Ensure apin is within bounds
+    if apin < ap[2] or apin > ap[-3]:
+        logger.warning(
+            "Ap index out of bounds for conversion to Kp index using cubic spline "
+            "interpolation."
+        )
+        return None
+
+    # Define the spline from Kp to Ap
+    spline = CubicSpline(kp, ap)
+
+    # Root-finding to solve: spline(kp) - apin = 0
+    def func(kp_val):
+        return spline(kp_val) - apin
+
+    # Root-finding between valid Kp bounds
+    result = root_scalar(func, bracket=[kp[0], kp[-1]], method="brentq")
+
+    if result.converged:
+        return result.root
+    else:
+        logger.error("Root finding did not converge.")
+        return None
