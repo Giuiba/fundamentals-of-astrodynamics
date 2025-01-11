@@ -7324,7 +7324,7 @@ namespace TestAllTool
             AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
             double[] aPertGt = new double[3];
             AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
-                  norm1m, norm2m, normn1, out LegGottN, out aPertGot);
+                  norm1m, norm2m, normn1, out aPertGot);
 
             // Montenbruck version
             // does with  unnormalized elements, then normalized from there. But unnormalized only go to about 170
@@ -7373,7 +7373,7 @@ namespace TestAllTool
                 {
                     tempstr1 = tempstr1 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMN[L, m].ToString();
                     tempstr2 = tempstr2 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrGN[L, m].ToString();
-                    tempstr5 = tempstr5 + " " + L.ToString() + "  " + m.ToString() + "   " + LegGottN[L, m].ToString();
+                    //tempstr5 = tempstr5 + " " + L.ToString() + "  " + m.ToString() + "   " + LegGottN[L, m].ToString();
                     //tempstr7 = tempstr7 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrF[L, m].ToString();
                     //tempstr3 = tempstr3 + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrMU[L, m].ToString();
                     //tempstr3a = tempstr3a + " " + L.ToString() + "  " + m.ToString() + "   " + LegArrEx[L, m].ToString();
@@ -7403,7 +7403,7 @@ namespace TestAllTool
             strbuildplot.AppendLine(errstr);
 
             // ---------------------------------------- now accelerations ---------------------------------
-            order = 21;
+            order = 2000;
             strbuildall.AppendLine("\naccelerations --------------- ");
             string straccum = "";
             this.opsStatus.Text = "Status: Calculate Accelerations --------------- ";
@@ -7481,14 +7481,14 @@ namespace TestAllTool
             AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m,
                 out norm2m, out normn1);
             AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
-                  norm1m, norm2m, normn1, out LegGottN, out aPertGot);
+                  norm1m, norm2m, normn1, out aPertGot);
             strbuildall.AppendLine(straccum);
-            strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());
-            strbuildall.AppendLine("1 " + LegGottN[1, 0].ToString() + " " + LegGottN[1, 1].ToString());
-            strbuildall.AppendLine("2 " + LegGottN[2, 0].ToString() + " " + LegGottN[2, 1].ToString()
-                + " " + LegGottN[2, 2].ToString());
-            strbuildall.AppendLine("3 " + LegGottN[3, 0].ToString() + " " + LegGottN[3, 1].ToString()
-                + " " + LegGottN[3, 2].ToString() + " " + LegGottN[3, 3].ToString());
+            //strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());
+            //strbuildall.AppendLine("1 " + LegGottN[1, 0].ToString() + " " + LegGottN[1, 1].ToString());
+            //strbuildall.AppendLine("2 " + LegGottN[2, 0].ToString() + " " + LegGottN[2, 1].ToString()
+            //    + " " + LegGottN[2, 2].ToString());
+            //strbuildall.AppendLine("3 " + LegGottN[3, 0].ToString() + " " + LegGottN[3, 1].ToString()
+            //    + " " + LegGottN[3, 2].ToString() + " " + LegGottN[3, 3].ToString());
             strbuildall.AppendLine("acceleration " + order + " " + aPertGot[0] + " " + aPertGot[1]
                 + " " + aPertGot[2]);
 
@@ -9275,7 +9275,6 @@ namespace TestAllTool
             double[] aPertGot = new double[3];
             double[] norm1 = new double[orderSize + 2];
             double[] norm2 = new double[orderSize + 2];
-            double[] norm10 = new double[orderSize + 2];
             double[] norm11 = new double[orderSize + 2];
             double[] normn10 = new double[orderSize + 2];
             double[,] normn1 = new double[orderSize + 2, orderSize + 2];
@@ -9311,14 +9310,14 @@ namespace TestAllTool
                 out norm2m, out normn1);
 
             AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
-                   norm1m, norm2m, normn1, out LegGottN, out aPertGot);
+                   norm1m, norm2m, normn1, out aPertGot);
 
-            strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());
-            strbuildall.AppendLine("1 " + LegGottN[1, 0].ToString() + " " + LegGottN[1, 1].ToString());
-            strbuildall.AppendLine("2 " + LegGottN[2, 0].ToString() + " " + LegGottN[2, 1].ToString()
-                + " " + LegGottN[2, 2].ToString());
-            strbuildall.AppendLine("3 " + LegGottN[3, 0].ToString() + " " + LegGottN[3, 1].ToString()
-                + " " + LegGottN[3, 2].ToString() + " " + LegGottN[3, 3].ToString());
+            //strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());
+            //strbuildall.AppendLine("1 " + LegGottN[1, 0].ToString() + " " + LegGottN[1, 1].ToString());
+            //strbuildall.AppendLine("2 " + LegGottN[2, 0].ToString() + " " + LegGottN[2, 1].ToString()
+            //    + " " + LegGottN[2, 2].ToString());
+            //strbuildall.AppendLine("3 " + LegGottN[3, 0].ToString() + " " + LegGottN[3, 1].ToString()
+            //    + " " + LegGottN[3, 2].ToString() + " " + LegGottN[3, 3].ToString());
             strbuildall.AppendLine("acceleration " + order + " " + aPertGot[0] + " " + aPertGot[1]
                 + " " + aPertGot[2]);
 

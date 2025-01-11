@@ -1215,7 +1215,7 @@ namespace EOPSPWMethods
                 return MathTimeLibr.cubicinterp(bap[idx - 2], bap[idx - 1], bap[idx], bap[idx + 1],
                                      bkp[idx - 2], bkp[idx - 1], bkp[idx], bkp[idx + 1],
                                      kpin);
-            } // if idx > 3
+            } 
             else
                 return 0.0;
         }   // kp2ap

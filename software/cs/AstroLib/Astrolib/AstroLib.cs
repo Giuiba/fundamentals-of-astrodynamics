@@ -71,9 +71,9 @@ namespace AstroLibMethods
             public string name;
             public double[,] c = new double[2200, 2200];
             public double[,] s = new double[2200, 2200];
-            public double[,] cNor = new double[2200, 2200];  // unnormalized constants
+            public double[,] cNor = new double[2200, 2200];  // normalized coefficients
             public double[,] sNor = new double[2200, 2200];
-            public double[,] cSig = new double[2200, 2200];  // normalized constants
+            public double[,] cSig = new double[2200, 2200];  // sigmas
             public double[,] sSig = new double[2200, 2200];
             public double mum = 3.986004415e14; // m^3/s^2 stk uses .4415 
             public double mu = 398600.4415;     // km^3/s^2 stk uses .4415
@@ -103,7 +103,7 @@ namespace AstroLibMethods
             public double x;
             public double y;
             public double s;
-            public double jdxysstart, jdfxysstart, mjd;
+            public double mjd;
         };
         // use a class for all the xys data so it can be processed quickly
         public xysdataClass[] xysarr = new xysdataClass[xyssize];
@@ -13319,7 +13319,6 @@ namespace AstroLibMethods
         //    normxx      - constant normalization parameters pre-calculated              
         //
         //  outputs       :
-        //    LegGottN    - array of normalized Legendre polynomials, Gottlieb 
         //    accel       - bf frame acceleration from gravity                              km/s^2
         //
         //  locals :
@@ -13340,12 +13339,11 @@ namespace AstroLibMethods
                gravityConst gravData,
                double[] norm1, double[] norm2, double[] norm11, double[] normn10,
                double[,] norm1m, double[,] norm2m, double[,] normn1,
-               out double[,] LegGottN,
                out double[] accel
            )
         {
             Int32 L, m;
-            LegGottN = new double[order + 2, order + 2];
+            double[,] LegGottN = new double[order + 2, order + 2];
             accel = new double[3];
 
             double[] ctil = new double[order + 2];

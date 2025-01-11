@@ -8,7 +8,8 @@
 % 
 % outputs
 %    accel    eci frame acceeration (km/s^2
-%    p        normalized alfs
+%    LegGottN  normalized alfs   does not need to be passed back out - only
+%    for debugging.
 %
 function [LegGottN, accel] = gottliebnorm(mu, re, recef, c, s, nax, max)
     constastro;
