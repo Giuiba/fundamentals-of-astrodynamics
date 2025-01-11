@@ -797,6 +797,233 @@ def teme2eci(
 
 
 ########################################################################################
+# ECI <-> CIRS Frame Conversions
+########################################################################################
+
+
+def eci2cirs(
+    reci: ArrayLike,
+    veci: ArrayLike,
+    aeci: ArrayLike,
+    ttt: float,
+    iau06arr: IAU06Array,
+    iau06xysarr: IAU06xysArray,
+    ddx: float = 0.0,
+    ddy: float = 0.0,
+    use_full_series: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the ECI mean equator, mean equinox (J2000) frame to the
+    Celestial Intermediate Reference System (CIRS) frame using the XYS approach.
+
+    References:
+        Vallado: 2022, p. 214
+
+    Args:
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
+        aeci (array_like): ECI acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        iau06arr (IAU06Array): IAU 2006 data
+        iau06xysarr (IAU06xysArray): IAU 2006 XYS data
+        ddx (float, optional): EOP correction for x in radians (default 0)
+        ddy (float, optional): EOP correction for y in radians (default 0)
+        use_full_series (bool, optional): Use full series for IAU 2006 XYS data
+
+    Returns:
+        tuple: (rcirs, vcirs, acirs)
+            rcirs (np.ndarray): CIRS position vector in km
+            vcirs (np.ndarray): CIRS velocity vector in km/s
+            acirs (np.ndarray): CIRS acceleration vector in km/s²
+    """
+    # Compute transformation matrix using XYS approach
+    *_, pnb = iau.iau06xys(ttt, iau06arr, ddx, ddy, iau06xysarr, use_full_series)
+
+    # Transform vectors
+    rcirs = pnb.T @ np.asarray(reci)
+    vcirs = pnb.T @ np.asarray(veci)
+    acirs = pnb.T @ np.asarray(aeci)
+
+    return rcirs, vcirs, acirs
+
+
+def cirs2eci(
+    rcirs: ArrayLike,
+    vcirs: ArrayLike,
+    acirs: ArrayLike,
+    ttt: float,
+    iau06arr: IAU06Array,
+    iau06xysarr: IAU06xysArray,
+    ddx: float = 0.0,
+    ddy: float = 0.0,
+    use_full_series: bool = True,
+):
+    """Transforms a vector from the Celestial Intermediate Reference System (CIRS) frame
+    to the ECI mean equator, mean equinox (J2000) frame using the XYS approach.
+
+    References:
+        Vallado: 2022, p. 214
+
+    Args:
+        rcirs (array_like): CIRS position vector in km
+        vcirs (array_like): CIRS velocity vector in km/s
+        acirs (array_like): CIRS acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        iau06arr (IAU06Array): IAU 2006 data
+        iau06xysarr (IAU06xysArray): IAU 2006 XYS data
+        ddx (float, optional): EOP correction for x in radians (default 0)
+        ddy (float, optional): EOP correction for y in radians (default 0)
+        use_full_series (bool, optional): Use full series for IAU 2006 XYS data
+
+    Returns:
+        tuple: (reci, veci, aeci)
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+            aeci (np.ndarray): ECI acceleration vector in km/s²
+    """
+    # Compute transformation matrix using XYS approach
+    *_, pnb = iau.iau06xys(ttt, iau06arr, ddx, ddy, iau06xysarr, use_full_series)
+
+    # Transform vectors
+    reci = pnb @ np.asarray(rcirs)
+    veci = pnb @ np.asarray(vcirs)
+    aeci = pnb @ np.asarray(acirs)
+
+    return reci, veci, aeci
+
+
+########################################################################################
+# ECI <-> TIRS Frame Conversions
+########################################################################################
+
+
+def eci2tirs(
+    reci: ArrayLike,
+    veci: ArrayLike,
+    aeci: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    iau06arr: IAU06Array,
+    iau06xysarr: IAU06xysArray,
+    ddx: float = 0.0,
+    ddy: float = 0.0,
+    use_full_series: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the ECI mean equator, mean equinox (J2000) frame to the
+    Terrestrial Intermediate Reference System (TIRS) frame using the XYS approach.
+
+    References:
+        Vallado: 2022, p. 213
+
+    Args:
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
+        aeci (array_like): ECI acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        iau06arr (IAU06Array): IAU 2006 data
+        iau06xysarr (IAU06xysArray): IAU 2006 XYS data
+        ddx (float, optional): EOP correction for x in radians (default 0)
+        ddy (float, optional): EOP correction for y in radians (default 0)
+        use_full_series (bool, optional): Use full series for IAU 2006 XYS data
+
+    Returns:
+        tuple: (rtirs, vtirs, atirs)
+            rtirs (np.ndarray): TIRS position vector in km
+            vtirs (np.ndarray): TIRS velocity vector in km/s
+            atirs (np.ndarray): TIRS acceleration vector in km/s²
+    """
+    # Compute transformation matrices using XYS approach
+    prec = np.eye(3)
+    nut, st, _, omegaearth = compute_iau06_matrices(
+        ttt, jdut1, lod, 0, 0, iau06arr, iau06xysarr, ddx, ddy, use_full_series
+    )
+
+    # Position transformation
+    rtirs = st.T @ nut.T @ prec.T @ reci
+
+    # Velocity transformation
+    vtirs = st.T @ nut.T @ prec.T @ veci - np.cross(omegaearth, rtirs)
+
+    # Acceleration transformation
+    atirs = (
+        st.T @ nut.T @ prec.T @ aeci
+        - np.cross(omegaearth, np.cross(omegaearth, rtirs))
+        - 2 * np.cross(omegaearth, vtirs)
+    )
+
+    return rtirs, vtirs, atirs
+
+
+def tirs2eci(
+    rtirs: ArrayLike,
+    vtirs: ArrayLike,
+    atirs: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    iau06arr: IAU06Array,
+    iau06xysarr: IAU06xysArray,
+    ddx: float = 0.0,
+    ddy: float = 0.0,
+    use_full_series: bool = True,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Terrestrial Intermediate Reference System (TIRS)
+    frame to the ECI mean equator, mean equinox (J2000) frame using the XYS approach.
+
+    References:
+        Vallado: 2022, p. 213
+
+    Args:
+        rtirs (array_like): TIRS position vector in km
+        vtirs (array_like): TIRS velocity vector in km/s
+        atirs (array_like): TIRS acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        iau06arr (IAU06Array): IAU 2006 data
+        iau06xysarr (IAU06xysArray): IAU 2006 XYS data
+        ddx (float, optional): EOP correction for x in radians (default 0)
+        ddy (float, optional): EOP correction for y in radians (default 0)
+        use_full_series (bool, optional): Use full series for IAU 2006 XYS data
+
+    Returns:
+        tuple: (reci, veci, aeci)
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+            aeci (np.ndarray): ECI acceleration vector in km/s²
+    """
+    # Compute transformation matrices using XYS approach
+    prec = np.eye(3)
+    nut, st, _, omegaearth = compute_iau06_matrices(
+        ttt, jdut1, lod, 0, 0, iau06arr, iau06xysarr, ddx, ddy, use_full_series
+    )
+
+    # Position transformation
+    reci = prec @ nut @ st @ np.asarray(rtirs)
+
+    # Velocity transformation
+    veci = (
+        prec @ nut @ st @ (np.asarray(vtirs) + np.cross(omegaearth, np.asarray(rtirs)))
+    )
+
+    # Acceleration transformation
+    aeci = (
+        prec
+        @ nut
+        @ st
+        @ (
+            np.asarray(atirs)
+            + np.cross(omegaearth, np.cross(omegaearth, np.asarray(rtirs)))
+            + 2 * np.cross(omegaearth, np.asarray(vtirs))
+        )
+    )
+
+    return reci, veci, aeci
+
+
+########################################################################################
 # ECEF <-> PEF Frame Conversions
 ########################################################################################
 
@@ -1336,3 +1563,185 @@ def teme2ecef(
     )
 
     return recef, vecef, aecef
+
+
+########################################################################################
+# ECEF <-> CIRS Frame Conversions
+########################################################################################
+
+
+def ecef2cirs(
+    recef: ArrayLike,
+    vecef: ArrayLike,
+    aecef: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Earth-fixed (ECEF) frame to the Celestial
+    Intermediate Reference System (CIRS) frame.
+
+    References:
+        Vallado: 2022, p. 214
+
+    Args:
+        recef (array_like): ECEF position vector in km
+        vecef (array_like): ECEF velocity vector in km/s
+        aecef (array_like): ECEF acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+
+    Returns:
+        tuple: (rcirs, vcirs, acirs)
+            rcirs (np.ndarray): CIRS position vector in km
+            vcirs (np.ndarray): CIRS velocity vector in km/s
+            acirs (np.ndarray): CIRS acceleration vector in km/s²
+    """
+    # Compute transformation matrices
+    st, _ = sidereal(jdut1, 0, 0, 0, lod, use_iau80=False)
+    omegaearth = calc_omegaearth(lod)
+    pm = polarm(xp, yp, ttt, use_iau80=False)
+
+    # Transform position
+    rpef = pm @ np.asarray(recef)
+    rcirs = st @ rpef
+
+    # Transform velocity
+    vpef = pm @ np.asarray(vecef)
+    vcirs = st @ (vpef + np.cross(omegaearth, rpef))
+
+    # Transform acceleration
+    acirs = st @ (
+        pm @ np.asarray(aecef)
+        + np.cross(omegaearth, np.cross(omegaearth, rpef))
+        + 2 * np.cross(omegaearth, vpef)
+    )
+
+    return rcirs, vcirs, acirs
+
+
+def cirs2ecef(
+    rcirs: ArrayLike,
+    vcirs: ArrayLike,
+    acirs: ArrayLike,
+    ttt: float,
+    jdut1: float,
+    lod: float,
+    xp: float,
+    yp: float,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Celestial Intermediate Reference System (CIRS) frame
+    to the Earth-fixed (ECEF) frame.
+
+    References:
+        Vallado: 2022, p. 214
+
+    Args:
+        rcirs (array_like): CIRS position vector in km
+        vcirs (array_like): CIRS velocity vector in km/s
+        acirs (array_like): CIRS acceleration vector in km/s²
+        ttt (float): Julian centuries of TT
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        lod (float): Excess length of day in seconds
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+
+    Returns:
+        tuple: (recef, vecef, aecef)
+            recef (np.ndarray): ECEF position vector in km
+            vecef (np.ndarray): ECEF velocity vector in km/s
+            aecef (np.ndarray): ECEF acceleration vector in km/s²
+    """
+    # Compute transformation matrices
+    st, _ = sidereal(jdut1, 0, 0, 0, lod, use_iau80=False)
+    omegaearth = calc_omegaearth(lod)
+    pm = polarm(xp, yp, ttt, use_iau80=False)
+
+    # Transform position
+    rpef = st.T @ rcirs
+    recef = pm.T @ rpef
+
+    # Transform velocity
+    vpef = st.T @ vcirs - np.cross(omegaearth, rpef)
+    vecef = pm.T @ vpef
+
+    # Transform acceleration
+    aecef = (
+        pm.T @ (st.T @ acirs)
+        - np.cross(omegaearth, np.cross(omegaearth, rpef))
+        - 2 * np.cross(omegaearth, vpef)
+    )
+
+    return recef, vecef, aecef
+
+
+########################################################################################
+# ECEF <-> TIRS Frame Conversions
+########################################################################################
+
+
+def ecef2tirs(
+    recef: ArrayLike,
+    vecef: ArrayLike,
+    aecef: ArrayLike,
+    xp: float,
+    yp: float,
+    ttt: float,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Earth-fixed (ECEF) frame to the Terrestrial
+    Intermediate Reference System (TIRS) frame.
+
+    References:
+        Vallado: 2022, p. 213
+
+    Args:
+        recef (array_like): ECEF position vector in km
+        vecef (array_like): ECEF velocity vector in km/s
+        aecef (array_like): ECEF acceleration vector in km/s²
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ttt (float): Julian centuries of TT
+
+    Returns:
+        tuple: (rtirs, vtirs, atirs)
+            rtirs (np.ndarray): TIRS position vector in km
+            vtirs (np.ndarray): TIRS velocity vector in km/s
+            atirs (np.ndarray): TIRS acceleration vector in km/s²
+    """
+    return ecef2pef(recef, vecef, aecef, xp, yp, ttt, use_iau80=False)
+
+
+def tirs2ecef(
+    rtirs: ArrayLike,
+    vtirs: ArrayLike,
+    atirs: ArrayLike,
+    xp: float,
+    yp: float,
+    ttt: float,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transforms a vector from the Terrestrial Intermediate Reference System (TIRS)
+    frame to the Earth-fixed (ECEF) frame.
+
+    References:
+        Vallado: 2022, p. 213
+
+    Args:
+        rtirs (array_like): TIRS position vector in km
+        vtirs (array_like): TIRS velocity vector in km/s
+        atirs (array_like): TIRS acceleration vector in km/s²
+        xp (float): Polar motion coefficient in radians
+        yp (float): Polar motion coefficient in radians
+        ttt (float): Julian centuries of TT
+
+    Returns:
+        tuple: (recef, vecef, aecef)
+            recef (np.ndarray): ECEF position vector in km
+            vecef (np.ndarray): ECEF velocity vector in km/s
+            aecef (np.ndarray): ECEF acceleration vector in km/s²
+    """
+    return pef2ecef(rtirs, vtirs, atirs, xp, yp, ttt, use_iau80=False)

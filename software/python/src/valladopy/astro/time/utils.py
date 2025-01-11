@@ -6,14 +6,22 @@
 # For license information, see LICENSE file
 # --------------------------------------------------------------------------------------
 
+import logging
 import math
 from dataclasses import dataclass
 from typing import Tuple
 
 import numpy as np
+from scipy.interpolate import CubicSpline
+from scipy.optimize import root_scalar
 
 from .data import IAU80Array
-from ...constants import ARCSEC2RAD, DEG2ARCSEC, TWOPI
+from ...constants import ARCSEC2RAD, DEG2ARCSEC, TWOPI, HR2SEC
+from ...mathtime.vector import rot1mat, rot2mat
+
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -338,34 +346,9 @@ def precess(ttt: float, opt: str) -> Tuple[np.ndarray, float, float, float, floa
     return prec, psia * ARCSEC2RAD, wa * ARCSEC2RAD, ea * ARCSEC2RAD, xa * ARCSEC2RAD
 
 
-def nutation(
-    ttt: float, ddpsi: float, ddeps: float, iau80arr: IAU80Array
-) -> Tuple[float, float, float, float, np.ndarray]:
-    """Calculates the transformation matrix that accounts for the effects of nutation.
-
-    References:
-        Vallado: 2022, p. 225-227
-
-    Args:
-        ttt (float): Julian centuries of TT
-        ddpsi (float): Delta psi correction to GCRF in radians
-        ddeps (float): Delta eps correction to GCRF in radians
-        iau80arr (IAU80Array): Data object containing the nutation matrices
-
-    Returns:
-        tuple:
-            deltapsi (float): Nutation angle in radians
-            trueeps (float): True obliquity of the ecliptic in radians
-            meaneps (float): Mean obliquity of the ecliptic in radians
-            omega (float): Delaunay element in radians
-            nut (np.ndarray): Transformation matrix for TOD - MOD
-    """
-    # Mean obliquity of the ecliptic
-    meaneps = -46.815 * ttt - 0.00059 * ttt**2 + 0.001813 * ttt**3 + 84381.448
-    meaneps = float(np.radians(np.remainder(meaneps / DEG2ARCSEC, np.degrees(TWOPI))))
-
-    # Fundamental arguments using the IAU80 theory
-    fundargs = fundarg(ttt, "80")
+def _get_nutation_parameters(ttt, iau80arr, model):
+    # Fundamental arguments
+    fundargs = fundarg(ttt, model)
 
     # Calculate nutation parameters
     deltapsi, deltaeps = 0, 0
@@ -384,20 +367,14 @@ def nutation(
             tempval
         )
 
-    # Add corrections
-    deltapsi = math.remainder(deltapsi + ddpsi, TWOPI)
-    deltaeps = math.remainder(deltaeps + ddeps, TWOPI)
-    trueeps = meaneps + deltaeps
+    return deltapsi, deltaeps, fundargs.omega
 
-    # Sine/cosine values of psi and eps
-    cospsi = np.cos(deltapsi)
-    sinpsi = np.sin(deltapsi)
-    coseps = np.cos(meaneps)
-    sineps = np.sin(meaneps)
-    costrueeps = np.cos(trueeps)
-    sintrueeps = np.sin(trueeps)
 
-    # Construct nutation rotation matrix
+def _build_nutation_matrix(deltapsi, meaneps, trueeps):
+    cospsi, sinpsi = np.cos(deltapsi), np.sin(deltapsi)
+    coseps, sineps = np.cos(meaneps), np.sin(meaneps)
+    costrueeps, sintrueeps = np.cos(trueeps), np.sin(trueeps)
+
     nut = np.zeros((3, 3))
     nut[0, 0] = cospsi
     nut[0, 1] = costrueeps * sinpsi
@@ -409,7 +386,93 @@ def nutation(
     nut[2, 1] = costrueeps * sineps * cospsi - sintrueeps * coseps
     nut[2, 2] = sintrueeps * sineps * cospsi + costrueeps * coseps
 
-    return deltapsi, trueeps, meaneps, fundargs.omega, nut
+    return nut
+
+
+def nutation(
+    ttt: float, ddpsi: float, ddeps: float, iau80arr: IAU80Array
+) -> Tuple[float, float, float, float, np.ndarray]:
+    """Calculates the transformation matrix that accounts for the effects of nutation.
+
+    References:
+        Vallado: 2022, p. 225-227
+
+    Args:
+        ttt (float): Julian centuries of TT
+        ddpsi (float): Delta psi correction to GCRF in radians
+        ddeps (float): Delta eps correction to GCRF in radians
+        iau80arr (IAU80Array): Data object containing the nutation matrices
+
+    Returns:
+        tuple: (deltapsi, trueeps, meaneps, omega, nut)
+            deltapsi (float): Nutation angle in radians
+            trueeps (float): True obliquity of the ecliptic in radians
+            meaneps (float): Mean obliquity of the ecliptic in radians
+            omega (float): Delaunay element in radians
+            nut (np.ndarray): Transformation matrix for TOD - MOD
+    """
+    # Mean obliquity of the ecliptic
+    meaneps = -46.815 * ttt - 0.00059 * ttt**2 + 0.001813 * ttt**3 + 84381.448
+    meaneps = float(np.radians(np.remainder(meaneps / DEG2ARCSEC, np.degrees(TWOPI))))
+
+    # Calculate nutation parameters
+    deltapsi, deltaeps, omega = _get_nutation_parameters(ttt, iau80arr, "80")
+
+    # Add corrections
+    deltapsi = math.remainder(deltapsi + ddpsi, TWOPI)
+    deltaeps = math.remainder(deltaeps + ddeps, TWOPI)
+    trueeps = meaneps + deltaeps
+
+    # Construct nutation rotation matrix
+    nut = _build_nutation_matrix(deltapsi, meaneps, trueeps)
+
+    return deltapsi, trueeps, meaneps, omega, nut
+
+
+def nutation_qmod(
+    ttt: float, iau80arr: IAU80Array, use_eutelsat_approx: bool = False
+) -> Tuple[float, float, float, float, np.ndarray]:
+    """Calculates the transformation matrix that accounts for the effects of nutation
+    within the Quasi Mean-of-Date (QMOD) paradigm.
+
+    References:
+        Vallado: 2022, p. 225-227
+
+    Args:
+        ttt (float): Julian centuries of TT
+        iau80arr (IAU80Array): Data object containing the nutation matrices
+        use_eutelsat_approx (bool, optional): Whether to use the Eutelsat
+                                              approximation (defaults to False)
+
+    Returns:
+        tuple: (deltapsi, trueeps, meaneps, omega, nut)
+            deltapsi (float): Nutation angle in radians
+            trueeps (float): True obliquity of the ecliptic in radians
+            meaneps (float): Mean obliquity of the ecliptic in radians
+            omega (float): Delaunay element in radians
+            nut (np.ndarray): Transformation matrix for TOD - MOD
+    """
+    # Mean obliquity of the ecliptic
+    meaneps = np.radians(84381.448 / HR2SEC) % TWOPI
+
+    # Calculate nutation parameters
+    deltapsi, deltaeps, omega = _get_nutation_parameters(ttt, iau80arr, "96")
+
+    # Add corrections
+    deltapsi = math.remainder(deltapsi, TWOPI)
+    deltaeps = math.remainder(deltaeps, TWOPI)
+    trueeps = meaneps + deltaeps
+
+    # Construct nutation rotation matrix
+    if use_eutelsat_approx:
+        # Eutelsat approximation
+        n1 = rot1mat(deltaeps)
+        n2 = rot2mat(-deltapsi * np.sin(meaneps))
+        nut = n2 @ n1
+    else:
+        nut = _build_nutation_matrix(deltapsi, meaneps, trueeps)
+
+    return deltapsi, trueeps, meaneps, omega, nut
 
 
 def polarm(xp: float, yp: float, ttt: float, use_iau80: bool = True) -> np.ndarray:
@@ -470,3 +533,98 @@ def polarm(xp: float, yp: float, ttt: float, use_iau80: bool = True) -> np.ndarr
         )
 
     return pm
+
+
+def ap_kp_table() -> Tuple[np.ndarray, np.ndarray]:
+    """Generates the Kp to Ap index conversion table.
+
+    References:
+        Vallado: 2022, p. 562, Table 8-3
+
+    Returns:
+        tuple: (ap, kp)
+            ap (np.ndarray): Ap index values
+            kp (np.ndarray): Kp index values
+    """
+    # Define Kp and Ap arrays
+    # fmt: off
+    ap = np.array([-0.001, -0.00001, 0, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 22, 27, 32, 39,
+                   48, 56, 67, 80, 94, 111, 132, 154, 179, 207, 236, 300, 400, 900])
+
+    kp = np.array([-0.66666667, -0.33333, 0, 0.33333, 0.66667, 1, 1.33333, 1.66667,
+                   2, 2.33333, 2.66667, 3, 3.33333, 3.66667, 4, 4.33333, 4.66667,
+                   5, 5.33333, 5.66667, 6, 6.33333, 6.66667, 7, 7.33333, 7.66667,
+                   8, 8.33333, 8.66667, 9, 9.33333])
+    # fmt: on
+
+    return ap, kp
+
+
+def kp2ap(kpin: float) -> float | None:
+    """Converts Kp index to Ap index using cubic spline interpolation.
+
+    References:
+        Vallado: 2022, p. 560-562, Table 8-3
+
+    Args:
+        kpin (float): Kp index value
+
+    Returns:
+        float: Corresponding Ap index value, or None if out of bounds
+    """
+    # Get Ap and Kp arrays
+    ap, kp = ap_kp_table()
+
+    # Ensure kpin is within bounds
+    if kpin < kp[2] or kpin > kp[-3]:
+        logger.warning(
+            "Kp index out of bounds for conversion to Ap index using cubic spline "
+            "interpolation."
+        )
+        return None
+
+    return float(CubicSpline(kp, ap)(kpin))
+
+
+def ap2kp(apin: float) -> float | None:
+    """Converts Ap index to Kp index using cubic spline interpolation and root-finding.
+
+    References:
+        Vallado: 2022, p. 560-562, Table 8-3
+
+    Args:
+        apin (float): Ap index value
+
+    Returns:
+        float: Corresponding Kp index value, or None if out of bounds
+
+    Notes:
+        - Root-finding is used for Ap-to-Kp conversion due to the non-linear and uneven
+          spacing in the Ap scale.
+    """
+    # Get Ap and Kp arrays
+    ap, kp = ap_kp_table()
+
+    # Ensure apin is within bounds
+    if apin < ap[2] or apin > ap[-3]:
+        logger.warning(
+            "Ap index out of bounds for conversion to Kp index using cubic spline "
+            "interpolation."
+        )
+        return None
+
+    # Define the spline from Kp to Ap
+    spline = CubicSpline(kp, ap)
+
+    # Root-finding to solve: spline(kp) - apin = 0
+    def func(kp_val):
+        return spline(kp_val) - apin
+
+    # Root-finding between valid Kp bounds
+    result = root_scalar(func, bracket=[kp[0], kp[-1]], method="brentq")
+
+    if result.converged:
+        return result.root
+    else:
+        logger.error("Root finding did not converge.")
+        return None

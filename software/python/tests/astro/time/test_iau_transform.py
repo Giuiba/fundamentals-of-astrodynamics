@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pytest
 
@@ -34,6 +36,35 @@ def fundargs():
         lonnep=5.69321664338,
         precrate=0.0024382288691000005,
     )
+
+
+@pytest.fixture()
+def jdtt_jdttf():
+    return 2453101.5, 0.328154745474537
+
+
+@pytest.fixture()
+def xys_test_data(data_dir):
+    # Load the data from the file
+    file_path = os.path.join(data_dir, "xys_data.dat")
+    data = np.genfromtxt(
+        file_path, skip_header=1, names=["ttt", "jdtt", "jdftt", "x", "y", "s"]
+    )
+    return data
+
+
+def mock_iau06xys_series_closure(xys_test_data):
+    """Create a closure for the mock function with xys_test_data."""
+
+    def mock_iau06xys_series(ttt, *args):
+        # Find the closest row based on ttt
+        closest_index = np.abs(xys_test_data["ttt"] - ttt).argmin()
+        row = xys_test_data[closest_index]
+
+        # Return x, y, s values
+        return row["x"], row["y"], row["s"]
+
+    return mock_iau06xys_series
 
 
 def test_iau06era():
@@ -183,12 +214,9 @@ def test_iau06pnb(ttt, iau06data_old):
         ),
     ],
 )
-def test_findxysparam(iau06xysarr, interp, x_exp, y_exp, s_exp):
-    # Input definitions
-    jdtt, jdttf = 2453101.5, 0.328154745474537
-
+def test_findxysparam(iau06xysarr, jdtt_jdttf, interp, x_exp, y_exp, s_exp):
     # Call function
-    x, y, s = iau_transform.findxysparam(jdtt, jdttf, iau06xysarr, interp=interp)
+    x, y, s = iau_transform.findxysparam(*jdtt_jdttf, iau06xysarr, interp=interp)
 
     # Check against expected values
     assert custom_isclose(x, x_exp)
@@ -196,9 +224,26 @@ def test_findxysparam(iau06xysarr, interp, x_exp, y_exp, s_exp):
     assert custom_isclose(s, s_exp)
 
 
-def test_iau06xys_series(ttt, fundargs, iau06arr):
+def test_create_xys(iau06arr, xys_test_data, monkeypatch):
+    # Mock the iau06xys_series function
+    mock_function = mock_iau06xys_series_closure(xys_test_data)
+    monkeypatch.setattr(iau_transform, "iau06xys_series", mock_function)
+
     # Call function
-    x, y, s = iau_transform.iau06xys_series(ttt, fundargs, iau06arr)
+    xys_data = iau_transform.create_xys(iau06arr)
+
+    # Check against expected values
+    assert custom_allclose(
+        xys_data[0], [2435839.5, 0, -0.004148973464, -4.713574e-05, -6.7608e-08]
+    )
+    assert custom_allclose(
+        xys_data[-1], [2436204.5, 0, -0.004060043156, -5.7176757e-05, -9.0369e-08]
+    )
+
+
+def test_iau06xys_series(ttt, iau06arr):
+    # Call function
+    x, y, s = iau_transform.iau06xys_series(ttt, iau06arr)
 
     # Check against expected values
     assert custom_isclose(x, 0.001003308023544622)
@@ -254,3 +299,60 @@ def test_iau06xys_bad(ttt, iau06arr):
     """Check for raised error when full series is not used without the XYS data."""
     with pytest.raises(ValueError):
         iau_transform.iau06xys(ttt, iau06arr, use_full_series=False)
+
+
+@pytest.mark.parametrize(
+    "interp, eop_params_exp",
+    # eop_params_exp in tuple (dut1, dat, lod, xp, yp, ddpsi, ddeps, dx, dy)
+    [
+        (
+            None,
+            (
+                -0.4399623,
+                32,
+                0.0015308,
+                -6.829327918949478e-07,
+                1.6164366867345482e-06,
+                -2.532763632852438e-07,
+                -1.9154988540637765e-08,
+                -5.914726909536339e-10,
+                -5.187506387872035e-10,
+            ),
+        ),
+        (
+            iau_transform.InterpolationMode.LINEAR,
+            (
+                -0.4404350725418587,
+                32,
+                0.0014723556398243643,
+                -6.817554969598743e-07,
+                1.6210488191896547e-06,
+                -2.541195610090128e-07,
+                -1.9110442245797138e-08,
+                -5.994273864608887e-10,
+                -4.630677702364201e-10,
+            ),
+        ),
+        (
+            iau_transform.InterpolationMode.SPLINE,
+            (
+                -0.4404508444133234,
+                32,
+                0.0014873148833432495,
+                -6.817301763697862e-07,
+                1.6207593674283049e-06,
+                -2.5409384906011997e-07,
+                -1.9005342733934667e-08,
+                -6.29147015448284e-10,
+                -4.747972687881268e-10,
+            ),
+        ),
+    ],
+)
+def test_findeopparam(eoparr, jdtt_jdttf, interp, eop_params_exp):
+    eop_params = iau_transform.findeopparam(*jdtt_jdttf, eoparr, interp=interp)
+    for i, param in enumerate(eop_params):
+        if i == 1:  # dat
+            assert int(param) == eop_params_exp[i]
+        else:
+            assert custom_isclose(param, eop_params_exp[i])

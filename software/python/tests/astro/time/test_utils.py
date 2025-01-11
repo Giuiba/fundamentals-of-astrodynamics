@@ -196,6 +196,44 @@ def test_nutation(iau80arr):
 
 
 @pytest.mark.parametrize(
+    "use_eutelsat_approx, nut_expected",
+    [
+        (
+            False,
+            [
+                [0.9999999982280666, -5.4617220076710384e-05, -2.3681763640372747e-05],
+                [5.4618059767382264e-05, 0.9999999978797962, 3.545807249405453e-05],
+                [2.367982696881368e-05, -3.545936588322807e-05, 0.9999999990909495],
+            ],
+        ),
+        (
+            True,
+            [
+                [0.9999999997196329, 8.396563360840841e-10, -2.3679826965700458e-05],
+                [0, 0.9999999993713397, 3.545871922005356e-05],
+                [2.3679826980587025e-05, -3.5458719210112105e-05, 0.9999999990909726],
+            ],
+        ),
+    ],
+)
+def test_nutation_qmod(iau80arr, use_eutelsat_approx, nut_expected):
+    # Inputs
+    ttt = 0.042623631888994
+
+    # Call the function with test inputs
+    deltapsi, trueeps, meaneps, omega, nut = utils.nutation_qmod(
+        ttt, iau80arr, use_eutelsat_approx
+    )
+
+    # Check if the outputs are close to the expected values
+    assert custom_isclose(deltapsi, -5.953038436137153e-05)
+    assert custom_isclose(trueeps, 0.40912826294155646)
+    assert custom_isclose(meaneps, 0.40909280422232897)
+    assert custom_isclose(omega, 0.7435914192041119)
+    assert custom_allclose(nut, np.array(nut_expected))
+
+
+@pytest.mark.parametrize(
     "xp, yp, ttt, use_iau80, pm_expected",
     [
         (
@@ -239,3 +277,11 @@ def test_nutation(iau80arr):
 def test_polarm(xp, yp, ttt, use_iau80, pm_expected):
     pm = utils.polarm(xp, yp, ttt, use_iau80)
     assert custom_allclose(pm, pm_expected)
+
+
+def test_kp_ap_conversions():
+    kp, ap = 2.5, 10.438011223107981
+    assert custom_isclose(utils.kp2ap(kp), ap)
+    assert custom_isclose(utils.ap2kp(ap), kp)
+    assert utils.kp2ap(-0.5) is None
+    assert utils.ap2kp(-0.5) is None
