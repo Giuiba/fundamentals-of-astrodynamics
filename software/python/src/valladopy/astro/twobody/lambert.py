@@ -360,8 +360,8 @@ def kbatt(v: float) -> float:
 
 def hodograph(
     r1: ArrayLike,
-    v1: ArrayLike,
     r2: ArrayLike,
+    v1: ArrayLike,
     p: float,
     ecc: float,
     dnu: float,
@@ -375,8 +375,8 @@ def hodograph(
 
     Args:
         r1 (array_like): Initial position vector in km
-        v1 (array_like): Initial velocity vector in km/s
         r2 (array_like): Final position vector in km
+        v1 (array_like): Initial velocity vector in km/s
         p (float): Semi-parameter of transfer orbit in km
         ecc (float): Eccentricity of the transfer orbit
         dnu (float): Change in true anomaly in radians
@@ -450,8 +450,8 @@ def hodograph(
 
 def battin(
     r1: ArrayLike,
-    v1: ArrayLike,
     r2: ArrayLike,
+    v1: ArrayLike,
     dm: DirectionOfMotion,
     df: DirectionOfFlight,
     nrev: int,
@@ -472,9 +472,9 @@ def battin(
 
     Args:
         r1 (array_like): Initial ECI position vector in km
+        r2 (array_like): Final ECI position vector in km
         v1 (array_like): Initial ECI velocity vector in km/s
                          (needed for 180-degree transfer)
-        r2 (array_like): Final ECI position vector in km
         dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
         df (DirectionOfFlight): Direction of flight (DIRECT or RETROGRADE)
         nrev (int): Number of revolutions (0, 1, 2, ...)
@@ -566,7 +566,7 @@ def battin(
             s * (1 + lam) ** 2 * (l_ + x)
         )
         ecc = safe_sqrt(1 - p / a, con)
-        v1dv, v2dv = hodograph(r1, v1, r2, p, ecc, dnu, dtsec)
+        v1dv, v2dv = hodograph(r1, r2, v1, p, ecc, dnu, dtsec)
     else:
         # Standard processing, low energy case
         loops, x = 1, 10
@@ -611,7 +611,7 @@ def battin(
                 / (eps**2 + 4 * magr2 / magr1 * np.sin(dnu * 0.5) ** 2),
                 con,
             )
-            v1dv, v2dv = hodograph(r1, v1, r2, p, ecc, dnu, dtsec)
+            v1dv, v2dv = hodograph(r1, r2, v1, p, ecc, dnu, dtsec)
 
     return v1dv, v2dv
 

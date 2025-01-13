@@ -35,14 +35,14 @@ class TestLambert:
         [
             (
                 lambert.DirectionOfMotion.LONG,
-                [-2.0474089759890735, -2.924003076447717, 0.0],
+                [-2.0474089759890735, -2.924003076447717, 0],
                 10699.484172968232,
                 15554.50821587732,
                 1534.8915813389815,
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
-                [2.0474089759890735, 2.924003076447717, 0.0],
+                [2.0474089759890735, 2.924003076447717, 0],
                 10699.484172968232,
                 17488.265508772805,
                 1534.8915813389815,
@@ -140,7 +140,7 @@ class TestLambertBattin:
         dtsec = 1234
 
         # Check nominal case
-        v1t, v2t = lambert.hodograph(r1, v1, r2, p, ecc, dnu, dtsec)
+        v1t, v2t = lambert.hodograph(r1, r2, v1, p, ecc, dnu, dtsec)
         assert custom_allclose(v1t, [0, 7.668753340719345, 0])
         assert custom_allclose(v2t, [-4.665702986379401, 4.672061552209318, 0])
 
@@ -148,12 +148,12 @@ class TestLambertBattin:
         new_v1 = [7.6072, 0, 0]
         new_dnu = 0
         with pytest.raises(ValueError):
-            lambert.hodograph(r1, new_v1, r2, p, ecc, new_dnu, dtsec)
+            lambert.hodograph(r1, r2, new_v1, p, ecc, new_dnu, dtsec)
 
         # Check when r1 and r2 are parallel
         new_r2 = [8000, 0, 0]
         with pytest.raises(ValueError):
-            lambert.hodograph(r1, v1, new_r2, p, ecc, dnu, dtsec)
+            lambert.hodograph(r1, new_r2, v1, p, ecc, dnu, dtsec)
 
     @pytest.mark.parametrize(
         "dm, df, v1dv_exp, v2dv_exp",
@@ -161,26 +161,26 @@ class TestLambertBattin:
             (
                 lambert.DirectionOfMotion.LONG,
                 lambert.DirectionOfFlight.DIRECT,
-                [-0.8696153795282852, 6.3351545812502374, 0.0],
-                [-3.405994961791248, 5.41198791828363, 0.0],
+                [-0.8696153795282852, 6.3351545812502374, 0],
+                [-3.405994961791248, 5.41198791828363, 0],
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
                 lambert.DirectionOfFlight.DIRECT,
-                [5.832522716212579, 1.4319944881331306, 0.0],
-                [-5.388439978490882, -2.652101898141935, 0.0],
+                [5.832522716212579, 1.4319944881331306, 0],
+                [-5.388439978490882, -2.652101898141935, 0],
             ),
             (
                 lambert.DirectionOfMotion.LONG,
                 lambert.DirectionOfFlight.RETROGRADE,
-                [-6.241103309400493, -1.351339299630816, 0.0],
-                [5.6495867154901545, 2.976517897853268, 0.0],
+                [-6.241103309400493, -1.351339299630816, 0],
+                [5.6495867154901545, 2.976517897853268, 0],
             ),
             (
                 lambert.DirectionOfMotion.SHORT,
                 lambert.DirectionOfFlight.RETROGRADE,
-                [0.6411191586146303, -5.957501823796459, 0.0],
-                [3.33828270226307, -4.975814585231199, 0.0],
+                [0.6411191586146303, -5.957501823796459, 0],
+                [3.33828270226307, -4.975814585231199, 0],
             ),
         ],
     )
@@ -189,7 +189,7 @@ class TestLambertBattin:
         r1, r2, v1, nrev, dtsec = lambert_inputs
 
         # Compute Lambert minimum time
-        v1dv, v2dv = lambert.battin(r1, v1, r2, dm, df, nrev, dtsec)
+        v1dv, v2dv = lambert.battin(r1, r2, v1, dm, df, nrev, dtsec)
 
         # Check results
         assert np.allclose(v1dv, v1dv_exp, rtol=DEFAULT_TOL)
@@ -203,12 +203,12 @@ class TestLambertBattin:
 
         # Check when dtsec is 0
         with pytest.raises(ValueError):
-            lambert.battin(r1, v1, r2, dm, df, nrev, dtsec=0)
+            lambert.battin(r1, r2, v1, dm, df, nrev, dtsec=0)
 
         # Check when dtsec is positive but within a range without a solution
         # (hits the error in a different part of the algorithm)
         with pytest.raises(ValueError):
-            lambert.battin(r1, v1, r2, dm, df, nrev, dtsec=4560)
+            lambert.battin(r1, r2, v1, dm, df, nrev, dtsec=4560)
 
 
 class TestLambertUniversal:
