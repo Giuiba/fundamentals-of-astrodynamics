@@ -2,69 +2,34 @@ import os
 import pytest
 
 import numpy as np
-import scipy
 
-from ...conftest import custom_isclose, custom_allclose
-
-
-def load_matlab_data(file_path: str, keys: list) -> dict:
-    """Load MATLAB .mat file data and handle structures.
-
-    Args:
-        file_path (str): Path to the .mat file
-        keys (list): List of variable names to grab
-
-    Returns:
-        dict [str, np.ndarray or dict]: Dictionary of the input keys and their
-                                        associated MATLAB data as numpy arrays or dicts
-    """
-
-    def unpack_structure(struct):
-        """Recursively unpack MATLAB structure arrays into dictionaries."""
-        if isinstance(struct, np.ndarray) and struct.dtype.names:
-            return {name: struct[name] for name in struct.dtype.names}
-        return struct
-
-    # Load the .mat file
-    data = scipy.io.loadmat(file_path, struct_as_record=False, squeeze_me=True)
-
-    # Process keys and unpack structures
-    result = {}
-    for key in keys:
-        if key in data:
-            value = data[key]
-            if isinstance(value, np.ndarray) and value.dtype.names:
-                # If the key is a structure, unpack its fields
-                result[key] = unpack_structure(value)
-            else:
-                result[key] = value
-    return result
+from ...conftest import custom_isclose, custom_allclose, load_matlab_data
 
 
 @pytest.fixture()
-def iau80_mat_data(data_dir):
+def iau80_mat_data(test_data_dir):
     struct_name = "iau80arr"
-    file_path = os.path.join(data_dir, "iau80in_data.mat")
+    file_path = os.path.join(test_data_dir, "iau80in_data.mat")
     return load_matlab_data(file_path, keys=[struct_name])[struct_name]
 
 
 @pytest.fixture()
-def iau06_pnold_mat_data(data_dir):
-    file_path = os.path.join(data_dir, "iau06in_pnold_data.mat")
+def iau06_pnold_mat_data(test_data_dir):
+    file_path = os.path.join(test_data_dir, "iau06in_pnold_data.mat")
     return load_matlab_data(file_path, keys=["apn", "apni", "appl", "appli"])
 
 
 @pytest.fixture()
-def iau06_mat_data(data_dir):
+def iau06_mat_data(test_data_dir):
     struct_name = "iau06arr"
-    file_path = os.path.join(data_dir, "iau06in_data.mat")
+    file_path = os.path.join(test_data_dir, "iau06in_data.mat")
     return load_matlab_data(file_path, keys=[struct_name])[struct_name]
 
 
 @pytest.fixture()
-def xys_data(data_dir):
+def xys_data(test_data_dir):
     struct_name = "xys06table_struct"
-    file_path = os.path.join(data_dir, "xys_data.mat")
+    file_path = os.path.join(test_data_dir, "xys_data.mat")
     return load_matlab_data(file_path, keys=[struct_name])[struct_name]
 
 
