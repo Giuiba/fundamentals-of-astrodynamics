@@ -18,13 +18,13 @@ def t():
     "r2, earth_model, los, tmin",
     [
         (
-            [0.0, 5740.323, 3189.068],
+            [0, 5740.323, 3189.068],
             utils.EarthModel.ELLIPSOIDAL,
             False,
             0.5082248650848982,
         ),
         (
-            [0.0, 5740.323, 3189.068],
+            [0, 5740.323, 3189.068],
             utils.EarthModel.SPHERICAL,
             False,
             0.5082352992389487,
