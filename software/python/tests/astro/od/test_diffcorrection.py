@@ -22,7 +22,7 @@ def obsrecarr(test_data_dir):
     return load_matlab_data(file_path, keys=[struct_name])[struct_name]
 
 
-def test_find_findatwaatwb(iau80arr, obsrecarr):
+def test_findatwaatwb(iau80arr, obsrecarr):
     # Inputs (Vallado 2022, Example 10-4)
     # TODO: Test cases where obstype != 2
     firstobs, lastobs = 1, 10
@@ -35,6 +35,7 @@ def test_find_findatwaatwb(iau80arr, obsrecarr):
     obsrecarr.noise_el = obsrecarr.noiseel
 
     # Expected results
+    # TODO: This doesn't quite match MATLAB results - need to investigate differences
     # fmt: off
     atwa_exp = np.array(
         [
