@@ -122,11 +122,16 @@ def findc2c3(znew: float) -> Tuple[float, float]:
     return c2new, c3new
 
 
+def _calc_gmst(jdut1: float) -> float:
+    # Calculate GMST
+    # TODO: Formally move to a separate utility function?
+    ed = jdut1 - J2000_UTC
+    gmst = 99.96779469 + 360.985647366286 * ed + 0.29079e-12 * ed * ed  # deg
+    return np.mod(np.radians(gmst), TWOPI)
+
+
 def lon2nu(jdut1: float, lon: float, incl: float, raan: float, argp: float) -> float:
     """Converts the longitude of the ascending node to the true anomaly.
-
-    This function calculates the true anomaly (`nu`) of an object at a given Julian date
-    using the Greenwich Mean Sidereal Time (GMST) and orbital elements.
 
     References:
         Vallado: 2022, p. 112, Eq. 2-103
@@ -142,13 +147,7 @@ def lon2nu(jdut1: float, lon: float, incl: float, raan: float, argp: float) -> f
         float: True anomaly in radians (0 to 2pi)
     """
     # Calculate GMST
-    ed = jdut1 - J2000_UTC
-    gmst = 99.96779469 + 360.985647366286 * ed + 0.29079e-12 * ed * ed  # deg
-    gmst = np.remainder(np.radians(gmst), TWOPI)
-
-    # Check quadrants
-    if gmst < 0:
-        gmst += TWOPI
+    gmst = _calc_gmst(jdut1)
 
     # Calculate lambdau
     lambdau = gmst + lon - raan
@@ -160,10 +159,45 @@ def lon2nu(jdut1: float, lon: float, incl: float, raan: float, argp: float) -> f
     arglat = np.arctan(np.tan(lambdau) / np.cos(incl))
 
     # Adjust arglat for quadrants
-    if (lambdau >= 0.5 * np.pi) and (lambdau < 1.5 * np.pi):
+    if 0.5 * np.pi <= lambdau < 1.5 * np.pi:
         arglat += np.pi
 
     return np.mod(arglat - argp, TWOPI)
+
+
+def nu2lon(jdut1: float, nu: float, incl: float, raan: float, argp: float) -> float:
+    """Converts the true anomaly to the longitude of the ascending node.
+
+    References:
+        Vallado: 2022, p. 112, Eq. 2-103
+
+    Args:
+        jdut1 (float): Julian date of UT1 (days from 4713 BC)
+        nu (float): True anomaly in radians (0 to 2pi)
+        incl (float): Orbital inclination in radians
+        raan (float): Right ascension of the ascending node in radians
+        argp (float): Argument of periapsis in radians
+
+    Returns:
+        float: Longitude of the ascending node in radians (0 to 2pi)
+    """
+    # Calculate GMST
+    gmst = _calc_gmst(jdut1)
+
+    # Compute argument of latitude
+    arglat = nu + argp
+
+    # Ensure arglat is within the range [0, 2π]
+    arglat = np.mod(arglat, TWOPI)
+
+    # Calculate λu (lambdau)
+    lambdau = np.arctan(np.tan(arglat) * np.cos(incl))
+
+    # Adjust lambdau based on quadrant
+    if 0.5 * np.pi <= arglat < 1.5 * np.pi:
+        lambdau += np.pi
+
+    return np.mod(lambdau - gmst + raan, TWOPI)
 
 
 def gc2gd(latgc: float) -> float:
