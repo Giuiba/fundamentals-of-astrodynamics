@@ -20,7 +20,7 @@ function fid = testall
 
     if (testnum == -10)
         optstart = 1;  % 1
-        optstop = 80; % 102
+        optstop = 103; % 102
     else
         optstart = testnum;
         optstop = testnum;
@@ -929,6 +929,16 @@ end   % testinvjday
 
 
 % tests eop, spw, and fk5 iau80
+%2017 04 04 57847  0.007241  0.380885  0.4661438  0.0013270 -0.098717 -0.012486 -0.000092  0.000067  37
+%2017 04 05 57848  0.008420  0.382529  0.4648081  0.0013580 -0.098549 -0.012507 -0.000121  0.000043  37
+%2017 04 06 57849  0.009596  0.384510  0.4634094  0.0014492 -0.098278 -0.012560 -0.000149  0.000017  37
+%2017 04 07 57850  0.010358  0.386498  0.4619046  0.0015728 -0.097976 -0.012637 -0.000170 -0.000009  37
+%2017 04 08 57851  0.010589  0.388358  0.4602907  0.0016221 -0.097705 -0.012698 -0.000149 -0.000003  37
+
+%2017 04 05 2505 20 17 10 23 13 13 20 23 33 153   6   4   9   5   5   7   9  18   8 0.4 2   0  84.7 0   77.0  76.8  84.6  76.9  78.2 
+%2017 04 06 2505 21 13  3 10 13 23 30 17 13 123   5   2   4   5   9  15   6   5   6 0.3 1   0  75.8 0   76.9  76.8  75.7  76.8  78.2 
+%2017 04 07 2505 22 30 20 20 17  7  7 27 33 160  15   7   7   6   3   3  12  18   9 0.5 2   0  74.1 0   76.8  76.8  73.9  76.7  78.1 
+%2017 04 08 2505 23 30 30 37 27 20 20 27 43 233  15  15  22  12   7   7  12  32  15 0.9 4   0  73.3 0   76.8  76.7  73.1  76.6  78.1 
 function testiau80in(fid)
     year = 2017;
     mon = 4;
@@ -940,7 +950,7 @@ function testiau80in(fid)
     fileLoc = 'D:\Codes\LIBRARY\DataLib\';
     [iau80arr] = iau80in(fileLoc);
 
-    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt';
+    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2025-01-10.txt';
     [eoparr] = readeop(eopFileName);
 
     fprintf(fid,'EOP tests  mfme    dut1  dat    lod           xp                      yp               ddpsi                   ddeps               ddx                 ddy\n');
@@ -953,7 +963,7 @@ function testiau80in(fid)
             y, m, d, h * 60 + mm, dut1, dat, lod, xp, yp, ddpsi, ddeps, ddx, ddy);
     end
 
-    spwFileName = 'D:\Codes\LIBRARY\DataLib\SpaceWeather-All-v1.2_2018-01-04.txt';
+    spwFileName = 'D:\Codes\LIBRARY\DataLib\SpaceWeather-All-v1.2_2025-01-10.txt';
     [spwarr, updDate] = readspw(spwFileName);
     fprintf(fid,'SPW tests  mfme f107 f107bar ap apavg  kp sumkp aparr[]\n');
     for i = 0: 45
@@ -1266,7 +1276,7 @@ function testeci_ecef(fid)
     % test creating xys file
     %fileLoc = 'D:\Codes\LIBRARY\DataLib\';
     % done, works in c#. :-)
-    createXYS(fileLoc, iau06arr, fArgs);
+    %createXYS(fileLoc, iau06arr);
 
     % now read it in
     fileLoc = 'D:\Codes\LIBRARY\DataLib\';
@@ -1321,7 +1331,7 @@ function testeci_ecef(fid)
     %EOPSPWLibr.initEOPArrayP(ref EOPSPWLibr.eopdataP);
 
     % read existing data - this does not find x, y, s!
-    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt';
+    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2025-01-10.txt';
     [eoparr] = readeop(eopFileName);
 
     % now find table of CIO values
@@ -2735,7 +2745,7 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, ansrlongst
     [iau80arr] = iau80in(fileLoc);
 
     % read existing data - this does not find x, y, s!
-    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2023-01-01.txt';
+    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2025-01-10.txt';
     [eoparr] = readeop(eopFileName);
   
     asecef1 = [0.0; 0.0; 0.0];
@@ -2952,7 +2962,7 @@ function testangles(fid)
     fileLoc = 'D:\Codes\LIBRARY\DataLib\';
     [iau80arr] = iau80in(fileLoc);
 
-    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2023-01-01.txt';
+    eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2025-01-10.txt';
     [eoparr] = readeop(eopFileName);
 
     % gooding tests cases from Gooding paper (1997 CMDA)
@@ -2998,7 +3008,7 @@ function testangles(fid)
             % 20,  8,  2012,  11,  40,  28.00,    40.000,    -110.000,     2.0000,     0.939913  ,    18.667717, x
             % 20,  8,  2012,  11,  48,  28.00,    40.000,    -110.000,     2.0000,     45.025748 ,    35.664741, x
             % 20,  8,  2012,  11,  52,  28.00,    40.000,    -110.000,     2.0000,     67.886655 ,    36.996583, x
-            if ~contains(longstr, '#')
+            if (contains(longstr, '#') == 0)
                 for i=1:3
                     obsktr = i;
                     linesplt = split(longstr, ',');  % returns strings
@@ -3278,29 +3288,34 @@ function testAllLamb(fid)
             % 5.4720951867079, -4.39299050886976, 2.45681739563752
             % 6372.69272563561
 
-            if ~contains(longstr, '#')
-                nrev = longstr(1);
+            if contains(longstr, '#') ==0
+                linesplt = split(longstr, ',');  % returns strings
+                nrev = str2num(cell2mat(linesplt(1)));
                 longstr = fgets(infile);
                 linesplt = split(longstr, ',');  % returns strings
                 r1(1) = str2num(cell2mat(linesplt(1)));
                 r1(2) = str2num(cell2mat(linesplt(2)));
                 r1(3) = str2num(cell2mat(linesplt(3)));
                 longstr = fgets(infile);
+                linesplt = split(longstr, ',');  % returns strings
                 v1(1) = str2num(cell2mat(linesplt(1)));
                 v1(2) = str2num(cell2mat(linesplt(2)));
                 v1(3) = str2num(cell2mat(linesplt(3)));
                 longstr = fgets(infile);
+                linesplt = split(longstr, ',');  % returns strings
                 r2(1) = str2num(cell2mat(linesplt(1)));
                 r2(2) = str2num(cell2mat(linesplt(2)));
                 r2(3) = str2num(cell2mat(linesplt(3)));
                 longstr = fgets(infile);
+                linesplt = split(longstr, ',');  % returns strings
                 v2(1) = str2num(cell2mat(linesplt(1)));
                 v2(2) = str2num(cell2mat(linesplt(2)));
                 v2(3) = str2num(cell2mat(linesplt(3)));
                 longstr = fgets(infile);
+                linesplt = split(longstr, ',');  % returns strings
                 dtsec = str2num(cell2mat(linesplt(1)));
 
-                dtwait = 0.0;
+                %dtwait = 0.0;
                 
                 obsktr = obsktr + 1;
 
@@ -3310,7 +3325,7 @@ function testAllLamb(fid)
                 methodType = 'lambertu';
                 runopt = 'all';
                 % write summary results to fid
-                dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt, methodType, fida, fid);
+                dolamberttests(r1, v1, r2, v2, dtsec, nrev, dmin, dein, runopt, methodType, fida, fid);
 
             end  % if
 
@@ -3322,7 +3337,7 @@ end   % testAllLamb
 
 
 % test building the lambert envelope
-function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt, methodType, fida, fidas);
+function dolamberttests(r1, v1, r2, v2, dtsec, nrev, dmin, dein, runopt, methodType, fida, fidas)
     constastro;
     detailSum = "";
     detailAll = "";
@@ -3369,10 +3384,10 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     % 3 sum prints
     caseopt = 1; % temp only
 
-    fprintf(fida,'lambertTest  %d %15.11f  %15.11f  %15.11f  \n %15.11f  %15.11f  %15.11f\n %15.11f  %15.11f  %15.11f\n %15.11f  %15.11f  %15.11f  \n %15.11f  %15.11f  %15.11f %15.11f %15.11f\n', ...
+    fprintf(fida,'lambertTest  %d %15.11f  %15.11f  %15.11f  \n %15.11f  %15.11f  %15.11f\n %15.11f  %15.11f  %15.11f\n %15.11f  %15.11f  %15.11f  \n %15.11f  %15.11f  %15.11f %15.11f \n', ...
         caseopt, r1(1),  r1(2),  r1(3),  v1(1),  v1(2),  v1(3),  ...
         r2(1),  r2(2),  r2(3),  v2(1),  v2(2),  v2(3),  ...
-        nrev, dmin, dein, dtwait, dtsec);
+        nrev, dmin, dein, dtsec);
 
     %AstroLibr.lambertminT(r1, r2, 'S', 'L', 1, out tmin, out tminp, out tminenergy);
     %fprintf(fid,'mint S " + tmin.ToString("0.0000") + " minp " + tminp.ToString("0.0000") + " minener " + tminenergy.ToString("0.0000"));
@@ -3396,9 +3411,9 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     dm = 'S';
     de = 'L';
     if (methodType == "lambertk" || (runopt == "all" || (dein == de && nrev == 0)))
-        tbi(1,1) = 0.0;
-        tbi(1,2) = 0.0;
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nrev, 0.0, dtsec, tbi, show, 'n' )
+        tbi = 0.0;
+        kbi = 0.0;
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nrev, 0.0, dtsec, tbi, kbi, show, 'n' );
         fprintf(fida,' %s\n',detailAll);
         fprintf(fidas,' %s\n', errorout);
         %fprintf(fida,'k#" + caseopt  detailSum + " diffs " + MathTimeLib::mag(dr).ToString("0.00000000000"));
@@ -3449,7 +3464,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     end
 
     if (methodType == "lambertb" || (runopt == "all" || (dein == de && nrev == 0)))
-        [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, 0, 0.0, dtsec, altpadc, 'y');
+        [v1tb, v2tb, errorsum] = lambertb(r1, r2, v1, dm, de, 0, dtsec);
         %fprintf(fid,'detailSum);
         fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f\n', v1tb(1),  v1tb(2),  v1tb(3));
         fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f\n', v2tb(1),  v2tb(2),  v2tb(3));
@@ -3478,9 +3493,13 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     fprintf(fida,' TEST ------------------ s/l H 0 rev ------------------\n');
     dm = 'L';
     de = 'H';
+    if dtsec == 4560.0
+        dtsec = 21000.0;
+    end
+
     if (methodType == "lambertk" || (runopt == "all" || (dein == de && nrev == 0)))
         % k near 180 is about 53017 while battin is 30324!
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, 0, 0.0, dtsec, 0.0, show, 'n' )
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, 0, 0.0, dtsec, 0.0, 0.0, show, 'n' );
         fprintf(fida,' %s\n',detailSum);
         fprintf(fidas,' %s\n', errorout);
         %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
@@ -3530,7 +3549,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
     end
     if (methodType == "lambertb" || (runopt == "all" || (dein == de && nrev == 0)))
-        [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, 0, 0.0, dtsec, altpadc, 'y');
+        [v1tb, v2tb, errorsum] = lambertb(r1, r2, v1, dm, de, 0, dtsec);
 
         %fprintf(fid,'detailSum);
         fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f\n', v1tb(1),  v1tb(2),  v1tb(3));
@@ -3565,7 +3584,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
 
     % use random nrevs, but check if nrev = 0 and set to 1
     % but then you have to check that there is enough time for 1 rev
-    int nnrev = nrev;
+    nnrev = nrev;
     if (nnrev == 0)
         nnrev = 1;
     end
@@ -3575,19 +3594,20 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
     %AstroLibr.lambertminT(r1, r2, 'L', 'L', nnrev, out tmin, out tminp, out tminenergy);
     %fprintf(fid,'mint L " + tmin.ToString("0.0000") + " minp " + tminp.ToString("0.0000") + " minener " + tminenergy.ToString("0.0000"));
 
-    fprintf(fida,' TEST ------------------ S  L " + nnrev, " rev ------------------\n');
+    fprintf(fida,' TEST ------------------ S  L %4d rev ------------------\n', nnrev);
     dm = 'S';
     de = 'L';
+    [s, tau] = lambertkmins1st(r1, r2);
     if (methodType == "lambertk" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, show, 'n' )
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, kbi, show, 'n' );
 
         fprintf(fida,' %s\n',detailSum);
         fprintf(fidas,' %s\n', errorout);
-        if (~detailAll.Contains("not enough time"))
+        if (contains(detailAll,'not enough time') == 0)
             %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
-            fprintf(fid,'lamk v1t %15.11f  %15.11f  %15.11f\n', v1tk(1),  v1tk(2),  v1tk(3));
-            fprintf(fid,'lamk v2t %15.11f  %15.11f  %15.11f\n', v2tk(1),  v2tk(2),  v2tk(3));
+            fprintf(fida,'lamk v1t %15.11f  %15.11f  %15.11f\n', v1tk(1),  v1tk(2),  v1tk(3));
+            fprintf(fidas,'lamk v2t %15.11f  %15.11f  %15.11f\n', v2tk(1),  v2tk(2),  v2tk(3));
             %fprintf(fid,'magv1t.ToString("0.0000000").PadLeft(12)  magv2t.ToString("0.0000000").PadLeft(12));
 
             [r3h, v3h] = kepler(r1, v1tk, dtsec);
@@ -3595,7 +3615,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
                 dr(j) = r2(j) - r3h(j);
             end
             if (mag(dr) > 0.05)
-                fprintf(fid,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
+                fprintf(fida,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
                 fprintf(2,'dm, de nnrev %3d velb does not get to r2 position %15.11f km \n\n', nnrev, mag(dr));
             end
 
@@ -3632,7 +3652,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
     end
     if (methodType == "lambertb" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
-        [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
+        [v1tb, v2tb, errorsum] = lambertb(r1, r2, v1, dm, de, nnrev, dtsec);
         %fprintf(fid,'detailSum);
         fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f\n', v1tb(1),  v1tb(2),  v1tb(3));
         fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f\n', v2tb(1),  v2tb(2),  v2tb(3));
@@ -3658,7 +3678,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tb);
     end
 
-    fprintf(fida,' TEST ------------------ L  L " + nnrev, " rev ------------------\n');
+    fprintf(fida,' TEST ------------------ L  L %4d rev ------------------\n', nnrev);
     dm = 'L';
     de = 'L';
     % switch tdi!!  tdidk to tdirk 'H'
@@ -3668,10 +3688,10 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         % tofk1, kbik2, tofk2, kbik1;
         %string outstr;
         %getmins(1, 'k', nrev, r1, r2, s, tau, dm, de, out tofk1, out kbik1, out tofk2, out kbik2, out outstr);
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, show, 'n' )
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, kbi, show, 'n' );
         fprintf(fida,' %s\n',detailSum);
         fprintf(fidas,' %s\n', errorout);
-        if (~detailAll.Contains("not enough time"))
+        if (contains(detailAll,'not enough time') == 0)
             %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
             fprintf(fida,'lamk v1t %15.11f  %15.11f  %15.11f\n', v1tk(1),  v1tk(2),  v1tk(3));
             fprintf(fidas,'lamk v2t %15.11f  %15.11f  %15.11f\n', v2tk(1),  v2tk(2),  v2tk(3));
@@ -3718,7 +3738,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
         end
         if (methodType == "lambertb" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
-            [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
+            [v1tb, v2tb, errorsum] = lambertb(r1, r2, v1, dm, de, nnrev, dtsec);
             %fprintf(fid,'detailSum);
             fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f\n', v1tb(1),  v1tb(2),  v1tb(3));
             fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f\n', v2tb(1),  v2tb(2),  v2tb(3));
@@ -3745,16 +3765,16 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         end
     end
 
-    fprintf(fida,' TEST ------------------ S  H " + nnrev, " rev ------------------\n');
+    fprintf(fida,' TEST ------------------ S  H %4d rev ------------------\n', nnrev);
     dm = 'S';
     de = 'H';
     % switch tdi!!  tdirk to tdidk  'L'
     if (methodType == "lambertk" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);  % 'L'
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, show, 'n' )
-        fprintf(fid,' %s\n',detailSum);
-        fprintf(fida,' %s\n', errorout);
-        if (~detailAll.Contains("not enough time"))
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, kbi, show, 'n' );
+        fprintf(fida,' %s\n',detailSum);
+        fprintf(fidas,' %s\n', errorout);
+        if (contains(detailAll,'not enough time') == 0)
             %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
             fprintf(fida,'lamk v1t %15.11f  %15.11f  %15.11f\n', v1tk(1),  v1tk(2),  v1tk(3));
             fprintf(fidas,'lamk v2t %15.11f  %15.11f  %15.11f\n', v2tk(1),  v2tk(2),  v2tk(3));
@@ -3801,7 +3821,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
         end
         if (methodType == "lambertb" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
-            [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
+            [v1tb, v2tb, errorsum] = lambertb(r1, r2, v1, dm, de, nnrev, dtsec);
             %fprintf(fid,'detailSum);
             fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f\n', v1tb(1),  v1tb(2),  v1tb(3));
             fprintf(fidas,'batt v2t %15.11f  %15.11f  %15.11f\n', v2tb(1),  v2tb(2),  v2tb(3));
@@ -3828,15 +3848,15 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
         end
     end
 
-    fprintf(fida,' TEST ------------------ L  H " + nnrev, " rev ------------------\n');
+    fprintf(fida,' TEST ------------------ L  H %4d rev ------------------\n', nnrev);
     dm = 'L';
     de = 'H';
     if (methodType == "lambertk" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
         [kbi, tof] = lambertkmins(s, tau, nnrev, dm, de);
-        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, show, 'n' )
+        [v1tk, v2tk, errorsum, errorout] = lambertk ( r1, r2, v1, dm, de, nnrev, 0.0, dtsec, tof, kbi, show, 'n' );
         fprintf(fida,' %s\n',detailSum);
-        fprintf(fidsa,' %s\n', errorout);
-        if (~detailAll.Contains("not enough time"))
+        fprintf(fidas,' %s\n', errorout);
+        if (contains(detailAll,'not enough time') == 0)
             %fprintf(fid,'k#" + caseopt  detailSum + " diffs " + mag(dr).ToString("0.00000000000"));
             fprintf(fida,'lamk v1t %15.11f  %15.11f  %15.11f\n', v1tk(1),  v1tk(2),  v1tk(3));
             fprintf(fidas,'lamk v2t %15.11f  %15.11f  %15.11f\n', v2tk(1),  v2tk(2),  v2tk(3));
@@ -3883,7 +3903,7 @@ function dolamberttests(r1, v1, r2, v2, dtwait, dtsec, nrev, dmin, dein, runopt,
             [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r1, v1tu);
         end
         if (methodType == "lambertb" || (runopt == "all" || (dmin == dm && dein == de && nrev == nnrev)))
-            [v1tb, v2tb, hitearth, errorsum, errorout] = lambertb(r1, r2, v1, dm, de, nnrev, 0.0, dtsec, altpadc, 'y');
+            [v1tb, v2tb, errorsum] = lambertb(r1, r2, v1, dm, de, nnrev, dtsec);
 
             %fprintf(fid,' %s\n',detailSum);
             fprintf(fida,'batt v1t %15.11f  %15.11f  %15.11f\n', v1tb(1),  v1tb(2),  v1tb(3));
@@ -4397,7 +4417,7 @@ function testlambertuniv(fid)
         [kbi, tof] = lambertumins( r1, r2, 1, 'L' ) ;
         [v1t4, v2t4, errorl] = lambertu ( r1,  r2, v1, 'L', 'H', 1, dtsec, kbi, fid );
 
-        if (errorout.Contains('ok'))
+        if (contains(errorout,'ok')==1)
             dv11 = v1t1 - v1;
             dv21 = v2t1 - v2;
             dv12 = v1t2 - v1;
@@ -4446,7 +4466,7 @@ function testlambertuniv(fid)
     [kbi, tof] = lambertumins( r1, r3, 1, 'L' ) ;
     [v1t4, v2t4, errorl] = lambertu ( r1,  r3, v1, 'L', 'H', 1, dtsec, kbi, fid );
 
-    %if (errorout.Contains('ok'))
+    %if (contains(errorout'ok')==1)
         dv11 = v1t1 - v1;
         dv21 = v2t1 - v2;
         dv12 = v1t2 - v1;
@@ -4494,7 +4514,7 @@ function testlambertuniv(fid)
             [kbi, tof] = lambertumins( r3, r4, 1, 'L' ) ;
             [v1t4, v2t4, errorl] = lambertu ( r3,  r4, v1, 'L', 'H', 1, dtsec, kbi, fid );
 
-            %if (errorout.Contains('ok'))
+            %if (contains(errorout,'ok')==1)
                 dv11 = v1t1 - v1;
                 dv21 = v2t1 - v2;
                 dv12 = v1t2 - v1;
@@ -4535,10 +4555,14 @@ function testradecgeo2azel(fid)
     lon = -104.883 / rad;
     alt = 0.3253;
 
-    [az, el] = radecgeo2azel(rtasc, decl, rr, latgd, lon, alt, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
+
+    [az, el] = radecgeo2azel(rtasc, decl, latgd, lon, alt, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
 end
 
 function testijk2ll(fid)
+    constastro;
     rad = 180.0 / pi;
 
     r = [ 1.023 * re; 1.076 * re; 1.011 * re ];
@@ -4596,6 +4620,7 @@ end
 
 
 function testkepler(fid)
+    constastro;
     dtsec = 42397.344;  % s
 
     r1 = [ 2.500000 * re; 0.000000; 0.000000 ];
@@ -4729,13 +4754,22 @@ end
 
 
 function testkp2ap(fid)
+    bap = [0 -0.00001 -0.001 0 2 3 4 5 6 7 9 12 15 18 22 27 32 39 48 56 67 80 94 111 132 154 179 207 236 300 400 900];
 
     for i = 1: 27
         kp = 10.0 * i / 3.0;
         [ap] = kp2ap(kp);
         % get spacing correct, leading 0, front spaces
-        fprintf(fid,'%15.11f %15.11f  %15.11f\n', i, 0.1 * kp, ap);
+        fprintf(fid,'%5i kpin %15.11f ap %15.11f\n', i, 0.1 * kp, ap);
     end
+
+    for i = 1: 27
+        ap = bap(i+4);
+        [kp] = ap2kp(ap);
+        % get spacing correct, leading 0, front spaces
+        fprintf(fid,'%5i kp %15.11f apin %15.11f\n', i, 0.1 * kp, ap);
+    end
+
 end
 
 
@@ -7282,7 +7316,7 @@ function [strout] = printdiff(strin, mat1, mat2, fid)
 %        fprintf(fid,' diff %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \,', dr(:, i));
  %   end
 
-    fprintf(fid,'%17.10g %17.10g %17.10g %17.10g %17.10g %17.10g\n', dr);
+    fprintf(fid,'%17.10g %17.10g %17.10g %17.10g %17.10g %17.10g \n', dr);
 
     %    append(strout, 'pctdiff % ',strin , ' pct over 1e-18\n');
     % fprintf(fid, '%14.4f%14.4f%14.4f%14.4f%14.4f%14.4f\n', 100.0 * ((mat1' - mat2') / mat1'));
@@ -7439,6 +7473,7 @@ function testcovct2clmean(fid)
     ddeps = 0.0;
     ddx = 0.0;
     ddy = 0.0;
+    eqeterms = 2;
 
     [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
         = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
@@ -7460,7 +7495,7 @@ function testcovct2clmean(fid)
     classstate(3) = incl;
     classstate(4) = raan;
     classstate(5) = argp;
-    if (contains(anom, 'mean')) % meann or meana
+    if (contains(anom, 'mean')==1) % meann or meana
         classstate(6) = m;
     else  % truea or truen
         classstate(6) = nu;
@@ -7483,7 +7518,7 @@ function testcovct2clmean(fid)
     end
     % --------convert to a flight orbit state
 [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     if (strcmp(anomflt, 'radec')==1)
 
         fltstate(1) = rtasc;
@@ -7501,9 +7536,9 @@ function testcovct2clmean(fid)
     fltstate(6) = magv;
 
     % test position and velocity going back
-    aeci = [ 0.0, 0.0, 0.0 ];
+    aeci = [ 0.0; 0.0; 0.0 ];
 
-    [recef, vecef, aecef] = eci2ecef(reci', veci', aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
     %vx = magv* ( -cos(lon)*sin(latgc)*cos(az)*cos(fpa) - sin(lon)*sin(az)*cos(fpa) + cos(lon)*cos(latgc)*sin(fpa) );
     %vy = magv* ( -sin(lon)*sin(latgc)*cos(az)*cos(fpa) + cos(lon)*sin(az)*cos(fpa) + sin(lon)*cos(latgc)*sin(fpa) );
     %vz = magv* (sin(latgc) * sin(fpa) + cos(latgc)*cos(az)*cos(fpa) );
@@ -7527,7 +7562,7 @@ function testcovct2clmean(fid)
     [strout ] = printcov(cartcovmeanarev, 'ct', 'm', anom,fid);
     fprintf(fid,'\n');
 
-    printdiff(' cartcov - cartcovmeanarev\n', cartcov, cartcovmeanarev);
+    %printdiff(' cartcov - cartcovmeanarev\n', cartcov, cartcovmeanarev);
 
     %coveci_ecef(ref cartcov, cartstate, MathTimeLib.Edirection.eto,  ref ecefcartcov, out tm, iau80arr,
     %            ttt, jdut1, lod, xp, yp, 2, ddpsi, ddeps, AstroLib.EOpt.e80);
@@ -7570,6 +7605,7 @@ function testcovct2cltrue(fid)
     ddeps = 0.0;
     ddx = 0.0;
     ddy = 0.0;
+    eqeterms = 2;
 
     [ut1, tut1, jdut1, jdut1frac, utc, tai, tt, ttt, jdtt, jdttfrac, tdb, ttdb, jdtdb, jdtdbfrac] ...
         = convtime ( year, mon, day, hr, minute, second, timezone, dut1, dat );
@@ -7591,7 +7627,7 @@ function testcovct2cltrue(fid)
     classstate(3) = incl;
     classstate(4) = raan;
     classstate(5) = argp;
-    if (contains(anom, 'mean')) % meann or meana
+    if (contains(anom, 'mean')==1) % meann or meana
         classstate(6) = m;
     else  % truea or truen
         classstate(6) = nu;
@@ -7607,20 +7643,20 @@ function testcovct2cltrue(fid)
     eqstate(3) = ag;
     eqstate(4) = chi;
     eqstate(5) = psi;
-    if (contains(anom, 'mean')) %  meana or meann
+    if (contains(anom, 'mean')==1) %  meana or meann
         eqstate(6) = meanlonM;
     else % truea or truen
         eqstate(6) = meanlonNu;
     end
     % --------convert to a flight orbit state
 [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
-    if (anomflt.Equals('radec'))
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    if (strcmp(anomflt, 'radec')==1)
 
         fltstate(1) = rtasc;
         fltstate(2) = decl;
     else
-        if (anomflt.Equals('latlon'))
+        if (strcmp(anomflt,'latlon') == 1)
 
             fltstate(1) = lon;
             fltstate(2) = latgc;
@@ -7661,7 +7697,7 @@ function testcovct2cltrue(fid)
     %fprintf(fid,strout);
     fprintf(fid,'\n');
 
-    printdiff(' cartcov - cartcovtruearev\n', cartcov, cartcovtruearev);
+   %printdiff(' cartcov - cartcovtruearev\n', cartcov, cartcovtruearev);
     %fprintf(fid,strout);
 end  % testcovct2cltrue
 
@@ -7720,7 +7756,7 @@ function testcovcl2eq(anom, fid)
     classstate(3) = incl;
     classstate(4) = raan;
     classstate(5) = argp;
-    if (contains(anom, 'mean')) % meann or meana
+    if (contains(anom, 'mean')==1) % meann or meana
         classstate(6) = m;
     else  % truea or truen
         classstate(6) = nu;

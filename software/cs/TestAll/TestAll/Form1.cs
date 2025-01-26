@@ -830,12 +830,12 @@ namespace TestAllTool
             fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
             EOPSPWLibr.iau80in(fileLoc, out EOPSPWLibr.iau80arr);
 
-            string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt";
+            string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2025-01-10.txt";
             EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName,  out ktrActObs, out EOPupdate);
             int y, m, d, h, mm;
             double ss;
             strbuild.AppendLine("EOP tests  mfme    dut1  dat    lod           xp                      yp               ddpsi                   ddeps               ddx                 ddy");
-            for (i = 0; i < 90; i++)
+            for (i = 0; i <= 90; i++)
             {
                 MathTimeLibr.jday(year, mon, day, hr + i, minute, second, out jd, out jdFrac);
                 EOPSPWLibr.findeopparam(jd, jdFrac, 's', EOPSPWLibr.eopdata, out dut1, out dat,
@@ -846,11 +846,11 @@ namespace TestAllTool
                     ddpsi.ToString(fmtE).PadLeft(4) + " " + ddeps.ToString(fmtE).PadLeft(4) + " " + ddx.ToString(fmtE).PadLeft(4) + " " + ddy.ToString(fmtE).PadLeft(4));
             }
 
-            string spwFileName = @"D:\Codes\LIBRARY\DataLib\SpaceWeather-All-v1.2_2018-01-04.txt";
+            string spwFileName = @"D:\Codes\LIBRARY\DataLib\SpaceWeather-All-v1.2_2025-01-10.txt";
             string errstr;
             EOPSPWLibr.readspw(ref EOPSPWLibr.spwdata, spwFileName, out ktrActObs, out errstr);
             strbuild.AppendLine("SPW tests  mfme f107 f107bar ap apavg  kp sumkp aparr[]  ");
-            for (i = 0; i < 45; i++)
+            for (i = 0; i <= 45; i++)
             {
                 MathTimeLibr.jday(year, mon, day, hr + i, minute, second, out jd, out jdFrac);
                 //                              interp, adj obs, last ctr, actu const
@@ -1297,7 +1297,7 @@ namespace TestAllTool
 
             // read existing data - this does not find x, y, s!
             //getCurrEOPFileName(this.EOPSPWLoc.Text, out eopFileName);
-            string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2018-01-04.txt";
+            string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2025-01-10.txt";
             EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName, out ktrActObs, out EOPupdate);
 
             // now find table of CIO values
@@ -2667,7 +2667,7 @@ namespace TestAllTool
             fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
             EOPSPWLibr.iau80in(fileLoc, out iau80arr);
 
-            string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2020-02-12.txt";
+            string eopFileName = @"D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2025-01-10.txt";
             EOPSPWLibr.readeop(ref EOPSPWLibr.eopdata, eopFileName,  out ktrActObs, out EOPupdate);
 
             // gooding tests cases from Gooding paper (1997 CMDA)
@@ -7103,7 +7103,7 @@ namespace TestAllTool
             double[,] LegArrEx;  // exact 
             // 152 is arbitrary
             Int32 orderSize = 500;
-            double[,,] normArr = new double[orderSize, orderSize, 7];
+            //double[,,] normArr = new double[orderSize, orderSize, 7];
 
             AstroLib.gravityConst gravData;
 
@@ -7284,8 +7284,6 @@ namespace TestAllTool
             // fully normalized, 4415, .1363, order 360
             //string fname = "D:/Dataorig/Gravity/GGM03C-Data.txt";  
 
-            normalized = 'y';  // if file has normalized coefficients
-
             AstroLibr.readGravityField(fname, normalized, startKtr, out order, out gravData);
             strbuildall.AppendLine("\nread in gravity field " + fname + " " + order.ToString() + " --------------- ");
             strbuildall.AppendLine("\ncoefficients --------------- ");
@@ -7307,6 +7305,7 @@ namespace TestAllTool
 
             strbuildall.AppendLine("\nCalculate Legendre polynomial recursions Unn and Nor  --------------- ");
             order = 21;
+            normalized = 'y';  // if file has normalized coefficients
 
             // GTDS version
             // does with  unnormalized elements, then normalized from there. But unnormalized only go to about 170
@@ -7403,46 +7402,49 @@ namespace TestAllTool
             strbuildplot.AppendLine(errstr);
 
             // ---------------------------------------- now accelerations ---------------------------------
-            order = 2000;
+            order = 4;
             strbuildall.AppendLine("\naccelerations --------------- ");
             string straccum = "";
             this.opsStatus.Text = "Status: Calculate Accelerations --------------- ";
             Refresh();
 
-            if (order < 100)
+            if (order <= 100)
             {
+                double[,] unnormArr = new double[172, 172];
+                AstroLibr.gravnorm(out unnormArr);
+
                 // GTDS acceleration for non-spherical portion
-                AstroLibr.FullGeopG(recef, order, normalized, convArr, normArr, gravData, out aPertG, 'y', out straccum);
+                AstroLibr.FullGeopG(recef, order, normalized, unnormArr, gravData, out aPertG, 'y', out straccum);
                 strbuildall.AppendLine(straccum);
                 aeci = MathTimeLibr.matvecmult(transecef2eci, aPertG, 3);
-                straccum = straccum + "apertG eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
+                straccum = straccum + "apertGTDS eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
                         + aeci[1].ToString() + "     " + aeci[2].ToString() + "\n";
                 strbuildall.AppendLine(straccum);
 
-                AstroLibr.FullGeopG(recef, order, normalized, convArr, normArr, gravData, out aPertG, 'n', out straccum);
-                strbuildall.AppendLine(straccum);
+                //AstroLibr.FullGeopG(recef, order, normalized, unnormArr, gravData, out aPertG, 'n', out straccum);
+                //strbuildall.AppendLine(straccum);
 
                 // Montenbruck acceleration
-                AstroLibr.FullGeopM(recef, order, normalized, convArr, gravData, out aPertM, 'y', out straccum);
+                AstroLibr.FullGeopM(recef, order, normalized, unnormArr, gravData, out aPertM, 'y', out straccum);
                 strbuildall.AppendLine(straccum);
                 aeci = MathTimeLibr.matvecmult(transecef2eci, aPertM, 3);
-                straccum = straccum + "apertM eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
+                straccum = straccum + "apertMont eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
                         + aeci[1].ToString() + "     " + aeci[2].ToString() + "\n";
                 strbuildall.AppendLine(straccum);
 
-                AstroLibr.FullGeopM(recef, order, normalized, convArr, gravData, out aPertM, 'n', out straccum);
-                strbuildall.AppendLine(straccum);
+                //AstroLibr.FullGeopM(recef, order, normalized, unnormArr, gravData, out aPertM, 'n', out straccum);
+                //strbuildall.AppendLine(straccum);
 
                 // Montenbruck code acceleration
-                AstroLibr.FullGeopMC(recef, order, normalized, convArr, gravData, out aPertM1, 'y', out straccum);
+                AstroLibr.FullGeopMC(recef, order, normalized, unnormArr, gravData, out aPertM1, 'y', out straccum);
                 strbuildall.AppendLine(straccum);
                 aeci = MathTimeLibr.matvecmult(transecef2eci, aPertM1, 3);
-                straccum = straccum + "apertM1 eci " + order + " " + order + " " + aeci[0].ToString() + "     "
+                straccum = straccum + "apertMontC eci " + order + " " + order + " " + aeci[0].ToString() + "     "
                         + aeci[1].ToString() + "     " + aeci[2].ToString() + "\n";
                 strbuildall.AppendLine(straccum);
 
-                AstroLibr.FullGeopMC(recef, order, normalized, convArr, gravData, out aPertM1, 'n', out straccum);
-                strbuildall.AppendLine(straccum);
+                //AstroLibr.FullGeopMC(recef, order, normalized, unnormArr, gravData, out aPertM1, 'n', out straccum);
+                //strbuildall.AppendLine(straccum);
             }
 
             // Pines acceleration
@@ -7482,15 +7484,15 @@ namespace TestAllTool
                 out norm2m, out normn1);
             AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
                   norm1m, norm2m, normn1, out aPertGot);
-            strbuildall.AppendLine(straccum);
+            //strbuildall.AppendLine(straccum);
             //strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());
             //strbuildall.AppendLine("1 " + LegGottN[1, 0].ToString() + " " + LegGottN[1, 1].ToString());
             //strbuildall.AppendLine("2 " + LegGottN[2, 0].ToString() + " " + LegGottN[2, 1].ToString()
             //    + " " + LegGottN[2, 2].ToString());
             //strbuildall.AppendLine("3 " + LegGottN[3, 0].ToString() + " " + LegGottN[3, 1].ToString()
             //    + " " + LegGottN[3, 2].ToString() + " " + LegGottN[3, 3].ToString());
-            strbuildall.AppendLine("acceleration " + order + " " + aPertGot[0] + " " + aPertGot[1]
-                + " " + aPertGot[2]);
+            //strbuildall.AppendLine("acceleration " + order + " " + aPertGot[0] + " " + aPertGot[1]
+            //    + " " + aPertGot[2]);
 
             // Fukushima acceleration
             //strbuildall.AppendLine("Fukushima acceleration ");
@@ -7516,26 +7518,26 @@ namespace TestAllTool
             strbuildall.AppendLine(straccum);
             strbuildall.AppendLine("\ngravity field " + fname + " " + order.ToString() + " --------------- ");
             strbuildall.AppendLine(" summary accelerations ----------------------------------------------- ");
-            strbuildall.AppendLine("apertG bf  " + order + " " + order + " " + aPertG[0].ToString() + "     "
+            strbuildall.AppendLine("apertGTDS  bf  " + order + " " + order + " " + aPertG[0].ToString() + "     "
                 + aPertG[1].ToString() + "     " + aPertG[2].ToString());
-            strbuildall.AppendLine("apertM bf  " + order + " " + order + " " + aPertM[0].ToString() + "     "
+            strbuildall.AppendLine("apertMont  bf  " + order + " " + order + " " + aPertM[0].ToString() + "     "
                 + aPertM[1].ToString() + "     " + aPertM[2].ToString());
-            strbuildall.AppendLine("apertMC bf " + order + " " + order + " " + aPertM1[0].ToString() + "     "
+            strbuildall.AppendLine("apertMontC bf " + order + " " + order + " " + aPertM1[0].ToString() + "     "
                 + aPertM1[1].ToString() + "     " + aPertM1[2].ToString());
-            strbuildall.AppendLine("apertGt bf " + order + " " + order + " " + aPertGot[0].ToString() + "     "
+            strbuildall.AppendLine("apertGott  bf " + order + " " + order + " " + aPertGot[0].ToString() + "     "
                 + aPertGot[1].ToString() + "     " + aPertGot[2].ToString());
 
             aPertG = MathTimeLibr.matvecmult(transecef2eci, aPertG, 3);
             aPertM = MathTimeLibr.matvecmult(transecef2eci, aPertM, 3);
             aPertM1 = MathTimeLibr.matvecmult(transecef2eci, aPertM1, 3);
             aPertGt = MathTimeLibr.matvecmult(transecef2eci, aPertGot, 3);
-            strbuildall.AppendLine("apertG  eci " + order + " " + order + " " + aPertG[0].ToString() + "     "
+            strbuildall.AppendLine("apertGTDS  eci " + order + " " + order + " " + aPertG[0].ToString() + "     "
                 + aPertG[1].ToString() + "     " + aPertG[2].ToString());
-            strbuildall.AppendLine("apertM  eci " + order + " " + order + " " + aPertM[0].ToString() + "     "
+            strbuildall.AppendLine("apertMont  eci " + order + " " + order + " " + aPertM[0].ToString() + "     "
                 + aPertM[1].ToString() + "     " + aPertM[2].ToString());
-            strbuildall.AppendLine("apertMC eci " + order + " " + order + " " + aPertM1[0].ToString() + "     "
+            strbuildall.AppendLine("apertMontC eci " + order + " " + order + " " + aPertM1[0].ToString() + "     "
                 + aPertM1[1].ToString() + "     " + aPertM1[2].ToString());
-            strbuildall.AppendLine("apertGt eci " + order + " " + order + " " + aPertGt[0].ToString() + "     "
+            strbuildall.AppendLine("apertGott  eci " + order + " " + order + " " + aPertGt[0].ToString() + "     "
                 + aPertGt[1].ToString() + "     " + aPertGt[2].ToString());
 
             strbuildall.AppendLine("STK ans 4x4         -0.0000003723020	-0.0000031362090   	-0.0000102647170\n");  // no 2-body

@@ -43,7 +43,7 @@ function [f107, f107bar, ap, avgap, aparr, kp, sumkp, kparr] = findspwparam( jd,
     % the ephemerides are centered on jd, but it turns out to be 0.5, or 0000 hrs.
     % check if any whole days in jdF
     jd1 = floor(jd + jdF) + 0.5;  % want jd at 0 hr
-    mfme = (jd + jdF - jd1) * 1440.0;
+    mfme = (jdF + (jd - jd1)) * 1440.0;
     if (mfme < 0.0)
         mfme = 1440.0 + mfme;
     end
@@ -58,10 +58,10 @@ function [f107, f107bar, ap, avgap, aparr, kp, sumkp, kparr] = findspwparam( jd,
 
     % ---- read sumkpa for day of interest
     jdspwstarto = floor(jd + jdF - spwarr(1).mjd - 2400000.5);
-    recnum = floor(jdspwstarto) + 1;
+    recnum = jdspwstarto + 1;
 
     % check for out of bound values
-    if ((recnum >= 1) && (recnum <= 51830))  % spwsize
+    if ((recnum >= 1) && (recnum <= size(spwarr, 2)))  % spwsize
         % ---- set non-interpolated values
         if (fluxtype == 'a')  % adjusted
             f107 = spwarr(recnum).adjf107;

@@ -51,7 +51,7 @@ http://www.iausofa.org/2021_0125_C/sofa/nut00a.c
              
 It "looks" like the 678 687 terms are still used by nut00a? and that they use the 2006/2000
 values? SOFA is VERY convoluted and drawn out. very poor code imo. some routines are 100 lines of code,
-most are just 1 or 2. they do not seem to be functionally grouped for processing. Much better optioh to simply
+most are just 1 or 2. they do not seem to be functionally grouped for processing. Much better option to simply
 use the series aproach with interpolation!
 
 

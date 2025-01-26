@@ -62,6 +62,7 @@ function [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nrev, dtsec, tbi, o
     small = 0.00001; % can affect cases where znew is multiples of 2pi^2
     numiter= 20;
     errorl  = '      ok';
+    show = 'n';
     for i= 1 : 3
         v1tu(i) = 0.0;
         v2tu(i) = 0.0;
@@ -203,7 +204,9 @@ function [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nrev, dtsec, tbi, o
                         y= magr1 + magr2;
                     end
                     % outfile
-                    fprintf(1,'yneg %3i  y %11.7f lower %11.7f c2 %11.7f psinew %11.7f yneg %3i \n',loops,y,lower,c2new,psinew,ynegktr );
+                    if show == 'y'
+                        fprintf(1,'yneg %3i  y %11.7f lower %11.7f c2 %11.7f psinew %11.7f yneg %3i \n',loops,y,lower,c2new,psinew,ynegktr );
+                    end
                     ynegktr = ynegktr + 1;
                 end % while
             end  % if  y neg
@@ -318,7 +321,7 @@ function [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nrev, dtsec, tbi, o
         v2tu = v2t;% / velkmps;
 
         tof = dtsec;
-        pause;
+        %pause;
         %             % use JGCD 2011 v34 n6 1925 to solve 180 deg case
         %             p = 2.0*magr1*magr2 / (magr1 + magr2);
         %             ecc = sqrt(1.0 - 4.0*magr1*magr2 / ((magr1+magr2)^2) );
