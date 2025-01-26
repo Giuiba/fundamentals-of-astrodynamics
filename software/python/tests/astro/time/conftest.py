@@ -9,11 +9,6 @@ def filepath(filename):
 
 
 @pytest.fixture()
-def data_dir():
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-
-
-@pytest.fixture()
 def iau80arr():
     """Load the IAU 1980 data"""
     return data.iau80in()
@@ -46,4 +41,4 @@ def eoparr():
 @pytest.fixture()
 def spwarr():
     """Load the Space Weather data"""
-    return data.readspw(filepath("SpaceWeather-All-v1.2_2021-07-28.txt"))
+    return data.readspw(filepath("SpaceWeather-All-v1.2_2025-01-10.txt"))

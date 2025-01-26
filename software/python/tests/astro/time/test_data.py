@@ -2,69 +2,34 @@ import os
 import pytest
 
 import numpy as np
-import scipy
 
-from ...conftest import custom_isclose, custom_allclose
-
-
-def load_matlab_data(file_path: str, keys: list) -> dict:
-    """Load MATLAB .mat file data and handle structures.
-
-    Args:
-        file_path (str): Path to the .mat file
-        keys (list): List of variable names to grab
-
-    Returns:
-        dict [str, np.ndarray or dict]: Dictionary of the input keys and their
-                                        associated MATLAB data as numpy arrays or dicts
-    """
-
-    def unpack_structure(struct):
-        """Recursively unpack MATLAB structure arrays into dictionaries."""
-        if isinstance(struct, np.ndarray) and struct.dtype.names:
-            return {name: struct[name] for name in struct.dtype.names}
-        return struct
-
-    # Load the .mat file
-    data = scipy.io.loadmat(file_path, struct_as_record=False, squeeze_me=True)
-
-    # Process keys and unpack structures
-    result = {}
-    for key in keys:
-        if key in data:
-            value = data[key]
-            if isinstance(value, np.ndarray) and value.dtype.names:
-                # If the key is a structure, unpack its fields
-                result[key] = unpack_structure(value)
-            else:
-                result[key] = value
-    return result
+from ...conftest import custom_isclose, custom_allclose, load_matlab_data
 
 
 @pytest.fixture()
-def iau80_mat_data(data_dir):
+def iau80_mat_data(test_data_dir):
     struct_name = "iau80arr"
-    file_path = os.path.join(data_dir, "iau80in_data.mat")
+    file_path = os.path.join(test_data_dir, "iau80in_data.mat")
     return load_matlab_data(file_path, keys=[struct_name])[struct_name]
 
 
 @pytest.fixture()
-def iau06_pnold_mat_data(data_dir):
-    file_path = os.path.join(data_dir, "iau06in_pnold_data.mat")
+def iau06_pnold_mat_data(test_data_dir):
+    file_path = os.path.join(test_data_dir, "iau06in_pnold_data.mat")
     return load_matlab_data(file_path, keys=["apn", "apni", "appl", "appli"])
 
 
 @pytest.fixture()
-def iau06_mat_data(data_dir):
+def iau06_mat_data(test_data_dir):
     struct_name = "iau06arr"
-    file_path = os.path.join(data_dir, "iau06in_data.mat")
+    file_path = os.path.join(test_data_dir, "iau06in_data.mat")
     return load_matlab_data(file_path, keys=[struct_name])[struct_name]
 
 
 @pytest.fixture()
-def xys_data(data_dir):
+def xys_data(test_data_dir):
     struct_name = "xys06table_struct"
-    file_path = os.path.join(data_dir, "xys_data.mat")
+    file_path = os.path.join(test_data_dir, "xys_data.mat")
     return load_matlab_data(file_path, keys=[struct_name])[struct_name]
 
 
@@ -112,7 +77,7 @@ def test_readxys(iau06xysarr, xys_data):
 
 def test_readeop(eoparr):
     # Check that the first line is correct
-    assert int(eoparr.mjd[0]) == 37665
+    assert custom_isclose(eoparr.mjd[0], 37665)
     assert custom_isclose(eoparr.xp[0], -0.0127)
     assert custom_isclose(eoparr.yp[0], 0.213)
     assert custom_isclose(eoparr.dut1[0], 0.0326338)
@@ -124,7 +89,7 @@ def test_readeop(eoparr):
     assert eoparr.dat[0] == 2
 
     # Check that the last line is correct
-    assert int(eoparr.mjd[-1]) == 60126
+    assert custom_isclose(eoparr.mjd[-1], 60126)
     assert custom_isclose(eoparr.xp[-1], 0.203662)
     assert custom_isclose(eoparr.yp[-1], 0.492913)
     assert custom_isclose(eoparr.dut1[-1], -0.0114449)
@@ -137,7 +102,7 @@ def test_readeop(eoparr):
 
 
 def test_readspw(spwarr):
-    # Check that the first line is correct
+    # Check that the first line is correct (1957 10 01)
     assert custom_isclose(spwarr.mjd[0], 36112)
     assert custom_allclose(spwarr.kparray[0], [43, 40, 30, 20, 37, 23, 43, 37])
     assert custom_isclose(spwarr.sumkp[0], 273)
@@ -149,14 +114,14 @@ def test_readspw(spwarr):
     assert custom_isclose(spwarr.obsctrf81[0], 266.6)
     assert custom_isclose(spwarr.obslstf81[0], 230.9)
 
-    # Check that the last line is correct
-    assert custom_isclose(spwarr.mjd[-1], 59467)
+    # Check that the last line is correct (2025 02 23)
+    assert custom_isclose(spwarr.mjd[-1], 60729)
     assert custom_allclose(spwarr.kparray[-1], [13, 13, 13, 13, 13, 13, 13, 13])
     assert custom_isclose(spwarr.sumkp[-1], 104)
     assert custom_allclose(spwarr.aparray[-1], [5, 5, 5, 5, 5, 5, 5, 5])
     assert custom_isclose(spwarr.avgap[-1], 5)
-    assert custom_isclose(spwarr.adjf107[-1], 80.0)
-    assert custom_isclose(spwarr.adjctrf81[-1], 69.0)
-    assert custom_isclose(spwarr.obsf107[-1], 78.9)
-    assert custom_isclose(spwarr.obsctrf81[-1], 68.3)
-    assert custom_isclose(spwarr.obslstf81[-1], 78.9)
+    assert custom_isclose(spwarr.adjf107[-1], 220.0)
+    assert custom_isclose(spwarr.adjctrf81[-1], 187.4)
+    assert custom_isclose(spwarr.obsf107[-1], 224.7)
+    assert custom_isclose(spwarr.obsctrf81[-1], 191.2)
+    assert custom_isclose(spwarr.obslstf81[-1], 202.1)

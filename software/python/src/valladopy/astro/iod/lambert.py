@@ -14,7 +14,7 @@ from numpy.typing import ArrayLike
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, Tuple
 
-from .utils import findc2c3
+from ..twobody.utils import findc2c3
 from ...constants import MU, SMALL, TWOPI
 from ...mathtime.utils import safe_sqrt
 from ...mathtime.vector import unit
@@ -74,9 +74,6 @@ def calculate_mag_and_angle(r1: ArrayLike, r2: ArrayLike) -> Tuple[float, float,
             magr1 (float): Magnitude of the initial position vector
             magr2 (float): Magnitude of the final position vector
             cosdeltanu (float): Cosine of the angle between the two position
-
-    TODO:
-        - Move to mathtime utils?
     """
     magr1 = float(np.linalg.norm(r1))
     magr2 = float(np.linalg.norm(r2))
@@ -360,8 +357,8 @@ def kbatt(v: float) -> float:
 
 def hodograph(
     r1: ArrayLike,
-    v1: ArrayLike,
     r2: ArrayLike,
+    v1: ArrayLike,
     p: float,
     ecc: float,
     dnu: float,
@@ -375,8 +372,8 @@ def hodograph(
 
     Args:
         r1 (array_like): Initial position vector in km
-        v1 (array_like): Initial velocity vector in km/s
         r2 (array_like): Final position vector in km
+        v1 (array_like): Initial velocity vector in km/s
         p (float): Semi-parameter of transfer orbit in km
         ecc (float): Eccentricity of the transfer orbit
         dnu (float): Change in true anomaly in radians
@@ -434,8 +431,7 @@ def hodograph(
             )
 
         # Normal vector
-        # Depending on the cross product, this will be normal, in plane, or
-        # even a fan
+        # Depending on the cross product, this will be normal, in plane, or even a fan
         nvec = cross_product_r1_r2 / norm_cross_r1_r2
         if dnu % TWOPI > np.pi:
             nvec = -nvec
@@ -450,8 +446,8 @@ def hodograph(
 
 def battin(
     r1: ArrayLike,
-    v1: ArrayLike,
     r2: ArrayLike,
+    v1: ArrayLike,
     dm: DirectionOfMotion,
     df: DirectionOfFlight,
     nrev: int,
@@ -472,9 +468,9 @@ def battin(
 
     Args:
         r1 (array_like): Initial ECI position vector in km
+        r2 (array_like): Final ECI position vector in km
         v1 (array_like): Initial ECI velocity vector in km/s
                          (needed for 180-degree transfer)
-        r2 (array_like): Final ECI position vector in km
         dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
         df (DirectionOfFlight): Direction of flight (DIRECT or RETROGRADE)
         nrev (int): Number of revolutions (0, 1, 2, ...)
@@ -566,7 +562,7 @@ def battin(
             s * (1 + lam) ** 2 * (l_ + x)
         )
         ecc = safe_sqrt(1 - p / a, con)
-        v1dv, v2dv = hodograph(r1, v1, r2, p, ecc, dnu, dtsec)
+        v1dv, v2dv = hodograph(r1, r2, v1, p, ecc, dnu, dtsec)
     else:
         # Standard processing, low energy case
         loops, x = 1, 10
@@ -611,7 +607,7 @@ def battin(
                 / (eps**2 + 4 * magr2 / magr1 * np.sin(dnu * 0.5) ** 2),
                 con,
             )
-            v1dv, v2dv = hodograph(r1, v1, r2, p, ecc, dnu, dtsec)
+            v1dv, v2dv = hodograph(r1, r2, v1, p, ecc, dnu, dtsec)
 
     return v1dv, v2dv
 
@@ -682,7 +678,7 @@ def _calculate_dtdpsi(
     ) * OOMU
 
 
-def get_tbiu(r1: ArrayLike, r2: ArrayLike, order: int) -> Tuple[np.ndarray, np.ndarray]:
+def get_kbiu(r1: ArrayLike, r2: ArrayLike, order: int) -> Tuple[np.ndarray, np.ndarray]:
     """Form the minimum time and universal variable matrix for multi-rev cases.
 
     Args:
@@ -691,29 +687,29 @@ def get_tbiu(r1: ArrayLike, r2: ArrayLike, order: int) -> Tuple[np.ndarray, np.n
         order (int): The number of revolutions to consider
 
     Returns:
-        tuple: (tbi, tbil)
-            tbi (np.ndarray): Matrix of psi and time of flight for SHORT direction
-            tbil (np.ndarray): Matrix of psi and time of flight for LONG direction
+        tuple: (kbi_arr, kbil_arr)
+            kbi_arr (np.ndarray): Matrix of kbi and time of flight for SHORT direction
+            kbil_arr (np.ndarray): Matrix of kbi and time of flight for LONG direction
     """
-    tbi = np.zeros((order, 2))
+    kbi_arr = np.zeros((order, 2))
     for i in range(order):
-        psib, tof = universal_min(r1, r2, DirectionOfMotion.SHORT, i + 1)
-        tbi[i, 0] = psib
-        tbi[i, 1] = tof
+        kbi, tof = universal_min(r1, r2, DirectionOfMotion.SHORT, i + 1)
+        kbi_arr[i, 0] = kbi
+        kbi_arr[i, 1] = tof
 
-    tbil = np.zeros((order, 2))
+    kbil_arr = np.zeros((order, 2))
     for i in range(order):
-        psib, tof = universal_min(r1, r2, DirectionOfMotion.LONG, i + 1)
-        tbil[i, 0] = psib
-        tbil[i, 1] = tof
+        kbil, tofl = universal_min(r1, r2, DirectionOfMotion.LONG, i + 1)
+        kbil_arr[i, 0] = kbil
+        kbil_arr[i, 1] = tofl
 
-    return tbi, tbil
+    return kbi_arr, kbil_arr
 
 
 def universal_min(
     r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion, nrev: int, n_iter: int = 20
 ) -> Tuple[float, float]:
-    """Find the minimum psi values for the universal variable Lambert problem for the
+    """Find the minimum kbi value for the universal variable Lambert problem for the
     multi-rev cases.
 
     References:
@@ -727,9 +723,9 @@ def universal_min(
         n_iter (int): Number of iterations to perform (defaults to 20)
 
     Returns:
-        tuple: (psib, tof)
-            psib (float): Minimum psi value (for min TOF for each revolution)
-            tof (float): Time of flight in seconds (for each revolution)
+        tuple: (kbi, tof)
+            kbi (float): K value for min TOF
+            tof (float): Time of flight in seconds
 
     TODO:
         - Identify and capture any exceptions that may occur due to bad inputs
@@ -802,9 +798,9 @@ def universal_min(
     # Calculate time of flight and final psi
     dtnew = (x**3 * c3 + vara * sqrty) * OOMU
     tof = dtnew
-    psib = psinew
+    kbi = psinew
 
-    return psib, tof
+    return kbi, tof
 
 
 def universal(
@@ -815,7 +811,7 @@ def universal(
     dm: DirectionOfMotion,
     de: DirectionOfEnergy,
     nrev: int,
-    psi_vec: np.ndarray = None,
+    kbi: float,
     tol: float = 1e-05,
     n_iter: int = 20,
 ) -> Tuple[np.ndarray, np.ndarray]:
@@ -836,16 +832,15 @@ def universal(
         dm (DirectionOfMotion): Direction of motion (LONG or SHORT period)
         de (DirectionOfEnergy): Direction of energy (HIGH or LOW)
         nrev (int): Number of revolutions (0, 1, 2, ...)
-        psi_vec (np.ndarray): Array of psi corresponding to the number of
-                              revolutions for multi-rev cases (size of `nrev`)
+        kbi (float): K value for the minimum time of flight
         tol (float): Tolerance for the Lambert problem (defaults to 1e-05)
                      (can affect cases where znew is multiples of 2pi^2)
         n_iter (int): Maximum number of iterations to perform (defaults to 20)
 
     Returns:
         tuple: (v1dv, v2dv)
-            v1dv (np.ndarray): Transfer velocity vector at r1 in km/s
-            v2dv (np.ndarray): Transfer velocity vector at r2 in km/s
+            v1dv (np.ndarray): Transfer ECI velocity vector at r1 in km/s
+            v2dv (np.ndarray): Transfer ECI velocity vector at r2 in km/s
 
     Notes:
         - If the orbit is not possible, the method will log an error and return the
@@ -877,9 +872,9 @@ def universal(
         lower = 4 * nrev**2 * np.pi**2
         upper = 4 * (nrev + 1) ** 2 * np.pi**2
         if de == DirectionOfEnergy.HIGH:
-            upper = psi_vec[nrev - 1]
+            upper = kbi
         else:
-            lower = psi_vec[nrev - 1]
+            lower = kbi
 
     # Form initial guess for psi
     if nrev == 0:

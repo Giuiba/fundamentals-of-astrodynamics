@@ -105,8 +105,7 @@ def rv2adbar(
             fpav (float): Satellite flight path angle from vertical in radians
             az (float): Satellite flight path azimuth in radians
     """
-    rmag = np.linalg.norm(r)
-    vmag = np.linalg.norm(v)
+    rmag, vmag = np.linalg.norm(r), np.linalg.norm(v)
     rtemp = np.sqrt(r[0] ** 2 + r[1] ** 2)
     vtemp = np.sqrt(v[0] ** 2 + v[1] ** 2)
 
@@ -187,8 +186,7 @@ def coe2rv(
             argp = 0
 
     # Compute position and velocity in the perifocal coordinate system
-    cosnu = np.cos(nu)
-    sinnu = np.sin(nu)
+    cosnu, sinnu = np.cos(nu), np.sin(nu)
     r_pqw = np.array([cosnu, sinnu, 0]) * (p / (1 + ecc * cosnu))
     v_pqw = np.array([-sinnu, ecc + cosnu, 0]) * (np.sqrt(const.MU / p))
 
@@ -251,12 +249,10 @@ def rv2coe(
     orbit_type = None
 
     # Make sure position and velocity vectors are numpy arrays
-    r = np.array(r)
-    v = np.array(v)
+    r, v = np.array(r), np.array(v)
 
     # Get magnitude of position and velocity vectors
-    r_mag = np.linalg.norm(r)
-    v_mag = np.linalg.norm(v)
+    r_mag, v_mag = np.linalg.norm(r), np.linalg.norm(v)
 
     # Get angular momentum
     h = np.cross(r, v)
@@ -683,7 +679,7 @@ def flt2rv(
     decl = np.arcsin(reci[2] / rmag)
 
     # Form velocity vector
-    fpav = np.pi * 0.5 - fpa
+    fpav = const.HALFPI - fpa
     veci = vmag * np.array(
         [
             # First element
@@ -757,8 +753,7 @@ def rv2flt(
             vmag (float): Velocity vector magnitude in km/s
     """
     # Get magnitude of position and velocity vectors
-    rmag = np.linalg.norm(reci)
-    vmag = np.linalg.norm(veci)
+    rmag, vmag = np.linalg.norm(reci), np.linalg.norm(veci)
 
     # Convert r to ECEF for lat/lon calculations
     aecef = np.zeros(3)
@@ -787,7 +782,7 @@ def rv2flt(
     hmag = np.linalg.norm(h)
     rdotv = np.dot(reci, veci)
     fpav = np.arctan2(hmag, rdotv)
-    fpa = np.pi / 2 - fpav
+    fpa = const.HALFPI - fpav
 
     # Calculte azimuth
     hcrossr = np.cross(h, reci)
@@ -1071,6 +1066,9 @@ def rvs2raz(
             daz (float): Azimuth rate in rad/s
             del_el (float): Elevation rate in rad/s
     """
+    # Range magnitude
+    rho = np.linalg.norm(rhosez)
+
     # Calculate azimuth
     temp = np.sqrt(rhosez[0] ** 2 + rhosez[1] ** 2)
     if abs(rhosez[1]) < const.SMALL:
@@ -1083,13 +1081,10 @@ def rvs2raz(
 
     # Calculate elevation
     el = (
-        np.sign(rhosez[2]) * const.SMALL
+        np.sign(rhosez[2]) * const.HALFPI
         if temp < const.SMALL
-        else np.arcsin(rhosez[2] / np.linalg.norm(rhosez))
+        else np.arcsin(rhosez[2] / rho)
     )
-
-    # Calculate range
-    rho = np.linalg.norm(rhosez)
 
     # Range rate
     drho = np.dot(rhosez, drhosez) / rho
@@ -1117,15 +1112,6 @@ def razel2rv(
     latgd: float,
     lon: float,
     alt: float,
-    ttt: float,
-    jdut1: float,
-    lod: float,
-    xp: float,
-    yp: float,
-    ddpsi: float,
-    ddeps: float,
-    iau80arr: IAU80Array,
-    eqeterms: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Transforms range, azimuth, elevation, and their rates to the geocentric
     equatorial (ECI) position and velocity vectors.
@@ -1143,20 +1129,11 @@ def razel2rv(
         latgd (float): Geodetic latitude of site in radians
         lon (float): Longitude of site in radians
         alt (float): Altitude of site in km
-        ttt (float): Julian centuries of TT
-        jdut1 (float): Julian date of UT1
-        lod (float): Excess length of day in seconds
-        xp (float): Polar motion coefficient in radians
-        yp (float): Polar motion coefficient in radians
-        ddpsi (float): Delta psi correction to GCRF in radians
-        ddeps (float): Delta epsilon correction to GCRF in radians
-        iau80arr (IAU80Array): IAU 1980 data
-        eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
-        tuple: (reci, veci)
-            reci (np.ndarray): ECI position vector in km
-            veci (np.ndarray): ECI velocity vector in km/s
+        tuple: (recef, vecef)
+            recef (np.ndarray): ECEF position vector in km
+            vecef (np.ndarray): ECEF velocity vector in km/s
     """
     # Find SEZ range and velocity vectors
     rhosez, drhosez = raz2rvs(rho, az, el, drho, daz, del_el)
@@ -1170,32 +1147,13 @@ def razel2rv(
     recef = rhoecef + rs
     vecef = drhoecef
 
-    # Convert ECEF to ECI
-    a = np.array([0, 0, 0])
-    reci, veci, aeci = ecef2eci(
-        recef, vecef, a, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, iau80arr, eqeterms
-    )
-
-    return reci, veci
+    return recef, vecef
 
 
 def rv2razel(
-    reci: ArrayLike,
-    veci: ArrayLike,
-    latgd: float,
-    lon: float,
-    alt: float,
-    ttt: float,
-    jdut1: float,
-    lod: float,
-    xp: float,
-    yp: float,
-    ddpsi: float,
-    ddeps: float,
-    iau80arr: IAU80Array,
-    eqeterms: bool = True,
+    recef: ArrayLike, vecef: ArrayLike, latgd: float, lon: float, alt: float
 ) -> Tuple[float, float, float, float, float, float]:
-    """Transforms ECI position and velocity vectors to range, azimuth, elevation, and
+    """Transforms ECEF position and velocity vectors to range, azimuth, elevation, and
     their rates.
 
     The value of `SMALL` can affect the rate term calculations. the solution uses the
@@ -1206,20 +1164,11 @@ def rv2razel(
         Vallado: 2022, p. 259-263, Algorithm 27
 
     Args:
-        reci (array_like): ECI position vector in km
-        veci (array_like): ECI velocity vector in km/s
+        recef (array_like): ECEF position vector in km
+        vecef (array_like): ECEF velocity vector in km/s
         latgd (float): Geodetic latitude of site in radians
         lon (float): Longitude of site in radians
         alt (float): Altitude of site in km
-        ttt (float): Julian centuries of TT
-        jdut1 (float): Julian date of UT1
-        lod (float): Excess length of day in seconds
-        xp (float): Polar motion coefficient in radians
-        yp (float): Polar motion coefficient in radians
-        ddpsi (float): Delta psi correction to GCRF in radians
-        ddeps (float): Delta epsilon correction to GCRF in radians
-        iau80arr (IAU80Array): IAU 1980 data
-        eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
         tuple: (rho, az, el, drho, daz, del_el)
@@ -1231,13 +1180,7 @@ def rv2razel(
             del_el (float): Elevation rate in rad/s
     """
     # Get site vector in ECEF
-    rsecef, vsecef = site(latgd, lon, alt)
-
-    # Convert ECI to ECEF
-    a = np.array([0, 0, 0])
-    recef, vecef, aecef = eci2ecef(
-        reci, veci, a, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, iau80arr, eqeterms
-    )
+    rsecef, _ = site(latgd, lon, alt)
 
     # Find ECEF range vector from site to satellite
     rhoecef = recef - rsecef
@@ -1356,6 +1299,42 @@ def rv2ntw(
     vntw = np.dot(transmat, veci)
 
     return rntw, vntw, transmat
+
+
+def rv2pqw(reci: ArrayLike, veci: ArrayLike) -> Tuple[np.ndarray, np.ndarray]:
+    """Transforms position and velocity vectors into perifocal (PQW) coordinates.
+
+    References:
+        Vallado: 2022, p. 166
+
+    Args:
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
+
+    Returns:
+        tuple: (rpqw, vpqw)
+            rpqw (np.ndarray): PQW position vector in km
+            vpqw (np.ndarray): PQW velocity vector in km/s
+    """
+    # Covert to classical elements
+    p, _, ecc, _, _, _, nu, *_ = rv2coe(reci, veci)
+
+    # Return if true anomaly is undefined
+    if np.isnan(nu):
+        return np.zeros(3), np.zeros(3)
+
+    # Form PQW position vector
+    sinnu, cosnu = np.sin(nu), np.cos(nu)
+    temp = p / (1 + ecc * cosnu)
+    rpqw = temp * np.array([cosnu, sinnu, 0])
+
+    # Form PQW velocity vector
+    p = const.SMALL if np.abs(p) < const.SMALL else p
+    vpqw = np.array(
+        [-np.sqrt(const.MU / p) * sinnu, np.sqrt(const.MU / p) * (ecc + cosnu), 0]
+    )
+
+    return rpqw, vpqw
 
 
 ########################################################################################
@@ -1486,3 +1465,48 @@ def ecef2llb(r: ArrayLike) -> Tuple[float, float, float, float]:
     latgc = np.arcsin(r[2] / magr)
 
     return latgc, latgd, lon, hellp
+
+
+########################################################################################
+# Miscellaneous
+########################################################################################
+
+
+def perifocal_transform(
+    i: float, raan: float, w: float
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transform classical elements from equatorial (ECI) frame to perifocal frame.
+
+    References:
+        Vallado: 2022, p. 171, Equation 3-31
+
+    Args:
+        i (float): Inclination in radians
+        raan (float): Right ascension of the ascending node in radians
+        w (float): Argument of periapsis in radians
+
+    Returns:
+        tuple: (p_, q_, w_)
+            p_ (np.ndarray): P vector in perifocal frame
+            q_ (np.ndarray): Q vector in perifocal frame
+            w_ (np.ndarray): W vector in perifocal frame
+    """
+    p_ = np.array(
+        [
+            np.cos(w) * np.cos(raan) - np.sin(w) * np.sin(raan) * np.cos(i),
+            np.cos(w) * np.sin(raan) + np.sin(w) * np.cos(raan) * np.cos(i),
+            np.sin(w) * np.sin(i),
+        ]
+    )
+
+    q_ = np.array(
+        [
+            -np.sin(w) * np.cos(raan) - np.cos(w) * np.sin(raan) * np.cos(i),
+            -np.sin(w) * np.sin(raan) + np.cos(w) * np.cos(raan) * np.cos(i),
+            np.cos(w) * np.sin(i),
+        ]
+    )
+
+    w_ = np.array([np.sin(raan) * np.sin(i), -np.cos(raan) * np.sin(i), np.cos(i)])
+
+    return p_, q_, w_

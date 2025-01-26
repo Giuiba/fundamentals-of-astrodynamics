@@ -358,6 +358,19 @@ class TestCelestial:
 
 class TestAzEl:
     @pytest.fixture
+    def rvecef(self):
+        # ECEF position and velocity vector in km and km/s
+        recef = [-5225.545532658024, -3070.9865969614993, 3501.8159870845006]
+        vecef = [-5.373672578283977, -3.3021038634286506, 4.020523711114683]
+        return recef, vecef
+
+    @pytest.fixture
+    def rvsez(self):
+        rhosez = [-29.206599480225734, -4261.469869512799, -818.4151925779145]
+        drhosez = [-0.24683193316601043, -4.345266040330323, 6.0829758219664605]
+        return np.array(rhosez), np.array(drhosez)
+
+    @pytest.fixture
     def lla(self):
         # Site geodetic coordinates
         latgd = np.radians(39.007)
@@ -367,19 +380,13 @@ class TestAzEl:
 
     @pytest.fixture
     def azel(self):
-        rho = 10945.866573777928
-        az = -0.23764149046447058
-        el = -0.9219582731125407
-        drho = 7.23041762873178
-        daz = 2.6879275635246247e-05
-        del_el = 0.00011636209431787936
+        rho = 4339.444884044615
+        az = -1.5639427896150881
+        el = -0.18973540227923288
+        drho = 3.1216042513457634
+        daz = 5.093097833129788e-05
+        del_el = 0.0015655515448868324
         return rho, az, el, drho, daz, del_el
-
-    @pytest.fixture
-    def rvsez(self):
-        rhosez = [-6428.275139591688, -1557.046442989286, -8721.518225345335]
-        drhosez = [-5.27445566709053, -1.0946453788629804, -4.991461300527905]
-        return np.array(rhosez), np.array(drhosez)
 
     def test_raz2rvs(self, azel, rvsez):
         # Expected outputs
@@ -407,23 +414,23 @@ class TestAzEl:
         assert custom_isclose(daz, daz_exp)
         assert custom_isclose(del_el, del_el_exp)
 
-    def test_razel2rv(self, iau80arr, rv, ecef_inputs, lla, azel):
+    def test_razel2rv(self, iau80arr, rvecef, ecef_inputs, lla, azel):
         # Expected outputs
-        reci_exp, veci_exp = rv
+        recef_exp, vecef_exp = rvecef
 
         # Call function with test inputs
-        reci, veci = fc.razel2rv(*azel, *lla, *ecef_inputs, iau80arr)
+        recef, vecef = fc.razel2rv(*azel, *lla)
 
         # Check if output values are close
-        assert np.allclose(reci, reci_exp, rtol=DEFAULT_TOL)
-        assert np.allclose(veci, veci_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(recef, recef_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(vecef, vecef_exp, rtol=DEFAULT_TOL)
 
-    def test_rv2razel(self, iau80arr, rv, ecef_inputs, lla, azel):
+    def test_rv2razel(self, iau80arr, rvecef, lla, azel):
         # Expected outputs
         rho_exp, az_exp, el_exp, drho_exp, daz_exp, del_el_exp = azel
 
         # Call function with test inputs
-        rho, az, el, drho, daz, del_el = fc.rv2razel(*rv, *lla, *ecef_inputs, iau80arr)
+        rho, az, el, drho, daz, del_el = fc.rv2razel(*rvecef, *lla)
 
         # Check if output values are close
         assert np.isclose(rho, rho_exp, rtol=DEFAULT_TOL)
@@ -483,6 +490,18 @@ class TestSatCoord:
         assert np.allclose(vntw, vntw_exp, rtol=DEFAULT_TOL)
         assert custom_allclose(transmat, transmat_exp)
 
+    def test_rv2pqw(self, rv):
+        # Expected outputs
+        rpqw_exp = np.array([-6528.341050907748, 2526.017245197032, 0])
+        vpqw_exp = np.array([-7.307090980337026, -0.18794759095509114, 0])
+
+        # Call function with test inputs
+        rpqw, vpqw = fc.rv2pqw(*rv)
+
+        # Check if output values are close
+        assert np.allclose(rpqw, rpqw_exp, rtol=DEFAULT_TOL)
+        assert np.allclose(vpqw, vpqw_exp, rtol=DEFAULT_TOL)
+
 
 class TestGeodetic:
     @pytest.fixture
@@ -505,3 +524,24 @@ class TestGeodetic:
         assert np.isclose(latgd, 0.5995641464669065, rtol=DEFAULT_TOL)
         assert np.isclose(lon, 0.8106428999047803, rtol=DEFAULT_TOL)
         assert np.isclose(hellp, 5085.2194303451715, rtol=DEFAULT_TOL)
+
+
+def test_perifocal_transform():
+    # From Vallado Example 2-6, 2022
+    i = np.radians(87.87)
+    raan = np.radians(227.89)
+    w = np.radians(53.38)
+
+    # Call the function with test inputs
+    p_, q_, w_ = fc.perifocal_transform(i, raan, w)
+
+    # Check if the output is close to the expected values
+    assert custom_allclose(
+        p_, [-0.37786007180211706, -0.46252560096516104, 0.8020547578498088]
+    )
+    assert custom_allclose(
+        q_, [0.5546417852962037, 0.580556376955298, 0.596092931664164]
+    )
+    assert custom_allclose(
+        w_, [-0.7413462457860962, 0.6700928007584878, 0.03716695078301055]
+    )
