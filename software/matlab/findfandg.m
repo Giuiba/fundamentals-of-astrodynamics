@@ -10,15 +10,15 @@
 %  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
 %  inputs          description                              range / units
-%    r1          - position vector                     km
-%    v1          - velocity vector                     km/s
-%    r2          - position vector                     km
-%    v2          - velocity vector                     km/s
+%    r1          - position vector                          km
+%    v1          - velocity vector                          km/s
+%    r2          - position vector                          km
+%    v2          - velocity vector                          km/s
 %    x           - universal variable
 %    c2          - stumpff function
 %    c3          - stumpff function
-%    dtsec       - step size                          sec (SMALL time steps only!!)
-%    opt         - calculation method                 pqw, series, c2c3
+%    dtsec       - step size                                sec (SMALL time steps only!!)
+%    opt         - calculation method                       pqw, series, c2c3
 %
 %  outputs       :
 %    f, g        - f and g functions
@@ -29,11 +29,9 @@
 %  coupling      :
 %
 %  references    :
-%    vallado       2013, 83, 87, 813
-%  findfandg(r1, v1t, r2, v2t, 0.0, 0.0, 0.0, 0.0, 0.0, "pqw", out f, out g, out fdot, out gdot);
-%  findfandg(r1, v1t, r2, v2t, dtsec, 0.0, 0.0, 0.0, 0.0, "series", out f, out g, out fdot, out gdot);
-%  findfandg(r1, v1t, r2, v2t, dtsec, 0.35987, 0.6437, 0.2378, -0.0239, "c2c3", out f, out g, out fdot, out gdot);
-% [f, g, fdot, gdot] = findfandg (r1, v1, r2, v2, dtsec, x, c2, c3, z, opt)
+%    vallado       2022, 83, 87, 813
+%
+%  [f, g, fdot, gdot] = findfandg (r1, v1, r2, v2, dtsec, x, c2, c3, z, opt);
 % -----------------------------------------------------------------------------
 
 function [f, g, fdot, gdot] = findfandg (r1, v1, r2, v2, dtsec, x, c2, c3, z, opt)

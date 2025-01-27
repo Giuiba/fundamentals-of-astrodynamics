@@ -1,48 +1,52 @@
-
 % ----------------------------------------------------------------------------
 %
-%                           function ecef2tirs
+%                           function ecef_tirs
 %
-%  this function transforms a vector from the earth fixed itrf frame
-%    (itrf), to the tirs frame. the results take into account
-%    the effects of  polar motion.
+%  this function transforms a vector from earth fixed (itrf) frame to
+%  pseudo earth fixed (pef).
 %
-%  author        : david vallado                  719-573-2600   27 may 2002
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  revisions
-%
-%  inputs          description                    range / units
-%    recef       - position vector earth fixed    km
-%    vecef       - velocity vector earth fixed    km/s
-%    aecef       - acceleration vector earth fixedkm/s2
-%    xp          - polar motion coefficient       arc sec
-%    yp          - polar motion coefficient       arc sec
-%    ttt         - julian centuries of tt         centuries
+%  inputs          description                              range / units
+%    recef       - position vector earth fixed                   km
+%    vecef       - velocity vector earth fixed                   km/s
+%    direct      - direction of transfer                         eto, efrom
+%    iau06arr    - iau2006 eop constants
+%    opt         - method option                                 e80, e96, e06cio
+%    ttt         - julian centuries of tt                        centuries
+%    xp          - polar motion coefficient                      rad
+%    yp          - polar motion coefficient                      rad
 %
 %  outputs       :
-%    rtirs        - position vector tirs            km
-%    vtirs        - velocity vector tirs            km/s
-%    atirs        - acceleration vector tirs        km/s2
+%    rpef        - position vector pef                           km
+%    vpef        - velocity vector pef                           km/s
 %
 %  locals        :
+%    deltapsi    - nutation angle                                rad
+%    trueeps     - true obliquity of the ecliptic                rad
+%    meaneps     - mean obliquity of the ecliptic                rad
+%    nut         - matrix for tod - mod
+%    st          - matrix for pef - tod
+%    stdot       - matrix for pef - tod rate
+%    pm          - matrix for ecef - pef
 %
 %  coupling      :
-%   precess      - rotation for precession        mod - eci
+%   polarm       - rotation for polar motion
 %
 %  references    :
-%    vallado       2001, 219, eq 3-65 to 3-66
+%    vallado       2022, 213
 %
-% [rtirs, vtirs, atirs] = ecef2tirs  ( recef, vecef, aecef, opt, xp, yp, ttt )
+% [rpef, vpef, apef] = ecef2tirs  ( recef, vecef, aecef, opt, xp, yp, ttt );
 % ----------------------------------------------------------------------------
 
-function [rtirs, vtirs, atirs] = ecef2tirs  ( recef, vecef, aecef, ttt, xp, yp )
+function [rpef, vpef, apef] = ecef2tirs  ( recef, vecef, aecef, ttt, xp, yp )
 
     [pm] = polarm(xp, yp, ttt, '06');
 
-    rtirs = pm*recef;
+    rpef = pm*recef;
 
-    vtirs = pm*vecef;
+    vpef = pm*vecef;
 
-    atirs = pm*aecef;
+    apef = pm*aecef;
 
-
+end

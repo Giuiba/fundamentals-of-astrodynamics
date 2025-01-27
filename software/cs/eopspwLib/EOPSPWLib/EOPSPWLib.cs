@@ -595,7 +595,7 @@ namespace EOPSPWMethods
 
             // check if any whole days in jdF
             jd1 = Math.Floor(jd + jdFrac) + 0.5;  // want jd at 0 hr
-            mfme = (jd + jdFrac - jd1) * 1440.0;
+            mfme = (jdFrac + (jd - jd1)) * 1440.0;
             if (mfme < 0.0)
                 mfme = 1440.0 + mfme;
 
@@ -604,7 +604,7 @@ namespace EOPSPWMethods
             recnum = Convert.ToInt32(jdeopstarto);
 
             // check for out of bound values
-            if ((recnum >= 1) && (recnum < numbeop - 1))
+            if ((recnum >= 1) && (recnum < eopdata.Count()))
             {
                 // ---- set non-interpolated values
                 dut1 = eopdata[recnum].dut1;
@@ -976,7 +976,7 @@ namespace EOPSPWMethods
 
             // check if any whole days in jdF
             jd1 = Math.Floor(jd + jdFrac) + 0.5;  // want jd at 0 hr
-            mfme = (jd + jdFrac - jd1) * 1440.0;
+            mfme = (jdFrac + (jd - jd1)) * 1440.0;
             if (mfme < 0.0)
                 mfme = 1440.0 + mfme;
 
@@ -993,7 +993,7 @@ namespace EOPSPWMethods
 
             // --------------------  implementation   ----------------------
             // check for out of bound values
-            if ((recnum >= 1) && (recnum < numbspw - 1))
+            if ((recnum >= 1) && (recnum < spwdata.Count()))
             {
                 // ---- set non-interpolated values
                 if (fluxtype == 'a')  // adjusted
@@ -1130,7 +1130,7 @@ namespace EOPSPWMethods
                                 spwdata[recnum].mjd + fixf);
                         else
                             f107bar = MathTimeLibr.cubicinterp(
-                                spwdata[recnum - off1].obsctrf81, spwdata[recnum].obsctrf81, spwdata[recnum + off1].obslstf81, spwdata[recnum + off2].obslstf81,
+                                spwdata[recnum - off1].obsctrf81, spwdata[recnum].obsctrf81, spwdata[recnum + off1].obsctrf81, spwdata[recnum + off2].obsctrf81,
                                 spwdata[recnum - off1].mjd, spwdata[recnum].mjd, spwdata[recnum + off1].mjd, spwdata[recnum + off2].mjd,
                                 spwdata[recnum].mjd + fixf);
                     }

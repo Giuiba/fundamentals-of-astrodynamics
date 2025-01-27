@@ -101,7 +101,7 @@ function [spwarr, updDate] = readspw(spwFileName)
             end
        
             % ---- process predicted records
-            if (contains(longstr, 'NUM_PREDICTED_POINTS'))
+            if (contains(longstr, 'NUM_DAILY_PREDICTED_POINTS'))
                 numrecsobs = str2double(longstr(20:end));
                 longstr = fgets(infile);
                 % ---- process predicted records only

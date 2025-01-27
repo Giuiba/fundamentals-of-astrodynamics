@@ -2,31 +2,30 @@
 %
 %                           function findxysparam
 %
-%  this routine finds the xys parameters for a given time. several types of
-%  interpolation are available. the cio and iau76 nutation parameters are also
-%  read for optimizing the speeed of calculations.
+%  this routine finds the xys parameters for the iau 2006/2000 transformation.
+%  several types of interpolation are available. this allows you to use the full cio
+%  series, but maintain very fast performance.
 %
-%  author        : david vallado                      719-573-2600   12 dec 2005
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  inputs         description                                 range / units
-%    jdtt        - epoch julian day                        days from 4713 BC
-%    jdttF       - epoch julian day fraction               day fraction from jdutc
-%    interp      - interpolation                           n-none, l-linear, s-spline
-%    xys06table  - array of xys06 records
+%  inputs          description                              range / units
+%    jdttt         - epoch julian date                      days from 4713 BC
+%    jdftt         - epoch julian date fraction             day fraction from jdtt
+%    interp        - interpolation                          n-none, l-linear, s-spline
+%    xysarr        - array of xys data records              rad
 %
 %  outputs       :
-%    x           - x component of cio                         rad
-%    y           - y component of cio                         rad
-%    s           -                                            rad
-%
-%  locals        :
+%    x           - x component of cio                       rad
+%    y           - y component of cio                       rad
+%    s           -                                          rad
 %
 %  coupling      :
+%    none        -
 %
 %  references    :
-%    vallado       2013,
-% [x, y, s] = findxysparam( jdtt, jdttF, interp, xys06table)
-% --------------------------------------------------------------------------- */
+%
+%  [x, y, s] = findxysparam( jdtt, jdttF, interp, xys06table);
+% -----------------------------------------------------------------------------
 
 function [x, y, s] = findxysparam( jdtt, jdttF, interp, xys06table)
 
@@ -85,4 +84,4 @@ function [x, y, s] = findxysparam( jdtt, jdttF, interp, xys06table)
         s = 0.0;
     end
 
-    %  findxysparam
+end   %  findxysparam

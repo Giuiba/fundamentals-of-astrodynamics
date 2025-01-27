@@ -1,46 +1,43 @@
-% ----------------------------------------------------------------------------
+% -----------------------------------------------------------------------------
 %
 %                           function nutationqmod
 %
-%  this function calulates the transformation matrix that accounts for the
-%    effects of nutation as done by eutelsat.
+%  this function calculates the transformation matrix that accounts for the
+%    effects of nutation within the qmod paradigm. There are several assumptions
+%    mentioned in the comments below.
 %
-%  author        : david vallado                  719-573-2600   6 may 2011
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  revisions
-%
-%  inputs          description                    range / units
-%    ttt         - julian centuries of tt (start at utc=ut1, then go to tt)
+%  inputs          description                              range / units
+%    ttt         - julian centuries of tt
+%    iau80arr    - array of iau80 values
+%    fArgs06       - fundamental arguments in an array
 %
 %  outputs       :
-%    deltapsi    - nutation angle                 rad
-%    trueeps     - true obliquity of the ecliptic rad
-%    meaneps     - mean obliquity of the ecliptic rad
-%    omega       -                                rad
-%    nut         - transformation matrix for tod - mod
+%    deltapsi    - nutation in longiotude angle                   rad
+%    trueeps     - true obliquity of the ecliptic                 rad
+%    meaneps     - mean obliquity of the ecliptic                 rad
+%    nut         - transform matrix for tod - mod
 %
 %  locals        :
 %    iar80       - integers for fk5 1980
-%    rar80       - reals for fk5 1980
-%    ttt2        - ttt squared
-%    ttt3        - ttt cubed
-%    l           -                                rad
-%    ll          -                                rad
-%    f           -                                rad
-%    d           -                                rad
-%    deltaeps    - change in obliquity            rad
+%    rar80       - reals for fk5 1980                             rad
+%    fArgs06[0]    - delaunay element                               rad
+%    fArgs06[1]    - delaunay element                               rad
+%    fArgs06[2]    - delaunay element                               rad
+%    fArgs06[3]    - delaunay element                               rad
+%    fArgs06[4]    - delaunay element                               rad
+%    deltaeps    - change in obliquity                            rad
 %
 %  coupling      :
-%    fundarg     - find fundamental arguments
 %
 %  references    :
-%    vallado       2004, 221-222
+%    vallado       2022, 224
 %
 % [deltapsi, trueeps, meaneps, omega,nut] = nutationqmod  (iau80arr, ttt )
 % ----------------------------------------------------------------------------
 
 function [deltapsi, trueeps, meaneps, omega, nut] = nutationqmod(iau80arr, ttt)
-
     deg2rad = pi/180.0;
     convrt= 0.0001 /3600.0;  % " to deg
 
@@ -63,13 +60,13 @@ function [deltapsi, trueeps, meaneps, omega, nut] = nutationqmod(iau80arr, ttt)
     for i= 106:-1: 1  % not 106, but do they do it in reverse?? shouldn't be a big diff because only 9 terms
         tempval = iau80arr.iar80(i, 1) * fArgs96(1) + iau80arr.iar80(i, 2) * fArgs96(2) + iau80arr.iar80(i, 3) * fArgs96(3) + ...
             iau80arr.iar80(i, 4) * fArgs96(4) + iau80arr.iar80(i, 5) * fArgs96(5);
-        deltapsi = deltapsi + (iau80arr.rar80(i, 1) + iau80arr.rar80(i, 2) * ttt) * sin(tempval);
-        deltaeps = deltaeps + (iau80arr.rar80(i, 3) + iau80arr.rar80(i, 4) * ttt) * cos(tempval);
+        deltapsi = deltapsi + (iau80arr.rar80(ii, 1) + iau80arr.rar80(ii, 2) * ttt) * sin(tempval);
+        deltaeps = deltaeps + (iau80arr.rar80(ii, 3) + iau80arr.rar80(ii, 4) * ttt) * cos(tempval);
     end
 
     % --------------- find nutation parameters --------------------
-    deltapsi = rem( deltapsi, 2.0 * pi );  % + ddpsi/deg2rad,360.0
-    deltaeps = rem( deltaeps, 2.0 * pi );  % + ddeps/deg2rad,360.0
+    deltapsi = rem( deltapsi, 360.0  ) * deg2rad;  % + ddpsi/deg2rad,360.0
+    deltaeps = rem( deltaeps, 360.0  ) * deg2rad;  % + ddeps/deg2rad,360.0
     trueeps  = meaneps + deltaeps;
 
     %fprintf(1,'meaneps %11.7f dp  %11.7f de  %11.7f te  %11.7f  \n',meaneps*180/pi,deltapsi*180/pi,deltaeps*180/pi,trueeps*180/pi );
@@ -126,3 +123,4 @@ function [deltapsi, trueeps, meaneps, omega, nut] = nutationqmod(iau80arr, ttt)
 
     %         nut
 
+end

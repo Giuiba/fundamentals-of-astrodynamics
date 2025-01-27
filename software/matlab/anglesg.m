@@ -1,38 +1,40 @@
-% ------------------------------------------------------------------------------
+%  ------------------------------------------------------------------------------
 %
-%                           function anglesg
+%                           procedure anglesgauss
 %
-%  this function solves the problem of orbit determination using three
-%    optical sightings.  the solution function uses the gaussian technique.
-%    there are lots of debug statements in here to test various options.
+%  this procedure solves the problem of orbit determination using three
+%    optical sightings. the solution procedure uses the gaussian technique.
+%    the 8th order root is generally the big point of discussion. A Halley iteration
+%    permits a quick solution to find the correct root, with a starting guess of 20000 km.
+%    the general formulation yields polynomial coefficients that are very large, and can easily
+%    become overflow operations. Thus, canonical units are used only until the root is found,
+%    then regular units are resumed.
 %
-%  author        : david vallado                  719-573-2600    1 mar 2001
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  23 dec 2003
-%   8 oct 2007
-%
-%  inputs          description                                range / units
-%    decl1        - declination #1                                rad
-%    decl2        - declination #2                                rad
-%    decl3        - declination #3                                rad
-%    rtasc1       - right ascension #1                            rad
-%    rtasc2       - right ascension #2                            rad
-%    rtasc3       - right ascension #3                            rad
-%    jd1, jdf1    - julian date of 1st sighting                   days from 4713 bc
-%    jd2, jdf2    - julian date of 2nd sighting                   days from 4713 bc
-%    jd3, jdf3    - julian date of 3rd sighting                   days from 4713 bc
-%    rseci1       - eci site1 position vector                     km
-%    rseci2       - eci site2 position vector                     km
-%    rseci3       - eci site3 position vector                     km
+%  inputs          description                              range / units
+%    tdecl1       - declination #1                               rad
+%    tdecl2       - declination #2                               rad
+%    tdecl3       - declination #3                               rad
+%    trtasc1      - right ascension #1                           rad
+%    trtasc2      - right ascension #2                           rad
+%    trtasc3      - right ascension #3                           rad
+%    jd1, jdf1    - julian date of 1st sighting                  days from 4713 bc
+%    jd2, jdf2    - julian date of 2nd sighting                  days from 4713 bc
+%    jd3, jdf3    - julian date of 3rd sighting                  days from 4713 bc
+%    rs1          - eci site position vector #1                  km
+%    rs2          - eci site position vector #2                  km
+%    rs3          - eci site position vector #3                  km
 %
 %  outputs        :
-%    r            - eci position vector                           km
-%    v            - eci velocity vector                           km / s
+%    r2           -  position vector at t2                       km
+%    v2           -  velocity vector at t2                       km / s
+%    errstr       - output results for debugging
 %
 %  locals         :
-%    l1           - line of sight vector for 1st
-%    l2           - line of sight vector for 2nd
-%    l3           - line of sight vector for 3rd
+%    los1         - line of sight vector for 1st
+%    los2         - line of sight vector for 2nd
+%    los3         - line of sight vector for 3rd
 %    tau          - taylor expansion series about
 %                   tau ( t - to )
 %    tausqr       - tau squared
@@ -40,37 +42,25 @@
 %    t31t32       - (t3-t1) * (t3-t2)
 %    i            - index
 %    d            -
-%    rho          - range from site to sat at t2  km
+%    rho          - range from site to sat at t2                 km
 %    rhodot       -
 %    dmat         -
-%    rs1          - site vectors
-%    rs2          -
-%    rs3          -
 %    earthrate    - velocity of earth rotation
-%    p            -
-%    q            -
-%    oldr         -
-%    oldv         -
-%    f1           - f coefficient
-%    g1           -
-%    f3           -
-%    g3           -
-%    l2dotrs      -
 %
 %  coupling       :
 %    mag          - magnitude of a vector
-%    detrminant   - evaluate the determinant of a matrix
+%    determinant  - evaluate the determinant of a matrix
 %    factor       - find roots of a polynomial
 %    matmult      - multiply two matrices together
 %    gibbs        - gibbs method of orbit determination
 %    hgibbs       - herrick gibbs method of orbit determination
-%    angl         - angl between two vectors
+%    angle        - angle between two vectors
 %
 %  references     :
-%    vallado       2007, 429-439
+%    vallado       2022, 448, alg 52, ex 7-2
 %
 % [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
-%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rseci1, rseci2, rseci3, fid)
+%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rseci1, rseci2, rseci3, fid);
 % ------------------------------------------------------------------------------
 
 function [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
@@ -346,7 +336,7 @@ function [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
         %   fprintf(1,'rhoold %11.7f %11.7f %11.7f \n',rhoold1/re,rhoold2/re,rhoold3/re);
     end
 
-    % ---- now form the three position vectors ----- 
+    % ---- now form the three position vectors -----
     for i= 1 : 3
         r1(i)=  rhomat(1,1)*los1(i)/c1 + rseci1(i);
         r2(i)=  rhomat(2,1)*los2(i)/c2 + rseci2(i);
@@ -504,3 +494,4 @@ function [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
         r3(i)=  rhomat(3,1)*los3(i)/c3 + rseci3(i);
     end
 
+end

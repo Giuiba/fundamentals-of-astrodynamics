@@ -1,44 +1,34 @@
-% ----------------------------------------------------------------------------
+% -----------------------------------------------------------------------------
 %
 %                           function sidereal
 %
-%  this function calulates the transformation matrix that accounts for the
-%    effects of sidereal time. Notice that deltaspi should not be mod'ed to a
+%  this function calculates the transformation matrix that accounts for the
+%    effects of sidereal time. Notice that deltaspi should not be moded to a
 %    positive number because it is multiplied rather than used in a
 %    trigonometric argument.
 %
-%  author        : david vallado                  719-573-2600   25 jun 2002
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  revisions
-%    vallado     - fix units on kinematic terms                   5 sep 2002
-%    vallado     - add terms                                     30 sep 2002
-%    vallado     - consolidate with iau 2000                     14 feb 2005
-%
-%  inputs          description                    range / units
-%    jdut1       - julian centuries of ut1        days
-%    deltapsi    - nutation angle                 rad
-%    meaneps     - mean obliquity of the ecliptic rad
-%    omega       - long of asc node of moon       rad
-%    lod         - length of day                  sec
-%    eqeterms    - terms for ast calculation      0,2
+%  inputs          description                              range / units
+%    jdut1       - julian centuries of ut1                           days
+%    deltapsi    - nutation angle                                    rad
+%    meaneps     - mean obliquity of the ecliptic                    rad
+%    fArgs06       - fundamental arguments in an array
+%    lod         - length of day                                     sec
+%    eqeterms    - terms for ast calculation                         0,2
+%    opt         - method option                               e00cio, e96, e80
 %
 %  outputs       :
-%    st          - transformation matrix for pef - tod
-%    stdot       - transformation matrix for pef - tod rate
+%    sidereal    - transformation matrix for pef - tod
 %
 %  locals        :
-%    gmst        - mean greenwich sidereal time   0 to 2pi rad
-%    ast         - apparent gmst                   0 to 2pi rad
-%    hr          - hour                           hr
-%    min         - minutes                        min
-%    sec         - seconds                        sec
-%    temp        - temporary vector
-%    tempval     - temporary variable
+%    gmst         - mean greenwich sidereal time                 0 to 2pi rad
+%    ast         - apparent gmst                                 0 to 2pi rad
 %
 %  coupling      :
 %
 %  references    :
-%    vallado       2013, 223-224
+%    vallado       2022, 214, 225
 %
 % [st, stdot]  = sidereal (jdut1, deltapsi, meaneps, omega, lod, eqeterms, opt );
 % ----------------------------------------------------------------------------
@@ -100,3 +90,4 @@ function [st,stdot]  = sidereal (jdut1, deltapsi, meaneps, omega, lod, eqeterms,
     stdot(3,2) =  0.0;
     stdot(3,3) =  0.0;
 
+end

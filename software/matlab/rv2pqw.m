@@ -43,9 +43,9 @@
 %    angle       - find the angle between two vectors
 %
 %  references    :
-%    vallado       2007, 126, alg 9, ex 2-5
+%    vallado       2022, 126, alg 9, ex 2-5
 %
-% [rpqw, vpqw] = rv2pqw(r, v)
+% [rpqw, vpqw] = rv2pqw(r, v);
 % -----------------------------------------------------------------------------
 
 function [rpqw, vpqw] = rv2pqw(r, v)

@@ -1,29 +1,36 @@
-% ------------------------------------------------------------------------------
+%  ------------------------------------------------------------------------------
 %
-%                           function anglesl
+%                           procedure angleslaplace
 %
-%  this function solves the problem of orbit determination using three
-%    optical sightings and the method of laplace.
+%  this procedure solves the problem of orbit determination using three
+%    optical sightings and the method of laplace. the 8th order root is generally
+%    the big point of discussion. A Halley iteration permits a quick solution to
+%    find the correct root, with a starting guess of 20000 km. the general
+%    formulation yields polynomial coefficients that are very large, and can easily
+%    become overflow operations. Thus, canonical units are used only until teh root is found,
+%    then regular units are resumed.
 %
-%  author        : david vallado                         719-573-2600   24 apr 2003
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  inputs          description                                range / units
-%    decl1        - declination #1                                rad
-%    decl2        - declination #2                                rad
-%    decl3        - declination #3                                rad
-%    rtasc1       - right ascension #1                            rad
-%    rtasc2       - right ascension #2                            rad
-%    rtasc3       - right ascension #3                            rad
-%    jd1, jdf1    - julian date of 1st sighting                   days from 4713 bc
-%    jd2, jdf2    - julian date of 2nd sighting                   days from 4713 bc
-%    jd3, jdf3    - julian date of 3rd sighting                   days from 4713 bc
-%    rseci1       - eci site1 position vector                     km
-%    rseci2       - eci site2 position vector                     km
-%    rseci3       - eci site3 position vector                     km
+%  inputs          description                              range / units
+%    tdecl1       - declination #1                               rad
+%    tdecl2       - declination #2                               rad
+%    tdecl3       - declination #3                               rad
+%    trtasc1      - right ascension #1                           rad
+%    trtasc2      - right ascension #2                           rad
+%    trtasc3      - right ascension #3                           rad
+%    jd1, jdf1    - julian date of 1st sighting                  days from 4713 bc
+%    jd2, jdf2    - julian date of 2nd sighting                  days from 4713 bc
+%    jd3, jdf3    - julian date of 3rd sighting                  days from 4713 bc
+%    diffsites    - if sites are different (need better test)    'y', 'n'
+%    rs1          - eci site position vector #1                  km
+%    rs2          - eci site position vector #2                  km
+%    rs3          - eci site position vector #3                  km
 %
 %  outputs        :
-%    r            - eci position vector                           km
-%    v            - eci velocity vector                           km / s
+%    r2           -  position vector                             km
+%    v2           -  velocity vector                             km / s
+%    errstr       - output results for debugging
 %
 %  locals         :
 %    l1           - line of sight vector for 1st
@@ -42,7 +49,7 @@
 %    d2           -
 %    d3           -
 %    d4           -
-%    oldr         - previous iteration on r
+%    oldr         - previous iteration on r2
 %    rho          - range from site to satellite at t2
 %    rhodot       -
 %    dmat         -
@@ -61,14 +68,15 @@
 %    mag          - magnitude of a vector
 %    determinant  - evaluate the determinant of a matrix
 %    cross        - cross product of two vectors
-%    unit         - unit vector
+%    norm         - normlize a matrix
+%    sgnval       - sgn a value to a matrix
 %    factor       - find the roots of a polynomial
 %
 %  references     :
-%    vallado       2001, 413-417
+%    vallado       2022, 441
 %
 % [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
-%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3, fid)
+%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3, fid);
 % ------------------------------------------------------------------------------
 
 function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
@@ -92,7 +100,7 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
 
     % ---------- set middle to 0, find deltas to others -----------
 
-    % test problem///////////////////////////////////////////////////////
+    % test problem%%%%%%%%%%%%%%%%%%%%%%%%%%%/
     %      los1= [-0.425365 0.777650 0.462953];  % just in km
     %      los2 =[-0.825702 0.259424 0.500914];
     %      los3 = [ -0.947067 -0.129576 0.293725];
@@ -105,7 +113,7 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
     % tau12 = t1-t2;
     % tau13 = t1-t3;
     % tau32 = t3-t2;
-    % test problem///////////////////////////////////////////////////////
+    % test problem%%%%%%%%%%%%%%%%%%%%%%%%%%%/
 
     tau12 = (jd1 - jd2) * 86400.0 + (jdf1 - jdf2) * 86400.0; % days to sec
     tau13 = (jd1 - jd3) * 86400.0 + (jdf1 - jdf3) * 86400.0;
@@ -162,7 +170,7 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
     lddot;
     %    ldotmag = mag( ldot )
     %    lddotmag = mag( lddot )
-    % should these unit vectors use a diff name????????//
+    % should these unit vectors use a diff name????????%
     %    ldot = unit( ldot );
     %    lddot = unit( lddot );
     %    ldot
@@ -329,3 +337,4 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
         fprintf(1,'determinant value was zero %11.7f ',d );
     end
 
+end

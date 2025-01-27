@@ -31,8 +31,8 @@
 %    apni        - integer coefficients for nutation
 %    ape         - real coefficients for obliquity rad
 %    apei        - integer coefficients for obliquity
-%    agst        - real coefficients for gst      rad
-%    agsti       - integer coefficients for gst
+%    ago        - real coefficients for gst      rad
+%    agoi       - integer coefficients for gst
 %
 %  locals        :
 %    convrt      - conversion factor to radians
@@ -64,7 +64,7 @@ function [iau06arr] = iau06in(infilename)
     iau06arr = struct('ax0',zeros(1600, 2), 'ax0i',zeros(1600, 14), ...
         'ay0',zeros(1275, 2), 'ay0i',zeros(1275, 14), ...
         'as0',zeros(66, 2), 'as0i',zeros(66, 14), ...
-        'agst',zeros(34, 2), 'agsti',zeros(34, 14), ...
+        'ag0',zeros(34, 2), 'ag0i',zeros(34, 14), ...
         'apn0',zeros(1358, 2), 'apn0i',zeros(1358, 14), ...
         'apl0',zeros(687, 2), 'apl0i',zeros(687, 14), ...
         'aapn0',zeros(678, 6), 'aapn0i',zeros(678, 5), ...
@@ -186,11 +186,11 @@ function [iau06arr] = iau06in(infilename)
     fid = fopen(append(infilename,'iau06gsttab5.2.e.dat'));
     Dataarr = textscan( fid, '%d %f %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d ', 'Headerlines', 2, 'MultipleDelimsAsOne', true );
     fclose(fid);
-    iau06arr.agst(:,1:2)   = cell2mat(Dataarr(:,2:3));
-    iau06arr.agsti(:,1:14)   = cell2mat(Dataarr(:,4:17));
-    for i=1:size(iau06arr.agst)
-        iau06arr.agst(i,1)= iau06arr.agst(i,1) * convrtu;
-        iau06arr.agst(i,2)= iau06arr.agst(i,2) * convrtu;
+    iau06arr.ago(:,1:2)   = cell2mat(Dataarr(:,2:3));
+    iau06arr.agoi(:,1:14)   = cell2mat(Dataarr(:,4:17));
+    for i=1:size(iau06arr.ago)
+        iau06arr.ago(i,1)= iau06arr.ago(i,1) * convrtu;
+        iau06arr.ago(i,2)= iau06arr.ago(i,2) * convrtu;
     end
 
 

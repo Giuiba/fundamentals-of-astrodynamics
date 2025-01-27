@@ -43,7 +43,7 @@
 % [reci, veci] = flt2rv ( rmag,vmag,latgc,lon,fpa,az,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
 % ----------------------------------------------------------------------------
 
-function [reci, veci] = flt2rv ( rmag,vmag,latgc,lon,fpa,az,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps );
+function [reci, veci] = flt2rv ( rmag,vmag,latgc,lon,fpa,az,ttt,jdut1,lod,xp,yp,terms,ddpsi,ddeps )
 
         twopi = 2.0*pi;
         small        = 0.00000001;

@@ -1,56 +1,34 @@
-% ------------------------------------------------------------------------------
+%  ------------------------------------------------------------------------------
 %
-%                           function lambertb
+%                           procedure lamberbattin
 %
-%  this function solves lambert's problem using battins method. the method is
-%    developed in battin (1987) and explained by Thompson 2018. it uses continued
-%    fractions to speed the solution and has several parameters that are defined
-%    differently than the traditional gaussian technique.
+%  this procedure solves lambert's problem using battins method. the method is
+%    developed in battin (1987).
 %
-%  author        : david vallado                  719-573-2600   12 feb 2018
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  inputs          description                    range / units
-%    r1          - ijk position vector 1          km
-%    v1          - ijk velocity vector 1 needed for 180 deg transfer  km / s
-%    r2          - ijk position vector 2          km
-%    dm          - dir of motion (long, short)        'l','s'
-%                  this is really a period discriminator
-%    df          - dir of flight (direct, retrograde) 'd','r'
-%                  this is the inclination discriminator
-%    nrev        - number of revs to complete     0, 1, ...
-%    dtsec       - time between r1 and r2         s
+%  inputs          description                              range / units
+%    r1          - ijk position vector 1                      km
+%    r2          - ijk position vector 2                      km
+%    v1          - ijk velocity vector 1 if avail             km/s
+%    dm          - direction of motion                       'L', 'S'
+%    de          - orbital energy                            'L', 'H'
+%                  only affects nrev >= 1 solutions
+%    dtsec       - time between r1 and r2                     sec
+%    nrev        - number of revs to complete                 0, 1, 2, 3,
+%    altpad      - altitude pad for hitearth calc             km
+%    show        - control output don't output for speed      'y', 'n'
 %
 %  outputs       :
-%    v1t         - ijk velocity vector            km / s
-%    v2t         - ijk velocity vector            km / s
-%    error       - error flag                     'ok',...
-%
-%  locals        :
-%    i           - index
-%    loops       -
-%    u           -
-%    b           -
-%    sinv        -
-%    cosv        -
-%    rp          -
-%    x           -
-%    xn          -
-%    y           -
-%    l           -
-%    m           -
-%    cosdeltanu  -
-%    sindeltanu  -
-%    dnu         -
-%
-%  coupling      :
-%    mag         - magnitude of a vector
-%    arcsinh     - inverse hyperbolic sine
-%    arccosh     - inverse hyperbolic cosine
-%    sinh        - hyperbolic sine
+%    v1t         - ijk transfer velocity vector               km/s
+%    v2t         - ijk transfer velocity vector               km/s
+%    hitearth    - flag if hti or not                         'y', 'n'
+%    errorsum    - error flag                                 'ok',
+%    errorout    - text for iterations / last loop
 %
 %  references    :
-%    vallado       2013, 493-497, ex 7-5
-%    thompson      2018
+%    vallado       2022, 505, Alg 61, ex 7-5
+%    thompson      AAS GNC 2018
 %
 % [v1dv, v2dv, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec );
 % ------------------------------------------------------------------------------
@@ -202,7 +180,7 @@ function [v1t, v2t, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec )
                 y = 75.0;
                 xn = 1.0;
             end
-            
+
             loops = loops + 1;
             if show == 'y'
                 fprintf(1,' %3i yb %11.6f x %11.6f k2 %11.6f b %11.6f u %11.6f y1 %11.7f \n',loops,y, x, k2, b, u, y1 );
@@ -235,7 +213,7 @@ function [v1t, v2t, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec )
             %     lam = sqrt((s-chord)/s);
             % end
             % %      x = xn;
-            % 
+            %
             % % loechler pg 21 seems correct!
             % v1dvl = 1.0/(lam*(1.0 + lam))*sqrt(mu*(1.0+x)/(2.0*s^3*(L + x)))*((r2-r1) + s*(1.0+lam)^2*(L + x)/(magr1*(1.0 + x))*r1);
             % % added v2

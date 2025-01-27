@@ -1,65 +1,59 @@
-% ------------------------------------------------------------------------------
+%  ------------------------------------------------------------------------------
 %
-%                           function anglesdr
+%                           procedure anglesdoubler
 %
-%  this function solves the problem of orbit determination using three
-%    optical sightings.  the solution function uses the double-r technique.
+%  this procedure solves the problem of orbit determination using three
+%    optical sightings. the solution procedure uses the double-r technique.
+%    the important thing is the input of the initial guesses of the range which
+%    may be easiest from the solution of the gauss 8th order poly.
 %
-%  author        : david vallado                  719-573-2600    1 mar 2001
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%   8 oct 2007
+%  inputs          description                              range / units
+%    tdecl1       - declination #1                               rad
+%    tdecl2       - declination #2                               rad
+%    tdecl3       - declination #3                               rad
+%    trtasc1      - right ascension #1                           rad
+%    trtasc2      - right ascension #2                           rad
+%    trtasc3      - right ascension #3                           rad
+%    trtasc3      - right ascension #3                           rad
+%    jd1, jdf1    - julian date of 1st sighting                  days from 4713 bc
+%    jd2, jdf2    - julian date of 2nd sighting                  days from 4713 bc
+%    jd3, jdf3    - julian date of 3rd sighting                  days from 4713 bc
+%    rs1          - eci site position vector #1                  km
+%    rs2          - eci site position vector #2                  km
+%    rs3          - eci site position vector #3                  km
+%    magr1in      - initial estimate
+%    magr2in      - initial estimate
 %
-%  inputs          description                                range / units
-%    decl1        - declination #1                                rad
-%    decl2        - declination #2                                rad
-%    decl3        - declination #3                                rad
-%    rtasc1       - right ascension #1                            rad
-%    rtasc2       - right ascension #2                            rad
-%    rtasc3       - right ascension #3                            rad
-%    jd1, jdf1    - julian date of 1st sighting                   days from 4713 bc
-%    jd2, jdf2    - julian date of 2nd sighting                   days from 4713 bc
-%    jd3, jdf3    - julian date of 3rd sighting                   days from 4713 bc
-%    rseci1       - eci site1 position vector                     km
-%    rseci2       - eci site2 position vector                     km
-%    rseci3       - eci site3 position vector                     km
-%
-%  outputs        :
-%    r            - eci position vector                           km
-%    v            - eci velocity vector                           km / s
+%  outputs         :
+%    r2           -  position vector at t2                       km
+%    v2           -  velocity vector at t2                       km / s
+%    errstr       - output results for debugging
 %
 %  locals         :
-%    l1           - line of sight vector for 1st
-%    l2           - line of sight vector for 2nd
-%    l3           - line of sight vector for 3rd
+%    los1         - line of sight vector for 1st
+%    los2         - line of sight vector for 2nd
+%    los3         - line of sight vector for 3rd
 %    tau          - taylor expansion series about
 %                   tau ( t - to )
 %    tausqr       - tau squared
-%    i            - index
-%    d            -
-%    rho          - range from site to sat at t2                km
+%    t21t23       - (t2-t1) * (t2-t3)
+%    t31t32       - (t3-t1) * (t3-t2)
+%    rho          - range from site to sat at t2                 km
 %    rhodot       -
-%    dmat         -
 %    earthrate    - velocity of earth rotation
-%    p            -
-%    q            -
-%    oldr         -
-%    oldv         -
-%    f1           - f coefficient
-%    g1           -
-%    f3           -
-%    g3           -
-%    l2dotrs      -
 %
 %  coupling       :
 %    mag          - magnitude of a vector
 %    matmult      - multiply two matrices together
-%    angl         - angl between two vectors
+%    angle        - angle between two vectors
 %
 %  references     :
-%    vallado       2007, 439-443
+%    vallado       2022, 450, alg 53, ex 7-2
 %
 % [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
-%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg)
+%        rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg);
 % ------------------------------------------------------------------------------
 
 function [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
@@ -239,3 +233,4 @@ function [r2, v2] = anglesdr(decl1, decl2, decl3, rtasc1, rtasc2, ...
     g  = tau32 - sqrt(a^3/mu)*(deltae32-sin(deltae32));
     v2 = (r3 - f*r2)/g;
 
+end

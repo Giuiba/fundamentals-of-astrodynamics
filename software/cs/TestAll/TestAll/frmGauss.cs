@@ -206,7 +206,7 @@ namespace TestAllTool
 
             // -------- convert r to ecef for lat/lon calculation
             AstroLibr.eci_ecef(ref rseci, ref vseci, ref aseci, MathTimeLib.Edirection.eto, ref rsecef, ref vsecef, ref asecef,
-                EOPSPWLibr.iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
+                EOPSPWLibr.iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             AstroLibr.ecef2ll(rsecef, out latgc, out latgd, out lon, out alt);
         }  // getSensorECI
@@ -1474,7 +1474,7 @@ namespace TestAllTool
                     //  ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
                     jdut1 = jd[idx1] + jdf[idx1] + dut1 / 86400.0;
                     AstroLibr.eci_ecef(ref rseci1, ref vseci1, ref aseci1, MathTimeLib.Edirection.efrom, ref rsecef1, ref vsecef1, ref asecef1,
-                         iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
+                         iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                     // get new site info
                     // if a value, set the lat lon alt
@@ -1496,7 +1496,7 @@ namespace TestAllTool
                     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                     jdut1 = jd[idx2] + jdf[idx2] + dut1 / 86400.0;
                     AstroLibr.eci_ecef(ref rseci2, ref vseci2, ref aseci2, MathTimeLib.Edirection.efrom, ref rsecef2, ref vsecef2, ref asecef2,
-                         iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
+                         iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
                     double gst, lst;
                     AstroLibr.lstime(lon[idx2], jdut1, out lst, out gst);
                     strbuildall.AppendLine("\nlst " + lst.ToString() + " " + (lst * rad).ToString());
@@ -1519,7 +1519,7 @@ namespace TestAllTool
                     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                     jdut1 = jd[idx3] + jdf[idx3] + dut1 / 86400.0;
                     AstroLibr.eci_ecef(ref rseci3, ref vseci3, ref aseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3, ref asecef3,
-                         iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
+                         iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                     //if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
                     //    && Math.Abs(lon[idx1] - lon[idx2]) < 0.001 && Math.Abs(lon[idx1] - lon[idx3]) < 0.001)
@@ -1623,7 +1623,7 @@ namespace TestAllTool
                 //  ttt = (jd + jdFrac + (dat + 32.184) / 86400.0 - 2451545.0 - (32 + 32.184) / 86400.0) / 36525.0;
                 jdut1 = jd[idx1] + jdf[idx1] + dut1 / 86400.0;
                 AstroLibr.eci_ecef(ref rseci1, ref vseci1, ref aseci1, MathTimeLib.Edirection.efrom, ref rsecef1, ref vsecef1, ref asecef1,
-                         iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
+                         iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 // get new site info
                 // if a value, set the lat lon alt
@@ -1645,7 +1645,7 @@ namespace TestAllTool
                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                 jdut1 = jd[idx2] + jdf[idx2] + dut1 / 86400.0;
                 AstroLibr.eci_ecef(ref rseci2, ref vseci2, ref aseci2, MathTimeLib.Edirection.efrom, ref rsecef2, ref vsecef2, ref asecef2,
-                         iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
+                         iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
                 double gst, lst;
                 AstroLibr.lstime(lon[idx2], jdut1, out lst, out gst);
                 strbuildall.AppendLine("\nlst " + lst.ToString() + " " + (lst * rad).ToString());
@@ -1668,7 +1668,7 @@ namespace TestAllTool
                 ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                 jdut1 = jd[idx3] + jdf[idx3] + dut1 / 86400.0;
                 AstroLibr.eci_ecef(ref rseci3, ref vseci3, ref aseci3, MathTimeLib.Edirection.efrom, ref rsecef3, ref vsecef3, ref asecef3,
-                         iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
+                         iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
                 //if (Math.Abs(latgd[idx1] - latgd[idx2]) < 0.001 && Math.Abs(latgd[idx1] - latgd[idx3]) < 0.001
                 //    && Math.Abs(lon[idx1] - lon[idx2]) < 0.001 && Math.Abs(lon[idx1] - lon[idx3]) < 0.001)
@@ -2071,7 +2071,7 @@ namespace TestAllTool
                     ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
                     jdut1 = obsClassArr[numobs].jd + obsClassArr[numobs].jdf + dut1 / 86400.0;
                     AstroLibr.eci_ecef(ref rseci, ref vseci, ref aseci, MathTimeLib.Edirection.efrom, ref rsecef, ref vsecef, ref asecef, 
-                         iau80arr, jdtt, jdftt, jdut1, lod, xp, yp, ddpsi, ddeps);
+                         iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
                     obsClassArr[numobs].rsecef[0] = rsecef[0];
                     obsClassArr[numobs].rsecef[1] = rsecef[1];
                     obsClassArr[numobs].rsecef[2] = rsecef[2];

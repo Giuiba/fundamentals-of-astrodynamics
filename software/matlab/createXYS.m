@@ -6,24 +6,18 @@
 %  and can consume comutational time. this appraoches precalculates the xys parameters
 %  and stores in a datafile for very fast efficient use.
 %
-%  author        : david vallado           davallado@gmail.com   22 jan 2018
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  revisions
-%
-%  inputs          description                             range / units
-%    iau06arr    - constants for iau06
-%    outfileLoc  - file name
+%  inputs          description                              range / units
+%    outLoc      - location for xys data file
+%    iau06arr    - iau06 array of values
 %
 %  outputs       :
-%    xysdata.dat - file of xys data records
-%
-%  locals        :
-%
-%  coupling      :
+%                - file of xys data records
 %
 %  references    :
 %
-%  -------------------------------------------------------------------------- 
+%  ----------------------------------------------------------------------------
 
 function createXYS(iau06arr, outfileLoc)
 

@@ -1,35 +1,33 @@
-
-% ------------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
+%
 %
 %                           function ecef2llb
 %
-%  these subroutines convert a geocentric equatorial (ijk) position vector into
-%    latitude and longitude.  geodetic and geocentric latitude are found.
+%  this subroutine converts a geocentric equatorial position vector into
+%    latitude and longitude.  geodetic and geocentric latitude are found. the
+%    inputs must be ecef. there is no iteration and this is borkowski's method.
 %
-%  author        : david vallado                  719-573-2600    9 jun 2002
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  revisions
-%                -
-%
-%  inputs          description                    range / units
-%    r           - ijk position vector            km
+%  inputs          description                              range / units
+%    r           - ecef position vector                     km
 %
 %  outputs       :
-%    latgc       - geocentric latitude            -pi to pi rad
-%    latgd       - geodetic latitude              -pi to pi rad
-%    lon         - longitude (west -)             -2pi to 2pi rad
-%    hellp       - height above the ellipsoid     km
+%    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad
+%    latgd       - geodetic latitude                        -pi/2 to pi/2 rad
+%    lon         - longitude (west -)                       0 to 2pi rad
+%    hellp       - height above the ellipsoid               km
 %
 %  locals        :
-%    rc          - range of site wrt earth center er
-%    height      - height above earth wrt site    er
-%    alpha       - angle from iaxis to point, lst rad
-%    olddelta    - previous value of deltalat     rad
+%    rc          - range of site wrt earth center           er
+%    height      - height above earth wrt site              er
+%    alpha       - angle from iaxis to point, lst           rad
+%    olddelta    - previous value of deltalat               rad
 %    deltalat    - diff between delta and
-%                  geocentric lat                 rad
-%    delta       - declination angle of r in ijk  rad
-%    rsqrd       - magnitude of r squared         er2
-%    sintemp     - sine of temp                   rad
+%                  geocentric lat                           rad
+%    delta       - declination angle of r in ecef           rad
+%    rsqrd       - magnitude of r squared                   er2
+%    sintemp     - sine of temp                             rad
 %    c           -
 %
 %  coupling      :
@@ -37,9 +35,10 @@
 %    gcgd        - converts between geocentric and geodetic latitude
 %
 %  references    :
-%    vallado       2001, 174-179, alg 12 and alg 13, ex 3-3
+%    vallado       2022, 174, alg 12 and alg 13, ex 3-3
 %
-% [latgc,latgd,lon,hellp] = ecef2llb ( r )
+%
+% [latgc,latgd,lon,hellp] = ecef2llb ( r );
 % ------------------------------------------------------------------------------
 
 function [latgc,latgd,lon,hellp] = ecef2llb ( r )
@@ -92,3 +91,4 @@ function [latgc,latgd,lon,hellp] = ecef2llb ( r )
     latgc = asin(r(3)/mag(r));   % all locations
     %latgc = gd2gc(latgd);  % surface of the Earth locations
 
+end

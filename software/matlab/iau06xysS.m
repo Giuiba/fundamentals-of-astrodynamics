@@ -2,51 +2,34 @@
 %
 %                           function iau06xysS
 %
-%  this function calculates the XYS parameters for the iau2006 cio theory.
+%  this function calculates the XYS parameters for the iau2006 cio theory directly
+%  from the summations.
 %
-%  author        : david vallado           davallado@gmail.com   16 jul 2004
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  inputs          description                    range / units
+%  inputs          description                              range / units
 %    ttt         - julian centuries of tt
-%    ddx         - delta x correction to gcrf                       rad
-%    ddy         - delta y correction to gcrf                       rad
-%    fArgs06(1)           - delaunay element               rad
-%    fArgs06(2)   - delaunay element               rad
-%    fArgs06(3)           - delaunay element               rad
-%    fArgs06(4)           - delaunay element               rad
-%    fArgs06(5)       - delaunay element               rad
+%    iau06arr    - iau06 array of values
+%    fArgs06       - fundamental arguments in an array
+%    1  l        - mean anomaly of the moon                              rad
+%    2  l1       - mean anomaly of the Sun                               rad
+%    3  f        - mean longitude of the Moon minus that of asc node     rad
+%    4  d        - mean elongation of the Moon from the Sun              rad
+%    5  omega    - mean longitude of the ascending node of the Moon      rad
+%    6-14  planetary longitudes                                          rad
 %
 %  outputs       :
-%    x           - coordinate of cip              rad
-%    y           - coordinate of cip              rad
-%    s           - coordinate                     rad
-%
-%  locals        :
-%    iau06arr.ax0        - real coefficients for x        rad
-%    iau06arr.ax0i        - integer coefficients for x
-%    iau06arr.ay0        - real coefficients for y        rad
-%    iau06arr.ay0i        - integer coefficients for y
-%    iau06arr.as0        - real coefficients for s        rad
-%    iau06arr.as0i        - integer coefficients for siau06arr.ax0i
-%    apn         - real coefficients for nutation rad
-%    apni        - integer coefficients for nutation
-%    appl        - real coefficients for planetary nutation rad
-%    appli       - integer coefficients for planetary nutation
-%    ttt2,ttt3,  - powers of ttt
-%    deltaeps    - change in obliquity            rad
-%    many others
-%
-%  coupling      :
-%    iau00in     - initialize the arrays
+%    x           - coordinate of cio                                     rad
+%    y           - coordinate of cio                                     rad
+%    s           - coordinate                                            rad
 %
 %  references    :
-%     vallado       2022, 214-216
+%    vallado       2022, 214-216
 %
 % [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt );
 % ----------------------------------------------------------------------------
 
 function [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt )
-
     sethelp;
 
     % " to rad
@@ -215,3 +198,4 @@ function [x ,y, s] = iau06xysS (iau06arr, fArgs06, ttt )
         fprintf(1,'s %14.12f  %14.12f  %14.12f  %14.12f  %14.12f \n',ssum0/deg2rad,ssum1/deg2rad,ssum2/deg2rad,ssum3/deg2rad,ssum4/deg2rad );
     end
 
+end

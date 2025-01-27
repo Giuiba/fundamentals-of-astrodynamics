@@ -6,12 +6,12 @@
 %  interpolation are available. the cio and iau76 nutation parameters are also
 %  read for optimizing the speeed of calculations.
 %
-%  author        : david vallado                      719-573-2600   12 dec 2005
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  inputs          description                               range / units
-%    jdtdb         - epoch julian date                     days from 4713 BC
-%    jdtdbF        - epoch julian date fraction            day fraction from jdutc
-%    interp        - interpolation                        n-none, l-linear, s-spline
+%  inputs          description                              range / units
+%    jdtdb         - epoch julian date                      days from 4713 BC
+%    jdtdbF        - epoch julian date fraction             day fraction from jdutc
+%    interp        - interpolation                          n-none, l-linear, s-spline
 %    jpldearr      - array of jplde data records
 %    jdjpldestart  - julian date of the start of the jpldearr data (set in initjplde)
 %
@@ -38,9 +38,10 @@
 %    none        -
 %
 %  references    :
-%    vallado       2022,
+%    vallado       2022, 612
+%
 %  [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb, jdtdbF, 'l', jpldearr);
-% --------------------------------------------------------------------------- 
+% ---------------------------------------------------------------------------
 
 function [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb, jdtdbF, interp, jpldearr)
     % the ephemerides are centered on jdtdb, but it turns out to be 0.5, or 0000 hrs.
