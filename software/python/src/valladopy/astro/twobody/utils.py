@@ -11,6 +11,7 @@ from typing import Tuple
 
 import numpy as np
 from numpy.typing import ArrayLike
+from scipy.special import ellipk, ellipe, ellipkinc, ellipeinc
 
 from ...constants import RE, MU, ECCEARTHSQRD, SMALL, TWOPI, J2000_UTC
 
@@ -23,7 +24,7 @@ class OrbitType(Enum):
 
 
 def determine_orbit_type(ecc: float, incl: float, tol: float = SMALL) -> OrbitType:
-    """Determine the type of orbit based on eccentricity and inclination
+    """Determine the type of orbit based on eccentricity and inclination.
 
     Args:
         ecc (float): The eccentricity of the orbit
@@ -58,6 +59,145 @@ def is_equatorial(inc: float) -> bool:
         (bool): True if the inclination is equatorial
     """
     return inc < SMALL or abs(inc - np.pi) < SMALL
+
+
+def elliptic12(
+    u: float | ArrayLike, m: float | ArrayLike
+) -> Tuple[float | np.ndarray, float | np.ndarray, float | np.ndarray]:
+    """Computes the incomplete elliptic integrals of the first and second kind as well
+    as the Jacobi Zeta function.
+
+    Args:
+        u (float or array_like): Phase in radians
+        m (float or array_like): Modulus (0 <= m <= 1)
+
+    Returns:
+        tuple: (f, e, z)
+            f (float or np.ndarray): Incomplete elliptic integral of the first kind
+            e (float or np.ndarray): Incomplete elliptic integral of the second kind
+            z (float or np.ndarray): Jacobi Zeta function
+
+    Notes:
+        - The MATLAB version sets a maximum value for the modulus m to avoid numerical
+          issues, which is not needed/implemented here.
+    """
+    # Check modulus range
+    if np.any(np.array(m) < 0) or np.any(np.array(m) > 1):
+        raise ValueError("Modulus m must be in the range 0 <= m <= 1.")
+
+    # Compute incomplete elliptic integrals for the phase u and modulus m
+    f = ellipkinc(u, m)  # incomplete elliptic integral of the first kind
+    e = ellipeinc(u, m)  # incomplete elliptic integral of the second kind
+
+    # Compute complete elliptic integrals for the modulus m
+    k_m = ellipk(m)
+    e_m = ellipe(m)
+
+    # Jacobi Zeta function
+    z = e - (e_m / k_m) * f
+
+    return f, e, z
+
+
+def inverse_elliptic2(
+    e: float | ArrayLike, m: float | ArrayLike, n_iter: int = 4
+) -> np.ndarray:
+    """Evaluates the inverse incomplete elliptic integral of the second kind.
+
+    This function is adapted from the MATLAB script `inverselliptic2.m` and uses an
+    empirical initialization followed by Newton-Raphson refinement to compute the
+    inverse elliptic integral.
+
+    References:
+        Elliptic Project, 2011
+
+    Attribution:
+        This function is translated and adapted from the MATLAB script
+        `inverselliptic2.m` located in the `matlab` directory of this repository. The
+        original script contains additional references and details.
+
+    Args:
+        e (float or array_like): Value of the integral to be inverted
+        m (float or array_like): Modulus (0 <= m <= 1)
+        n_iter (int, optional): Number of iterations for Newton-Raphson refinement
+                                (defaults to 4)
+
+    Returns:
+        np.ndarray: The inverse of the incomplete elliptic integral of the second kind
+    """
+    # Handle scalar broadcasting
+    if np.isscalar(m):
+        m = np.full_like(e, m)
+    if np.isscalar(e):
+        e = np.full_like(m, e)
+
+    # Check modulus range
+    if np.any(np.array(m) < 0) or np.any(np.array(m) > 1):
+        raise ValueError("Modulus m must be in the range 0 <= m <= 1.")
+
+    # Broadcast m and e to the same shape
+    e, m = np.broadcast_arrays(e, m)
+
+    # Complete integral initialization
+    e1 = ellipk(m)  # only the complete second kind is needed
+
+    # Calculate empirical initialization
+    zeta = 1 - e / e1
+    mu = 1 - m
+    r = np.sqrt(zeta**2 + mu**2)
+    theta = np.arctan2(mu, e + np.finfo(float).eps)
+    inv_e = np.pi / 2 + np.sqrt(r) * (theta - np.pi / 2)
+
+    # Newton-Raphson refinement
+    for _ in range(n_iter):
+        e_calculated = ellipeinc(inv_e, m)
+        inv_e -= (e_calculated - e) / np.sqrt(1 - m * np.sin(inv_e) ** 2)
+
+    # Return scalar if inputs were scalar
+    return inv_e if inv_e.size > 1 else inv_e.item()
+
+
+def arclength_ellipse(
+    a: float, b: float, theta0: float = 0, theta1: float = TWOPI
+) -> float:
+    """Calculates the arclength of an ellipse using the elliptic integral of the second
+    kind.
+
+    References:
+        Elliptic Project, 2011
+        http://mathworld.wolfram.com/Ellipse.html
+
+    Attribution:
+        This function is translated and adapted from the MATLAB script
+        `arclength_ellipse.m` located in the `matlab` directory of this repository.
+        The original MATLAB script contains additional references and details.
+
+    Args:
+        a (float): Semi-major axis length
+        b (float): Semi-minor axis length
+        theta0 (float): Start angle in radians (defaults to 0)
+        theta1 (float): End angle in radians (defaults to 2pi)
+
+    Returns:
+        float: Arclength of the ellipse
+    """
+    # Circle case
+    if a == b:
+        return a * (theta1 - theta0)
+
+    # Ellipse with semi-minor axis along x-axis
+    if a < b:
+        m = 1 - (a / b) ** 2
+        e1 = ellipeinc(theta1, m)
+        e0 = ellipeinc(theta0, m)
+        return b * (e1 - e0)
+
+    # Ellipse with semi-major axis along x-axis
+    else:
+        m_prime = 1 - (b / a) ** 2
+        e1 = ellipeinc(np.pi / 2 - theta1, m_prime)
+        e0 = ellipeinc(np.pi / 2 - theta0, m_prime)
+        return a * (e0 - e1)
 
 
 def site(latgd: float, lon: float, alt: float) -> Tuple[np.ndarray, np.ndarray]:
@@ -271,7 +411,7 @@ def checkhitearth(
     ainv = 2 / magr1 - np.linalg.norm(v1) ** 2 / MU
     a = 1 / ainv
 
-    # Find ecos(E)
+    # Find ecos(e)
     ecosea1, ecosea2 = 1 - magr1 * ainv, 1 - magr2 * ainv
 
     # Determine the radius of perigee for nrev > 0
