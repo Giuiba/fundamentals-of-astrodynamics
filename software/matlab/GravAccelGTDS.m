@@ -1,6 +1,6 @@
 % ----------------------------------------------------------------------------
 %
-%                           function FullGeop
+%                           function GravAccelGTDS
 %
 %   this function finds the acceleration for the gravity field.
 %
@@ -31,10 +31,10 @@
 %  references :
 %    vallado       2013, 597, Eq 8-57
 %
-%  [aPert, aPert1] = fullgeop ( recef, order, gravarr)
+%  [aPert, aPert1] = fullgeop ( recef, order, gravarr);
 % ----------------------------------------------------------------------------
 
-function [aPert, aPert1] = fullgeop ( recef, order, gravarr)
+function [aPert, aPert1] = GravAccelGTDS ( recef, order, gravarr)
     constastro;
 
     aPert = zeros(order+3,order+3);
@@ -78,7 +78,7 @@ function [aPert, aPert1] = fullgeop ( recef, order, gravarr)
     for L = 2: order
         Li = L + 1;
 
-        % will do the power as each L is indexed 
+        % will do the power as each L is indexed
         temp = temp * oor;
         sumM1 = 0.0;
         sumM2 = 0.0;
@@ -232,4 +232,4 @@ function [aPert, aPert1] = fullgeop ( recef, order, gravarr)
     % Inertial acceleration
     %return Transp(E) * a_bf;
 
-end  % FullGeop
+end  % GravAccelGTDS

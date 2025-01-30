@@ -7317,7 +7317,7 @@ namespace TestAllTool
             double[,] norm2m = new double[order + 2, order + 2];
             AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
             double[] aPertGt = new double[3];
-            AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
+            AstroLibr.GravAccelGott(recef, order, gravData, norm1, norm2, norm11, normn10,
                   norm1m, norm2m, normn1, out aPertGot);
 
             // Montenbruck version
@@ -7409,7 +7409,7 @@ namespace TestAllTool
                 AstroLibr.gravnorm(out unnormArr);
 
                 // GTDS acceleration for non-spherical portion
-                AstroLibr.FullGeopG(recef, order, normalized, unnormArr, gravData, out aPertG, 'y', out straccum);
+                AstroLibr.GravAccelGTDS(recef, order, normalized, unnormArr, gravData, out aPertG, 'y', out straccum);
                 strbuildall.AppendLine(straccum);
                 aeci = MathTimeLibr.matvecmult(transecef2eci, aPertG, 3);
                 straccum = straccum + "apertGTDS eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
@@ -7420,7 +7420,7 @@ namespace TestAllTool
                 //strbuildall.AppendLine(straccum);
 
                 // Montenbruck acceleration
-                AstroLibr.FullGeopM(recef, order, normalized, unnormArr, gravData, out aPertM, 'y', out straccum);
+                AstroLibr.GravAccelMont(recef, order, normalized, unnormArr, gravData, out aPertM, 'y', out straccum);
                 strbuildall.AppendLine(straccum);
                 aeci = MathTimeLibr.matvecmult(transecef2eci, aPertM, 3);
                 straccum = straccum + "apertMont eci  " + order + " " + order + " " + aeci[0].ToString() + "     "
@@ -7431,7 +7431,7 @@ namespace TestAllTool
                 //strbuildall.AppendLine(straccum);
 
                 // Montenbruck code acceleration
-                AstroLibr.FullGeopMC(recef, order, normalized, unnormArr, gravData, out aPertM1, 'y', out straccum);
+                AstroLibr.GravAccelMonta(recef, order, normalized, unnormArr, gravData, out aPertM1, 'y', out straccum);
                 strbuildall.AppendLine(straccum);
                 aeci = MathTimeLibr.matvecmult(transecef2eci, aPertM1, 3);
                 straccum = straccum + "apertMontC eci " + order + " " + order + " " + aeci[0].ToString() + "     "
@@ -7477,7 +7477,7 @@ namespace TestAllTool
             // this part can be done one time
             AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m,
                 out norm2m, out normn1);
-            AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
+            AstroLibr.GravAccelGott(recef, order, gravData, norm1, norm2, norm11, normn10,
                   norm1m, norm2m, normn1, out aPertGot);
             //strbuildall.AppendLine(straccum);
             //strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());
@@ -8572,7 +8572,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -8734,7 +8734,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -8890,7 +8890,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -9049,7 +9049,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -9205,7 +9205,7 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, jdtt, jdttfrac, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
+            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
                 iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
@@ -9305,7 +9305,7 @@ namespace TestAllTool
             AstroLibr.LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m,
                 out norm2m, out normn1);
 
-            AstroLibr.FullGeopGott(recef, order, gravData, norm1, norm2, norm11, normn10,
+            AstroLibr.GravAccelGott(recef, order, gravData, norm1, norm2, norm11, normn10,
                    norm1m, norm2m, normn1, out aPertGot);
 
             //strbuildall.AppendLine("0 " + LegGottN[0, 0].ToString());

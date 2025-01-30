@@ -1,3 +1,6 @@
+%
+%        function GravAccelGott
+%
 % inputs
 %    mu       gravitaional paramater
 %    xin      position ecef vector of satellite km
@@ -11,9 +14,14 @@
 %    LegGottN  normalized alfs   does not need to be passed back out - only
 %    for debugging.
 %
-function [LegGottN, accel] = gottliebnorm(mu, re, recef, c, s, nax, max)
+%  References
+%    Eckman, Brown, Adamo 2016 NASA report
+%
+
+function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
     constastro;
     
+    % this can be done ahead of time
     for n = 2:nax+1 %RAE
         norm1(n) = sqrt((2*n+1) / (2*n-1)); % eq 3-1 RAE
         norm2(n) = sqrt((2*n+1) / (2*n-3)); % eq 3-2 RAE
@@ -124,4 +132,4 @@ function [LegGottN, accel] = gottliebnorm(mu, re, recef, c, s, nax, max)
     accel(3) = -muor2*(lambda*zor - sumh);
     %accel = rnp'*g; %RAE
 
-end
+end  % GravAccelGott

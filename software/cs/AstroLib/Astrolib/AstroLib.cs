@@ -4052,8 +4052,8 @@ namespace AstroLibMethods
 
         public void rv2flt
             (
-            double[] reci, double[] veci, double[] aeci, double jdtt, double jdftt,
-            double jdut1, double lod,
+            double[] reci, double[] veci, double[] aeci,
+            double ttt, double jdut1, double lod,
             double xp, double yp, int terms, double ddpsi, double ddeps,
             EOPSPWLib.iau80Class iau80arr,
             out double lon, out double latgc, out double rtasc, out double decl,
@@ -4067,17 +4067,14 @@ namespace AstroLibMethods
             double[] h = new double[3];
             double[] hcrossr = new double[3];
             double small = 0.00000001;
-            double temp, hmag, rdotv, fpav, ttt;
+            double temp, hmag, rdotv, fpav;
 
             magr = MathTimeLibr.mag(reci);
             magv = MathTimeLibr.mag(veci);
           
-            ttt = (jdtt + jdftt - 2451545.0) / 36525.0;
-
             // -------- convert r to ecef for lat/lon calculation
             eci_ecef(ref reci, ref veci, ref aeci, MathTimeLib.Edirection.eto, ref recef, ref vecef, ref aecef,
-                EOPSPWLibr.iau80arr,
-                ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
+                EOPSPWLibr.iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps);
 
             // ----------------- find longitude value  ----------------- uses ecef
             temp = Math.Sqrt(recef[0] * recef[0] + recef[1] * recef[1]);
@@ -4145,10 +4142,14 @@ namespace AstroLibMethods
         //    vallado       2022, 111
         // ----------------------------------------------------------------------------
 
-        public void flt2rv(
+        public void flt2rv
+            (
             double rmag, double vmag, double latgc, double lon, double fpa, double az,
-            double ttt, double jdut1, double lod, double xp, double yp, int terms, double ddpsi, double ddeps,
-            out double[] reci, out double[] veci)
+            double ttt, double jdut1, double lod,
+            double xp, double yp, int terms, double ddpsi, double ddeps,
+            EOPSPWLib.iau80Class iau80arr,
+            out double[] reci, out double[] veci
+            )
         {
             double[] aeci = new double[3];
             double[] recef = new double[3];
@@ -10176,33 +10177,8 @@ namespace AstroLibMethods
             double[] r3 = new double[] { 0.0, 0.0, 0.0 };
             v2 = new double[] { 0.0, 0.0, 0.0 };
 
-            //int maxit, kzero, nmarsd, ncdref, npolar, nswap, nlambt, nautct;
             double pdinc; //, t12mod, t13mod, hn;
-            //bool lobdp, lautop, lctrans, lminly, lgmean, lautoq, lfixax, lfaxa2, lmodfy;
-
-            //maxit = 25;                 //Limit to itns(cf code 8001)
-            //                            // lobdp = true;          //Observ'ns 'dependent' basic
-            //kzero = 0;             //Values for 'k' range from 0
-            //lautop = false;       //'Automat operation' not used
-            //ncdref = 0;               //Code ref for k(in 'auto')
-            //                          //NAUTCT = 0                                                       //(std, now changed to - 10000)
-            //lautoq = false;         //No spec Table to be set up
-            //nmarsd = 0;            //Data from DATA1, not 3 or 4
-            //npolar = 0;          //Starters normal, NOT 'polar'
-
             pdinc = 1e-3;                     //1.0e-5  Increment for num partials, needed
-            //lgmean = true;       //Geometric means are used
-            //lctrans = false;        //Not use 'common transversal'
-            //t12mod = 0.0;                //No change to interval T12
-            //t13mod = 0.0;              //No change to interval T13
-            //nswap = 0;             //1st data set NOT swapped
-            //lminly = false;      //NOT going for 'min goal'
-            //nlambt = 0;               //Use both Lamb sols(if poss)
-            //lfixax = false;           //Axes changed after 1st it'n???
-            //lfaxa2 = false;           //Axes changed during 1st it'n
-            //lmodfy = true;              //Allow modding between it'ns
-            //nautct = -10000;               //Std value now, not 0 above
-            //hn = 0.5;                 //Halley value(basic)
 
             // ----------------  find line of sight vectors  ------------------
             los1[0] = Math.Cos(tdecl1) * Math.Cos(trtasc1);
@@ -10233,13 +10209,6 @@ namespace AstroLibMethods
             ikn = 0;
             nsol = 0;
 
-            //  5 continue
-            //dot = ol1 * (om2 * on3 - om3 * on2) + ol2 * (om3 * on1 - om1 * on3) + ol3 *
-            //    (om1 * on2 - om2 * on1);
-            //dq = MathTimeLibr.mag(ol1, om1, on1) * MathTimeLibr.mag(ol2, om2, on2) * 
-            //    MathTimeLibr.mag(ol3, om3, on3);
-            ////
-            //  if (ind = 1  &  nlambt = 2) go to 61
             // need to separate into jd and jdf portions for accuracy since it's often only seconds or minutes
             tau12 = (jd2 - jd1) * 86400.0 + (jdf2 - jdf1) * 86400.0; // days to sec
             //tau13 = (jd1 - jd3) * 86400.0 + (jdf1 - jdf3) * 86400.0;
@@ -10300,37 +10269,6 @@ namespace AstroLibMethods
             //		call els3pv(gm, al, q, ei, bom, om, tauxx, xs(1), xs(2), xs(3), xs(4), xs(5), xs(6))
             //
             nsol = nsol + 1;
-
-
-            //    // ------------------------------------------------------------------------------
-            //lknst = false;
-
-            //if (nfail == 0 && ikn < 8)
-            //{
-            //    ikn = ikn + 1;
-            //    ro1kn[ikn] = rng1;
-            //    r1knsq[ikn] = Math.Pow(rs1eci[0] + rng1 * los1[0], 2) +
-            //        Math.Pow(rs1eci[1] + rng1 * los1[1], 2) +
-            //        Math.Pow(rs1eci[2] + rng1 * los1[2], 2);
-            //    rng1 = ro1st;
-            //    ro3kn[ikn] = rng3;
-            //    r3knsq[ikn] = Math.Pow(rs3eci[0] + rng3 * los3[0], 2) +
-            //        Math.Pow(rs3eci[1] + rng3 * los3[1], 2) +
-            //        Math.Pow(rs3eci[2] + rng3 * los3[2], 2);
-            //    rng3 = ro3st;
-            //}
-            //if (lknst)
-            //    if (ikn == 1)
-            //    {
-            //        rng1 = 2.0 * ro1kn[ikn] - ro1st;
-            //        rng3 = 2.0 * ro3kn[ikn] - ro3st;
-            //    }
-            //    else
-            //    {
-            //        rng1 = 2.0 * ro1kn[ikn] - ro1kn(ikn - 1);
-            //        rng3 = 2.0 * ro3kn[ikn] - ro3kn(ikn - 1);
-            //    }
-            //  go to 5
         }  // anglesgooding
 
 
@@ -10765,7 +10703,7 @@ namespace AstroLibMethods
                             r30 = magr3;
                             //
                             //
-                            // but still missing some more stuff beyond the goto......
+                            // but still missing some more stuff 
                             //
                             //
                         }
@@ -10849,7 +10787,7 @@ namespace AstroLibMethods
                                     r30 = magr3;
                                     //
                                     //
-                                    // but still missing some more stuff beyond the goto......
+                                    // but still missing some more stuff 
                                     //
                                     //
                                 }
@@ -12642,7 +12580,7 @@ namespace AstroLibMethods
         } // TrigPolyLeg
 
 
-        // this produce the normalizatin values fro up to a 100x100 gravity field
+        // this produces the normalization values for up to a 100x100 gravity field
         // useful for gtds, montenbruck, etc
         public void gravnorm
       (
@@ -12681,7 +12619,7 @@ namespace AstroLibMethods
 
         // ----------------------------------------------------------------------------
         //
-        //                           function FullGeopG
+        //                           function GravAccelGTDS
         //
         //   this function finds the acceleration for the gravity field. the acceleration is
         //   found in the body fixed frame. rotation back to inertial is done after this 
@@ -12718,7 +12656,7 @@ namespace AstroLibMethods
         //    vallado       2022, 600, Eq 8-56
         // ----------------------------------------------------------------------------
 
-        public void FullGeopG
+        public void GravAccelGTDS
         (
             double[] recef,
             Int32 order,
@@ -12841,12 +12779,12 @@ namespace AstroLibMethods
                 }
             }
 
-        }  // FullGeopG 
+        }  // GravAccelGTDS 
 
 
         // ----------------------------------------------------------------------------
         //
-        //                           function FullGeopM
+        //                           function GravAccelMont
         //
         //   this function finds the acceleration for the gravity field. the acceleration is
         //   found in the body fixed frame. rotation back to inertial is done after this 
@@ -12882,7 +12820,7 @@ namespace AstroLibMethods
         //    vallado       2022, 601, Eq 8-59
         // ----------------------------------------------------------------------------
 
-        public void FullGeopM
+        public void GravAccelMont
         (
             double[] recef,
             Int32 order,
@@ -13037,16 +12975,16 @@ namespace AstroLibMethods
             // Inertial acceleration 
             //return Transp(E) * a_bf;
 
-        }  // FullGeopM 
+        }  // GravAccelMont 
 
 
         // ----------------------------------------------------------------------------
         //
-        //                           function FullGeopMC
+        //                           function GravAccelMonta
         //
         //   this function finds the acceleration for the gravity field. the acceleration is
         //   found in the body fixed frame. rotation back to inertial is done after this 
-        //   routine. this is the montenbruck code approach. 
+        //   routine. this is the montenbruck alternate approach. 
         //      
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
@@ -13076,7 +13014,7 @@ namespace AstroLibMethods
         //    vallado       2022, 602
         // ----------------------------------------------------------------------------
 
-        public void FullGeopMC
+        public void GravAccelMonta
         (
             double[] recef,
             Int32 order,
@@ -13277,12 +13215,12 @@ namespace AstroLibMethods
 
             // Inertial acceleration 
             //return Transp(E) * a_bf;
-        }  // FullGeopMC 
+        }  // GravAccelMonta 
 
 
         // ----------------------------------------------------------------------------
         //
-        //                           function FullGeopGott
+        //                           function GravAccelGott
         //
         //   this function finds the acceleration for the gravity field using the normalized 
         //   Gottlieb approach. the arrays are indexed from 0 to coincide with the usual nomenclature 
@@ -13315,7 +13253,7 @@ namespace AstroLibMethods
         //    vallado       2022, 600-601, Eq 8-62
         // ---------------------------------------------------------------------------
 
-        public void FullGeopGott
+        public void GravAccelGott
            (
                double[] recef,
                Int32 order,
@@ -13455,7 +13393,7 @@ namespace AstroLibMethods
             accel[0] = -muor2 * (lambda * runit[0] - sumj);
             accel[1] = -muor2 * (lambda * runit[1] - sumk);
             accel[2] = -muor2 * (lambda * runit[2] - sumh);
-        }  // FullGeopGott
+        }  // GravAccelGott
 
 
 
