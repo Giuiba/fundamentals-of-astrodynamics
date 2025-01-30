@@ -4,6 +4,10 @@ Folks,
 
 It’s a great pleasure to release the codes from my book on GitHub. Over the years, I’ve received many requests for this, and now seems like the right time to do it! A few important notes:
 
+## License
+This code is released under the [MIT License](./LICENSE). You are free to use, modify, and distribute it under the terms of this license.
+
+
 ## Code Availability and Testing
 
 We don’t have all the routines published yet, as we’ve been testing them in each language first. This is a big task, but very fruitful as different languages have peculiarities that are beneficial in finding small errors. The [spreadsheet](Astro%20Software.xlsx) lists:
