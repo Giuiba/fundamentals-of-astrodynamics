@@ -2049,6 +2049,9 @@ end
 
 function testcoe2rv(fid)
     rad = 180.0 /pi;
+    % needed for flt
+    fileLoc = 'D:\Codes\LIBRARY\DataLib\';
+    [iau80arr] = iau80in(fileLoc);
 
     % alt test various combinations of coe/eq and rv
     for j = 1:2
@@ -2227,95 +2230,96 @@ function testcoe2rv(fid)
                 end
             end
 
-        % reci = [1525.9870698051157; -5867.209915411114; 3499.601587508083]';
-        % veci = [1.4830443958075603; -7.093267951700349; 0.9565730381487033]';
-        % rmag = 7000; % km
-        % vmag = 7.546;  % km/s
-        % latgc = pi / 6;  % 30 degrees
-        % lon = pi / 2;  % 90 degrees
-        % fpa = -pi / 6;  % -30 degrees
-        % az = pi / 4;  % 45 degrees
-        %
-        % conv = pi / (180.0*3600.0);
-        % ttt = 0.042623631888994;
-        % jdut1 = 2.45310150e+06;
-        % lod = 0.0015563;
-        % xp = -0.140682 * conv;
-        % yp = 0.333309 * conv;
-        % eqeterms = 2;
-        % ddpsi = -0.052195 * conv;
-        % ddeps = -0.003875 * conv;
-        % % ---- flight elements
-        % [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ( reci,veci,ttt,jdut1,lod,xp,yp,2,ddpsi,ddeps );
-        % fprintf(fid,'         rmag km       vmag km/s     latgc deg       lon deg       fpa deg       az deg\n');
-        % fprintf(fid,'flt  %14.7f%14.7f%14.7f%15.7f%14.7f%14.7f\n',rmag,vmag,...
-        %         latgc*rad,lon*rad,fpa*rad,az*rad );
-        % [r,v] = flt2rv ( rmag,vmag,latgc,lon,fpa,az,ttt,jdut1,lod,xp,yp,2,ddpsi,ddeps );
-        % fprintf(fid,'r    %15.9f%15.9f%15.9f',r );
-        % fprintf(fid,' v %15.10f%15.10f%15.10f\n',v );
-        %
-        % % ----  adbarv elements
-        % [rmag,vmag,rtasc,decl,fpav,az] = rv2adbar ( r,v );
-        % fprintf(fid,'          rmag km      vmag km/s     rtasc deg       decl deg      fpav deg      az deg\n');
-        % fprintf(fid,'adb  %14.7f%14.7f%14.7f%15.7f%14.7f%14.7f\n',rmag,vmag,...
-        %          rtasc*rad,decl*rad,fpav*rad,az*rad );
-        % [r,v] = adbar2rv ( rmag,vmag,rtasc,decl,fpav,az );
-        % fprintf(fid,'r    %15.9f%15.9f%15.9f',r );
-        % fprintf(fid,' v %15.10f%15.10f%15.10f\n',v );
-        %
-        % % ---- radial, along-track, cross-track
-        % [rrac,vrac,transrmat] = rv2rac(r,v);
-        % fprintf(fid,'rac  %15.9f%15.9f%15.9f',rrac );
-        % fprintf(fid,' v %15.10f%15.10f%15.10f\n',vrac );
-        %
-        % % ---- in-radial, velocity, cross-track
-        % [rivc,vivc,transrmat] = rv2ivc(r,v);
-        % fprintf(fid,'ivc  %15.9f%15.9f%15.9f',rivc );
-        % fprintf(fid,' v %15.10f%15.10f%15.10f\n',vivc );
+        reci = [1525.9870698051157; -5867.209915411114; 3499.601587508083];
+        veci = [1.4830443958075603; -7.093267951700349; 0.9565730381487033];
+       
+        rmag = 7000; % km
+        vmag = 7.546;  % km/s
+        latgc = pi / 6;  % 30 degrees
+        lon = pi / 2;  % 90 degrees
+        fpa = -pi / 6;  % -30 degrees
+        az = pi / 4;  % 45 degrees
+
+        conv = pi / (180.0*3600.0);
+        ttt = 0.042623631888994;
+        jdut1 = 2.45310150e+06;
+        lod = 0.0015563;
+        xp = -0.140682 * conv;
+        yp = 0.333309 * conv;
+        ddpsi = -0.052195 * conv;
+        ddeps = -0.003875 * conv;
+        % ---- flight elements
+        [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+            ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps );  
+        fprintf(fid,'         rmag km       vmag km/s     latgc deg       lon deg       fpa deg       az deg\n');
+        fprintf(fid,'flt  %14.7f%14.7f%14.7f%15.7f%14.7f%14.7f\n',rmag,vmag,...
+            latgc*rad,lon*rad,fpa*rad,az*rad );
+        [r, v] = flt2rv ( rmag,vmag,latgc,lon,fpa,az,iau80arr,ttt,jdut1,lod,xp,yp,ddpsi,ddeps );
+        fprintf(fid,'r    %15.9f%15.9f%15.9f',r );
+        fprintf(fid,' v %15.10f%15.10f%15.10f\n',v );
+
+        % ----  adbarv elements
+        [rmag,vmag,rtasc,decl,fpav,az] = rv2adbar ( r,v );
+        fprintf(fid,'          rmag km      vmag km/s     rtasc deg       decl deg      fpav deg      az deg\n');
+        fprintf(fid,'adb  %14.7f%14.7f%14.7f%15.7f%14.7f%14.7f\n',rmag,vmag,...
+            rtasc*rad,decl*rad,fpav*rad,az*rad );
+        [r,v] = adbar2rv ( rmag,vmag,rtasc,decl,fpav,az );
+        fprintf(fid,'r    %15.9f%15.9f%15.9f',r );
+        fprintf(fid,' v %15.10f%15.10f%15.10f\n',v );
+
+        % ---- radial, along-track, cross-track
+        [rrac,vrac,transrmat] = rv2rsw(r,v);
+        fprintf(fid,'rsw  %15.9f%15.9f%15.9f',rrac );
+        fprintf(fid,' v %15.10f%15.10f%15.10f\n',vrac );
+
+        % ---- in-radial, velocity, cross-track
+        [rivc,vivc,transrmat] = rv2ntw(r,v);
+        fprintf(fid,'ntw  %15.9f%15.9f%15.9f',rivc );
+        fprintf(fid,' v %15.10f%15.10f%15.10f\n',vivc );
 
         end  % for
     end % for through coe/eq tests
 
 
-    fprintf(fid,'\n\n\n tests\n');
-    r = [4942.74746831; 4942.74746831; 0.];
-    v = [-5.34339547; 5.34339547; 0.02137362];
-    fprintf(fid,'r    %15.9f %15.9f %15.9f',r );
-    fprintf(fid,' v %15.10f %15.10f %15.10f\n',v );
-    [ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (r, v);
-    fprintf(fid,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg\n');
-    fprintf(fid,'eqs    %2d %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f\n',...
-        fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
-    [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v);
-    fprintf(fid,'          p km         a km         ecc        incl deg     raan deg     argp deg      nu deg      m deg      arglat   truelon    lonper\n');
-    fprintf(fid,'coes %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f\n',...
-        p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad, ...
-        arglat*rad,truelon*rad,lonper*rad );
-
-    fprintf(fid,'\n\ STK ? tests\n');
-    r = [4942.72769736; -4942.72769736;  19.77095033];
-    v = [-5.34341685; -5.34341685; 0];
-    fprintf(fid,'r    %15.9f %15.9f %15.9f',r );
-    fprintf(fid,' v %15.10f %15.10f %15.10f\n',v );
-    [ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (r, v);
-    fprintf(fid,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg\n');
-    fprintf(fid,'eqs    %2d %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f\n',...
-        fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
-    [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v);
-    fprintf(fid,'          p km         a km         ecc        incl deg     raan deg     argp deg      nu deg      m deg      arglat   truelon    lonper\n');
-    fprintf(fid,'coes %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f\n',...
-        p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad, ...
-        arglat*rad,truelon*rad,lonper*rad );
-
-
-    fprintf(fid,'\n other tests\n');
-    [rn,vn] = eq2rv( 7000.0, 0.001, 0.001, 0.001, 0.001, 45.0/rad, fr);
-    fprintf(fid,'rn    %15.9f %15.9f %15.9f',rn );
-    fprintf(fid,' vn %15.10f %15.10f %15.10f\n',vn );
-    [ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (rn,vn);
-    fprintf(fid,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg\n');
-    fprintf(fid,'eqs    %2d %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f\n',...
-        fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
+    % fprintf(fid,'\n\n\n tests\n');
+    % r = [4942.74746831; 4942.74746831; 0.];
+    % v = [-5.34339547; 5.34339547; 0.02137362];
+    % fprintf(fid,'r    %15.9f %15.9f %15.9f',r );
+    % fprintf(fid,' v %15.10f %15.10f %15.10f\n',v );
+    % [ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (r, v);
+    % fprintf(fid,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg\n');
+    % fprintf(fid,'eqs    %2d %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f\n',...
+    %     fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
+    % [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v);
+    % fprintf(fid,'          p km         a km         ecc        incl deg     raan deg     argp deg      nu deg      m deg      arglat   truelon    lonper\n');
+    % fprintf(fid,'coes %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f\n',...
+    %     p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad, ...
+    %     arglat*rad,truelon*rad,lonper*rad );
+    % 
+    % fprintf(fid,'\n\ STK ? tests\n');
+    % r = [4942.72769736; -4942.72769736;  19.77095033];
+    % v = [-5.34341685; -5.34341685; 0];
+    % fprintf(fid,'r    %15.9f %15.9f %15.9f',r );
+    % fprintf(fid,' v %15.10f %15.10f %15.10f\n',v );
+    % [ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (r, v);
+    % fprintf(fid,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg\n');
+    % fprintf(fid,'eqs    %2d %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f\n',...
+    %     fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
+    % [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v);
+    % fprintf(fid,'          p km         a km         ecc        incl deg     raan deg     argp deg      nu deg      m deg      arglat   truelon    lonper\n');
+    % fprintf(fid,'coes %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f\n',...
+    %     p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad, ...
+    %     arglat*rad,truelon*rad,lonper*rad );
+    % 
+    % 
+    % fprintf(fid,'\n other tests\n');
+    % [rn,vn] = eq2rv( 7000.0, 0.001, 0.001, 0.001, 0.001, 45.0/rad, fr);
+    % fprintf(fid,'rn    %15.9f %15.9f %15.9f',rn );
+    % fprintf(fid,' vn %15.10f %15.10f %15.10f\n',vn );
+    % [ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (rn,vn);
+    % fprintf(fid,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg\n');
+    % fprintf(fid,'eqs    %2d %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f\n',...
+    %     fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
 end % testcoe2rv
 
 
@@ -2383,7 +2387,7 @@ end
 %
 % [r2, v2, c2, c3, x, z] = keplerc2c3(r1, v1, dtsec)
 %
-function [r2, v2, c2, c3, x, z] = keplerc2c3(r1, v1, dtsec)
+function [r2, v2, c2new, c3new, xnew, znew] = keplerc2c3(r1, v1, dtsec)
     constastro;
 
     % -------------------------  implementation   -----------------
@@ -2747,11 +2751,11 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, ansrlongst
     % read existing data - this does not find x, y, s!
     eopFileName = 'D:\Codes\LIBRARY\DataLib\EOP-All-v1.1_2025-01-10.txt';
     [eoparr] = readeop(eopFileName);
-  
+
     asecef1 = [0.0; 0.0; 0.0];
     asecef2 = [0.0; 0.0; 0.0];
     asecef3 = [0.0; 0.0; 0.0];
-    
+
     %jd1 = jd(1) + jdf(1);
     %jd2 = jd(2) + jdf(2);
     %jd3 = jd(3) + jdf(3);
@@ -2852,16 +2856,16 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, ansrlongst
     %diffsites = 'n';
 
     [r2, v2] = anglesl(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
-         jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, fida);   
-    
+        jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, fida);
+
     %fprintf(fida,errstr);
     fprintf(fida,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f\n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
     fprintf(fida,'\nlaplace coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
-          a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
+        a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     fprintf(fida,'%s\n', ansrlongstr);
     fprintf(fidas,'\nlaplace coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
-          a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
+        a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
 
     fprintf(fida,'Gauss  -----------------------------------');
@@ -2873,41 +2877,41 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, ansrlongst
     %     rseci3 = [ 3429.9; 3490.1; 4078.5 ];
     % end
     [r2, v2] = anglesg(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
-         jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, fida);   
+        jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, fida);
     %fprintf(fida,errstr);
     fprintf(fida,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f\n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
     fprintf(fida,'\nguass coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
-          a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
+        a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     fprintf(fida,'%s\n', ansrlongstr);
     fprintf(fidas,'\nguass coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
-          a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
+        a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
 
-     pctchg = 0.05;
+    pctchg = 0.05;
     fprintf(fida,'double-r -----------------------------------' );
     fprintf(fidas,'double-r -----------------------------------' );
     % initial guesses needed for -r and Gooding
     % use result from Gauss as it's usually pretty good
     % this seems to really help Gooding!!
     [bigr2x] = getGaussRoot(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
-              jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), rseci1, rseci2, rseci3);
+        jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), rseci1, rseci2, rseci3);
     initguess = bigr2x;
 
     rng1 = initguess;  % old 12500 needs to be in km!! seems to do better when all the same? if too far off (*2) NAN
     rng2 = initguess * 1.02;  % 1.02 might be better? make the initial guess a bit different
     rng3 = initguess * 1.08;
     [r2, v2] = anglesdr(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
-         jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg);   
+        jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg);
 
     %fprintf(fida,errstr);
     fprintf(fida,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f\n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
     [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r2, v2);
     fprintf(fida,'\ndouble r coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
-          a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
+        a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     fprintf(fida,'%s\n', ansrlongstr);
     fprintf(fidas,'\ndouble r coes a= %15.11f e = %15.11f  i = %15.11f  %15.11f  %15.11f  %15.11f  %15.11f  %15.11f\n', ...
-          a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
+        a, ecc, incl*rad, raan*rad, argp*rad, nu*rad, m*rad, arglat*rad); %
     %strbuildallsum.AppendLine(ansr);
 
 
@@ -2918,13 +2922,13 @@ function doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, ansrlongst
     % [bigr2x] = getGaussRoot(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
     %           jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), rseci1, rseci2, rseci3);
     % initguess = bigr2x;
-    % 
+    %
     % rng1 = initguess;  % old 12500 needs to be in km!! seems to do better when all the same? if too far off (*2) NAN
     % rng2 = initguess * 1.02;  % 1.02 might be better? make the initial guess a bit different
     % rng3 = initguess * 1.08;
-    % 
+    %
     % [r2, v2] = anglesgood(tdecl(1), tdecl(2), tdecl(3), trtasc(1), trtasc(2), trtasc(3), ...
-    %      jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg, fid);   
+    %      jd(1), jdf(1), jd(2), jdf(2), jd(3), jdf(3), diffsites, rseci1, rseci2, rseci3, rng1, rng2, pctchg, fid);
 
     %fprintf(fida,errstr);
     % fprintf(fida,'r2 %15.11f  %15.11f  %15.11f v2 %15.11f  %15.11f  %15.11f\n', r2(1), r2(2), r2(3), v2(1), v2(2), v2(3));
@@ -2985,24 +2989,31 @@ function testangles(fid)
     % etol = 0.1;  %
     itol = 5.0 / rad;   % rad
 
-    strt = 1;
-    stp = 32;
+    % strt = 1;
+    % stp = 4; % 32
     initguess = 0.0;
-    for caseopt = strt: stp
-        fprintf(1,'caseopt %d\n', caseopt);
-        fprintf(fida,'caseopt %d\n', caseopt);
+    
+ %   for caseopt = strt: stp
+ %       fprintf(1,'caseopt %d\n', caseopt);
+ %       fprintf(fida,'caseopt %d\n', caseopt);
 
         % get first heard line
         longstr = fgets(infile);
-
+        ansrlongstr = longstr;
+        caseopt = 0;
+        ktr = 0;
         while (~feof(infile))
 
             longstr = fgets(infile);
-            ansrlongstr = longstr;
+            %ansrlongstr = longstr;
+            ktr=ktr + 1;
+            if ktr > 1
+                caseopt = caseopt + 1;
 
-            fprintf(fida,'\n\n ================================ case number %d ================================\n', caseopt);
-            fprintf(fid,'\n\n ================================ case number %d ================================\n', caseopt);
-            fprintf(fid,'%s \n', longstr);
+                fprintf(fida,'\n\n ================================ case number %d ================================\n', caseopt);
+                fprintf(fid,'\n\n ================================ case number %d ================================\n', caseopt);
+                fprintf(fid,'%s \n', ansrlongstr);
+            end
 
             % # 0 ansr a 12246.023  e 0.2000  i 40.00  W 330.000  w 0.0  nu 0.0
             % 20,  8,  2012,  11,  40,  28.00,    40.000,    -110.000,     2.0000,     0.939913  ,    18.667717, x
@@ -3031,17 +3042,23 @@ function testangles(fid)
                     % end
 
                     longstr = fgets(infile);
+                    ktr = ktr + 1;
+                    if i == 3
+                        ansrlongstr = longstr;
+                    end
                     obsktr = obsktr + 1;
                 end
 
                 % write summary results to fid
                 doangles(jd, jdf, latgd, lon, alt, trtasc, tdecl, initguess, ansrlongstr, fida, fid);
-
+                
             end  % if
+
+            ktr = ktr + 1;
 
         end  % while not eof
 
-    end  % for caseopt
+  %  end  % for caseopt
 
 
 end   % testangles
@@ -4841,979 +4858,6 @@ function testazel2radec(fid)
 end
 
 
-% ------------------------------------------------------------------------------
-%
-%                           function LegPolyEx
-%
-%   this function finds the exact (from equations) Legendre polynomials for the gravity field.
-%   note that the arrays are indexed from 0 to coincide with the usual nomenclature (eq 8-21
-%   in my text). fortran implementations will have indicies of 1 greater as they often
-%   start at 1. these are exact expressions derived from mathematica.
-%
-%  author        : david vallado             davallado@gmail.com  16 dec 2019
-%
-%  inputs        description                                   range / units
-%    latgc       - Geocentric lat of satellite                   pi to pi rad
-%    order       - size of gravity field                         1..2160..
-%
-%  outputs       :
-%    LegArr      - [,] array of Legendre polynomials
-%
-%  locals :
-%    L,m         - degree and order indices
-%    conv        - conversion to un-unitalize
-%
-%  coupling      :
-%   none
-%
-%  references :
-%    vallado       2013, 597, Eq 8-57
-% [LegArrEx] = LegPolyEx(latgc, order)
-% ------------------------------------------------------------------------------*/
-
-% function [LegArrEx] = LegPolyEx(latgc, order)
-% 
-%     % -------------------- exact epxressions ----------------------
-%     LegArrEx(3, 1) = 0.5 * (3 * s * s - 1.0);
-%     LegArrEx(3, 2) = 3.0 * s * c;
-%     LegArrEx(3, 3) = 3.0 * c * c;
-% 
-%     % include (-1)^m for all the terms
-%     LegArrEx(4, 1) = -0.5 * s * (3 - 5 * s * s);
-%     LegArrEx(4, 2) = (3.0 / 2) * c * (-1 + 5 * s * s); % 15s^2 - 3
-%     LegArrEx(4, 3) = 15 * s * c * c;
-%     LegArrEx(4, 4) = 15 * (c * c * c);
-% 
-%     LegArrEx(5, 1) = 1.0 / 8.0 * (35.0 * s^4) - 30.0 * s^2) + 3.0);
-%     LegArrEx(5, 2) = 2.5 * c * (-3 * s + 7 * s^3));
-%     LegArrEx(5, 3) = 7.5 * c^2) * (-1 + 7 * s^2));
-%     LegArrEx(5, 4) = 105.0 * c^3) * s;
-%     LegArrEx(5, 5) = 105.0 * c^4);
-% 
-%     LegArrEx(6, 1) = (1.0 / 8) * s * (15 - 70 * s^2) + 63 * s^4));
-%     LegArrEx(6, 2) = (15.0 / 8) * c * (1 - 14 * s^2) + 21 * s^4));
-%     LegArrEx(6, 3) = (105.0 / 2) * c * c * (-s + 3 * s^3));
-%     LegArrEx(6, 4) = (105.0 / 2) * c^3) * (-1 + 9 * s^2));
-%     LegArrEx(6, 5) = 945.0 * s * c^4);
-%     LegArrEx(6, 6) = 945.0 * c^5);
-% 
-%     LegArrEx[6, 0] = 1.0 / 16 * (-5 + 105 * s^2) - 315 * s^4) + 231 * s^6));
-%     LegArrEx[6, 1] = (21.0 / 8) * c * (5 * s - 30 * s^3) + 33 * s^5));
-%     LegArrEx[6, 2] = (105.0 / 8) * c * c * (1 - 18 * s^2) + 33 * s^4));
-%     LegArrEx[6, 3] = (315.0 / 2) * c^3) * (-3 * s + 11 * s^3));
-%     LegArrEx[6, 4] = 945.0 / 2 * Math.Pow(c * c, 2) * (-1 + 11 * s^2));
-%     LegArrEx[6, 5] = 10395.0 * s * c^5);
-%     LegArrEx[6, 6] = 10395.0 * Math.Pow(c * c, 3);
-% 
-%     LegArrEx[7, 0] = 1.0 / 16 * (-35 * s + 315 * s^3) - 693 * s^5) + 429 * s^7));
-%     LegArrEx[7, 1] = (7.0 / 16) * c * (-5 + 135 * s^2) - 495 * s^4) + 429 * s^6));
-%     LegArrEx[7, 2] = (63.0 / 8) * c * c * (15 * s - 110 * s^3) + 143 * s^5));
-%     LegArrEx[7, 3] = (315.0 / 8) * c^3) * (3 - 66 * s^2) + 143 * s^4));
-%     LegArrEx[7, 4] = 3465.0 / 2 * Math.Pow(c * c, 2) * (-3 * s + 13 * s^3));
-%     LegArrEx[7, 5] = (10395.0 / 2) * c^5) * (-1 + 13 * s^2));
-%     LegArrEx[7, 6] = 135135.0 * s * Math.Pow(c * c, 3);
-%     LegArrEx[7, 7] = 135135.0 * c^7);
-% 
-%     LegArrEx[8, 0] = 1.0 / 128 * (35 - 1260 * s^2) + 6930 * s^4) - 12012 * s^6) + 6435 * s^8));
-%     LegArrEx[8, 1] = (9.0 / 16) * c * (-35 * s + 385 * s^3) - 1001 * s^5) + 715 * s^7));
-%     LegArrEx[8, 2] = (315.0 / 16) * c * c * (-1 + 33 * s^2) - 143 * s^4) + 143 * s^6));
-%     LegArrEx[8, 3] = (3465.0 / 8) * c^3) * (3 * s - 26 * s^3) + 39 * s^5));
-%     LegArrEx[8, 4] = 10395.0 / 8 * Math.Pow(c * c, 2) * (1 - 26 * s^2) + 65 * s^4));
-%     LegArrEx[8, 5] = (135135.0 / 2) * c^5) * (-s + 5 * s^3));
-%     LegArrEx[8, 6] = (135135.0 / 2) * Math.Pow(c * c, 3) * (-1 + 15 * s^2));
-%     LegArrEx[8, 7] = 2027025.0 * s * c^7);
-%     LegArrEx[8, 8] = 2027025.0 * Math.Pow(c * c, 4);
-% 
-%     LegArrEx[9, 0] = 1.0 / 128 * (315 * s - 4620 * s^3) + 18018 * s^5) - 25740 * s^7) + 12155 * s^9));
-%     LegArrEx[9, 1] = (45.0 / 128) * c * (7 - 308 * s^2) + 2002 * s^4) - 4004 * s^6) + 2431 * s^8));
-%     LegArrEx[9, 2] = (495.0 / 16) * c * c * (-7 * s + 91 * s^3) - 273 * s^5) + 221 * s^7));
-%     LegArrEx[9, 3] = (3465.0 / 16) * c^3) * (-1 + 39 * s^2) - 195 * s^4) + 221 * s^6));
-%     LegArrEx[9, 4] = 135135.0 / 8 * Math.Pow(c * c, 2) * (s - 10 * s^3) + 17 * s^5));
-%     LegArrEx[9, 5] = (135135.0 / 8) * c^5) * (1 - 30 * s^2) + 85 * s^4));
-%     LegArrEx[9, 6] = (675675.0 / 2) * Math.Pow(c * c, 3) * (-3 * s + 17 * s^3));
-%     LegArrEx[9, 7] = (2027025.0 / 2) * c^7) * (-1 + 17 * s^2));
-%     LegArrEx[9, 8] = 34459425.0 * s * Math.Pow(c * c, 4);
-%     LegArrEx[9, 9] = 34459425.0 * c^9);
-% 
-%     LegArrEx[10, 0] = 1.0 / 256 * (-63 + 3465 * s^2) - 30030 * s^4) + 90090 * s^6) - 109395 * s^8) + 46189 * s^10));
-%     LegArrEx[10, 1] = (55.0 / 128) * c * (63 * s - 1092 * s^3) + 4914 * s^5) - 7956 * s^7) + 4199 * s^9));
-%     LegArrEx[10, 2] = (495.0 / 128) * c * c * (7 - 364 * s^2) + 2730 * s^4) - 6188 * s^6) + 4199 * s^8));
-%     LegArrEx[10, 3] = (6435.0 / 16) * c^3) * (-7 * s + 105 * s^3) - 357 * s^5) + 323 * s^7));
-%     LegArrEx[10, 4] = 45045.0 / 16 * Math.Pow(c * c, 2) * (-1 + 45 * s^2) - 255 * s^4) + 323 * s^6));
-%     LegArrEx[10, 5] = (135135.0 / 8) * c^5) * (15 * s - 170 * s^3) + 323 * s^5));
-%     LegArrEx[10, 6] = (675675.0 / 8) * Math.Pow(c * c, 3) * (3 - 102 * s^2) + 323 * s^4));
-%     LegArrEx[10, 7] = (11486475.0 / 2) * c^7) * (-3 * s + 19 * s^3));
-%     LegArrEx[10, 8] = 34459425.0 / 2 * Math.Pow(c * c, 4) * (-1 + 19 * s^2));
-%     LegArrEx[10, 9] = 654729075.0 * s * c^9);
-%     LegArrEx[10, 10] = 654729075.0 * Math.Pow(c * c, 5);
-% 
-%     LegArrEx[11, 0] = 1.0 / 256 * (-693 * s + 15015 * s^3) - 90090 * s^5) + 218790 * s^7) - 230945 * s^9) + 88179 * s^11));
-%     LegArrEx[11, 1] = (33.0 / 256) * c * (-21 + 1365 * s^2) - 13650 * s^4) + 46410 * s^6) - 62985 * s^8) + 29393 * s^10));
-%     LegArrEx[11, 2] = (2145.0 / 128) * c * c * (21 * s - 420 * s^3) + 2142 * s^5) - 3876 * s^7) + 2261 * s^9));
-%     LegArrEx[11, 3] = (45045.0 / 128) * c^3) * (1 - 60 * s^2) + 510 * s^4) - 1292 * s^6) + 969 * s^8));
-%     LegArrEx[11, 4] = 135135.0 / 16 * Math.Pow(c * c, 2) * (-5 * s + 85 * s^3) - 323 * s^5) + 323 * s^7));
-%     LegArrEx[11, 5] = (135135.0 / 16) * c^5) * (-5 + 255 * s^2) - 1615 * s^4) + 2261 * s^6));
-%     LegArrEx[11, 6] = (2297295.0 / 8) * Math.Pow(c * c, 3) * (15 * s - 190 * s^3) + 399 * s^5));
-%     LegArrEx[11, 7] = (34459425.0 / 8) * c^7) * (1 - 38 * s^2) + 133 * s^4));
-%     LegArrEx[11, 8] = 654729075.0 / 2 * Math.Pow(c * c, 4) * (-s + 7 * s^3));
-%     LegArrEx[11, 9] = (654729075.0 / 2) * c^9) * (-1 + 21 * s^2));
-%     LegArrEx[11, 10] = 13749310575.0 * s * Math.Pow(c * c, 5);
-%     LegArrEx[11, 11] = 13749310575.0 * c^11);
-% 
-%     LegArrEx[12, 0] = (231.0 - 18018 * s^2) + 225225 * s^4) - 1021020 * s^6) + 2078505 * s^8) - 1939938 * s^10) + 676039 * s^12)) / 1024;
-%     LegArrEx[12, 1] = (39.0 / 256) * c * (-231 * s + 5775 * s^3) - 39270 * s^5) + 106590 * s^7) - 124355 * s^9) + 52003 * s^11));
-%     LegArrEx[12, 2] = (3003.0 / 256) * c * c * (-3 + 225 * s^2) - 2550 * s^4) + 9690 * s^6) - 14535 * s^8) + 7429 * s^10));
-%     LegArrEx[12, 3] = (15015.0 / 128) * c^3) * (45 * s - 1020 * s^3) + 5814 * s^5) - 11628 * s^7) + 7429 * s^9));
-%     LegArrEx[12, 4] = 135135.0 / 128 * Math.Pow(c * c, 2) * (5 - 340 * s^2) + 3230 * s^4) - 9044 * s^6) + 7429 * s^8));
-%     LegArrEx[12, 5] = (2297295.0 / 16) * c^5) * (-5 * s + 95 * s^3) - 399 * s^5) + 437 * s^7));
-%     LegArrEx[12, 6] = (2297295.0 / 16) * Math.Pow(c * c, 3) * (-5 + 285 * s^2) - 1995 * s^4) + 3059 * s^6));
-%     LegArrEx[12, 7] = (130945815.0 / 8) * c^7) * (5 * s - 70 * s^3) + 161 * s^5));
-%     LegArrEx[12, 8] = 654729075.0 / 8 * Math.Pow(c * c, 4) * (1 - 42 * s^2) + 161 * s^4));
-%     LegArrEx[12, 9] = (4583103525.0 / 2) * c^9) * (-3 * s + 23 * s^3));
-%     LegArrEx[12, 10] = (13749310575.0 / 2) * Math.Pow(c * c, 5) * (-1 + 23 * s^2));
-%     LegArrEx[12, 11] = 316234143225.0 * s * c^11);
-%     LegArrEx[12, 12] = 316234143225.0 * Math.Pow(c * c, 6);
-% 
-%     LegArrEx[13, 0] = (3003.0 * s - 90090 * s^3) + 765765 * s^5) - 2771340 * s^7) + 4849845 * s^9) - 4056234 * s^11) + 1300075 * s^13)) / 1024;
-%     LegArrEx[13, 1] = ((91.0 * c * (33 - 2970 * s^2) + 42075 * s^4) - 213180 * s^6) + 479655 * s^8) - 490314 * s^10) + 185725 * s^12)) / 1024));
-%     LegArrEx[13, 2] = (1365.0 / 256) * c * c * (-99 * s + 2805 * s^3) - 21318 * s^5) + 63954 * s^7) - 81719 * s^9) + 37145 * s^11));
-%     LegArrEx[13, 3] = (15015.0 / 256) * c^3) * (-9 + 765 * s^2) - 9690 * s^4) + 40698 * s^6) - 66861 * s^8) + 37145 * s^10));
-%     LegArrEx[13, 4] = 255255.0 / 128 * Math.Pow(c * c, 2) * (45 * s - 1140 * s^3) + 7182 * s^5) - 15732 * s^7) + 10925 * s^9));
-%     LegArrEx[13, 5] = (2297295.0 / 128) * c^5) * (5 - 380 * s^2) + 3990 * s^4) - 12236 * s^6) + 10925 * s^8));
-%     LegArrEx[13, 6] = (43648605.0 / 16) * Math.Pow(c * c, 3) * (-5 * s + 105 * s^3) - 483 * s^5) + 575 * s^7));
-%     LegArrEx[13, 7] = (218243025.0 / 16) * c^7) * (-1 + 63 * s^2) - 483 * s^4) + 805 * s^6));
-%     LegArrEx[13, 8] = 4583103525.0 / 8 * Math.Pow(c * c, 4) * (3 * s - 46 * s^3) + 115 * s^5));
-%     LegArrEx[13, 9] = (4583103525.0 / 8) * c^9) * (3 - 138 * s^2) + 575 * s^4));
-%     LegArrEx[13, 10] = (105411381075.0 / 2) * Math.Pow(c * c, 5) * (-3 * s + 25 * s^3));
-%     LegArrEx[13, 11] = (316234143225.0 / 2) * c^11) * (-1 + 25 * s^2));
-%     LegArrEx[13, 12] = 7905853580625.0 * s * Math.Pow(c * c, 6);
-%     LegArrEx[13, 13] = 7905853580625.0 * c^13);
-% 
-%     LegArrEx[14, 0] = (-429.0 + 45045 * s^2) - 765765 * s^4) + 4849845 * s^6) - 14549535 * s^8) + 22309287 * s^10) - 16900975 * s^12) + 5014575 * s^14)) / 2048;
-%     LegArrEx[14, 1] = ((105.0 * c * (429 * s - 14586 * s^3) + 138567 * s^5) - 554268 * s^7) + 1062347 * s^9) - 965770 * s^11) + 334305 * s^13)) / 1024));
-%     LegArrEx[14, 2] = ((1365.0 * c * c * (33 - 3366 * s^2) + 53295 * s^4) - 298452 * s^6) + 735471 * s^8) - 817190 * s^10) + 334305 * s^12)) / 1024));
-%     LegArrEx[14, 3] = (23205.0 / 256) * c^3) * (-99 * s + 3135 * s^3) - 26334 * s^5) + 86526 * s^7) - 120175 * s^9) + 58995 * s^11));
-%     LegArrEx[14, 4] = 2297295.0 / 256 * Math.Pow(c * c, 2) * (-1 + 95 * s^2) - 1330 * s^4) + 6118 * s^6) - 10925 * s^8) + 6555 * s^10));
-%     LegArrEx[14, 5] = (43648605.0 / 128) * c^5) * (5 * s - 140 * s^3) + 966 * s^5) - 2300 * s^7) + 1725 * s^9));
-%     LegArrEx[14, 6] = (218243025.0 / 128) * Math.Pow(c * c, 3) * (1 - 84 * s^2) + 966 * s^4) - 3220 * s^6) + 3105 * s^8));
-%     LegArrEx[14, 7] = (654729075.0 / 16) * c^7) * (-7 * s + 161 * s^3) - 805 * s^5) + 1035 * s^7));
-%     LegArrEx[14, 8] = 4583103525.0 / 16 * Math.Pow(c * c, 4) * (-1 + 69 * s^2) - 575 * s^4) + 1035 * s^6));
-%     LegArrEx[14, 9] = (105411381075.0 / 8) * c^9) * (3 * s - 50 * s^3) + 135 * s^5));
-%     LegArrEx[14, 10] = (316234143225.0 / 8) * Math.Pow(c * c, 5) * (1 - 50 * s^2) + 225 * s^4));
-%     LegArrEx[14, 11] = (7905853580625.0 / 2) * c^11) * (-s + 9 * s^3));
-%     LegArrEx[14, 12] = 7905853580625.0 / 2 * Math.Pow(c * c, 6) * (-1 + 27 * s^2));
-%     LegArrEx[14, 13] = 213458046676875.0 * s * c^13);
-%     LegArrEx[14, 14] = 213458046676875.0 * Math.Pow(c * c, 7);
-% 
-%     LegArrEx[15, 0] = (-6435.0 * s + 255255 * s^3) - 2909907 * s^5) + 14549535 * s^7) - 37182145 * s^9) + 50702925 * s^11) - 35102025 * s^13) + 9694845 * s^15)) / 2048;
-%     LegArrEx[15, 1] = ((15.0 * c * (-429 + 51051 * s^2) - 969969 * s^4) + 6789783 * s^6) - 22309287 * s^8) + 37182145 * s^10) - 30421755 * s^12) + 9694845 * s^14)) / 2048));
-%     LegArrEx[15, 2] = ((1785.0 * c * c * (429 * s - 16302 * s^3) + 171171 * s^5) - 749892 * s^7) + 1562275 * s^9) - 1533870 * s^11) + 570285 * s^13)) / 1024));
-%     LegArrEx[15, 3] = ((69615.0 * c^3) * (11 - 1254 * s^2) + 21945 * s^4) - 134596 * s^6) + 360525 * s^8) - 432630 * s^10) + 190095 * s^12)) / 1024));
-%     LegArrEx[15, 4] = 3968055.0 / 256 * Math.Pow(c * c, 2) * (-11 * s + 385 * s^3) - 3542 * s^5) + 12650 * s^7) - 18975 * s^9) + 10005 * s^11));
-%     LegArrEx[15, 5] = (43648605.0 / 256) * c^5) * (-1 + 105 * s^2) - 1610 * s^4) + 8050 * s^6) - 15525 * s^8) + 10005 * s^10));
-%     LegArrEx[15, 6] = (218243025.0 / 128) * Math.Pow(c * c, 3) * (21 * s - 644 * s^3) + 4830 * s^5) - 12420 * s^7) + 10005 * s^9));
-%     LegArrEx[15, 7] = (654729075.0 / 128) * c^7) * (7 - 644 * s^2) + 8050 * s^4) - 28980 * s^6) + 30015 * s^8));
-%     LegArrEx[15, 8] = 15058768725.0 / 16 * Math.Pow(c * c, 4) * (-7 * s + 175 * s^3) - 945 * s^5) + 1305 * s^7));
-%     LegArrEx[15, 9] = (105411381075.0 / 16) * c^9) * (-1 + 75 * s^2) - 675 * s^4) + 1305 * s^6));
-%     LegArrEx[15, 10] = (1581170716125.0 / 8) * Math.Pow(c * c, 5) * (5 * s - 90 * s^3) + 261 * s^5));
-%     LegArrEx[15, 11] = (7905853580625.0 / 8) * c^11) * (1 - 54 * s^2) + 261 * s^4));
-%     LegArrEx[15, 12] = 71152682225625.0 / 2 * Math.Pow(c * c, 6) * (-3 * s + 29 * s^3));
-%     LegArrEx[15, 13] = (213458046676875.0 / 2) * c^13) * (-1 + 29 * s^2));
-%     LegArrEx[15, 14] = 6190283353629375.0 * s * Math.Pow(c * c, 7);
-%     LegArrEx[15, 15] = 6190283353629375.0 * c^15);
-% 
-%     LegArrEx[16, 0] = (6435.0 - 875160 * s^2) + 19399380 * s^4) - 162954792 * s^6) + 669278610 * s^8) - 1487285800 * s^10) + 1825305300 * s^12) - 1163381400 * s^14) + 300540195 * s^16)) / 32768;
-%     LegArrEx[16, 1] = ((17.0 * c * (-6435 * s + 285285 * s^3) - 3594591 * s^5) + 19684665 * s^7) - 54679625 * s^9) + 80528175 * s^11) - 59879925 * s^13) + 17678835 * s^15)) / 2048));
-%     LegArrEx[16, 2] = ((765.0 * c * c * (-143 + 19019 * s^2) - 399399 * s^4) + 3062059 * s^6) - 10935925 * s^8) + 19684665 * s^10) - 17298645 * s^12) + 5892945 * s^14)) / 2048));
-%     LegArrEx[16, 3] = ((101745.0 * c^3) * (143 * s - 6006 * s^3) + 69069 * s^5) - 328900 * s^7) + 740025 * s^9) - 780390 * s^11) + 310155 * s^13)) / 1024));
-%     LegArrEx[16, 4] = (1322685.0 * Math.Pow(c * c, 2) * (11 - 1386 * s^2) + 26565 * s^4) - 177100 * s^6) + 512325 * s^8) - 660330 * s^10) + 310155 * s^12)) / 1024);
-%     LegArrEx[16, 5] = (3968055.0 / 256) * c^5) * (-231 * s + 8855 * s^3) - 88550 * s^5) + 341550 * s^7) - 550275 * s^9) + 310155 * s^11));
-%     LegArrEx[16, 6] = (43648605.0 / 256) * Math.Pow(c * c, 3) * (-21 + 2415 * s^2) - 40250 * s^4) + 217350 * s^6) - 450225 * s^8) + 310155 * s^10));
-%     LegArrEx[16, 7] = (5019589575.0 / 128) * c^7) * (21 * s - 700 * s^3) + 5670 * s^5) - 15660 * s^7) + 13485 * s^9));
-%     LegArrEx[16, 8] = 15058768725.0 / 128 * Math.Pow(c * c, 4) * (7 - 700 * s^2) + 9450 * s^4) - 36540 * s^6) + 40455 * s^8));
-%     LegArrEx[16, 9] = (75293843625.0 / 16) * c^9) * (-35 * s + 945 * s^3) - 5481 * s^5) + 8091 * s^7));
-%     LegArrEx[16, 10] = (527056905375.0 / 16) * Math.Pow(c * c, 5) * (-5 + 405 * s^2) - 3915 * s^4) + 8091 * s^6));
-%     LegArrEx[16, 11] = (14230536445125.0 / 8) * c^11) * (15 * s - 290 * s^3) + 899 * s^5));
-%     LegArrEx[16, 12] = 71152682225625.0 / 8 * Math.Pow(c * c, 6) * (3 - 174 * s^2) + 899 * s^4));
-%     LegArrEx[16, 13] = (2063427784543125.0 / 2) * c^13) * (-3 * s + 31 * s^3));
-%     LegArrEx[16, 14] = (6190283353629375.0 / 2) * Math.Pow(c * c, 7) * (-1 + 31 * s^2));
-%     LegArrEx[16, 15] = 191898783962510625.0 * s * c^15);
-%     LegArrEx[16, 16] = 191898783962510625.0 * Math.Pow(c * c, 8);
-% 
-%     LegArrEx[17, 0] = (109395.0 * s - 5542680 * s^3) + 81477396 * s^5) - 535422888 * s^7) + 1859107250 * s^9) - 3650610600 * s^11) + 4071834900 * s^13) - 2404321560 * s^15) + 583401555 * s^17)) / 32768;
-%     LegArrEx[17, 1] = ((153.0 * c * (715 - 108680 * s^2) + 2662660 * s^4) - 24496472 * s^6) + 109359250 * s^8) - 262462200 * s^10) + 345972900 * s^12) - 235717800 * s^14) + 64822395 * s^16)) / 32768));
-%     LegArrEx[17, 2] = ((2907.0 * c * c * (-715 * s + 35035 * s^3) - 483483 * s^5) + 2877875 * s^7) - 8633625 * s^9) + 13656825 * s^11) - 10855425 * s^13) + 3411705 * s^15)) / 2048));
-%     LegArrEx[17, 3] = ((14535.0 * c^3) * (-143 + 21021 * s^2) - 483483 * s^4) + 4029025 * s^6) - 15540525 * s^8) + 30045015 * s^10) - 28224105 * s^12) + 10235115 * s^14)) / 2048));
-%     LegArrEx[17, 4] = (305235.0 * Math.Pow(c * c, 2) * (1001 * s - 46046 * s^3) + 575575 * s^5) - 2960100 * s^7) + 7153575 * s^9) - 8064030 * s^11) + 3411705 * s^13)) / 1024);
-%     LegArrEx[17, 5] = ((43648605.0 * c^5) * (7 - 966 * s^2) + 20125 * s^4) - 144900 * s^6) + 450225 * s^8) - 620310 * s^10) + 310155 * s^12)) / 1024));
-%     LegArrEx[17, 6] = (1003917915.0 / 256) * Math.Pow(c * c, 3) * (-21 * s + 875 * s^3) - 9450 * s^5) + 39150 * s^7) - 67425 * s^9) + 40455 * s^11));
-%     LegArrEx[17, 7] = (3011753745.0 / 256) * c^7) * (-7 + 875 * s^2) - 15750 * s^4) + 91350 * s^6) - 202275 * s^8) + 148335 * s^10));
-%     LegArrEx[17, 8] = 75293843625.0 / 128 * Math.Pow(c * c, 4) * (35 * s - 1260 * s^3) + 10962 * s^5) - 32364 * s^7) + 29667 * s^9));
-%     LegArrEx[17, 9] = (75293843625.0 / 128) * c^9) * (35 - 3780 * s^2) + 54810 * s^4) - 226548 * s^6) + 267003 * s^8));
-%     LegArrEx[17, 10] = (2032933777875.0 / 16) * Math.Pow(c * c, 5) * (-35 * s + 1015 * s^3) - 6293 * s^5) + 9889 * s^7));
-%     LegArrEx[17, 11] = (14230536445125.0 / 16) * c^11) * (-5 + 435 * s^2) - 4495 * s^4) + 9889 * s^6));
-%     LegArrEx[17, 12] = 412685556908625.0 / 8 * Math.Pow(c * c, 6) * (15 * s - 310 * s^3) + 1023 * s^5));
-%     LegArrEx[17, 13] = (6190283353629375.0 / 8) * c^13) * (1 - 62 * s^2) + 341 * s^4));
-%     LegArrEx[17, 14] = (191898783962510625.0 / 2) * Math.Pow(c * c, 7) * (-s + 11 * s^3));
-%     LegArrEx[17, 15] = (191898783962510625.0 / 2) * c^15) * (-1 + 33 * s^2));
-%     LegArrEx[17, 16] = 6332659870762850625.0 * s * Math.Pow(c * c, 8);
-%     LegArrEx[17, 17] = 6332659870762850625.0 * c^17);
-% 
-%     LegArrEx[18, 0] = (-12155.0 + 2078505 * s^2) - 58198140 * s^4) + 624660036 * s^6) - 3346393050 * s^8) + 10039179150 * s^10) - 17644617900 * s^12) + 18032411700 * s^14) - 9917826435 * s^16) + 2268783825 * s^18)) / 65536;
-%     LegArrEx[18, 1] = ((171.0 * c * (12155 * s - 680680 * s^3) + 10958948 * s^5) - 78278200 * s^7) + 293543250 * s^9) - 619109400 * s^11) + 738168900 * s^13) - 463991880 * s^15) + 119409675 * s^17)) / 32768));
-%     LegArrEx[18, 2] = ((14535.0 * c * c * (143 - 24024 * s^2) + 644644 * s^4) - 6446440 * s^6) + 31081050 * s^8) - 80120040 * s^10) + 112896420 * s^12) - 81880920 * s^14) + 23881935 * s^16)) / 32768));
-%     LegArrEx[18, 3] = ((101745.0 * c^3) * (-429 * s + 23023 * s^3) - 345345 * s^5) + 2220075 * s^7) - 7153575 * s^9) + 12096045 * s^11) - 10235115 * s^13) + 3411705 * s^15)) / 2048));
-%     LegArrEx[18, 4] = (3357585.0 * Math.Pow(c * c, 2) * (-13 + 2093 * s^2) - 52325 * s^4) + 470925 * s^6) - 1950975 * s^8) + 4032015 * s^10) - 4032015 * s^12) + 1550775 * s^14)) / 2048);
-%     LegArrEx[18, 5] = ((77224455.0 * c^5) * (91 * s - 4550 * s^3) + 61425 * s^5) - 339300 * s^7) + 876525 * s^9) - 1051830 * s^11) + 471975 * s^13)) / 1024));
-%     LegArrEx[18, 6] = ((1003917915.0 * Math.Pow(c * c, 3) * (7 - 1050 * s^2) + 23625 * s^4) - 182700 * s^6) + 606825 * s^8) - 890010 * s^10) + 471975 * s^12)) / 1024));
-%     LegArrEx[18, 7] = (75293843625.0 / 256) * c^7) * (-7 * s + 315 * s^3) - 3654 * s^5) + 16182 * s^7) - 29667 * s^9) + 18879 * s^11));
-%     LegArrEx[18, 8] = 75293843625.0 / 256 * Math.Pow(c * c, 4) * (-7 + 945 * s^2) - 18270 * s^4) + 113274 * s^6) - 267003 * s^8) + 207669 * s^10));
-%     LegArrEx[18, 9] = (225881530875.0 / 128) * c^9) * (315 * s - 12180 * s^3) + 113274 * s^5) - 356004 * s^7) + 346115 * s^9));
-%     LegArrEx[18, 10] = (14230536445125.0 / 128) * Math.Pow(c * c, 5) * (5 - 580 * s^2) + 8990 * s^4) - 39556 * s^6) + 49445 * s^8));
-%     LegArrEx[18, 11] = (412685556908625.0 / 16) * c^11) * (-5 * s + 155 * s^3) - 1023 * s^5) + 1705 * s^7));
-%     LegArrEx[18, 12] = 2063427784543125.0 / 16 * Math.Pow(c * c, 6) * (-1 + 93 * s^2) - 1023 * s^4) + 2387 * s^6));
-%     LegArrEx[18, 13] = (191898783962510625.0 / 8) * c^13) * (s - 22 * s^3) + 77 * s^5));
-%     LegArrEx[18, 14] = (191898783962510625.0 / 8) * Math.Pow(c * c, 7) * (1 - 66 * s^2) + 385 * s^4));
-%     LegArrEx[18, 15] = (2110886623587616875.0 / 2) * c^15) * (-3 * s + 35 * s^3));
-%     LegArrEx[18, 16] = 6332659870762850625.0 / 2 * Math.Pow(c * c, 8) * (-1 + 35 * s^2));
-%     LegArrEx[18, 17] = 221643095476699771875.0 * s * c^17);
-%     LegArrEx[18, 18] = 221643095476699771875.0 * Math.Pow(c * c, 9);
-% 
-%     LegArrEx[19, 0] = (-230945.0 * s + 14549535 * s^3) - 267711444 * s^5) + 2230928700 * s^7) - 10039179150 * s^9) + 26466926850 * s^11) - 42075627300 * s^13) + 39671305740 * s^15) - 20419054425 * s^17) + 4418157975 * s^19)) / 65536;
-%     LegArrEx[19, 1] = ((95.0 * c * (-2431 + 459459 * s^2) - 14090076 * s^4) + 164384220 * s^6) - 951080130 * s^8) + 3064591530 * s^10) - 5757717420 * s^12) + 6263890380 * s^14) - 3653936055 * s^16) + 883631595 * s^18)) / 65536));
-%     LegArrEx[19, 2] = ((5985.0 * c * c * (7293 * s - 447304 * s^3) + 7827820 * s^5) - 60386040 * s^7) + 243221550 * s^9) - 548354040 * s^11) + 695987820 * s^13) - 463991880 * s^15) + 126233085 * s^17)) / 32768));
-%     LegArrEx[19, 3] = ((1119195.0 * c^3) * (39 - 7176 * s^2) + 209300 * s^4) - 2260440 * s^6) + 11705850 * s^8) - 32256120 * s^10) + 48384180 * s^12) - 37218600 * s^14) + 11475735 * s^16)) / 32768));
-%     LegArrEx[19, 4] = (25741485.0 * Math.Pow(c * c, 2) * (-39 * s + 2275 * s^3) - 36855 * s^5) + 254475 * s^7) - 876525 * s^9) + 1577745 * s^11) - 1415925 * s^13) + 498945 * s^15)) / 2048);
-%     LegArrEx[19, 5] = ((77224455.0 * c^5) * (-13 + 2275 * s^2) - 61425 * s^4) + 593775 * s^6) - 2629575 * s^8) + 5785065 * s^10) - 6135675 * s^12) + 2494725 * s^14)) / 2048));
-%     LegArrEx[19, 6] = ((1930611375.0 * Math.Pow(c * c, 3) * (91 * s - 4914 * s^3) + 71253 * s^5) - 420732 * s^7) + 1157013 * s^9) - 1472562 * s^11) + 698523 * s^13)) / 1024));
-%     LegArrEx[19, 7] = ((25097947875.0 * c^7) * (7 - 1134 * s^2) + 27405 * s^4) - 226548 * s^6) + 801009 * s^8) - 1246014 * s^10) + 698523 * s^12)) / 1024));
-%     LegArrEx[19, 8] = 225881530875.0 / 256 * Math.Pow(c * c, 4) * (-63 * s + 3045 * s^3) - 37758 * s^5) + 178002 * s^7) - 346115 * s^9) + 232841 * s^11));
-%     LegArrEx[19, 9] = (1581170716125.0 / 256) * c^9) * (-9 + 1305 * s^2) - 26970 * s^4) + 178002 * s^6) - 445005 * s^8) + 365893 * s^10));
-%     LegArrEx[19, 10] = (45853950767625.0 / 128) * Math.Pow(c * c, 5) * (45 * s - 1860 * s^3) + 18414 * s^5) - 61380 * s^7) + 63085 * s^9));
-%     LegArrEx[19, 11] = (2063427784543125.0 / 128) * c^11) * (1 - 124 * s^2) + 2046 * s^4) - 9548 * s^6) + 12617 * s^8));
-%     LegArrEx[19, 12] = 63966261320836875.0 / 16 * Math.Pow(c * c, 6) * (-s + 33 * s^3) - 231 * s^5) + 407 * s^7));
-%     LegArrEx[19, 13] = (63966261320836875.0 / 16) * c^13) * (-1 + 99 * s^2) - 1155 * s^4) + 2849 * s^6));
-%     LegArrEx[19, 14] = (2110886623587616875.0 / 8) * Math.Pow(c * c, 7) * (3 * s - 70 * s^3) + 259 * s^5));
-%     LegArrEx[19, 15] = (2110886623587616875.0 / 8) * c^15) * (3 - 210 * s^2) + 1295 * s^4));
-%     LegArrEx[19, 16] = 73881031825566590625.0 / 2 * Math.Pow(c * c, 8) * (-3 * s + 37 * s^3));
-%     LegArrEx[19, 17] = (221643095476699771875.0 / 2) * c^17) * (-1 + 37 * s^2));
-%     LegArrEx[19, 18] = 8200794532637891559375.0 * s * Math.Pow(c * c, 9);
-%     LegArrEx[19, 19] = 8200794532637891559375.0 * c^19);
-% 
-%     LegArrEx[20, 0] = (1.0 / 262144) * (46189 - 9699690 * s^2) + 334639305 * s^4) - 4461857400 * s^6) + 30117537450 * s^8) - 116454478140 * s^10) + 273491577450 * s^12) - 396713057400 * s^14) + 347123925225 * s^16) - 167890003050 * s^18) + 34461632205 * s^20));
-%     LegArrEx[20, 1] = ((105.0 * c * (-46189 * s + 3187041 * s^3) - 63740820 * s^5) + 573667380 * s^7) - 2772725670 * s^9) + 7814045070 * s^11) - 13223768580 * s^13) + 13223768580 * s^15) - 7195285845 * s^17) + 1641030105 * s^19)) / 65536));
-%     LegArrEx[20, 2] = ((21945.0 * c * c * (-221 + 45747 * s^2) - 1524900 * s^4) + 19213740 * s^6) - 119399670 * s^8) + 411265530 * s^10) - 822531060 * s^12) + 949074300 * s^14) - 585262485 * s^16) + 149184555 * s^18)) / 65536));
-%     LegArrEx[20, 3] = ((1514205.0 * c^3) * (663 * s - 44200 * s^3) + 835380 * s^5) - 6921720 * s^7) + 29801850 * s^9) - 71524440 * s^11) + 96282900 * s^13) - 67856520 * s^15) + 19458855 * s^17)) / 32768));
-%     LegArrEx[20, 4] = (77224455.0 * Math.Pow(c * c, 2) * (13 - 2600 * s^2) + 81900 * s^4) - 950040 * s^6) + 5259150 * s^8) - 15426840 * s^10) + 24542700 * s^12) - 19957800 * s^14) + 6486285 * s^16)) / 32768);
-%     LegArrEx[20, 5] = ((386122275.0 * c^5) * (-65 * s + 4095 * s^3) - 71253 * s^5) + 525915 * s^7) - 1928355 * s^9) + 3681405 * s^11) - 3492615 * s^13) + 1297257 * s^15)) / 2048));
-%     LegArrEx[20, 6] = ((25097947875.0 * Math.Pow(c * c, 3) * (-1 + 189 * s^2) - 5481 * s^4) + 56637 * s^6) - 267003 * s^8) + 623007 * s^10) - 698523 * s^12) + 299367 * s^14)) / 2048));
-%     LegArrEx[20, 7] = ((225881530875.0 * c^7) * (21 * s - 1218 * s^3) + 18879 * s^5) - 118668 * s^7) + 346115 * s^9) - 465682 * s^11) + 232841 * s^13)) / 1024));
-%     LegArrEx[20, 8] = (1581170716125.0 * Math.Pow(c * c, 4) * (3 - 522 * s^2) + 13485 * s^4) - 118668 * s^6) + 445005 * s^8) - 731786 * s^10) + 432419 * s^12)) / 1024);
-%     LegArrEx[20, 9] = (45853950767625.0 / 256) * c^9) * (-9 * s + 465 * s^3) - 6138 * s^5) + 30690 * s^7) - 63085 * s^9) + 44733 * s^11));
-%     LegArrEx[20, 10] = (137561852302875.0 / 256) * Math.Pow(c * c, 5) * (-3 + 465 * s^2) - 10230 * s^4) + 71610 * s^6) - 189255 * s^8) + 164021 * s^10));
-%     LegArrEx[20, 11] = (21322087106945625.0 / 128) * c^11) * (3 * s - 132 * s^3) + 1386 * s^5) - 4884 * s^7) + 5291 * s^9));
-%     LegArrEx[20, 12] = 63966261320836875.0 / 128 * Math.Pow(c * c, 6) * (1 - 132 * s^2) + 2310 * s^4) - 11396 * s^6) + 15873 * s^8));
-%     LegArrEx[20, 13] = (2110886623587616875.0 / 16) * c^13) * (-s + 35 * s^3) - 259 * s^5) + 481 * s^7));
-%     LegArrEx[20, 14] = (2110886623587616875.0 / 16) * Math.Pow(c * c, 7) * (-1 + 105 * s^2) - 1295 * s^4) + 3367 * s^6));
-%     LegArrEx[20, 15] = (14776206365113318125.0 / 8) * c^15) * (15 * s - 370 * s^3) + 1443 * s^5));
-%     LegArrEx[20, 16] = 221643095476699771875.0 / 8 * Math.Pow(c * c, 8) * (1 - 74 * s^2) + 481 * s^4));
-%     LegArrEx[20, 17] = (8200794532637891559375.0 / 2) * c^17) * (-s + 13 * s^3));
-%     LegArrEx[20, 18] = (8200794532637891559375.0 / 2) * Math.Pow(c * c, 9) * (-1 + 39 * s^2));
-%     LegArrEx[20, 19] = 319830986772877770815625.0 * s * c^19);
-%     LegArrEx[20, 20] = 319830986772877770815625.0 * Math.Pow(c * c, 10);
-% 
-%     LegArrEx[21, 0] = (1.0 / 262144) * (969969 * s - 74364290 * s^3) + 1673196525 * s^5) - 17210021400 * s^7) + 97045398450 * s^9) - 328189892940 * s^11) + 694247850450 * s^13) - 925663800600 * s^15) + 755505013725 * s^17) - 344616322050 * s^19) + 67282234305 * s^21));
-%     LegArrEx[21, 1] = (1.0 / 262144) * 231 * c * (4199 - 965770 * s^2) + 36216375 * s^4) - 521515800 * s^6) + 3780989550 * s^8) - 15628090140 * s^10) + 39070225350 * s^12) - 60108039000 * s^14) + 55599936075 * s^16) - 28345065450 * s^18) + 6116566755 * s^20));
-%     LegArrEx[21, 2] = ((26565.0 * c * c * (-4199 * s + 314925 * s^3) - 6802380 * s^5) + 65756340 * s^7) - 339741090 * s^9) + 1019223270 * s^11) - 1829375100 * s^13) + 1933910820 * s^15) - 1109154735 * s^17) + 265937685 * s^19)) / 65536));
-%     LegArrEx[21, 3] = ((504735.0 * c^3) * (-221 + 49725 * s^2) - 1790100 * s^4) + 24226020 * s^6) - 160929990 * s^8) + 590076630 * s^10) - 1251677700 * s^12) + 1526771700 * s^14) - 992401605 * s^16) + 265937685 * s^18)) / 65536));
-%     LegArrEx[21, 4] = (22713075.0 * Math.Pow(c * c, 2) * (1105 * s - 79560 * s^3) + 1615068 * s^5) - 14304888 * s^7) + 65564070 * s^9) - 166890360 * s^11) + 237497820 * s^13) - 176426952 * s^15) + 53187537 * s^17)) / 32768);
-%     LegArrEx[21, 5] = ((5019589575.0 * c^5) * (5 - 1080 * s^2) + 36540 * s^4) - 453096 * s^6) + 2670030 * s^8) - 8306760 * s^10) + 13970460 * s^12) - 11974680 * s^14) + 4091349 * s^16)) / 32768));
-%     LegArrEx[21, 6] = ((15058768725.0 * Math.Pow(c * c, 3) * (-45 * s + 3045 * s^3) - 56637 * s^5) + 445005 * s^7) - 1730575 * s^9) + 3492615 * s^11) - 3492615 * s^13) + 1363783 * s^15)) / 2048));
-%     LegArrEx[21, 7] = ((225881530875.0 * c^7) * (-3 + 609 * s^2) - 18879 * s^4) + 207669 * s^6) - 1038345 * s^8) + 2561251 * s^10) - 3026933 * s^12) + 1363783 * s^14)) / 2048));
-%     LegArrEx[21, 8] = (45853950767625.0 * Math.Pow(c * c, 4) * (3 * s - 186 * s^3) + 3069 * s^5) - 20460 * s^7) + 63085 * s^9) - 89466 * s^11) + 47027 * s^13)) / 1024);
-%     LegArrEx[21, 9] = ((45853950767625.0 * c^9) * (3 - 558 * s^2) + 15345 * s^4) - 143220 * s^6) + 567765 * s^8) - 984126 * s^10) + 611351 * s^12)) / 1024));
-%     LegArrEx[21, 10] = (4264417421389125.0 / 256) * Math.Pow(c * c, 5) * (-3 * s + 165 * s^3) - 2310 * s^5) + 12210 * s^7) - 26455 * s^9) + 19721 * s^11));
-%     LegArrEx[21, 11] = (4264417421389125.0 / 256) * c^11) * (-3 + 495 * s^2) - 11550 * s^4) + 85470 * s^6) - 238095 * s^8) + 216931 * s^10));
-%     LegArrEx[21, 12] = 234542958176401875.0 / 128 * Math.Pow(c * c, 6) * (9 * s - 420 * s^3) + 4662 * s^5) - 17316 * s^7) + 19721 * s^9));
-%     LegArrEx[21, 13] = (2110886623587616875.0 / 128) * c^13) * (1 - 140 * s^2) + 2590 * s^4) - 13468 * s^6) + 19721 * s^8));
-%     LegArrEx[21, 14] = (2110886623587616875.0 / 16) * Math.Pow(c * c, 7) * (-35 * s + 1295 * s^3) - 10101 * s^5) + 19721 * s^7));
-%     LegArrEx[21, 15] = (14776206365113318125.0 / 16) * c^15) * (-5 + 555 * s^2) - 7215 * s^4) + 19721 * s^6));
-%     LegArrEx[21, 16] = 1640158906527578311875.0 / 8 * Math.Pow(c * c, 8) * (5 * s - 130 * s^3) + 533 * s^5));
-%     LegArrEx[21, 17] = (8200794532637891559375.0 / 8) * c^17) * (1 - 78 * s^2) + 533 * s^4));
-%     LegArrEx[21, 18] = (106610328924292590271875.0 / 2) * Math.Pow(c * c, 9) * (-3 * s + 41 * s^3));
-%     LegArrEx[21, 19] = (319830986772877770815625.0 / 2) * c^19) * (-1 + 41 * s^2));
-%     LegArrEx[21, 20] = 13113070457687988603440625.0 * s * Math.Pow(c * c, 10);
-%     LegArrEx[21, 21] = 13113070457687988603440625.0 * c^21);
-% 
-% end % LegPolyEx
-
-
-% ----------------------------------------------------------------------------
-% fukushima method (JG 2018)
-%   for very large spherical harmonic expansrions and calcs of unitalized associated
-%   Legendre polynomials
-%
-%   Plm are converted to X-numbers
-%   Clm, Slm treated as F-numbers
-% -----------------------------------------------------------------------------
-
-% initialize legendre function values
-% function [p] = pinit(n, m)
-%     if (n == 0)
-%         p(1) = 1.0;
-%     else if (n == 1)
-%             p(1) = 1.7320508075688773;
-%     else if (n == 2)
-%             if (m == 0)
-%                 p(1) = 0.5590169943749474;
-%                 p(2) = 1.6770509831248423;
-%             end
-%     else if (m == 1)
-%             p(1) = 0.0;
-%             p(2) = 1.9364916731037084;
-%     end
-%     else if (m == 2)
-%             p(1) = 0.9682458365518542;
-%             p(2) = -0.9682458365518542;
-%     end
-%     else if (n == 3)
-%             if (m == 0)
-%                 p(1) = 0.9921567416492215;
-%                 p(2) = 1.6535945694153691;
-%             end
-%     else if (m == 1)
-%             p(1) = 0.4050462936504913;
-%             p(2) = 2.0252314682524563;
-%     end
-%     else if (m == 2)
-%             p(1) = 1.2808688457449498;
-%             p(2) = -1.2808688457449498;
-%     end
-%     else if (m == 3)
-%             p(1) = 1.5687375497513917;
-%             p(2) = -0.5229125165837972;
-%     end
-%     else if (n == 4)
-%             if (m == 0)
-%                 p(1) = 0.421875;
-%                 p(2) = 0.9375;
-%                 p(3) = 1.640625;
-%             end
-%     else if (m == 1)
-%             p(1) = 0.0;
-%             p(2) = 0.5929270612815711;
-%             p(3) = 2.0752447144854989;
-%     end
-%     else if (m == 2)
-%             p(1) = 0.6288941186718159;
-%             p(2) = 0.8385254915624211;
-%             p(3) = -1.4674196102342370;
-%     end
-%     else if (m == 3)
-%             p(1) = 0.0;
-%             p(2) = 1.5687375497513917;
-%             p(3) = -0.7843687748756958;
-%     end
-%     else if (m == 4)
-% 
-%             p(1) = 0.8319487194983835;
-%             p(2) = -1.1092649593311780;
-%             p(3) = 0.2773162398327945;
-%     end
-%     end
-%     end
-%     end  % pinit
-
-
-    % /* ----------------------------------------------------------------------------
-    % *      x2f
-    % *
-    % *      convert x to f number
-    % *
-    % ------------------------------------------------------------------------------*/
-    % function x2f(x, ix)
-    % 
-    %     IND = 960;
-    %     BIG = Math.Pow(2.0, IND);
-    %     BIGI = Math.Pow(2.0, -IND);
-    % 
-    %     if (ix == 0)
-    %         x2fv = x;
-    %     else if (ix == -1)
-    %             x2fv = x * BIGI;
-    %     else if (ix == 1)
-    %             x2fv = x * BIG;
-    %     else if (ix < 0)
-    %             x2fv = 0.0;
-    %     else if (x < 0)
-    %             x2fv = -BIG;
-    %     else
-    %         x2fv = BIG;
-    % 
-    %         return x2fv;
-    %     end
-    %     end
-    %     end
-    %     end
-    %     end
-    % end
-    % 
-
-
-    % /* ----------------------------------------------------------------------------
-    % *                                  xunit
-    % *
-    % * uses the 'x' factor approach - value and exponent
-    % *
-    % ------------------------------------------------------------------------------*/
-    % 
-    % function xunit ( x, ix )
-    %     IND = 960;
-    % 
-    %      BIG = Math.Pow(2, IND);
-    %      BIGI = Math.Pow(2, -IND);
-    %      BIGS = Math.Pow(2.0, 480);  % IND / 2
-    %      BIGSI = Math.Pow(2.0, -480);  % IND / 2
-    % 
-    %     w = abs(x);
-    %     if (w >= BIGS)
-    % 
-    %         x = x * BIGI;
-    %         ix = ix + 1;
-    %     end
-    % else if (w < BIGSI)
-    % 
-    %         x = x * BIG;
-    %         ix = ix - 1;
-    % end
-    % end  % xunit
-
-
-    % /* ----------------------------------------------------------------------------
-    % *                                       xl2sum
-    % *
-    % * routine to compute the two-term linear sum of X-numbers
-    % * with F-number coefficients
-    % *
-    % ---------------------------------------------------------------------------- */
-    % [z, iz] = function xlsum2(f, g, x, y, ix, iy)
-    %     IND = 960;
-    %     BIGI = Math.Pow(2, -IND);
-    % 
-    %     id = ix - iy;
-    %     if (id == 0)
-    % 
-    %         z = f * x + g * y;
-    %         iz = ix;
-    %     end
-    % else if (id == 1)
-    % 
-    %         z = f * x + g * (y * BIGI);
-    %         iz = ix;
-    % end
-    % else if (id == -1)
-    % 
-    %         z = g * y + f * (x * BIGI);
-    %         iz = iy;
-    % end
-    % else if (id > 1)
-    % 
-    %         z = f * x;
-    %         iz = ix;
-    % end
-    % else
-    % 
-    %     z = g * y;
-    %     iz = iy;
-    % end
-    % 
-    % xunit(ref z, ref iz);
-    % end  % xlsum2
-
-
-    % /* ----------------------------------------------------------------------------
-    % *                                  dpeven
-    % *
-    % * find Pnnj and Pn,n-1,j when degree n is even and n >= 6. the returned values are
-    % * (xp(j), ip(j)) and (xp1(j), ip1(j)),  X-number vectors representing
-    % * Pnnj and Pn,n-1,j, respectively. required initial values for Pn-2,n-2,j as
-    % * (xpold(j), ipold(j)) are needed.
-    % *
-    % *  inputs          description                                  range / units
-    % *    n           - degree
-    % *
-    % *
-    % *
-    % *  outputs       :
-    % *    xp1         - value
-    % *    ip1         - exponent
-    % *
-    % *  locals        :
-    % *                -
-    % *
-    % *  coupling      :
-    % *    xunit
-    % *    xlsum2
-    % *
-    % *  references    :
-    % * Fukushima (2012a)
-    % ---------------------------------------------------------------------------- */
-    % 
-    %     [xp, xp1, ip, ip1] = function dpeven(n, xpold, ipold)
-    % 
-    %         jx = n / 2;
-    %         jxm2 = jx - 2;
-    %         jxm1 = jx - 1;
-    %         n2 = n * 2;
-    %         gamma = sqrt(str2num(n2 + 1) * str2num(n2 - 1) / (str2num(n) * str2num(n - 1))) * 0.125;
-    %         gamma2 = gamma * 2.0;
-    %         xlsum2(gamma2, xpold(1), -gamma, xpold(2), out xp(1), ipold(1), ipold(2), out ip(1));
-    %         xlsum2(-gamma2, xpold(1), gamma2, xpold(2), out xtemp, ipold(1), ipold(2), out itemp);
-    %         xlsum2(1.0, xtemp, -gamma, xpold(3), out xp(2), itemp, ipold(3), out ip(2));
-    %         j = 2;
-    %         while (j <= jxm2)
-    % 
-    %             jm1 = j - 1;
-    %             jp1 = j + 1;
-    %             xlsum2(-gamma, xpold[jm1], gamma2, xpold(j), out xtemp, ipold[jm1], ipold(j), out itemp);
-    %             xlsum2(1.0, xtemp, -gamma, xpold[jp1], out xp(j), itemp, ipold[jp1], out ip(j));
-    %             j = j + 1;
-    %         end
-    %         xlsum2(-gamma, xpold[jxm2], gamma2, xpold[jxm1], out xp[jxm1], ipold[jxm2], ipold[jxm1], out ip[jxm1]);
-    %         xp[jx] = -gamma * xpold[jxm1];
-    %         ip[jx] = ipold[jxm1];
-    %         xunit(ref xp[jx], ref ip[jx]);
-    %         alpha2 = sqrt(2.0 / str2num(n)) * 2.0;
-    %         xp1(1) = 0.0;
-    %         ip1(1) = 0;
-    %         j = 1;
-    %         while (j <= jx)
-    % 
-    %             xp1(j) = -str2num(j) * alpha2 * xp(j);
-    %             ip1(j) = ip(j);
-    %             xunit(ref xp1(j), ref ip1(j));
-    %             j = j + 1;
-    %         end
-    %     end   % dpeven
-    % 
-    % 
-    %     % ----------------------------------------------------------------------------
-    %     %                                 dpodd
-    %    %
-    %        %  routine to return Pnnj and Pn,n-1,j when n is odd and n >= 5. Same as Table 4
-    %        %  but when n is odd and n >= 5.
-    %        %---------------------------------------------------------------------------- */
-    %        function dpodd
-    %            (
-    %            Int32 n,
-    %            xpold,
-    %            out xp,
-    %            out xp1,
-    %            Int32[] ipold,
-    %            out Int32[] ip,
-    %            out Int32[] ip1
-    %            )
-    % 
-    %            xpold = new [360];
-    %            xp = new [360];
-    %            xp1 = new [360];
-    %            ipold = new Int32[360];
-    %            ip = new Int32[360];
-    %            ip1 = new Int32[360];
-    % 
-    %            Int32 jx, jxm2, jxm1, n2, j, itemp, jm1, jp1;
-    %             gamma, gamma2, xtemp, alpha;
-    % 
-    %            jx = (n - 1) / 2;
-    %            jxm2 = jx - 2;
-    %            jxm1 = jx - 1;
-    %            n2 = n * 2;
-    %            gamma = sqrt(str2num(n2 + 1) * str2num(n2 - 1) / (str2num(n) * str2num(n - 1))) * 0.125;
-    %            gamma2 = gamma * 2.0;
-    %            xlsum2(gamma * 3.0, xpold(1), -gamma, xpold(2), out xp(1), ipold(1), ipold(2), out ip(1));
-    %            j = 1;
-    %            while (j <= jxm2)
-    % 
-    %                jm1 = j - 1;
-    %                jp1 = j + 1;
-    %                xlsum2(-gamma, xpold[jm1], gamma2, xpold(j), out xtemp, ipold[jm1], ipold(j), out itemp);
-    %                xlsum2(1.0, xtemp, -gamma, xpold[jp1], out xp(j), itemp, ipold[jp1], out ip(j));
-    %                j = j + 1;
-    %            end
-    %            xlsum2(-gamma, xpold[jxm2], gamma2, xpold[jxm1], out xp[jxm1], ipold[jxm2], ipold[jxm1], out ip[jxm1]);
-    %            xp[jx] = -gamma * xpold[jxm1];
-    %            ip[jx] = ipold[jxm1];
-    %            xunit(ref xp[jx], ref ip[jx]);
-    %            alpha = sqrt(2.0 / str2num(n));
-    %            j = 0;
-    %            while (j <= jx)
-    % 
-    %                xp1(j) = str2num(2 * j + 1) * alpha * xp(j);
-    %                ip1(j) = ip(j);
-    %                xunit(ref xp1(j), ref ip1(j));
-    %                j = j + 1;
-    %            end
-    %        end   % dpodd
-    % 
-    % 
-    %        % ----------------------------------------------------------------------------
-    %        %                             gpeven
-    %        %
-    %        % routine to return Pnmj when n is even. The returned values are (xp0(j), ip0(j)),
-    %        % a  X-number vector representing Pnmj. We assume that Pn,m+1,j and Pn,m+2,j are
-    %        % externally provided as (xp1(j), ip1(j)) and (xp2(j), ip2(j)), respectively.
-    %        % The routine internally calls xunit and xlsum2 provided in Tables 7 and 8 of
-    %        % Fukushima (2012a).
-    %        % ---------------------------------------------------------------------------- */
-    % 
-    %        function gpeven
-    %            (
-    %            Int32 jmax,
-    %            Int32 n,
-    %            Int32 m,
-    %            xp2,
-    %            xp1,
-    %            out xp0,
-    %            Int32[] ip2,
-    %            Int32[] ip1,
-    %            out Int32[] ip0
-    %            )
-    % 
-    %            xp2 = new [360];
-    %            xp1 = new [360];
-    %            xp0 = new [360];
-    %            ip2 = new Int32[360];
-    %            ip1 = new Int32[360];
-    %            ip0 = new Int32[360];
-    % 
-    %            Int32 j, m1, m2, modd;
-    %             u, alpha2, beta;
-    % 
-    %            m1 = m + 1;
-    %            m2 = m + 2;
-    %            modd = m - str2num(m * 0.5) * 2;
-    %            if (m == 0)
-    %                u = sqrt(0.5 / (str2num(n) * str2num(n + 1)));
-    %            else
-    %                u = sqrt(1.0 / (str2num(n - m) * str2num(n + m1)));
-    % 
-    %                alpha2 = 4.0 * u;
-    %                beta = sqrt(str2num(n - m1) * str2num(n + m2)) * u;
-    %                xp0(1) = beta * xp2(1);
-    %                ip0(1) = ip2(1);
-    %                xunit(ref xp0(1), ref ip0(1));
-    %                if (modd == 0)
-    % 
-    %                    j = 1;
-    %                    while (j <= jmax)
-    % 
-    %                        xlsum2(str2num(j) * alpha2, xp1(j), beta, xp2(j), out xp0(j), ip1(j), ip2(j), out ip0(j));
-    %                        j = j + 1;
-    %                    end
-    %                end
-    %            else
-    % 
-    %                j = 1;
-    %                while (j <= jmax)
-    % 
-    %                    xlsum2(-str2num(j) * alpha2, xp1(j), beta, xp2(j), out xp0(j), ip1(j), ip2(j), out ip0(j));
-    %                    j = j + 1;
-    %                end
-    %            end
-    %        end  % gpeven
-    % 
-    % 
-    %        % ----------------------------------------------------------------------------
-    %        %                                 gpodd
-    %        %
-    %        % Table 7: Fortran routine to return Pnmj when n is odd. Same as
-    %        % Table 6 but when n is odd.
-    %        % --------------------------------------------------------------------------- */
-    %        function gpodd
-    %            (
-    %            Int32 jmax,
-    %            Int32 n,
-    %            Int32 m,
-    %            xp2,
-    %            xp1,
-    %            out xp0,
-    %            Int32[] ip2,
-    %            Int32[] ip1,
-    %            out Int32[] ip0
-    %            )
-    % 
-    %            xp2 = new [360];
-    %            xp1 = new [360];
-    %            xp0 = new [360];
-    %            ip2 = new Int32[360];
-    %            ip1 = new Int32[360];
-    %            ip0 = new Int32[360];
-    % 
-    %            Int32 j, m1, m2, modd;
-    %             u, alpha, beta;
-    % 
-    %            m1 = m + 1;
-    %            m2 = m + 2;
-    %            modd = m - str2num(m * 0.5) * 2;
-    %            if (m == 0)
-    %                u = sqrt(0.50 / (str2num(n) * str2num(n + 1)));
-    %            else
-    %                u = sqrt(1.0 / (str2num(n - m) * str2num(n + m1)));
-    % 
-    %                alpha = 2.0 * u;
-    %                beta = sqrt(str2num(n - m1) * str2num(n + m2)) * u;
-    %                if (modd == 0)
-    % 
-    %                    j = 0;
-    %                    while (j <= jmax)
-    % 
-    %                        xlsum2(str2num(2 * j + 1) * alpha, xp1(j), beta, xp2(j), out xp0(j), ip1(j), ip2(j), out ip0(j));
-    %                        j = j + 1;
-    %                    end
-    %                end
-    %            else
-    % 
-    %                j = 0;
-    %                while (j <= jmax)
-    % 
-    %                    xlsum2(-str2num(2 * j + 1) * alpha, xp1(j), beta, xp2(j), out xp0(j), ip1(j), ip2(j), out ip0(j));
-    %                    j = j + 1;
-    %                end
-    %            end
-    %        end  % gpodd
-
-
-
-% Fukushima combined approach to find matrix of unitalized Legendre polynomials
-%
-%
-
-% function [ALFArr] = LegPolyFF(recef, latgc, order, unitalized, unitArr)
-%     constastro;
-% 
-%     magr = mag(recef);
-% 
-%     % initial values
-%     ALFArr(1, 1) = 1.0;
-%     ALFArr(1, 2) = 0.0;
-%     ALFArr(2, 1) = sin(latgc);
-%     ALFArr(2, 2) = cos(latgc);
-%     m = 2;
-%     L = m + 1;
-%     x = ALFArr(2, 1);
-%     y = ALFArr(2, 2);
-% 
-%     % find zonal terms
-%     for (L = 2; L <= order + 1; L++)
-% 
-%         % find tesseral and sectoral terms
-%         %               for (m = 0; m <= order + 1; m++)
-% 
-%         f = unitArr[L, m, 0] * sin(latgc);
-%         g = -unitArr[L, m, 1];
-%         z = f * x + g * y;
-%         ALFArr[L, m] = z;
-%         y = x;
-%         x = z;
-%     end
-% 
-% end  % LegPolyFF
-
-
-
-           % /* ----------------------------------------------------------------------------
-           % *                                   xfsh2f
-           % *
-           % *  transrfrom the Cnm, Snm, the 4 fully unitalized spherical harmonic coefficients
-           % *  of a given function depend on the spherical surface, to (Akm, Bkm), the
-           % *  corresponding Fourier series coefficients of the function. in the program,
-           % *  (i) x2f and xunit are the Fortran function/routine to handle X-numbers
-           % *      (Fukushima, 2012a, tables 6 and 7), and
-           % *  (ii) pinit, dpeven, dpodd, gpeven, and gpodd are the Fortran routines listed
-           % *  in Tables 3–7, respectively.
-           % *
-           % *
-           % *
-           % *    Fukushima 2018 table xx
-           % ---------------------------------------------------------------------------- */
-           % 
-           % function xfsh2f
-           %     (
-           %     Int32 nmax,
-           %     AstroLib.gravityConst gravData,
-           %     out [,] a,
-           %     out [,] b
-           %     )
-           % 
-           %     Int32 NX = 100;  % 2200;
-           %     Int32 j, m, k, L, jmax, n1;
-           %     a = new [NX, NX];
-           %     b = new [NX, NX];
-           %     %     [,] pja = new [NX, NX];  % test to see the values
-           %     jmax = 0;
-           % 
-           % 
-           %     % initialize all to 0
-           %     for (m = 0; m <= nmax; m++)
-           % 
-           %         for (k = 0; k <= nmax; k++)
-           % 
-           %             a[k, m] = 0.0;
-           %             b[k, m] = 0.0;
-           %         end
-           %     end
-           % 
-           %     % initialize the first 4x4 values
-           %     for (L = 0; L <= 4; L += 2)
-           % 
-           %         jmax = str2num(L * 0.5);
-           % 
-           %         for (m = 0; m <= L; m++)
-           % 
-           %             pinit(L, m, ref xp);
-           % 
-           %             for (j = 0; j <= jmax; j++)
-           % 
-           %                 k = 2 * j;
-           %                 a[k, m] = a[k, m] + xp(j) * gravData.c[L, m];
-           %                 b[k, m] = b[k, m] + xp(j) * gravData.s[L, m];
-           %             end
-           %         end
-           %     end
-           % 
-           %     % even terms
-           %     for (j = 0; j <= jmax; j++)
-           % 
-           %         ip(j) = 0;
-           %     end
-           % 
-           %     for (L = 6; L <= nmax; L += 2)
-           % 
-           % 
-           %         for (j = 0; j <= jmax; j++)
-           % 
-           %             xpold(j) = xp(j);
-           %             ipold(j) = ip(j);
-           %         end
-           %         jmax = str2num(L * 0.5);
-           %         n1 = L - 1;
-           %         dpeven(L, xpold, out xp, out xp1, ipold, out ip, out ip1);
-           % 
-           %         for (j = 0; j <= jmax; j++)
-           % 
-           %             k = 2 * j;
-           %             pj = x2f(xp(j), ip(j));
-           %             %       pja[k, n1] = pj;
-           %             a[k, L] = a[k, L] + pj * gravData.c[L, L];
-           %             b[k, L] = b[k, L] + pj * gravData.s[L, L];
-           %             pj = x2f(xp1(j), ip1(j));
-           %             a[k, n1] = a[k, n1] + pj * gravData.c[L, n1];
-           %             b[k, n1] = b[k, n1] + pj * gravData.s[L, n1];
-           %             xp2(j) = xp(j);
-           %             ip2(j) = ip(j);
-           %         end
-           % 
-           %         for (m = L - 2; m >= 0; m -= 1)
-           % 
-           %             gpeven(jmax, L, m, xp2, xp1, out xp0, ip2, ip1, out ip0);
-           % 
-           %             for (j = 0; j <= jmax; j++)
-           % 
-           %                 k = 2 * j;
-           %                 pj = x2f(xp0(j), ip0(j));
-           %                 %         pja[k, m] = pj;
-           %                 a[k, m] = a[k, m] + pj * gravData.c[L, m];
-           %                 b[k, m] = b[k, m] + pj * gravData.s[L, m];
-           %                 xp2(j) = xp1(j);
-           %                 ip2(j) = ip1(j);
-           %                 xp1(j) = xp0(j);
-           %                 ip1(j) = ip0(j);
-           %             end
-           %         end
-           %     end
-           % 
-           %     for (L = 1; L <= 3; L += 2)
-           % 
-           %         jmax = str2num((L - 1) * 0.5);
-           % 
-           %         for (m = 0; m <= L; m++)
-           % 
-           %             pinit(L, m, ref xp);
-           % 
-           %             for (j = 0; j <= jmax; j++)
-           % 
-           %                 k = 2 * j + 1;
-           %                 a[k, m] = a[k, m] + xp(j) * gravData.c[L, m];
-           %                 b[k, m] = b[k, m] + xp(j) * gravData.s[L, m];
-           %             end
-           %         end
-           %     end
-           % 
-           %     % odd terms
-           %     for (j = 0; j <= jmax; j++)
-           % 
-           %         ip(j) = 0;
-           %     end
-           % 
-           %     for (L = 5; L <= nmax; L += 2)
-           % 
-           % 
-           %         for (j = 0; j <= jmax; j++)
-           % 
-           %             xpold(j) = xp(j);
-           %             ipold(j) = ip(j);
-           %         end
-           %         jmax = str2num((L - 1) * 0.5);
-           %         n1 = L - 1;
-           %         dpodd(L, xpold, out xp, out xp1, ipold, out ip, out ip1);
-           % 
-           %         for (j = 0; j <= jmax; j++)
-           % 
-           %             k = 2 * j + 1;
-           %             pj = x2f(xp(j), ip(j));
-           %             a[k, L] = a[k, L] + pj * gravData.c[L, L];
-           %             b[k, L] = b[k, L] + pj * gravData.s[L, L];
-           %             %   pja[k, n] = pj;
-           %             pj = x2f(xp1(j), ip1(j));
-           %             a[k, n1] = a[k, n1] + pj * gravData.c[L, n1];
-           %             b[k, n1] = b[k, n1] + pj * gravData.s[L, n1];
-           %             xp2(j) = xp(j);
-           %             ip2(j) = ip(j);
-           %         end
-           % 
-           %         for (m = L - 2; m >= 0; m -= 1)
-           % 
-           %             gpodd(jmax, L, m, xp2, xp1, out xp0, ip2, ip1, out ip0);
-           % 
-           %             for (j = 0; j <= jmax; j++)
-           % 
-           %                 k = 2 * j + 1;
-           %                 pj = x2f(xp0(j), ip0(j));
-           %                 %     pja[k, m] = pj;
-           %                 a[k, m] = a[k, m] + pj * gravData.c[L, m];
-           %                 b[k, m] = b[k, m] + pj * gravData.s[L, m];
-           %                 xp2(j) = xp1(j);
-           %                 ip2(j) = ip1(j);
-           %                 xp1(j) = xp0(j);
-           %                 ip1(j) = ip0(j);
-           %             end
-           %         end
-           %     end
-           % end  % xfsh2f
-           % 
-           % % from 2017 fukishima paper, ALFs
-           % %        j n = 2j Pn(1=2) d Pn(1=2)
-           % %1 2 􀀀2.7950849718747371205114670859140954E􀀀01 +4.46E􀀀16
-           % %2 4 􀀀8.6718750000000000000000000000000019E􀀀01 +1.28E􀀀16
-           % %3 8 􀀀3.0362102888840987874508856147660683E􀀀01 +4.89E􀀀16
-           % %4 16 􀀀8.6085221363787000197086857609730105E􀀀01 􀀀2.47E􀀀16
-           % %5 32 􀀀3.1119962497760147366174972709413071E􀀀01 􀀀1.14E􀀀15
-           % %6 64 􀀀8.5832418550243444685033693028444350E􀀀01 􀀀1.97E􀀀16
-           % %7 128 􀀀3.1316449107909472026965626279232704E􀀀01 􀀀2.13E􀀀15
-           % %8 256 􀀀8.5762286823362136598509949562358587E􀀀01 +4.73E􀀀16
-           % %9 512 􀀀3.1365884210353617421696699741828314E􀀀01 +1.94E􀀀15
-           % %10 1024 􀀀8.5744308441362078316451963835453876E􀀀01 􀀀1.12E􀀀15
-           % %11 2048 􀀀3.1378260213136415436393598399168296E􀀀01 +1.01E􀀀14
 
 
            % % GMAT Pines approach
@@ -6728,433 +5772,6 @@ end
 % fprintf(fida,'total aeci ' + aeci(1), aeci(2), aeci(3));
 % 
 
-
-
-% % ------------------------------------------- timing comparisons
-% fprintf(fida,'\n ===================================== Timing Comparisons =====================================');
-% % timing of routines
-% var watch = System.Diagnostics.Stopwatch.StartNew(fid);
-% 
-% for (i = 0; i < 500; i++)
-% 
-% straccum = '';
-% order = 50;
-% % unitalized calcs, show
-% FullGeopM(recef, order, 'y', convArr, gravData, out aPertM, 'n', out straccum);
-% end
-% %  stop timer
-% watch.Stop(fid);
-% var elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(fida,'Done with Montenbruck calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
-% 
-% watch = System.Diagnostics.Stopwatch.StartNew(fid);
-% for (i = 0; i < 500; i++)
-% 
-% straccum = '';
-% order = 50;
-% % unitalized calcs, show
-% FullGeopG(recef, order, 'y', convArr, unitArr, gravData, out aPertG, 'n', out straccum);
-% end
-% %  stop timer
-% watch.Stop(fid);
-% elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(fida,'Done with GTDS calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
-% 
-% 
-% watch = System.Diagnostics.Stopwatch.StartNew(fid);
-% for (i = 0; i < 500; i++)
-% 
-% straccum = '';
-% order = 100;
-% % unitalized calcs, show
-% % GTDS version
-% LegPolyG(latgc, order, 'y', convArr, unitArr, out LegArrGU, out LegArrGN);
-% end
-% %  stop timer
-% watch.Stop(fid);
-% elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(fida,'Done with GTDS ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
-% 
-% 
-% watch = System.Diagnostics.Stopwatch.StartNew(fid);
-% for (i = 0; i < 500; i++)
-% 
-% straccum = '';
-% order = 100;
-% % unitalized calcs, show
-% % Gottlieb version
-% LegPolyGot(latgc, order, 'y', convArr, unitArr, out LegArrGotU, out LegArrGotN);
-% end
-% %  stop timer
-% watch.Stop(fid);
-% elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(fida,'Done with Gott ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
-% 
-% watch = System.Diagnostics.Stopwatch.StartNew(fid);
-% for (i = 0; i < 500; i++)
-% 
-% straccum = '';
-% order = 100;
-% % unitalized calcs, show
-% % Montenbruck version
-% LegPolyM(latgc, order, 'y', convArr, out LegArrMU, out LegArrMN);
-% end
-% %  stop timer
-% watch.Stop(fid);
-% elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(fida,'Done with Mont ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
-% 
-% 
-% watch = System.Diagnostics.Stopwatch.StartNew(fid);
-% for (i = 0; i < 500; i++)
-% 
-% straccum = '';
-% order = 100;
-% % unitalized calcs, show
-% % Fukushima version
-% LegPolyF(latgc, order, 'y', unitArr, out LegArrF);
-% end
-% %  stop timer
-% watch.Stop(fid);
-% elapsedMs = watch.ElapsedMilliseconds;
-% fprintf(fida,'Done with Fukushima ALF calcs ' + (watch.ElapsedMilliseconds * 0.001), ' second  ');
-% 
-
-
-% ------------------------------------------- pole test case comparisons
-% fprintf(fida,'\n ===================================== Pole Test Comparisons =====================================');
-% 
-% rad = 180.0 / pi;
-% for i = 0:500
-% 
-% lon = 154.0 / rad;
-% latgc = (89.9 + (i / 1000.0)) / rad;
-%  magr = 7378.382745;
-% 
-% recef(1) = (magr * cos(latgc) * cos(lon));
-% recef(2) = (magr * cos(latgc) * sin(lon));
-% recef(3) = (magr * sin(latgc));
-% 
-% straccum = '';
-% order = 50;
-% % unitalized calcs, show
-% [straccum] = FullGeopG(recef, order, 'y', convArr, unitArr, gravData, out aPertG, 'n');
-% 
-% fprintf(fida,'test pole ' + (latgc * rad), (lon * rad), aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
-% end
-
-
-% available files:
-% GEM10Bununit36.grv
-% GEMT1unit36.grv
-% GEMT2unit36.grv
-% GEMT3unit36.grv
-% GEMT3unit50.grv
-% EGM-96unit70.grv
-% EGM-96unit254.grv
-% EGM-08unit100.grv
-% EGM-96unit70.grv
-% EGM-96unit70.grv
-% EGM-96unit70.grv
-% GGM01Cunit90.grv
-% GGM02Cunit90.grv
-% GGM03Cunit100.grv
-% JGM2unit70.grv
-% JGM3unit70.grv
-% WGS-84_EGM96unit70.grv
-% WGS-84Eunit180.grv
-% WGS-84unit70.grv
-%
-%string fname = 'D:\Dataorig\Gravity\EGM96A.TXT';       % unit
-%string fname = 'D:\Dataorig\Gravity\egm2008_gfc.txt';  % unit
-
-% % --------------------gottlieb 1993 test
-% fprintf(fida,'===================================== Gottlieb 1993 test case ===================================== ');
-% fprintf(fida,'GEM-10B ununitalized 36x36 ');
-% % get past text in each file
-% %if (fname.Contains('GEM'))    % GEM10bununit36.grv, GEMT3unit50.grv
-% %    startKtr = 17;
-% %if (fname.Contains('EGM-96')) % EGM-96unit70.grv
-% %    startKtr = 73;
-% %if (fname.Contains('EGM-08')) % EGM-08unit100.grv
-% %    startKtr = 83;  % or 21 for the larger file... which has gfc in the first col too
-% fname = 'D:/Dataorig/Gravity/GEM10Bununit36.grv';
-% unital = 'n';
-% % latgc;
-% %Int32 degree, order;
-% %[,] LegArr;  % montenbruck
-% %[,] LegArrN;
-% %[,] LegArrG;  % gtds
-% %[,] LegArrGN;
-% %%  [,] LegArrEx;
-% %[,] LegArr1;  % geodyn
-% 
-% %AstroLib.gravityModelData gravData;
-% 
-% recef = [ 5489.1500, 802.2220, 3140.9160 ];  % km
-% fprintf(fida,'recef = ' + recef(1), recef(2), recef(3));
-% % these are from the vector
-% latgc = Math.Asin(recef(3) / mag(recef));
-%  templ = sqrt(recef(1) * recef(1) + recef(2) * recef(2));
-%  rtasc;
-% if (abs(templ) < 0.0000001)
-% rtasc = Math.Sign(recef(3)) * pi * 0.5;
-% else
-% rtasc = atan2(recef(2), recef(1));
-% lon = rtasc;
-% fprintf(fida,'latgc lon ' + (latgc * rad), (lon * rad));
-% 
-% 
-% [gravarr] = readgravityfield(fname, normal);
-% fprintf(fida,'\ncoefficents --------------- ');
-% fprintf(fida,'c  2  0  ' + gravData.c(3, 1), ' s ' + gravData.s(3, 1));
-% fprintf(fida,'c  4  0  ' + gravData.c(5, 1), ' s ' + gravData.s(5, 1));
-% fprintf(fida,'c  4  4  ' + gravData.c(5, 5), ' s ' + gravData.s(5, 5));
-% fprintf(fida,'c 21  1 ' + gravData.c[21, 1], ' s ' + gravData.s[21, 1]);
-% fprintf(fida,'\nunitalized coefficents --------------- ');
-% fprintf(fida,'c  2  0  ' + gravData.cNor(3, 1), ' s ' + gravData.sNor(3, 1));
-% fprintf(fida,'c  4  0  ' + gravData.cNor(5, 1), ' s ' + gravData.sNor(5, 1));
-% fprintf(fida,'c  4  4  ' + gravData.cNor(5, 5), ' s ' + gravData.sNor(5, 5));
-% fprintf(fida,'c 21  1 ' + gravData.cNor[21, 1], ' s ' + gravData.sNor[21, 1]);
-% 
-% 
-% degree = 36;  % 36
-% order = 36;
-% LegPolyG(latgc, order, unitalized, convArr, unitArr, out LegArrGU, out LegArrGN);
-% LegPolyM(latgc, order, unitalized, convArr, out LegArrMU, out LegArrMN);
-% % get geodyn version
-% geodynlegp(latgc, degree, order, out LegArrOU, out LegArrON);
-% % get exact values
-% % LegPolyEx(latgc, order, out LegArrEx);
-% 
-% errstr = ' ';
-% sumdr1 = 0.0;
-% sumdr2 = 0.0;
-% fprintf(fida,'\nLegendre polynomials --------------- ');
-% for (L = 1; L <= 6; L++)  % order xxxxxxxxxxxxxxxxxx
-% 
-% string tempstr1 = 'MN ';  % montenbruck
-% string tempstr2 = 'GN ';  % gtds
-% string tempstr3 = 'MU ';
-% string tempstr4 = 'OU ';  % geodyn
-% for (m = 0; m <= L; m++)
-% 
-% tempstr1 = tempstr1, L, '  ' + m, '   ' + LegArrMN[L, m];
-% tempstr2 = tempstr2, L, '  ' + m, '   ' + LegArrGN[L, m];
-% tempstr3 = tempstr3, L, '  ' + m, '   ' + LegArrMU[L, m];
-% tempstr4 = tempstr4, L, '  ' + m, '   ' + LegArrOU[L + 1, m + 1];
-% %dr1 = 100.0 * (LegArr[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
-% %dr2 = 100.0 * (LegArr1[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
-% %sumdr1 = sumdr1 + dr1;
-% %sumdr2 = sumdr2 + dr2;
-% %errstr = errstr + '\n' + L, '  ' + m, '   ' + dr1
-% %   , dr2;
-% end
-% fprintf(fida,tempstr1);
-% fprintf(fida,tempstr2);
-% %  fprintf(fid,tempstr3);
-% fprintf(fida,tempstr4 + '\n');
-% end
-% fprintf(fida,'totals gtds ' + sumdr1, ' montenbruck ' + sumdr2);
-% strbuildplot.AppendLine(errstr);
-% 
-% fprintf(fida,'\naccelerations --------------- ');
-% jdutc = 2451573.0;
-% jdF = 0.1;
-% straccum = '';
-% order = 4;
-% % unitalized calcs, show
-% FullGeopM(recef, order, 'y', convArr, gravData, out aPertM, 'y', out straccum);
-% % add in two body term since full geop is only disturbing part
-% jdut1 = jdutc + jdF;
-% %eci_ecef(ref reci, ref veci, iau80arr, MathTimeLib.Edirection.efrom, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps, AstroLib.EOpt.e80, ref recef, ref vecef);
-% % time is not given, so let ecef and eci be =
-% reci(1) = recef(1);
-% reci(2) = recef(2);
-% reci(3) = recef(3);
-% 
-% aeci2(1) = -398600.47 * reci(1) / (Math.Pow(mag(reci), 3));
-% aeci2(2) = -398600.47 * reci(2) / (Math.Pow(mag(reci), 3));
-% aeci2(3) = -398600.47 * reci(3) / (Math.Pow(mag(reci), 3));
-% %aPertG(1) = aPertG(1) + aeci2(1);
-% %aPertG(2) = aPertG(2) + aeci2(2);
-% %aPertG(3) = aPertG(3) + aeci2(3);
-% aPertM(1) = aPertM(1) + aeci2(1);
-% aPertM(2) = aPertM(2) + aeci2(2);
-% aPertM(3) = aPertM(3) + aeci2(3);
-% 
-% 
-% fprintf(fida,straccum);
-% %   fprintf(fid,'apertG 4 4   ' + aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
-% fprintf(fida,'apertM 4 4   ' + aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
-% fprintf(fida,'ansr          -0.00844269212018857E+00 -0.00123393633785485E+00 -0.00484659352346614E+00  km/s2\n');
-% 
-% straccum = '';
-% order = 5;
-% % unitalized calcs, show
-% FullGeopG(recef, order, 'y', convArr, unitArr, gravData, out aPertG, 'y', out straccum);
-% fprintf(fida,straccum);
-% fprintf(fida,'apertG 5 5   ' + aPertG(1), '     ' + aPertG(2), '     ' + aPertG(3));
-% % fprintf(fid,'apertM 5 5   ' + aPertM(1), '     ' + aPertM(2), '     ' + aPertM(3));
-% fprintf(fida,'ansr          -0.00844260633555472E+00 -0.00123393243051834E+00 -0.00484652486332608E+00  km/s2\n');
-% 
-% 
-% 
-% % --------------------fonte 1993 test
-% % fprintf(fid,'\n ===================================== Fonte 1993 test case =====================================');
-% % fprintf(fid,'GEM-10B ununitalized 36x36 ');
-% % fname = 'D:/Dataorig/Gravity/GEM10Bununit36.grv';
-% % unital = 'n';
-% % recef = [ 180.295260378399, -1145.13224944286, -6990.09446227757 ]; % km
-% % fprintf(fid,'recef = ' + recef(1), recef(2), recef(3));
-% % latgc = -1.40645188850273;
-% % lon = -4.09449590512370;
-% % fprintf(fid,'latgc lon ' + (latgc * rad), (lon * rad));
-% 
-% 
-% % % Un-unitalized Polynomial Validation GEM10B
-% % % GTDS vs Lundberg Truth GTDS (21x21 GEM10B)
-% % fprintf(fid,'\ncoefficients --------------- ');
-% % [gravarr] = readgravityfield(fname, normal);
-% % fprintf(fid,'c  4  0    ' + gravData.c(5, 1), ' s ' + gravData.s(5, 1));
-% % fprintf(fid,'c 21  0   ' + gravData.c[21, 0], ' s ' + gravData.s[21, 0]);
-% % fprintf(fid,'c 21  5    ' + gravData.c[21, 5], ' s ' + gravData.s[21, 5]);
-% % fprintf(fid,'c 21 20   ' + gravData.c[21, 20], ' s ' + gravData.s[21, 20]);
-% % fprintf(fid,'c 21 21    ' + gravData.c[21, 21], ' s ' + gravData.s[21, 21]);
-% 
-% % % GTDS Emulation vs Lundberg Truth (21x21 GEM10B)
-% % degree = 21;
-% % order = 21;
-% % LegPoly(latgc, order, out LegArr, out LegArrG, out LegArrN, out LegArrGN);
-% % % get geodyn version
-% % geodynlegp(latgc, degree, order, out LegArr1);
-% % % get exact values
-% % %   LegPolyEx(latgc, order, out LegArrEx);
-% 
-% % dr1 = 0.0;
-% % dr2 = 0.0;
-% % sumdr1 = 0.0;
-% % sumdr2 = 0.0;
-% % fprintf(fid,'\nLegendre polynomials --------------- ');
-% % for (L = 1; L <= 6; L++)  % order
-% %
-% %     string tempstr1 = 'M ';
-% %     string tempstr2 = 'G ';
-% %     string tempstr3 = 'E ';
-% %     string tempstr4 = 'O ';
-% %     for (m = 0; m <= L; m++)
-% %
-% %         tempstr1 = tempstr1, L, '  ' + m, '   ' + LegArrN[L, m];
-% %         tempstr2 = tempstr2, L, '  ' + m, '   ' + LegArrGN[L, m];
-% %         % tempstr3 = tempstr3, L, '  ' + m, '   ' + LegArrEx[L, m];
-% %         tempstr4 = tempstr4, L, '  ' + m, '   ' + LegArr1[L + 1, m + 1];
-% %         %    dr1 = 100.0 * (LegArr[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
-% %         %    dr2 = 100.0 * (LegArr1[L, m] - LegArrEx[L, m]) / LegArrEx[L, m];
-% %         %sumdr1 = sumdr1 + dr1;
-% %         %sumdr2 = sumdr2 + dr2;
-% %         %errstr = errstr + '\n' + L, '  ' + m, '   ' + dr1
-% %         %   , dr2;
-% %     end
-% %     fprintf(fid,tempstr1);
-% %     fprintf(fid,tempstr2);
-% %    % fprintf(fid,tempstr3);
-% %     fprintf(fid,tempstr4 + '\n');
-% % end
-% %% fprintf(fid,'totals gtds ' + sumdr1, ' montenbruck ' + sumdr2);
-% % fprintf(fid,'ansr 21  0 0.385389365005720                                                                      21  5   354542.107743601  354542.1077435970657340');
-% % fprintf(fid,'ansr 21 20         -2442182686.11423  -2442182686.11409981594');
-% % fprintf(fid,'ansr 21 21          405012060.632803  405012060.6327805324689' + '\n');
-%
-% % fprintf(fid,'\naccelerations --------------- ');
-% % FullGeop(recef, jd, jdF, order, gravData, out aPert, out aPert1);
-%
-% % fprintf(fid,'apertG 21 21   ' + aPert(1), aPert(2), aPert(3));
-% % fprintf(fid,'apertM 21 21   ' + aPert1(1), '     ' + aPert1(2), '     ' + aPert1(3));
-% % fprintf(fid,'ansr             8.653210294968294E-7  -6.515584998975128E-6  -1.931032474628621E-5 ');
-% % fprintf(fid,'ansr             8.653210294968E-7     -6.5155849989750E-6    -1.931032474628616E-5');
-%
-% % % --------------------fonte 1993 test
-% % fprintf(fid,'\n===================================== Fonte 1993 test case =====================================');
-% % fprintf(fid,'GEM-T3 unitalized 50x50 ');
-% % fname = 'D:/Dataorig/Gravity/GEMT3unit50.grv';          % unit only released as 36x36 though...
-% % unital = 'y';
-%
-%
-% % [gravarr] = readgravityfield(fname, normal);
-% % fprintf(fid,'\ncoefficients --------------- ');
-% % fprintf(fid,'c  4  0   ' + gravData.c(5, 1), gravData.s(5, 1));
-% % fprintf(fid,'c 21 20   ' + gravData.c[21, 20], gravData.s[21, 20]);
-% % fprintf(fid,'c 50  0   ' + gravData.c[50, 0], gravData.s[50, 0]);
-% % fprintf(fid,'c 50 50   ' + gravData.c[50, 50], gravData.s[50, 50]);
-% % fprintf(fid,'c 50  5   ' + gravData.c[50, 5], gravData.s[50, 5]);
-%
-% % fprintf(fid,'\nLegendre polynomials --------------- ');
-% % % GTDS Emulation vs Lundberg Truth (21x21 GEM10B)
-% % degree = 50;
-% % order = 50;
-%
-% % LegPoly(latgc, order, out LegArr, out LegArrG, out LegArrN, out LegArrGN);
-% % % get geodyn version
-% % geodynlegp(latgc, degree, order, out LegArr1);
-% % % get exact
-% % %  LegPolyEx(latgc, order, out LegArrEx);
-%
-% % fprintf(fid,'legarr4    0   ' + LegArrN(5, 1), LegArrN(5, 2));
-%
-% % fprintf(fid,'50  0          ' + LegArrN[50, 0]);
-% % fprintf(fid,'50  0 alt      ' + LegArrGN[50, 0]);
-% % fprintf(fid,'ansr 50  0      0.09634780379822722     9.634780379823085162E-02');
-% % fprintf(fid,'50  0 geody    ' + LegArr1[50, 0], '\n');
-% % %   fprintf(fid,'50  0 exact    ' + LegArrEx[50, 0], '\n');
-% % %    fprintf(fid,'50  0 exact    ' + LegArrEx[50, 0], '\n');
-%
-% % fprintf(fid,'50 21       ' + LegArrN[50, 21]);
-% % fprintf(fid,'50 21 alt   ' + LegArrGN[50, 21]);
-% % fprintf(fid,'ansr 50  21  -1.443200082785759E+28  -14432000827857661203015450149.6553');
-% % fprintf(fid,'50 21 geody ' + LegArr1[50, 21], '\n');
-% % %   fprintf(fid,'50 21 exact  ' + LegArrEx[50, 21], '\n');
-%
-% % fprintf(fid,'50 49       ' + LegArrN[50, 49]);
-% % fprintf(fid,'50 49 alt   ' + LegArrGN[50, 49]);
-% % fprintf(fid,'ansr 50  49  -8.047341511222794E+39  -8.047341511222872818E+39');
-% % fprintf(fid,'50 49 geody ' + LegArr1[50, 49], '\n');
-% % % fprintf(fid,'50 49 exact ' + ex5049, '\n');
-%
-% % fprintf(fid,'50 50       ' + LegArrN[50, 50]);
-% % fprintf(fid,'50 50 alt   ' + LegArrGN[50, 50]);
-% % fprintf(fid,'ansr 50 50      1.334572710963763E+39   1.334572710963775698E+39' + '\n');
-% % fprintf(fid,'50 50 geody ' + LegArr1[50, 50], '\n');
-% % %fprintf(fid,'50 50 exact ' + ex550, '\n');
-%
-% % fprintf(fid,'\naccelerations --------------- ');
-% % unitalized calcs, show
-% % FullGeop(recef, order, unitalized, gravData, out aPert, out aPert1);
-% % fprintf(fid,'apert 50 50   ' + aPert(1), aPert(2), aPert(3));
-% % fprintf(fid,'ansr           8.683465146150188E-007    -6.519678538340073E-006   -1.931876804829165E-005');
-% % fprintf(fid,'ansr           8.68346514615019361E-07   -6.51967853834008023E-06  -1.93187680482916393E-05');
-%
-% % recef = [ 487.0696937, -5330.5022406, 4505.7372146 ];  % m
-% % vecef = [ -2.101083975, 4.624581986, 5.688300377 ];
-%
-% % write out results
-% string directory = @'d:\codes\library\matlab\';
-% File.WriteAllText(directory + 'legpoly.txt', strbuildall);
-%
-% File.WriteAllText(directory + 'legendreAcc.txt', strbuildplot);
-%
-% end
-%                                        end
-%                                end
-%                            end
-%                        end
-%                    end
-%                end
-%            end
-%     end
-% end
-%
-
-
 function testhill(fid)
     constastro;
     dts = 1400.0; % second
@@ -7517,8 +6134,8 @@ function testcovct2clmean(fid)
         eqstate(6) = meanlonNu;
     end
     % --------convert to a flight orbit state
-[lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps );
     if (strcmp(anomflt, 'radec')==1)
 
         fltstate(1) = rtasc;
@@ -7649,8 +6266,8 @@ function testcovct2cltrue(fid)
         eqstate(6) = meanlonNu;
     end
     % --------convert to a flight orbit state
-[lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp,  ddpsi, ddeps );
     if (strcmp(anomflt, 'radec')==1)
 
         fltstate(1) = rtasc;
@@ -7779,8 +6396,8 @@ function testcovcl2eq(anom, fid)
         eqstate(6) = meanlonNu;
     end
     % --------convert to a flight orbit state
-   [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp,  ddpsi, ddeps );
 
    if (strcmp(anomflt, 'radec')==1)
         fltstate(1) = rtasc;
@@ -7914,8 +6531,8 @@ function testcovct2eq(anom, fid)
     end
 
     % --------convert to a flight orbit state
-[lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp,  ddpsi, ddeps );
     if (strcmp(anomflt, 'radec')==1)
 
         fltstate(1) = rtasc;
@@ -8043,8 +6660,8 @@ function testcovct2fl(anomflt, fid)
         eqstate(6) = meanlonNu;
     end
     % --------convert to a flight orbit state
-[lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+    [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp,  ddpsi, ddeps );
     if (strcmp(anomflt,'radec')==1)
 
         fltstate(1) = rtasc;

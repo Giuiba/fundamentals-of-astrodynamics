@@ -231,8 +231,8 @@ function [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
         fprintf(1,'a1/a3 %11.7f  %11.7f  %11.7f  %11.7f \n',a1c,a1uc,a3c,a3uc );
     end
     % --- form initial guess of r2 ----
-    dl1c=  lir(2,1)*a1c - lir(2,2) + lir(2,3)*a3c;
-    dl2c=  lir(2,1)*a1uc + lir(2,3)*a3uc;
+    d1c=  lir(2,1)*a1c - lir(2,2) + lir(2,3)*a3c;
+    d2c=  lir(2,1)*a1uc + lir(2,3)*a3uc;
     if show == 'y'
         dl1
         dl2
@@ -248,13 +248,13 @@ function [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
 
     poly( 1)=  1.0;  % r2^8th variable%%%%%%%%%%%%%%
     poly( 2)=  0.0;
-    poly( 3)=  -(dl1c*dl1c + 2.0*dl1c*l2dotrs + magrs2^2);
+    poly( 3)=  -(d1c*d1c + 2.0*d1c*l2dotrs + magrs2^2);
     poly( 4)=  0.0;
     poly( 5)=  0.0;
-    poly( 6)=  -2.0*(l2dotrs*dl2c + dl1c*dl2c);
+    poly( 6)=  -2.0*(l2dotrs*d2c + d1c*d2c);
     poly( 7)=  0.0;
     poly( 8)=  0.0;
-    poly( 9)=  -dl2c*dl2c;
+    poly( 9)=  -d2c*d2c;
     fprintf(1,'%11.7f \n',poly);
 
     rootarr = roots( poly );

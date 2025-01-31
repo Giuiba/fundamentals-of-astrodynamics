@@ -146,10 +146,6 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
     %     l1
     %     unit(l1)
 
-    los1;
-    los2;
-    los3;
-
     % -------------------------------------------------------------
     %       using lagrange interpolation formula to derive an expression
     %       for l(t), substitute t=t2 and differentiate to obtain the
@@ -166,8 +162,6 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
         ldot(i) = s1 * los1(i) + s2 * los2(i) + s3 * los3(i);  % rad / s
         lddot(i) = s4 * los1(i) + s5 * los2(i) + s6 * los3(i);  % rad / s^2
     end
-    ldot;
-    lddot;
     %    ldotmag = mag( ldot )
     %    lddotmag = mag( lddot )
     % should these unit vectors use a diff name????????%
@@ -187,17 +181,17 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
     if diffsites == 'n'
         % ------------ all sightings from one site -----------------
         [rs2cdot] = cross( earthrate, rs2c );
-        [rs2ddot] = cross( earthrate, rs2cdot );
+        [rs2cddot] = cross( earthrate, rs2cdot );
     else
         % ---------- each sighting from a different site ----------
         for i= 1 : 3
             rs2cdot(i) = s1 * rs1c(i) + s2 * rs2c(i) + s3 * rs3c(i);
-            rs2ddot(i) = s4 * rs1c(i) + s5 * rs2c(i) + s6 * rs3c(i);
+            rs2cddot(i) = s4 * rs1c(i) + s5 * rs2c(i) + s6 * rs3c(i);
         end
     end
 
     rs2cdot;
-    rs2ddot;
+    rs2cddot;
 
     for i= 1 : 3
         dmat(i,1) = los2(i);
@@ -207,14 +201,14 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
         % ----------------  position determinants -----------------
         dmat1(i,1) =los2(i);
         dmat1(i,2) =ldot(i);
-        dmat1(i,3) =rs2ddot(i);
+        dmat1(i,3) =rs2cddot(i);
         dmat2(i,1) =los2(i);
         dmat2(i,2) =ldot(i);
         dmat2(i,3) =rs2c(i);
 
         % ------------  velocity determinants ---------------------
         dmat3(i,1) =los2(i);
-        dmat3(i,2) =rs2ddot(i);
+        dmat3(i,2) =rs2cddot(i);
         dmat3(i,3) =lddot(i);
         dmat4(i,1) =los2(i);
         dmat4(i,2) =rs2c(i);
@@ -281,7 +275,7 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
         % end
         bigr2 = 100.0;
 
-        kk = 1;
+        kk = 0;
         bigr2c = 20000.0 / re; % er guess ~GPS altitude
         % bigr2nx = bigr2c;
         while (abs(bigr2 - bigr2c) > 8.0e-5 && kk < 15)  % do in er, 0.5 km
@@ -298,10 +292,10 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
             kk = kk + 1;
         end
 
-        if (bigr2c < 0.0 || bigr2c * re > 50000.0)
-            bigr2c = 35000.0 / re;  % simply set this to about GEO, allowing for less than that too.
-        end
-        fprintf(1,'bigr2 %11.7f  %11.7f er \n',bigr2, bigr2/re);
+        % if (bigr2c < 0.0 || bigr2c * re > 50000.0)
+        %     bigr2c = 35000.0 / re;  % simply set this to about GEO, allowing for less than that too.
+        % end
+        % fprintf(1,'bigr2 %11.7f  %11.7f er \n',bigr2, bigr2/re);
         %  fprintf(1,'keep this root ? ');
         %        input (bigr2);
 

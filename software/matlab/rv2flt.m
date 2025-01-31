@@ -34,11 +34,11 @@
 %    vallado       2022, 111
 %
 % [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-%        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
+%        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps );
 % ----------------------------------------------------------------------------
 
 function [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps )
+        ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps )
     twopi = 2.0*pi;
     small = 0.00000001;
 
@@ -48,7 +48,7 @@ function [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
     % -------- convert r to ecef for lat/lon calculation
     aeci = [0.0; 0.0; 0.0];
     [recef, vecef, aecef] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1,...
-        lod, xp, yp, eqeterms, ddpsi, ddeps );
+        lod, xp, yp, 2, ddpsi, ddeps );
 
     % ----------------- find longitude value  ----------------- uses ecef
     temp = sqrt( recef(1)*recef(1) + recef(2)*recef(2) );
