@@ -8,15 +8,15 @@ from ...conftest import DEFAULT_TOL
 
 
 @pytest.fixture
-def sunmooneph_filepath(data_dir):
-    filepath = Path(data_dir) / "sunmooneph_430t.txt"
+def sunmooneph_filepath(test_data_dir):
+    filepath = Path(test_data_dir) / "sunmooneph_430t.txt"
     assert filepath.exists()
     return filepath
 
 
 @pytest.fixture
-def sunmooneph_filepath_12hr(data_dir):
-    filepath = Path(data_dir) / "sunmooneph_430t12.txt"
+def sunmooneph_filepath_12hr(test_data_dir):
+    filepath = Path(test_data_dir) / "sunmooneph_430t12.txt"
     assert filepath.exists()
     return filepath
 
