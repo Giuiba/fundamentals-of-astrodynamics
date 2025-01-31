@@ -252,7 +252,7 @@ function fid = testall
             case 96
                 testcovct2rsw(fid);
             case 97
-                testcovct2ntw(fid);
+                testcovct2ntw(fid);F
             case 98
                 testsunmoonjpl(fid);
             case 99
