@@ -1,8 +1,0 @@
-D:\Codes\LIBRARY\repo\software\cs\TestAll\TestAll\obj\Debug\TestAll.csproj.AssemblyReference.cache
-D:\Codes\LIBRARY\repo\software\cs\TestAll\TestAll\obj\Debug\TestAll.csproj.SuggestedBindingRedirects.cache
-D:\Codes\LIBRARY\repo\software\cs\TestAll\TestAll\obj\Debug\TestAllTool.Form1.resources
-D:\Codes\LIBRARY\repo\software\cs\TestAll\TestAll\obj\Debug\TestAllTool.frmGauss.resources
-D:\Codes\LIBRARY\repo\software\cs\TestAll\TestAll\obj\Debug\TestAllTool.frmLambert.resources
-D:\Codes\LIBRARY\repo\software\cs\TestAll\TestAll\obj\Debug\TestAll.Properties.Resources.resources
-D:\Codes\LIBRARY\repo\software\cs\TestAll\TestAll\obj\Debug\TestAll.csproj.GenerateResource.cache
-D:\Codes\LIBRARY\repo\software\cs\TestAll\TestAll\obj\Debug\TestAll.csproj.CoreCompileInputs.cache

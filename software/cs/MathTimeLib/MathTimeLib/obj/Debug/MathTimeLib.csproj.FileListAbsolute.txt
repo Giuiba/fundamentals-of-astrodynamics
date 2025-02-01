@@ -1,6 +1,0 @@
-D:\Codes\LIBRARY\repo\software\cs\MathTimeLib\MathTimeLib\bin\Debug\MathTimeLib.dll
-D:\Codes\LIBRARY\repo\software\cs\MathTimeLib\MathTimeLib\bin\Debug\MathTimeLib.pdb
-D:\Codes\LIBRARY\repo\software\cs\MathTimeLib\MathTimeLib\obj\Debug\MathTimeLib.csproj.AssemblyReference.cache
-D:\Codes\LIBRARY\repo\software\cs\MathTimeLib\MathTimeLib\obj\Debug\MathTimeLib.csproj.CoreCompileInputs.cache
-D:\Codes\LIBRARY\repo\software\cs\MathTimeLib\MathTimeLib\obj\Debug\MathTimeLib.dll
-D:\Codes\LIBRARY\repo\software\cs\MathTimeLib\MathTimeLib\obj\Debug\MathTimeLib.pdb

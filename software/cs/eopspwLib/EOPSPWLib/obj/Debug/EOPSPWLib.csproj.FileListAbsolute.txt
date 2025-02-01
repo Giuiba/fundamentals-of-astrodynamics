@@ -1,9 +1,0 @@
-D:\Codes\LIBRARY\repo\software\cs\eopspwLib\EOPSPWLib\bin\Debug\EOPSPWLib.dll
-D:\Codes\LIBRARY\repo\software\cs\eopspwLib\EOPSPWLib\bin\Debug\EOPSPWLib.pdb
-D:\Codes\LIBRARY\repo\software\cs\eopspwLib\EOPSPWLib\bin\Debug\MathTimeLib.dll
-D:\Codes\LIBRARY\repo\software\cs\eopspwLib\EOPSPWLib\bin\Debug\MathTimeLib.pdb
-D:\Codes\LIBRARY\repo\software\cs\eopspwLib\EOPSPWLib\obj\Debug\EOPSPWLib.csproj.AssemblyReference.cache
-D:\Codes\LIBRARY\repo\software\cs\eopspwLib\EOPSPWLib\obj\Debug\EOPSPWLib.csproj.CoreCompileInputs.cache
-D:\Codes\LIBRARY\repo\software\cs\eopspwLib\EOPSPWLib\obj\Debug\EOPSPWLib.csproj.CopyComplete
-D:\Codes\LIBRARY\repo\software\cs\eopspwLib\EOPSPWLib\obj\Debug\EOPSPWLib.dll
-D:\Codes\LIBRARY\repo\software\cs\eopspwLib\EOPSPWLib\obj\Debug\EOPSPWLib.pdb

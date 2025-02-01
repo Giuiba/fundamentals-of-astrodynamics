@@ -5,10 +5,20 @@ __pycache__/
 .coverage
 /venv
 
-# Ignore Visual Studio generated files
+# Visual Studio generated files
 .vs/
 FileContentIndex/
 v17/
 *.vsidx
 *.suo
 
+# Visual Studio / .NET build artifacts
+obj/
+bin/
+*.pdb
+*.cache
+*.dll
+*.exe
+*.FileListAbsolute.txt
+*.CopyComplete
+*.CoreCompileInputs.cache

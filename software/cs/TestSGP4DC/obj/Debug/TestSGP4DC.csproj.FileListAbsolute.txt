@@ -1,6 +1,0 @@
-D:\Codes\LIBRARY\cs\TestSGP4DC\obj\Debug\TestSGP4DC.csproj.AssemblyReference.cache
-D:\Codes\LIBRARY\cs\TestSGP4DC\obj\Debug\TestSGP4DC.csproj.SuggestedBindingRedirects.cache
-D:\Codes\LIBRARY\cs\TestSGP4DC\obj\Debug\TestSGP4DC.Form1.resources
-D:\Codes\LIBRARY\cs\TestSGP4DC\obj\Debug\TestSGP4DC.Properties.Resources.resources
-D:\Codes\LIBRARY\cs\TestSGP4DC\obj\Debug\TestSGP4DC.csproj.GenerateResource.cache
-D:\Codes\LIBRARY\cs\TestSGP4DC\obj\Debug\TestSGP4DC.csproj.CoreCompileInputs.cache
