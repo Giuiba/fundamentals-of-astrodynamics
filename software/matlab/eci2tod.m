@@ -37,7 +37,7 @@
 %  references    :
 %    vallado       2022, 225
 %
-% [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, ttt, ddpsi, ddeps, ddx, ddy )
+% [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, ttt, ddpsi, ddeps)
 % ----------------------------------------------------------------------------
 
 function [rtod, vtod, atod] = eci2tod(reci, veci, aeci, iau80arr, ttt, ddpsi, ddeps)

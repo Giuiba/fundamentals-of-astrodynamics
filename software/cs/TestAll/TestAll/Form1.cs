@@ -508,7 +508,7 @@ namespace TestAllTool
 
         public void testPercentile()
         {
-            double ans;
+            double[] ans = new double[100]; ;
             double[] sequence = new double[15];
             double excelPercentile;
             Int32 arrSize;
@@ -524,7 +524,13 @@ namespace TestAllTool
 
             ans = MathTimeLibr.Percentile(sequence, excelPercentile, arrSize);
 
-            strbuild.AppendLine("percentile = " + ans.ToString(fmt).PadLeft(4));
+            strbuild.AppendLine("percentile = " + ans[0].ToString(fmt).PadLeft(4) + " \n"
+                + ans[1].ToString(fmt).PadLeft(4) + " \n"
+                + ans[2].ToString(fmt).PadLeft(4) + " \n"
+                + ans[3].ToString(fmt).PadLeft(4) + " \n"
+                + ans[4].ToString(fmt).PadLeft(4) + " \n"
+                + ans[5].ToString(fmt).PadLeft(4) + " \n"
+                + ans[6].ToString(fmt).PadLeft(4) );
         }
         public void testrot1()
         {
@@ -1408,6 +1414,7 @@ namespace TestAllTool
 
             reci = new double[] { 0.0, 0.0, 0.0 };
             veci = new double[] { 0.0, 0.0, 0.0 };
+            aeci = new double[] { 0.00001, 0.00002, 0.00003 };
 
             string fileLoc;
             // can do it either way... with or without  EOPSPWLibr.
@@ -1487,6 +1494,7 @@ namespace TestAllTool
 
 
             // J2000
+            aecef = new double[] { 0.00001, 0.00002, 0.00003 };
             AstroLibr.eci_ecef(ref recii, ref vecii, ref aecii, MathTimeLib.Edirection.efrom, ref recef, ref vecef, ref aecef, 
                  iau80arr, ttt, jdut1, lod, xp, yp, 0.0, 0.0);
             strbuild.AppendLine("J2000 wo corr IAU-76/FK5   " + recii[0].ToString(fmt).PadLeft(4) + " " + recii[1].ToString(fmt).PadLeft(4) + " " + recii[2].ToString(fmt).PadLeft(4) + " "
@@ -2093,15 +2101,218 @@ namespace TestAllTool
             double[] r = new double[3];
             double[] v = new double[3];
             double p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper;
+            Int32 i;
+            short fr;
+            double[] rn = new double[3];
+            double[] vn = new double[3];
+            double[] dr = new double[3];
+            double[] reci = new double[3];
+            double[] veci = new double[3];
+            double[] rrac = new double[3];
+            double[] vrac = new double[3];
+            double[] rntw = new double[3];
+            double[] vntw = new double[3];
+            double[] radbarv = new double[3];
+            double[] vdbarv = new double[3];
+            double[] aeci = new double[3] { 0.001, 0.002, 0.003 };
 
-            r = new double[] { -605.79221660, -5870.22951108, 3493.05319896 };
-            v = new double[] { -1.56825429, -3.70234891, -6.47948395 };
-            AstroLibr.rv2coe(r, v, out p, out a, out ecc, out incl, out raan, out argp, out nu, out m, out arglat, out truelon, out lonper);
+            double rmag, vmag, rtasc, decl, fpav, az;
+            double n, af, ag, chi, psi, meanlonM, meanlonNu;
+            double latgc, lon, fpa, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, magr, magv;
 
-            AstroLibr.coe2rv(p, ecc, incl, raan, argp, nu, arglat, truelon, lonper, out r, out v);
+            double rad = 180.0 / Math.PI;
+            // needed for flt
+            EOPSPWLib.iau80Class iau80arr;
+            string fileLoc = @"D:\Codes\LIBRARY\DataLib\nut80.dat";
+            EOPSPWLibr.iau80in(fileLoc, out iau80arr);
 
-            strbuild.AppendLine("coe2rv r " + r[0].ToString(fmt) + " " + r[1].ToString(fmt) + " " + r[2].ToString(fmt) + " " +
-                "v " + v[0].ToString(fmt) + " " + v[1].ToString(fmt) + " " + v[2].ToString(fmt));
+            // alt test various combinations of coe / eq and rv
+            strbuild.AppendLine("eq tests ----------------------------");
+            for (i = 1; i <= 16; i++)
+            {
+                if (i == 1)
+                {
+                    r = new double[] { -605.79221660, -5870.22951108, 3493.05319896 };
+                    v = new double[] { -1.56825429, -3.70234891, -6.47948395 };
+                }
+                if (i == 2)
+                {
+                    strbuild.AppendLine(" coe test ----------------------------");
+                    r = new double[] { 6524.834, 6862.875, 6448.296 };
+                    v = new double[] { 4.901327, 5.533756, -1.976341 };
+                }
+
+                // ------- elliptical orbit tests -------------------
+                if (i == 3)
+                {
+                    strbuild.AppendLine(" coe test elliptical ----------------------------");
+                    r = new double[] { 1.1372844 * AstroLibr.gravConst.re, -1.0534274 * AstroLibr.gravConst.re, -0.8550194 * AstroLibr.gravConst.re };
+                    v = new double[] { 0.6510489 * AstroLibr.gravConst.velkmps, 0.4521008 * AstroLibr.gravConst.velkmps, 0.0381088 * AstroLibr.gravConst.velkmps };
+                }
+                if (i == 4)
+                {
+                    strbuild.AppendLine(" coe test elliptical ----------------------------");
+                    r = new double[] { 1.056194 * AstroLibr.gravConst.re, -0.8950922 * AstroLibr.gravConst.re, -0.0823703 * AstroLibr.gravConst.re };
+                    v = new double[] { -0.5981066 * AstroLibr.gravConst.velkmps, -0.6293575 * AstroLibr.gravConst.velkmps, 0.1468194 * AstroLibr.gravConst.velkmps };
+                }
+
+                // ------- circular inclined orbit tests -------------------
+                if (i == 5)
+                {
+                    strbuild.AppendLine(" coe test near circular inclined ----------------------------");
+                    r = new double[] { -0.422277 * AstroLibr.gravConst.re, 1.0078857 * AstroLibr.gravConst.re, 0.7041832 * AstroLibr.gravConst.re };
+                    v = new double[] { -0.5002738 * AstroLibr.gravConst.velkmps, -0.5415267 * AstroLibr.gravConst.velkmps, 0.4750788 * AstroLibr.gravConst.velkmps };
+                }
+                if (i == 6)
+                {
+                    strbuild.AppendLine(" coe test near circular inclined ----------------------------");
+                    r = new double[] { -0.7309361 * AstroLibr.gravConst.re, -0.6794646 * AstroLibr.gravConst.re, -0.8331183 * AstroLibr.gravConst.re };
+                    v = new double[] { -0.6724131 * AstroLibr.gravConst.velkmps, 0.0341802 * AstroLibr.gravConst.velkmps, 0.5620652 * AstroLibr.gravConst.velkmps };
+                }
+
+                if (i == 7) // -- CI u = 45 deg
+                {
+                    strbuild.AppendLine(" coe test circular inclined ----------------------------");
+                    r = new double[] { -2693.34555010128, 6428.43425355863, 4491.37782050409 };
+                    v = new double[] { -3.95484712246016, -4.28096585381370, 3.75567104538731 };
+                }
+                if (i == 8) // -- CI u = 315 deg
+                {
+                    strbuild.AppendLine(" coe test circular inclined ----------------------------");
+                    r = new double[] { -7079.68834483379, 3167.87718823353, -2931.53867301568 };
+                    v = new double[] { 1.77608080328182, 6.23770933190509, 2.45134017949138 };
+                }
+
+                // ------- elliptical equatorial orbit tests -------------------
+                if (i == 9)
+                {
+                    strbuild.AppendLine(" coe test elliptical near equatorial ----------------------------");
+                    r = new double[] { 21648.6109280739, -14058.7723188698, -0.0003598029 };
+                    v = new double[] { 2.16378060719980, 3.32694348486311, 0.00000004164788 };
+                }
+                if (i == 10)
+                {
+                    strbuild.AppendLine(" coe test elliptical near equatorial ----------------------------");
+                    r = new double[] { 7546.9914487222, 24685.1032834356, -0.0003598029 };
+                    v = new double[] { 3.79607016047138, -1.15773520476223, 0.00000004164788 };
+                }
+
+                if (i == 11) // -- EE w = 20 deg
+                {
+                    strbuild.AppendLine(" coe test elliptical equatorial ----------------------------");
+                    r = new double[] { -22739.1086596208, -22739.1086596208, 0.0 };
+                    v = new double[] { 2.48514004188565, -2.02004112073465, 0.0 };
+                }
+                if (i == 12) // -- EE w = 240 deg
+                {
+                    strbuild.AppendLine(" coe test elliptical equatorial ----------------------------");
+                    r = new double[] { 28242.3662822040, 2470.8868808397, 0.0 };
+                    v = new double[] { 0.66575215057746, -3.62533022188304, 0.0 };
+                }
+
+                // ------- circular equatorial orbit tests -------------------
+                if (i == 13)
+                {
+                    strbuild.AppendLine(" coe test circular near equatorial ----------------------------");
+                    r = new double[] { -2547.3697454933, 14446.8517254604, 0.000 };
+                    v = new double[] { -5.13345156333487, -0.90516601477599, 0.00000090977789 };
+                }
+                if (i == 14)
+                {
+                    strbuild.AppendLine(" coe test circular near equatorial ----------------------------");
+                    r = new double[] { 7334.858850000, -12704.3481945462, 0.000 };
+                    v = new double[] { -4.51428154312046, -2.60632166411836, 0.00000090977789 };
+                }
+
+                if (i == 15) // -- CE l = 65 deg
+                {
+                    strbuild.AppendLine(" coe test circular equatorial ----------------------------");
+                    r = new double[] { 6199.6905946008, 13295.2793851394, 0.0 };
+                    v = new double[] { -4.72425923942564, 2.20295826245369, 0.0 };
+                }
+                if (i == 16) // -- CE l = 65 deg i = 180 deg
+                {
+                    strbuild.AppendLine(" coe test circular equatorial ----------------------------");
+                    r = new double[] { 6199.6905946008, -13295.2793851394, 0.0 };
+                    v = new double[] { -4.72425923942564, -2.20295826245369, 0.0 };
+                }
+
+                // v = [-1.60936089585; 1.23723602618; 5.16283021192];  % 196
+
+                strbuild.AppendLine("start r " + r[0].ToString(fmt) + " " + r[1].ToString(fmt) + " " + r[2].ToString(fmt) + " " +
+                    "v " + v[0].ToString(fmt) + " " + v[1].ToString(fmt) + " " + v[2].ToString(fmt));
+
+                // --------rv2eq - position and velocity vectors to classical elements
+                AstroLibr.rv2eq(r, v, out a, out n, out af, out ag, out chi, out psi, out meanlonM, out meanlonNu, out fr);
+                strbuild.AppendLine("       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg");
+                strbuild.AppendLine("eqs " + fr + " " + a + " " + n + " " + af + " " + ag + " " + chi + " " + psi + " " + meanlonNu * rad
+                    + " " + meanlonM * rad); 
+
+                // --------eq2rv - classical elements to position and velocity
+                AstroLibr.eq2rv(a, af, ag, chi, psi, meanlonM, fr, out rn, out vn);
+                strbuild.AppendLine(" rn " + rn[0].ToString(fmt) + " " + rn[1].ToString(fmt) + " " + rn[2].ToString(fmt) + " " +
+                   "v " + vn[0].ToString(fmt) + " " + vn[1].ToString(fmt) + " " + vn[2].ToString(fmt));
+                dr[0] = r[0] - rn[0];
+                dr[1] = r[1] - rn[1];
+                dr[2] = r[2] - rn[2];
+                if (MathTimeLibr.mag(dr) > 0.01)
+                    strbuild.AppendLine("ERROR in this case dr = " + MathTimeLibr.mag(dr));
+
+                reci = new double[] { 1525.9870698051157, -5867.209915411114, 3499.601587508083 };
+                veci = new double[] { 1.4830443958075603, -7.093267951700349, 0.9565730381487033 };
+
+                rmag = 7000; // km
+                vmag = 7.546;  // km / s
+                latgc = Math.PI / 6;  // 30 degrees
+                lon = Math.PI / 2;  // 90 degrees
+                fpa = -Math.PI / 6;  // -30 degrees
+                az = Math.PI / 4;  // 45 degrees
+
+                double conv = Math.PI / (180.0 * 3600.0);
+                ttt = 0.042623631888994;
+                jdut1 = 2.45310150e+06;
+                lod = 0.0015563;
+                xp = -0.140682 * conv;
+                yp = 0.333309 * conv;
+                ddpsi = -0.052195 * conv;
+                ddeps = -0.003875 * conv;
+                // ----flight elements
+
+                AstroLibr.rv2flt(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps, 
+                        out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+                strbuild.AppendLine("         rmag km       vmag km/s     latgc deg       lon deg       fpa deg       az deg");
+
+
+                strbuild.AppendLine("flt " +  rmag + " " + vmag + " " +
+                              latgc * rad + " " + lon * rad + " " + fpa * rad + " " + az * rad);
+                AstroLibr.flt2rv(rmag, vmag, latgc, lon, fpa, az, iau80arr, ttt, jdut1, lod, xp, yp,
+                    ddpsi, ddeps,  out r, out v);
+                strbuild.AppendLine(" r " + r[0].ToString(fmt) + " " + r[1].ToString(fmt) + " " + r[2].ToString(fmt) + " " +
+                    "v " + v[0].ToString(fmt) + " " + v[1].ToString(fmt) + " " + v[2].ToString(fmt));
+
+                //// ----adbarv elements
+                //[rmag, vmag, rtasc, decl, fpav, az] = rv2adbar(r, v);
+                //strbuild.AppendLine("          rmag km      vmag km/s     rtasc deg       decl deg      fpav deg      az deg");
+                //strbuild.AppendLine("adb  %14.7f%14.7f%14.7f%15.7f%14.7f%14.7f", rmag, vmag, ...
+
+
+                //    rtasc * rad, decl * rad, fpav * rad, az * rad);
+                //AstroLibr.adbar2rv(rmag, vmag, rtasc, decl, fpav, az, out r, out v);
+                //strbuild.AppendLine("adbarv r " + r[0].ToString(fmt) + " " + r[1].ToString(fmt) + " " + r[2].ToString(fmt) + " " +
+                //    "v " + v[0].ToString(fmt) + " " + v[1].ToString(fmt) + " " + v[2].ToString(fmt));
+
+                // ----radial, along - track, cross - track
+                AstroLibr.rv2rsw(r, v, out rrac, out vrac);
+                strbuild.AppendLine("rsw r " + rrac[0].ToString(fmt) + " " + rrac[1].ToString(fmt) + " " + rrac[2].ToString(fmt) + " " +
+                    "v " + vrac[0].ToString(fmt) + " " + vrac[1].ToString(fmt) + " " + vrac[2].ToString(fmt));
+
+                // ---- in-radial, velocity, cross - track
+                AstroLibr.rv2ntw(r, v, out rntw, out vntw);
+                strbuild.AppendLine("ntw r " + rntw[0].ToString(fmt) + " " + rntw[1].ToString(fmt) + " " + rntw[2].ToString(fmt) + " " +
+                    "v " + vntw[0].ToString(fmt) + " " + vntw[1].ToString(fmt) + " " + vntw[2].ToString(fmt));
+
+            } // for through coe/ eq tests
+
         }
 
         public void testlon2nu()
@@ -8572,8 +8783,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
-                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps,
+                out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;
@@ -8734,8 +8945,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
-                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps,
+                 out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;
@@ -8890,8 +9101,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
-                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps,
+                out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;
@@ -9049,8 +9260,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
-                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps,
+                out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;
@@ -9205,8 +9416,8 @@ namespace TestAllTool
                 eqstate[5] = meanlonNu;
 
             // --------convert to a flight orbit state
-            AstroLibr.rv2flt(reci, veci, aeci, ttt, jdut1, lod, xp, yp, terms, ddpsi, ddeps,
-                iau80arr, out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
+            AstroLibr.rv2flt(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps,
+                out lon, out latgc, out rtasc, out decl, out fpa, out az, out magr, out magv);
             if (anomflt.Equals("radec"))
             {
                 fltstate[0] = rtasc;

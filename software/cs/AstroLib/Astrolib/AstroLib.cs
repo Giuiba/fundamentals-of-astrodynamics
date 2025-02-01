@@ -4031,7 +4031,6 @@ namespace AstroLibMethods
         //    lod         - excess length of day                            sec
         //    xp          - polar motion coefficient                        arc sec
         //    yp          - polar motion coefficient                        arc sec
-        //    terms       - number of terms for ast calculation             0,2
         //    ddpsi, ddeps - corrections for fk5 to gcrf                    rad
         //    iau80arr     - iau80 coefficients of eop
         //
@@ -4053,9 +4052,9 @@ namespace AstroLibMethods
         public void rv2flt
             (
             double[] reci, double[] veci, double[] aeci,
-            double ttt, double jdut1, double lod,
-            double xp, double yp, int terms, double ddpsi, double ddeps,
             EOPSPWLib.iau80Class iau80arr,
+            double ttt, double jdut1, double lod,
+            double xp, double yp, double ddpsi, double ddeps,
             out double lon, out double latgc, out double rtasc, out double decl,
             out double fpa, out double az, out double magr, out double magv
             )
@@ -4123,7 +4122,6 @@ namespace AstroLibMethods
         //    lod         - excess length of day                            sec
         //    xp          - polar motion coefficient                        arc sec
         //    yp          - polar motion coefficient                        arc sec
-        //    terms       - number of terms for ast calculation             0,2
         //    ddpsi, ddeps - corrections for fk5 to gcrf                    rad
         //    iau80arr     - iau80 coefficients of eop
         //
@@ -4145,9 +4143,9 @@ namespace AstroLibMethods
         public void flt2rv
             (
             double rmag, double vmag, double latgc, double lon, double fpa, double az,
-            double ttt, double jdut1, double lod,
-            double xp, double yp, int terms, double ddpsi, double ddeps,
             EOPSPWLib.iau80Class iau80arr,
+            double ttt, double jdut1, double lod,
+            double xp, double yp, double ddpsi, double ddeps,
             out double[] reci, out double[] veci
             )
         {
@@ -4159,7 +4157,6 @@ namespace AstroLibMethods
             double[] hcrossr = new double[3];
             double temp, rtasc, decl, fpav;
 
-            double twopi = 2.0 * Math.PI;
             double small = 0.00000001;
 
             // -------- form position vector

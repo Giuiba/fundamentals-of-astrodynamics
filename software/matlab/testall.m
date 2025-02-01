@@ -252,7 +252,7 @@ function fid = testall
             case 96
                 testcovct2rsw(fid);
             case 97
-                testcovct2ntw(fid);F
+                testcovct2ntw(fid);
             case 98
                 testsunmoonjpl(fid);
             case 99
@@ -1387,7 +1387,7 @@ function testtod2ecef(fid)
 
     recef = [ -1033.4793830; 7901.2952754; 6380.3565958 ];
     vecef = [ -3.225636520; -2.872451450; 5.531924446 ];
-    aecef = [0.00001; 0.00001; 0.00001];
+    aecef = [0.00001; 0.00002; 0.00003];
     year = 2004;
     mon = 4;
     day = 6;
@@ -1409,6 +1409,7 @@ function testtod2ecef(fid)
 
     reci = [ 0.0; 0.0; 0.0 ];
     veci = [ 0.0; 0.0; 0.0 ];
+    aeci = [ 0.00001; 0.00002; 0.00003 ];
 
     fileLoc = 'D:\Codes\LIBRARY\DataLib\';
     [iau80arr] = iau80in(fileLoc);
@@ -1460,14 +1461,18 @@ function testtod2ecef(fid)
 
 
     % J2000
+    aecef = [0.00001; 0.00002; 0.00003];
     [recii, vecii, aecii] = ecef2eci(recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, 0.0, 0.0 );
-    fprintf(fid,'J2000 wo corr IAU-76/FK5  %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f\n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
+    fprintf(fid,'J2000 wo corr IAU-76/FK5  %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f\n', ...
+        recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3), aecii(1), aecii(2), aecii(3));
 
     % GCRF
     [reci, veci, aeci] = ecef2eci(recef, vecef, aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
-    fprintf(fid,'GCRF w corr   IAU-76/FK5  %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f\n', reci(1), reci(2), reci(3), veci(1), veci(2), veci(3));
+    fprintf(fid,'GCRF w corr   IAU-76/FK5  %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f\n', ...
+        reci(1), reci(2), reci(3), veci(1), veci(2), veci(3), aeci(1), aeci(2), aeci(3));
     [recefi, vecefi, aecefi] = eci2ecef(reci, veci, aeci, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
-    fprintf(fid,'ITRF rev      IAU-76/FK5  %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f\n', recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3));
+    fprintf(fid,'ITRF rev      IAU-76/FK5  %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f\n', ...
+        recefi(1), recefi(2), recefi(3), vecefi(1), vecefi(2), vecefi(3), aecefi(1), aecefi(2), aecefi(3));
 
     [recii, vecii, aecii] = ecef2eci06(recef, vecef, aecef,   iau06arr, xys06table, ttt, jdut1, lod, xp, yp, ddx, ddy, '06x');
     fprintf(fid,'GCRF          IAU-2006 CIO  %15.11f  %15.11f  %15.11f %15.11f  %15.11f  %15.11f\n', recii(1), recii(2), recii(3), vecii(1), vecii(2), vecii(3));
@@ -2053,186 +2058,124 @@ function testcoe2rv(fid)
     fileLoc = 'D:\Codes\LIBRARY\DataLib\';
     [iau80arr] = iau80in(fileLoc);
 
-    % alt test various combinations of coe/eq and rv
-    for j = 1:2
-        if j == 1
-            fprintf(fid,'coe tests ----------------------------\n' );
-        else
-            fprintf(fid,'\n\neq tests ----------------------------\n' );
-            %pause;
+    % alt test various combinations of eq and rv
+    fprintf(fid,'\n\neq tests ----------------------------\n' );
+    for i = 1:16
+        if i == 1
+            r=[ 6524.834;6862.875;6448.296];
+            v=[ 4.901327;5.533756;-1.976341];
         end
-        for i = 1:21
-            if i == 1
-                r=[ 6524.834;6862.875;6448.296];
-                v=[ 4.901327;5.533756;-1.976341];
-            end
-            if i == 2
-                fprintf(fid,'coe test ----------------------------\n' );
-                r=[ 6524.834;6862.875;6448.296];
-                v=[ 4.901327;5.533756;-1.976341];
-            end
+        if i == 2
+            fprintf(fid,'coe test ----------------------------\n' );
+            r=[ 6524.834;6862.875;6448.296];
+            v=[ 4.901327;5.533756;-1.976341];
+        end
 
-            % ------- elliptical orbit tests -------------------
-            if i == 3
-                fprintf(fid,'coe test elliptical ----------------------------\n' );
-                r=[ 1.1372844; -1.0534274; -0.8550194]*6378.137;
-                v=[0.6510489;  0.4521008;  0.0381088]*7.905366149846;
-            end
-            if i == 4
-                fprintf(fid,'coe test elliptical ----------------------------\n' );
-                r=[  1.0561942;-0.8950922;-0.0823703]*6378.137;
-                v=[  -0.5981066;-0.6293575; 0.1468194]*7.905366149846;
-            end
+        % ------- elliptical orbit tests -------------------
+        if i == 3
+            fprintf(fid,'coe test elliptical ----------------------------\n' );
+            r=[ 1.1372844; -1.0534274; -0.8550194]*6378.137;
+            v=[0.6510489;  0.4521008;  0.0381088]*7.905366149846;
+        end
+        if i == 4
+            fprintf(fid,'coe test elliptical ----------------------------\n' );
+            r=[  1.0561942;-0.8950922;-0.0823703]*6378.137;
+            v=[  -0.5981066;-0.6293575; 0.1468194]*7.905366149846;
+        end
 
-            % ------- circular inclined orbit tests -------------------
-            if i == 5
-                fprintf(fid,'coe test near circular inclined ----------------------------\n' );
-                r=[ -0.4222777; 1.0078857; 0.7041832]*6378.137;
-                v=[  -0.5002738;-0.5415267; 0.4750788]*7.905366149846;
-            end
-            if i == 6
-                fprintf(fid,'coe test near circular inclined ----------------------------\n' );
-                r=[ -0.7309361;-0.6794646;-0.8331183]*6378.137;
-                v=[  -0.6724131; 0.0341802; 0.5620652]*7.905366149846;
-            end
+        % ------- circular inclined orbit tests -------------------
+        if i == 5
+            fprintf(fid,'coe test near circular inclined ----------------------------\n' );
+            r=[ -0.4222777; 1.0078857; 0.7041832]*6378.137;
+            v=[  -0.5002738;-0.5415267; 0.4750788]*7.905366149846;
+        end
+        if i == 6
+            fprintf(fid,'coe test near circular inclined ----------------------------\n' );
+            r=[ -0.7309361;-0.6794646;-0.8331183]*6378.137;
+            v=[  -0.6724131; 0.0341802; 0.5620652]*7.905366149846;
+        end
 
-            if i == 7 % -- CI u = 45 deg
-                fprintf(fid,'coe test circular inclined ----------------------------\n' );
-                r = [-2693.34555010128  6428.43425355863  4491.37782050409];
-                v = [   -3.95484712246016  -4.28096585381370  3.75567104538731];
-            end
-            if i == 8 % -- CI u = 315 deg
-                fprintf(fid,'coe test circular inclined ----------------------------\n' );
-                r = [-7079.68834483379;  3167.87718823353; -2931.53867301568];
-                v = [    1.77608080328182;  6.23770933190509; 2.45134017949138];
-            end
+        if i == 7 % -- CI u = 45 deg
+            fprintf(fid,'coe test circular inclined ----------------------------\n' );
+            r = [-2693.34555010128  6428.43425355863  4491.37782050409];
+            v = [   -3.95484712246016  -4.28096585381370  3.75567104538731];
+        end
+        if i == 8 % -- CI u = 315 deg
+            fprintf(fid,'coe test circular inclined ----------------------------\n' );
+            r = [-7079.68834483379;  3167.87718823353; -2931.53867301568];
+            v = [    1.77608080328182;  6.23770933190509; 2.45134017949138];
+        end
 
-            % ------- elliptical equatorial orbit tests -------------------
-            if i == 9
-                fprintf(fid,'coe test elliptical near equatorial ----------------------------\n' );
-                r=[ 21648.6109280739; -14058.7723188698; -0.0003598029];
-                v=[ 2.16378060719980; 3.32694348486311; 0.00000004164788 ];
-            end
-            if i == 10
-                fprintf(fid,'coe test elliptical near equatorial ----------------------------\n' );
-                r=[  7546.9914487222;  24685.1032834356; -0.0003598029];
-                v=[ 3.79607016047138; -1.15773520476223; 0.00000004164788 ];
-            end
+        % ------- elliptical equatorial orbit tests -------------------
+        if i == 9
+            fprintf(fid,'coe test elliptical near equatorial ----------------------------\n' );
+            r=[ 21648.6109280739; -14058.7723188698; -0.0003598029];
+            v=[ 2.16378060719980; 3.32694348486311; 0.00000004164788 ];
+        end
+        if i == 10
+            fprintf(fid,'coe test elliptical near equatorial ----------------------------\n' );
+            r=[  7546.9914487222;  24685.1032834356; -0.0003598029];
+            v=[ 3.79607016047138; -1.15773520476223; 0.00000004164788 ];
+        end
 
-            if i == 11 % -- EE w = 20 deg
-                fprintf(fid,'coe test elliptical equatorial ----------------------------\n' );
-                r = [-22739.1086596208;  -22739.1086596208 ;    0.0];
-                v = [    2.48514004188565;  -2.02004112073465 ; 0.0];
-            end
-            if i == 12 % -- EE w = 240 deg
-                fprintf(fid,'coe test elliptical equatorial ----------------------------\n' );
-                r = [ 28242.3662822040;    2470.8868808397 ;   0.0];
-                v = [    0.66575215057746 ; -3.62533022188304 ; 0.0];
-            end
+        if i == 11 % -- EE w = 20 deg
+            fprintf(fid,'coe test elliptical equatorial ----------------------------\n' );
+            r = [-22739.1086596208;  -22739.1086596208 ;    0.0];
+            v = [    2.48514004188565;  -2.02004112073465 ; 0.0];
+        end
+        if i == 12 % -- EE w = 240 deg
+            fprintf(fid,'coe test elliptical equatorial ----------------------------\n' );
+            r = [ 28242.3662822040;    2470.8868808397 ;   0.0];
+            v = [    0.66575215057746 ; -3.62533022188304 ; 0.0];
+        end
 
-            % ------- circular equatorial orbit tests -------------------
-            if i == 13
-                fprintf(fid,'coe test circular near equatorial ----------------------------\n' );
-                r=[ -2547.3697454933; 14446.8517254604; 0.000 ];
-                v=[  -5.13345156333487; -0.90516601477599; 0.00000090977789 ];
-            end
-            if i == 14
-                fprintf(fid,'coe test circular near equatorial ----------------------------\n' );
-                r=[  7334.858850000; -12704.3481945462;   0.000 ];
-                v=[  -4.51428154312046; -2.60632166411836; 0.00000090977789 ];
-            end
+        % ------- circular equatorial orbit tests -------------------
+        if i == 13
+            fprintf(fid,'coe test circular near equatorial ----------------------------\n' );
+            r=[ -2547.3697454933; 14446.8517254604; 0.000 ];
+            v=[  -5.13345156333487; -0.90516601477599; 0.00000090977789 ];
+        end
+        if i == 14
+            fprintf(fid,'coe test circular near equatorial ----------------------------\n' );
+            r=[  7334.858850000; -12704.3481945462;   0.000 ];
+            v=[  -4.51428154312046; -2.60632166411836; 0.00000090977789 ];
+        end
 
-            if i == 15 % -- CE l = 65 deg
-                fprintf(fid,'coe test circular equatorial ----------------------------\n' );
-                r = [ 6199.6905946008; 13295.2793851394;      0.0];
-                v = [ -4.72425923942564; 2.20295826245369;    0.0];
-            end
-            if i == 16 % -- CE l = 65 deg i = 180 deg
-                fprintf(fid,'coe test circular equatorial ----------------------------\n' );
-                r = [ 6199.6905946008; -13295.2793851394;      0.0];
-                v = [ -4.72425923942564; -2.20295826245369;    0.0];
-            end
+        if i == 15 % -- CE l = 65 deg
+            fprintf(fid,'coe test circular equatorial ----------------------------\n' );
+            r = [ 6199.6905946008; 13295.2793851394;      0.0];
+            v = [ -4.72425923942564; 2.20295826245369;    0.0];
+        end
+        if i == 16 % -- CE l = 65 deg i = 180 deg
+            fprintf(fid,'coe test circular equatorial ----------------------------\n' );
+            r = [ 6199.6905946008; -13295.2793851394;      0.0];
+            v = [ -4.72425923942564; -2.20295826245369;    0.0];
+        end
 
-            % ------- parabolic orbit tests -------------------
-            if i == 17
-                fprintf(fid,'coe test parabolic ----------------------------\n' );
-                r=[  0.5916109;-1.2889359;-0.3738343]*6378.137;
-                v=[   1.1486347;-0.0808249;-0.1942733]*7.905366149846;
-            end
 
-            if i == 18
-                fprintf(fid,'coe test parabolic ----------------------------\n' );
-                r=[-1.0343646; -0.4814891;  0.1735524]*6378.137;
-                v=[ 0.1322278; 0.7785322; 1.0532856  ]*7.905366149846;
-            end
+        fprintf(fid,'start %15.9f %15.9f %15.9f',r );
+        fprintf(fid,' v  %15.10f %15.10f %15.10f\n',v );
 
-            if i == 19
-                fprintf(fid,'coe test hyperbolic ---------------------------\n' );
-                r=[0.9163903; 0.7005747; -1.3909623  ]*6378.137;
-                v=[0.1712704; 1.1036199; -0.3810377  ]*7.905366149846;
-            end
+        % --------  rv2eq       - position and velocity vectors to classical elements
+        [ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (r,v);
+        fprintf(fid,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg\n');
+        fprintf(fid,'eqs    %2d %11.4f %11.4f %13.9g %13.7g %11.5g %11.5g %11.5f %11.5f\n',...
+            fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
 
-            if i == 20
-                fprintf(fid,'coe test hyperbolic ---------------------------\n' );
-                r=[12.3160223; -7.0604653; -3.7883759]*6378.137;
-                v=[-0.5902725; 0.2165037; 0.1628339  ]*7.905366149846;
-            end
-
-            if i == 21
-                fprintf(fid,'coe test rectilinear --------------------------\n' );
-                r = [-1984.03023322569; 1525.27235370582; 6364.76955283447];
-                v = [-1.60595491095; 1.23461759098; 5.15190381139];  % 201?
-                %v = [-1.60936089585; 1.23723602618; 5.16283021192];  % 196
-            end
-
-            fprintf(fid,'start %15.9f %15.9f %15.9f',r );
-            fprintf(fid,' v  %15.10f %15.10f %15.10f\n',v );
-
-            if j == 1
-                % --------  rv2coe       - position and velocity vectors to classical elements
-                [p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper ] = rv2coe (r, v);
-                fprintf(fid,'          p km         a km         ecc        incl deg     raan deg     argp deg      nu deg      m deg      arglat   truelon    lonper\n');
-                fprintf(fid,'coes %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f\n',...
-                    p,a,ecc,incl*rad,raan*rad,argp*rad,nu*rad,m*rad, ...
-                    arglat*rad,truelon*rad,lonper*rad );
-
-                % --------  coe2rv       - classical elements to position and velocity
-                % rectilinear orbits have sign(a) determines orbit type, arglat
-                % is nu, but the magnitude is off...?
-                if abs(ecc-1.0) < 0.0000001
-                    p = mag(r)*1.301;
-                end
-                [rn,vn] = coe2rv(p,ecc,incl,raan,argp,nu,arglat,truelon,lonper);
-                fprintf(fid,'rn    %15.9f %15.9f %15.9f',rn );
-                fprintf(fid,' vn %15.10f %15.10f %15.10f\n',vn );
-                dr(1) = r(1) - rn(1);
-                dr(2) = r(2) - rn(2);
-                dr(3) = r(3) - rn(3);
-                if mag(dr) > 0.01
-                    fprintf(fid,'ERROR in this case dr = %15.11f\n', mag(dr));
-                end
-            else
-                % --------  rv2eq       - position and velocity vectors to classical elements
-                [ a, n, af, ag, chi, psi, meanlonM, meanlonNu, fr ] = rv2eq (r,v);
-                fprintf(fid,'       fr     a km         n rad      af           ag         chi          psi      meanlonnu deg   meanlonm deg\n');
-                fprintf(fid,'eqs    %2d %11.4f %11.4f %13.9g %13.7g %11.5g %11.5g %11.5f %11.5f\n',...
-                    fr, a, n, af, ag, chi, psi, meanlonNu*rad, meanlonM*rad );
-
-                % --------  eq2rv       - classical elements to position and velocity
-                [rn,vn] = eq2rv( a, af, ag, chi, psi, meanlonM, fr);
-                fprintf(fid,'rn    %15.9f %15.9f %15.9f',rn );
-                fprintf(fid,' vn %15.10f %15.10f %15.10f\n',vn );
-                dr(1) = r(1) - rn(1);
-                dr(2) = r(2) - rn(2);
-                dr(3) = r(3) - rn(3);
-                if mag(dr) > 0.01
-                    fprintf(fid,'ERROR in this case dr = %15.11f\n', mag(dr));
-                end
-            end
+        % --------  eq2rv       - classical elements to position and velocity
+        [rn,vn] = eq2rv( a, af, ag, chi, psi, meanlonM, fr);
+        fprintf(fid,'rn    %15.9f %15.9f %15.9f',rn );
+        fprintf(fid,' vn %15.10f %15.10f %15.10f\n',vn );
+        dr(1) = r(1) - rn(1);
+        dr(2) = r(2) - rn(2);
+        dr(3) = r(3) - rn(3);
+        if mag(dr) > 0.01
+            fprintf(fid,'ERROR in this case dr = %15.11f\n', mag(dr));
+        end
 
         reci = [1525.9870698051157; -5867.209915411114; 3499.601587508083];
         veci = [1.4830443958075603; -7.093267951700349; 0.9565730381487033];
-       
+
         rmag = 7000; % km
         vmag = 7.546;  % km/s
         latgc = pi / 6;  % 30 degrees
@@ -2248,9 +2191,10 @@ function testcoe2rv(fid)
         yp = 0.333309 * conv;
         ddpsi = -0.052195 * conv;
         ddeps = -0.003875 * conv;
+
         % ---- flight elements
         [lon, latgc, rtasc, decl, fpa, az, magr, magv] = rv2flt ...
-            ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps );  
+            ( reci, veci, iau80arr, ttt, jdut1, lod, xp, yp, ddpsi, ddeps );
         fprintf(fid,'         rmag km       vmag km/s     latgc deg       lon deg       fpa deg       az deg\n');
         fprintf(fid,'flt  %14.7f%14.7f%14.7f%15.7f%14.7f%14.7f\n',rmag,vmag,...
             latgc*rad,lon*rad,fpa*rad,az*rad );
@@ -2277,7 +2221,6 @@ function testcoe2rv(fid)
         fprintf(fid,'ntw  %15.9f%15.9f%15.9f',rivc );
         fprintf(fid,' v %15.10f%15.10f%15.10f\n',vivc );
 
-        end  % for
     end % for through coe/eq tests
 
 
@@ -2295,7 +2238,7 @@ function testcoe2rv(fid)
     % fprintf(fid,'coes %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f\n',...
     %     p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad, ...
     %     arglat*rad,truelon*rad,lonper*rad );
-    % 
+    %
     % fprintf(fid,'\n\ STK ? tests\n');
     % r = [4942.72769736; -4942.72769736;  19.77095033];
     % v = [-5.34341685; -5.34341685; 0];
@@ -2310,8 +2253,8 @@ function testcoe2rv(fid)
     % fprintf(fid,'coes %11.4f %11.4f %13.9f %13.7f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f %11.5f\n',...
     %     p,a,ecc,incl*rad,omega*rad,argp*rad,nu*rad,m*rad, ...
     %     arglat*rad,truelon*rad,lonper*rad );
-    % 
-    % 
+    %
+    %
     % fprintf(fid,'\n other tests\n');
     % [rn,vn] = eq2rv( 7000.0, 0.001, 0.001, 0.001, 0.001, 45.0/rad, fr);
     % fprintf(fid,'rn    %15.9f %15.9f %15.9f',rn );
@@ -2324,8 +2267,8 @@ end % testcoe2rv
 
 
 function testlon2nu(fid)
-      rad = 180.0 / pi;
-  jdut1 = 2449470.5;
+    rad = 180.0 / pi;
+    jdut1 = 2449470.5;
     incl = 35.324598 / rad;
     lon = -121.3487 / rad;
     raan = 45.0 / rad;
@@ -2342,7 +2285,7 @@ function testnewtonmx(fid)
     m = 334.566986 / rad;
 
     % [eccanom, nu] = newtonmx(ecc, m);
-    % 
+    %
     % fprintf(fid,' newtonmx ecc %15.11f m  %15.11f  eccanom %15.11f  nu %15.11f\n', ecc, m * rad, eccanom * rad, nu * rad);
 end
 
@@ -2352,6 +2295,13 @@ function testnewtonm(fid)
     ecc = 0.4;
     eccanom = 334.566986 / rad;
     [m, nu] = newtone(ecc, eccanom);
+
+    if m < 0.0
+        m = m + 2.0*pi;
+    end
+    if nu < 0.0
+        nu = nu + 2.0*pi;
+    end
 
     fprintf(fid,' newtone ecc %15.11f eccanom  %15.11f  m %15.11f nu %15.11f\n', ecc, eccanom * rad, m * rad, nu * rad);
 
@@ -4699,8 +4649,7 @@ function testkepler(fid)
 end
 
 function testsunmoonjpl(fid)
-    [jd, jdF] = jday(2017, 5, 11, 3, 51, 42.7657);
-
+fid=1;
     fprintf(fid,' =============================   test sun and moon ephemerides =============================\n');
 
     % read in jpl sun moon files
@@ -4714,28 +4663,46 @@ function testsunmoonjpl(fid)
     infilename = append('D:\Codes\LIBRARY\DataLib\', 'sunmooneph_430t12.txt');
     [jpldearr] = readjplde(infilename);
 
-    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 0.0, 'l', jpldearr);
-    fprintf(fid,'findjpldeephem 0000 hrs l \n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, 0.0, rsun(1), ...
+    [jd, jdF] = jday(2017, 5, 11, 0, 0, 0.0);
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 'l', jpldearr);
+    fprintf(fid,'findjpldeephem 0000 hrs l \n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, jdF, rsun(1), ...
+        rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 's', jpldearr);
+    fprintf(fid,'findjpldeephem 0000 hrs s \n %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, jdF,rsun(1), ...
         rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
 
-    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 0.0, 's', jpldearr);
-    fprintf(fid,'findjpldeephem 0000 hrs s \n %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, 0.0,rsun(1), ...
+    fprintf(fid,'-----\n');
+    [jd, jdF] = jday(2017, 5, 11, 0, 1, 0.0);
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 'l', jpldearr);
+    fprintf(fid,'findjpldeephem 0001 hrs l \n %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, jdF, rsun(1), ...
+        rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 's', jpldearr);
+    fprintf(fid,'findjpldeephem 0001 hrs s \n %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, jdF,rsun(1), ...
         rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
 
+    fprintf(fid,'-----\n');
+    [jd, jdF] = jday(2017, 5, 11, 12, 0, 0.0);
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 'l', jpldearr);
+    fprintf(fid,'findjpldeephem 1200 hrs l \n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, jdF, rsun(1), ...
+        rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 's', jpldearr);
+    fprintf(fid,'findjpldeephem 1200 hrs s \n %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, jdF,rsun(1), ...
+        rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
+
+    fprintf(fid,'-----\n');
+    [jd, jdF] = jday(2017, 5, 11, 12, 1, 0.0);
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 'l', jpldearr);
+    fprintf(fid,'findjpldeephem 1201 hrs l \n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, jdF, rsun(1), ...
+        rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 's', jpldearr);
+    fprintf(fid,'findjpldeephem 1201 hrs s \n %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n', jd, jdF,rsun(1), ...
+        rsun(2), rsun(3), rmoon(1), rmoon(2), rmoon(3));
+
+
+    % check finding rtasc decl for sun and moon
+    fprintf(fid,'-----\n');
     [rsun, rtascs, decls, rmoon, rtascm, declm] = sunmoonjpl(jd, jdF, 's', jpldearr);
     fprintf(fid,'sunmoon 0000 hrs s\n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n',...
-        jd, jdF, rsun(1), rsun(2), rsun(3),rmoon(1), rmoon(2), rmoon(3));
-
-    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, jdF, 'l', jpldearr);
-    fprintf(fid,'findjpldeephem hrs l\n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n',...
-        jd, jdF, rsun(1), rsun(2), rsun(3),rmoon(1), rmoon(2), rmoon(3));
-
-    [rsun, rtascs, decls, rmoon, rtascm, declm] = sunmoonjpl(jd, jdF, 'l', jpldearr);
-    fprintf(fid,'sunmoon hrs l\n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n',...
-        jd, jdF, rsun(1), rsun(2), rsun(3),rmoon(1), rmoon(2), rmoon(3));
-
-    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jd, 1.0, 'l', jpldearr);
-    fprintf(fid,'findjpldeephem 2400 hrs s\n %16.8f %16.8f  %16.8f %16.8f %16.8f %16.8f %16.8f %16.8f\n',...
         jd, jdF, rsun(1), rsun(2), rsun(3),rmoon(1), rmoon(2), rmoon(3));
 
 
