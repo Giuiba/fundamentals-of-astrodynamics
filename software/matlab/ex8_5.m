@@ -1,27 +1,17 @@
-    %     -----------------------------------------------------------------
-    %
-    %                              ex8_5.m
-    %
-    %  this file demonstrates example 8-5.
-    %
-    %                          companion code for
-    %             fundamentals of astrodynamics and applications
-    %                                 2013
-    %                            by david vallado
-    %
-    %     (h)               email davallado@gmail.com
-    %     (w) 719-573-2600, email dvallado@agi.com
-    %
-    %     *****************************************************************
-    %
-    %  current :
-    %            29 oct 19  david vallado
-    %                         original
-    %  changes :
-    %            29 oct 19  david vallado
-    %                         original baseline
-    %
-    %     *****************************************************************
+% ------------------------------------------------------------------------------
+%
+%                              Ex8_5.m
+%
+%  this file demonstrates example 8-5.
+%
+%                          companion code for
+%             fundamentals of astrodyanmics and applications
+%                                 2022
+%                            by david vallado
+%
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
+%
+% ------------------------------------------------------------------------------
     
     constastro;
     

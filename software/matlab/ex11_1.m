@@ -1,26 +1,17 @@
-%     -----------------------------------------------------------------
+% ------------------------------------------------------------------------------
 %
 %                              Ex11_1.m
 %
 %  this file demonstrates example 11-1.
 %
 %                          companion code for
-%             fundamentals of astrodynamics and applications
-%                                 2007
+%             fundamentals of astrodyanmics and applications
+%                                 2022
 %                            by david vallado
 %
-%     (w) 719-573-2600, email dvallado@agi.com
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%     *****************************************************************
-%
-%  current :
-%             7 jun 07  david vallado
-%                         original
-%  changes :
-%            13 feb 07  david vallado
-%                         original baseline
-%
-%     *****************************************************************
+% ------------------------------------------------------------------------------
 
         constmath;
         re = 6378.1363;

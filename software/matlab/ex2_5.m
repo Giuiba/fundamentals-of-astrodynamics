@@ -1,28 +1,17 @@
-%     -----------------------------------------------------------------
+% ------------------------------------------------------------------------------
 %
 %                              Ex2_5.m
 %
-%  this file demonstrates example 2-5. it also includes some stressing
-%  cases for the coe and rv conversions for all orbit types.
+%  this file demonstrates example 2-5.
 %
 %                          companion code for
-%             fundamentals of astrodynamics and applications
-%                                 2013
+%             fundamentals of astrodyanmics and applications
+%                                 2022
 %                            by david vallado
 %
-%     (h)               email davallado@gmail.com
-%     (w) 719-573-2600, email dvallado@agi.com
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%     *****************************************************************
-%
-%  current :
-%            16 feb 19  david vallado
-%                         update for new constants
-%  changes :
-%            13 feb 07  david vallado
-%                         original baseline
-%
-%     *****************************************************************
+% ------------------------------------------------------------------------------
 
     rad = 180.0 /pi;
     

@@ -1,26 +1,17 @@
-    %     -----------------------------------------------------------------
-    %
-    %                              Ex10_4.m
-    %
-    %  this file demonstrates example 10-4.
-    %
-    %                          companion code for
-    %             fundamentals of astrodyanmics and applications
-    %                                 2022
-    %                            by david vallado
-    %
-    %     (h)               email davallado@gmail.com
-    %
-    %     *****************************************************************
-    %
-    %  current :
-    %            19 feb 19  david vallado
-    %                         update for new constants
-    %  changes :
-    %            16 oct 23  david vallado
-    %                         recheck oepration
-    %
-    %     *****************************************************************
+% ------------------------------------------------------------------------------
+%
+%                              Ex10_4.m
+%
+%  this file demonstrates example 10-4.
+%
+%                          companion code for
+%             fundamentals of astrodyanmics and applications
+%                                 2022
+%                            by david vallado
+%
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
+%
+% ------------------------------------------------------------------------------
 
     constmath;
     constastro;

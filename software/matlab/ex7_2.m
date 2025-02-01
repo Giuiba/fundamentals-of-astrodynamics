@@ -1,26 +1,17 @@
-    %     -----------------------------------------------------------------
-    %
-    %                              Ex7_2.m
-    %
-    %  this file demonstrates example 7-2.
-    %
-    %                          companion code for
-    %             fundamentals of astrodynamics and applications
-    %                                 2007
-    %                            by david vallado
-    %
-    %     (w) 719-573-2600, email dvallado@agi.com
-    %
-    %     *****************************************************************
-    %
-    %  current :
-    %             9 oct 07  david vallado
-    %                         original
-    %  changes :
-    %             9 oct 07  david vallado
-    %                         original baseline
-    %
-    %     *****************************************************************
+% ------------------------------------------------------------------------------
+%
+%                              Ex7_2.m
+%
+%  this file demonstrates example 7-2.
+%
+%                          companion code for
+%             fundamentals of astrodyanmics and applications
+%                                 2022
+%                            by david vallado
+%
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
+%
+% ------------------------------------------------------------------------------
     
     constmath;
     constastro;

@@ -1,27 +1,17 @@
-%     -----------------------------------------------------------------
+% ------------------------------------------------------------------------------
 %
-%                              Ex7_3.m
+%                              Ex7_34.m
 %
-%  this file demonstrates example 7-3 and 7-4. it also compares the gibbs and 
-%  herrick gibbs appraches. 
+%  this file demonstrates example 7-34.
 %
 %                          companion code for
-%             fundamentals of astrodynamics and applications
-%                                 2007
+%             fundamentals of astrodyanmics and applications
+%                                 2022
 %                            by david vallado
 %
-%     (w) 719-573-2600, email dvallado@agi.com
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%     *****************************************************************
-%
-%  current :
-%             7 jun 07  david vallado
-%                         original
-%  changes :
-%            13 feb 07  david vallado
-%                         original baseline
-%
-%     *****************************************************************
+% ------------------------------------------------------------------------------
 
       fprintf(1,'-------------------- problem ex 7-3 \n');
       r1 = [0.0 0.0 6378.137];

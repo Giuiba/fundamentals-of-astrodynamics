@@ -1,28 +1,17 @@
-%     -----------------------------------------------------------------
+% ------------------------------------------------------------------------------
 %
 %                              Ex7_5.m
 %
-%  this file implements example 7-5.note that the intialization has changed
-%  from what is shown in the book, and the example there. The empiracle
-%  formula seems to give better results for the intiial evaluation, so it's
-%  used here. the book values of psi = 0.0 is not used here.
+%  this file demonstrates example 7-5.
 %
 %                          companion code for
-%             fundamentals of astrodynamics and applications
-%                                 2020
+%             fundamentals of astrodyanmics and applications
+%                                 2022
 %                            by david vallado
 %
-%     (w) 719-573-2600, email dvallado@agi.com
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%     *****************************************************************
-%
-%  current :
-%            26 may 20  david vallado
-%                         separate from temp codes.
-%  changes :
-%            13 feb 07  david vallado
-%                         original baseline
-%     *****************************************************************
+% ------------------------------------------------------------------------------
 
     fid = 1;
     directory = 'd:\codes\library\matlab\';
