@@ -52,29 +52,32 @@ function [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb, jdtdbF, interp, jp
         mfme = 1440.0 + mfme;
     end
 
-    %printf("jdtdb %lf  %lf  %lf  %lf \n ", jdtdb, jdtdbF, jdb, mfme);x[recnum]
-
     % ---- read data for day of interest
-    jdjpldestarto = floor(jdtdb + jdtdbF - jpldearr.mjd(1) - 2400000.5);
-    recnum = floor(jdjpldestarto) * 2 + 3;
+    jdjpldestarto = floor(jdtdb - jpldearr.mjd(1) - 2400000.5);
+    recnum = floor(jdjpldestarto) * 2 + 2 + floor(mfme/720.0);
 
+fprintf(1,'recnum mfme %11.6f %11.6f\n',recnum, mfme);
+    
     % check for out of bound values
-    if ((recnum >= 1) && (recnum <= 51830))  % jpldesize
+    if ((recnum >= 1) && (recnum <= 59000))  % jpldesize
         % ---- set non-interpolated values
         rsun(1) = jpldearr.rsun1(recnum);
         rsun(2) = jpldearr.rsun2(recnum);
         rsun(3) = jpldearr.rsun3(recnum);
-        rsmag = jpldearr.rsmag(recnum);
+        rsmag = jpldearr.rsmag;
         rmoon(1) = jpldearr.rmoon1(recnum);
         rmoon(2) = jpldearr.rmoon2(recnum);
         rmoon(3) = jpldearr.rmoon3(recnum);
         rmmag = mag(rmoon);
 
-        % ---- find nutation parameters for use in optimizing speed
+        if mfme < 720
+            fixf = mfme / 720.0;
+        else
+            fixf = (mfme-720)/720;
+        end
 
         % ---- do linear interpolation
         if (interp == 'l')
-            fixf = mfme / 1440.0;
 
             rsun(1) = jpldearr.rsun1(recnum) + (jpldearr.rsun1(recnum + 1) - jpldearr.rsun1(recnum)) * fixf;
             rsun(2) = jpldearr.rsun2(recnum) + (jpldearr.rsun2(recnum + 1) - jpldearr.rsun2(recnum)) * fixf;
@@ -92,7 +95,6 @@ function [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb, jdtdbF, interp, jp
         if (interp == 's')
             off1 = 1;     % every 1 days data
             off2 = 2;
-            fixf = mfme / 1440.0; % get back to days for this since each step is in days
             % setup so the interval is in between points 2 and 3
             rsun(1) = cubicinterp(jpldearr.rsun1(recnum - off1), jpldearr.rsun1(recnum), jpldearr.rsun1(recnum + off1),...
                 jpldearr.rsun1(recnum + off2),...

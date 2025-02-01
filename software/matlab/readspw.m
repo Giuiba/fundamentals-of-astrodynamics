@@ -39,7 +39,7 @@ function [spwarr, updDate] = readspw(spwFileName)
 
     while (~feof(infile))
         longstr = fgets(infile);
-        while ( (longstr(1) == '#') && (feof(infile) == 0) )
+        while ( feof(infile) == 0 )
             longstr = fgets(infile);
     
             if (contains(longstr, 'UPDATED'))
@@ -102,7 +102,7 @@ function [spwarr, updDate] = readspw(spwFileName)
        
             % ---- process predicted records
             if (contains(longstr, 'NUM_DAILY_PREDICTED_POINTS'))
-                numrecsobs = str2double(longstr(20:end));
+                numrecsobs = str2double(longstr(28:end))
                 longstr = fgets(infile);
                 % ---- process predicted records only
                 % 1962 01 01 37665 -0.012700  0.213000  0.0326338  0.0017230  0.064261  0.006067  0.000000  0.000000   2 

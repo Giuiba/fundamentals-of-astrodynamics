@@ -217,4 +217,8 @@ function [r, v] =  kepler(ro, vo, dtseco)
         end
     end
 
+    % make col vectors
+    r = r';
+    v = v';
+
 end

@@ -137,12 +137,14 @@
         [reci1, veci1] =  kepler ( rnom, vnom, dtsec );
         %[reci1, veci1] =  pkepler ( rnom, vnom, dtsec, 0.0, 0.0 );
         aeci = [0;0;0];
-        [recef1, vecef1, aecef1] = eci2ecef(reci1', veci1', aeci, iau80arr, currobsrec.ttt,currobsrec.jdut1,0.0,currobsrec.xp,currobsrec.yp,2,0.0,0.0 );
-        [rsecef,vsecef] = site ( currobsrec.latgd,currobsrec.lon,currobsrec.alt);
+        [recef1, vecef1, aecef1] = eci2ecef(reci1, veci1, aeci, iau80arr, currobsrec.ttt, currobsrec.jdut1, 0.0, ...
+                  currobsrec.xp, currobsrec.yp, 2, 0.0, 0.0 );
+        [rsecef, vsecef] = site ( currobsrec.latgd,currobsrec.lon,currobsrec.alt);
 
         % ------------------------- find b matrix ----------------------------
         if currobsrec.obstype ~= 3
-            [rngnom,aznom,elnom,drngnom,daznom,delnom] = rv2razel ( recef1,vecef1, currobsrec.latgd,currobsrec.lon,currobsrec.alt);
+            [rngnom,aznom,elnom,drngnom,daznom,delnom] = rv2razel ( recef1,vecef1, currobsrec.latgd, currobsrec.lon, currobsrec.alt);
+ 
         else
             [rngnom,trtascnom,tdeclnom,drngnom,dtrtascnom,dtdeclnom] = rv2tradec(recef1, vecef1, rsecef, vsecef);
         end
@@ -195,7 +197,7 @@
             vnomp(2) = xnomp(5,1);
             vnomp(3) = xnomp(6,1);
             [reci3, veci3] =  kepler ( rnomp, vnomp, dtsec );
-            [recef3, vecef3, aece31] = eci2ecef(reci3', veci3', aeci, iau80arr, currobsrec.ttt,currobsrec.jdut1,0.0,currobsrec.xp,currobsrec.yp,2,0.0,0.0 );
+            [recef3, vecef3, aece31] = eci2ecef(reci3, veci3, aeci, iau80arr, currobsrec.ttt,currobsrec.jdut1,0.0,currobsrec.xp,currobsrec.yp,2,0.0,0.0 );
             %[reci3, veci3] =  pkepler ( rnomp, vnomp, dtsec, 0.0, 0.0 );
 
             % teme to itrf if observation type
