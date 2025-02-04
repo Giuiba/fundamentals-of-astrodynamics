@@ -20,7 +20,7 @@ We don’t have all the routines published yet, as we’ve been testing them in 
    - **Orbit determination (simple Batch Least Squares)** – Originally developed for SGP4DC - this needs some work to function correctly in C#. We have a beta version, but it’s not yet producing the correct outputs.
    - **Accelerations in coordinate transformations** – These are partially implemented. The C# version includes them in the overall ECI-to-ECEF transformations, and we plan to include them in all languages shortly.
    - **STK scenarios** – Many are from older versions but should still run in the latest versions of STK. We will eventually add Word documents to describe what is actually going on!
-   - **SGP4** – 29 August 2024 Update -- Includes check for XP data.  XP data cannot be processed through SGP4, it requires the SGP4-XP propagator. 
+   - **SGP4** – 29 August 2024 Update -- Includes check for XP data.  XP data cannot be propagated through SGP4, it requires the SGP4-XP propagator. 
 
 ## Testing Framework
 
