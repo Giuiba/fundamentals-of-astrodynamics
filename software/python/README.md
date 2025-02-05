@@ -7,6 +7,12 @@ This directory contains the **Python implementation** of the routines from the p
 - **Use of NumPy & SciPy**: Lower-level math and linear algebra functions (e.g., vector/matrix operations, interpolation) were excluded in favor of `numpy` and `scipy`. Some routines were also intentionally omitted based on their utility.
 - **Differences in Arguments & Returns**: Some function signatures differ (e.g. using enums and booleans instead of strings) for clarity. Refer to the docstrings for details on function usage.
 
+## Installation
+You can install this package via pip:
+```bash
+pip install valladopy
+```
+
 ## Development & Contribution Guidelines
 - **Code Style**: Follow **PEP8** rules, use **Google-style docstrings**, and format code with `flake8` and `black` (see [Contribution Guidelines](../../CONTRIBUTING.md) for full instructions).
 - **Testing**: Use `pytest` and ensure all tests pass before submitting changes:
