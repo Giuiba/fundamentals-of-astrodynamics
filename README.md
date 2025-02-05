@@ -33,7 +33,7 @@ Some routines have known discrepancies between languages, which we are working o
    Some key differences:
    - **Covariance conversions** – Not all conversions work forward and backward as indicated in our paper ([AAS 15-537](documentation/Covariance%20Transformations/AAS%2015-537%20Updated%20Analytical%20Partials%20for%20Covariance%20Transformations%20and%20OptimizationFinal.pdf)). Additionally, the retrograde factor for equinoctial elements has been changed from applying to all retrograde orbits to only those near 180-degree inclinations. This was done to minimize differences near polar orbits, but of course, it changes a lot of the results ([AAS 15-537 Rev 3](documentation/Covariance%20Transformations/AAS%2015-537%20Updated%20Analytical%20Partials%20for%20Covariance%20Transformations%20and%20OptimizationFinal%20Rev%203.pdf))
    - **Angles-only routines** – These are complex, and while some results match between languages, others do not. We are still working on these!
-   - **Other discrepancies** – If you notice any issues, please let us know and open a GitHub issue! We are working on integrating these checks into our `assert`-based test framework.
+   - **Other discrepancies** – If you notice any issues, please let us know and [open a GitHub issue](https://github.com/CelesTrak/fundamentals-of-astrodynamics/issues)! We are working on integrating these checks into our `assert`-based test framework.
 
 ## Future Plans and C++ Updates
 
@@ -42,7 +42,7 @@ We have included C++, but a full update is planned in the coming months. We have
 
 ## Contributing
 
-We appreciate interest in contributing to this project! However, as we are still figuring this process out, we ask contributors to submit an issue as their first step. For more details, see the [Contributing Guide](CONTRIBUTING.md).
+We appreciate interest in contributing to this project! However, as we are still figuring this process out, we ask contributors to [submit an issue](https://github.com/CelesTrak/fundamentals-of-astrodynamics/issues) as their first step. For more details, see the [Contributing Guide](CONTRIBUTING.md).
 
 ---
 
