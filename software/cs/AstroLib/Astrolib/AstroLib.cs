@@ -1925,10 +1925,9 @@ namespace AstroLibMethods
                 vecef = MathTimeLibr.matvecmult(pmp, vpef, 3);
 
                 // two additional terms not needed if satellite is not on surface of the Earth
-                transp = MathTimeLibr.mattrans(trans, 3);
                 MathTimeLibr.cross(omegaearth, omgxr, out omgxomgxr);
                 MathTimeLibr.cross(omegaearth, vpef, out omgxv);
-                tempvec1 = MathTimeLibr.matvecmult(transp, aeci, 3);
+                tempvec1 = MathTimeLibr.matvecmult(trans, aeci, 3);
                 apef[0] = tempvec1[0] - omgxomgxr[0] - 2.0 * omgxv[0];
                 apef[1] = tempvec1[1] - omgxomgxr[1] - 2.0 * omgxv[1];
                 apef[2] = tempvec1[2] - omgxomgxr[2] - 2.0 * omgxv[2];
@@ -1957,7 +1956,7 @@ namespace AstroLibMethods
                 aeci[0] = apef[0] + omgxomgxr[0] + 2.0 * omgxv[0];
                 aeci[1] = apef[1] + omgxomgxr[1] + 2.0 * omgxv[1];
                 aeci[2] = apef[2] + omgxomgxr[2] + 2.0 * omgxv[2];
-                aeci = MathTimeLibr.matvecmult(trans, apef, 3);
+                aeci = MathTimeLibr.matvecmult(trans, aeci, 3);
             }
         }//  eci_ecef 
 
@@ -2288,9 +2287,9 @@ namespace AstroLibMethods
 
         public void eci_ecef06
             (
-            ref double[] reci, ref double[] veci,
+            ref double[] reci, ref double[] veci, ref double[] aeci,
             Enum direct,
-            ref double[] recef, ref double[] vecef,
+            ref double[] recef, ref double[] vecef, ref double[] aecef,
             EOpt opt,
             EOPSPWLib.iau06Class iau06arr, AstroLib.xysdataClass[] xysarr,
             double jdtt, double jdftt, double jdut1, double lod,
@@ -2302,10 +2301,13 @@ namespace AstroLibMethods
             double[] omegaearth = new double[3];
             double[] rpef = new double[3];
             double[] vpef = new double[3];
+            double[] apef = new double[3];
             double[] rtod = new double[3];
             double[] vtod = new double[3];
-            double[] crossr = new double[3];
+            double[] omgxr = new double[3];
             double[] tempvec1 = new double[3];
+            double[] omgxomgxr = new double[3];
+            double[] omgxv = new double[3];
             double[,] a1 = new double[3, 3];
             double[,] a2 = new double[3, 3];
             double[,] a3 = new double[3, 3];
@@ -2363,11 +2365,20 @@ namespace AstroLibMethods
                 recef = MathTimeLibr.matvecmult(pmp, rpef, 3);
 
                 tempvec1 = MathTimeLibr.matvecmult(trans, veci, 3);
-                MathTimeLibr.cross(omegaearth, rpef, out crossr);
-                vpef[0] = tempvec1[0] - crossr[0];
-                vpef[1] = tempvec1[1] - crossr[1];
-                vpef[2] = tempvec1[2] - crossr[2];
+                MathTimeLibr.cross(omegaearth, rpef, out omgxr);
+                vpef[0] = tempvec1[0] - omgxr[0];
+                vpef[1] = tempvec1[1] - omgxr[1];
+                vpef[2] = tempvec1[2] - omgxr[2];
                 vecef = MathTimeLibr.matvecmult(pmp, vpef, 3);
+
+                // two additional terms not needed if satellite is not on surface of the Earth
+                MathTimeLibr.cross(omegaearth, omgxr, out omgxomgxr);
+                MathTimeLibr.cross(omegaearth, vpef, out omgxv);
+                tempvec1 = MathTimeLibr.matvecmult(trans, aeci, 3);
+                apef[0] = tempvec1[0] - omgxomgxr[0] - 2.0 * omgxv[0];
+                apef[1] = tempvec1[1] - omgxomgxr[1] - 2.0 * omgxv[1];
+                apef[2] = tempvec1[2] - omgxomgxr[2] - 2.0 * omgxv[2];
+                aecef = MathTimeLibr.matvecmult(pmp, apef, 3);
             }
             else
             {
@@ -2379,11 +2390,20 @@ namespace AstroLibMethods
                 reci = MathTimeLibr.matvecmult(trans, rpef, 3);
 
                 vpef = MathTimeLibr.matvecmult(pm, vecef, 3);
-                MathTimeLibr.cross(omegaearth, rpef, out crossr);
-                tempvec1[0] = vpef[0] + crossr[0];
-                tempvec1[1] = vpef[1] + crossr[1];
-                tempvec1[2] = vpef[2] + crossr[2];
+                MathTimeLibr.cross(omegaearth, rpef, out omgxr);
+                tempvec1[0] = vpef[0] + omgxr[0];
+                tempvec1[1] = vpef[1] + omgxr[1];
+                tempvec1[2] = vpef[2] + omgxr[2];
                 veci = MathTimeLibr.matvecmult(trans, tempvec1, 3);
+
+                // two additional terms not needed if satellite is not on surface of the Earth
+                apef = MathTimeLibr.matvecmult(pm, aecef, 3);
+                MathTimeLibr.cross(omegaearth, omgxr, out omgxomgxr);
+                MathTimeLibr.cross(omegaearth, vpef, out omgxv);
+                aeci[0] = apef[0] + omgxomgxr[0] + 2.0 * omgxv[0];
+                aeci[1] = apef[1] + omgxomgxr[1] + 2.0 * omgxv[1];
+                aeci[2] = apef[2] + omgxomgxr[2] + 2.0 * omgxv[2];
+                aeci = MathTimeLibr.matvecmult(trans, aeci, 3);
             }
         }  //  eci_ecef06
 
@@ -12382,16 +12402,16 @@ namespace AstroLibMethods
             // -------------------- perform recursions ---------------------- }
             for (L = 2; L <= order + 1; L++) // L = 2:order + 1  
             {
-                norm1[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 1.0));    // eq 3-1 
-                norm2[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L - 3.0));    // eq 3-2 
-                norm11[L] = Math.Sqrt((2.0 * L + 1.0) / (2.0 * L)) / (2.0 * L - 1.0); // eq 3-3 
-                normn10[L] = Math.Sqrt((L + 1.0) * L / 2.0);  // eq 3-13
+                norm1[L] = Math.Sqrt((2 * L + 1.0) / (2 * L - 1.0));    // eq 3-1 
+                norm2[L] = Math.Sqrt((2 * L + 1.0) / (2 * L - 3.0));    // eq 3-2 
+                norm11[L] = Math.Sqrt((2 * L + 1.0) / (2 * L)) / (2 * L - 1.0); // eq 3-3 
+                normn10[L] = Math.Sqrt((L + 1.0) * L * 0.5);  // eq 3-13
 
                 for (m = 1; m <= L; m++) // m = 1:L 
                 {
-                    norm1m[L, m] = Math.Sqrt((L - m) * (2.0 * L + 1.0) / ((L + m) * (2.0 * L - 1.0)));    // eq 3-4 
-                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2.0 * L + 1.0) /
-                        ((L + m) * (L + m - 1.0) * (2.0 * L - 3.0)));   // eq 3-5 
+                    norm1m[L, m] = Math.Sqrt((L - m) * (2 * L + 1.0) / ((L + m) * (2 * L - 1.0)));    // eq 3-4 
+                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2 * L + 1.0) /
+                        ((L + m) * (L + m - 1.0) * (2 * L - 3.0)));   // eq 3-5 
                     normn1[L, m] = Math.Sqrt((L + m + 1.0) * (L - m));    // part of eq 3-9 
                 }
             }
@@ -13378,10 +13398,11 @@ namespace AstroLibMethods
                         sumjn = sumjn + mxpnm * bnmtm1;
                         sumkn = sumkn - mxpnm * anmtm1;
                     }
+
+                    sumj = sumj + reorn * sumjn;
+                    sumk = sumk + reorn * sumkn;
                 }
 
-                sumj = sumj + reorn * sumjn;
-                sumk = sumk + reorn * sumkn;
                 sumh = sumh + reorn * sumhn;
                 sumgm = sumgm + reorn * sumgmn;
             }

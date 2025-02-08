@@ -38,7 +38,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="SGP4Lib">
-      <HintPath>..\..\libraries\SGP4Lib\SGP4Lib\bin\Debug\SGP4Lib.dll</HintPath>
+      <HintPath>..\..\SGP4Lib\SGP4Lib\obj\Debug\SGP4Lib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

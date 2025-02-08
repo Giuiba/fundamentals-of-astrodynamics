@@ -82,7 +82,7 @@ function [bigr2] = getGaussRoot(decl1, decl2, decl3, rtasc1, rtasc2, rtasc3, ...
     rad = 180.0 / pi;
 
     % -------------------------  implementation   -------------------------
-    tu = sqrt(re * re * re / mu)
+    tu = sqrt(re * re * re / mu);
 
     % ---------- set middle to 0, find decls to others -----------
     tau12 = (jd1 - jd2) * 86400.0 + (jdf1 - jdf2) * 86400.0; % days to sec
@@ -140,10 +140,10 @@ function [bigr2] = getGaussRoot(decl1, decl2, decl3, rtasc1, rtasc2, rtasc3, ...
         lmat
 
         fprintf(1,'rsmat eci %11.7f  %11.7f  %11.7f km \n',rsmatc');
-    end
 
-    fprintf(1,'this should be the inverse of what the code finds later\n');
-    li = inv(lmat)
+        fprintf(1,'this should be the inverse of what the code finds later\n');
+        li = inv(lmat);
+    end
 
 
     %     % alt way of Curtis not seem to work ------------------

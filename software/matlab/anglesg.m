@@ -81,8 +81,10 @@ function [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
     tau12 = (jd1 - jd2) * 86400.0 + (jdf1 - jdf2) * 86400.0; % days to sec
     tau13 = (jd1 - jd3) * 86400.0 + (jdf1 - jdf3) * 86400.0;
     tau32 = (jd3 - jd2) * 86400.0 + (jdf3 - jdf2) * 86400.0;
-    fprintf(1,'jd123 %14.6f %14.6f %14.6f %14.6f %14.6f %14.6f  \n',jd1,jdf1, jd2,jdf2, jd3, jdf3);
-    fprintf(1,'tau12 %14.6f tau13  %14.6f tau32  %14.6f \n',tau12,tau13, tau32);
+    if show == 'y'
+        fprintf(1,'jd123 %14.6f %14.6f %14.6f %14.6f %14.6f %14.6f  \n',jd1,jdf1, jd2,jdf2, jd3, jdf3);
+        fprintf(1,'tau12 %14.6f tau13  %14.6f tau32  %14.6f \n',tau12,tau13, tau32);
+    end
 
     % switch to cannonical for better accuracy in roots
     tau12c = tau12 / tusec;
@@ -255,11 +257,11 @@ function [r2, v2] = anglesg(decl1, decl2, decl3, rtasc1, rtasc2, ...
     poly( 7)=  0.0;
     poly( 8)=  0.0;
     poly( 9)=  -d2c*d2c;
-    fprintf(1,'%11.7f \n',poly);
 
     rootarr = roots( poly );
     if show == 'y'
         rootarr;
+        fprintf(1,'%11.7f \n',poly);
         %fprintf(1,'rootarr %11.7f \n',rootarr);
     end
 

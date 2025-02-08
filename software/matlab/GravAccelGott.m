@@ -21,17 +21,21 @@
 function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
     constastro;
     
+    % calculate partial of acceleration wrt state
+    partials = 'n';
+
     % this can be done ahead of time
+    % these are 0 based arrays since they start at 2
     for n = 2:nax+1 %RAE
-        norm1(n) = sqrt((2*n+1) / (2*n-1)); % eq 3-1 RAE
-        norm2(n) = sqrt((2*n+1) / (2*n-3)); % eq 3-2 RAE
-        norm11(n) = sqrt((2*n+1) / (2*n))/(2*n-1); % eq 3-3 RAE
-        normn10(n) = sqrt((n+1)*n / 2); % RAE
+        norm1(n) = sqrt((2*n+1.0) / (2*n-1.0)); % eq 3-1 RAE
+        norm2(n) = sqrt((2*n+1.0) / (2*n-3.0)); % eq 3-2 RAE
+        norm11(n) = sqrt((2*n+1.0) / (2*n))/(2*n-1.0); % eq 3-3 RAE
+        normn10(n) = sqrt((n+1.0)*n * 0.5); % RAE
         
         for m = 1:n %RAE
-            norm1m(n,m) = sqrt((n-m)*(2*n+1) / ((n+m)*(2*n-1))); % eq 3-4 RAE
-            norm2m(n,m) = sqrt((n-m)*(n-m-1)*(2*n+1) / ((n+m)*(n+m-1)*(2*n-3))); % eq 3-5 RAE
-            normn1(n,m) = sqrt((n+m+1)*(n-m)); % part of eq 3-9 RAE
+            norm1m(n,m) = sqrt((n-m)*(2*n+1.0) / ((n+m)*(2*n-1.0))); % eq 3-4 RAE
+            norm2m(n,m) = sqrt((n-m)*(n-m-1.0)*(2*n+1.0) / ((n+m)*(n+m-1.0)*(2*n-3.0))); % eq 3-5 RAE
+            normn1(n,m) = sqrt((n+m+1.0)*(n-m)); % part of eq 3-9 RAE
         end %RAE
     end %RAE
     
@@ -45,6 +49,7 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
     reor = re*ri;
     reorn = reor;
     muor2 = mu*ri*ri;
+    
     LegGottN(1,1) = 1.0; %RAE
     LegGottN(1,2) = 0.0; %RAE
     LegGottN(1,3) = 0.0; %RAE
@@ -55,7 +60,7 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
     % --------------- sectoral 
     for n = 2:nax %RAE
         ni = n+1; %RAE
-        LegGottN(ni,ni) = norm11(n)*LegGottN(n,n)*(2*n-1); %eq 3-15 RAE %norm
+        LegGottN(ni,ni) = norm11(n)*LegGottN(n,n)*(2*n-1.0); %eq 3-15 RAE %norm
         LegGottN(ni,ni+1) = 0.0; %RAE
         LegGottN(ni,ni+2) = 0.0; %RAE
     end
@@ -85,22 +90,38 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
 
         % --------------- tesseral (n,m=2) initial value
         LegGottN(ni,2) = (n2m1*sinlat*norm1m(n,1)*LegGottN(n,2) - n*norm2m(n,1)*LegGottN(nm1,2))/(nm1); %RAE %norm
-        
+
         sumhn = normn10(n)*LegGottN(ni,2)*c(ni,1); %norm %RAE
         sumgmn = LegGottN(ni,1)*c(ni,1)*np1; %RAE
+
+        if partials == 'y'
+            sumvn = pn(0) * c(ni,1);
+            summn = pn(2) * c(ni,1)*upsn(O);
+            sumpn = sumhn * np1;
+            sumln = sumgamn * (np1 + 1.0);
+        end
+
         if (max>0)
             for m = 2:n-2
                 mi = m+1; %RAE
                 % --------------- tesseral (n,m)
                 LegGottN(ni,mi) = (n2m1*sinlat*norm1m(n,m)*LegGottN(n,mi) - ...
-                           (nm1+m)*norm2m(n,m)*LegGottN(nm1,mi)) / (n-m); % eq 3-18 RAE %norm
+                    (nm1+m)*norm2m(n,m)*LegGottN(nm1,mi)) / (n-m); % eq 3-18 RAE %norm
+            end  % for
+
+            sumjn = 0.0;
+            sumkn = 0.0;
+            if partials == 'y'
+                sumnn = 0.0;
+                sumon = 0.0;
+                sumqn = 0.0;
+                sumrn = 0.0;
+                sumsn = 0.0;
+                sumtn = 0.0;    
             end
-            
-            sumjn = 0;
-            sumkn = 0;
             ctil(ni) = ctil(2)*ctil(ni-1) - stil(2)*stil(ni-1); %RAE
             stil(ni) = stil(2)*ctil(ni-1) + ctil(2)*stil(ni-1); %RAE
-            if(n<max)
+            if n < max
                 lim = n;
             else
                 lim = max;
@@ -110,26 +131,95 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
                 mi = m+1; %RAE
                 mm1 = mi-1; %RAE
                 mp1 = mi+1; %RAE
-                mxpnm = m*LegGottN(ni,mi); %RAE
-                bnmtil = c(ni,mi)*ctil(mi) + s(ni,mi)*stil(mi); %RAE
-                sumhn = sumhn + normn1(n,m)*LegGottN(ni,mp1)*bnmtil; %RAE %norm
-                sumgmn = sumgmn + (n+m+1)*LegGottN(ni,mi)*bnmtil; %RAE
-                bnmtm1 = c(ni,mi)*ctil(mm1) + s(ni,mi)*stil(mm1); %RAE
-                anmtm1 = c(ni,mi)*stil(mm1) - s(ni,mi)*ctil(mm1); %RAE
-                sumjn = sumjn + mxpnm*bnmtm1;
-                sumkn = sumkn - mxpnm*anmtm1;
-            end
+                mxpnm = m * LegGottN(ni,mi); %RAE
+                bnmtil = c(ni,mi) * ctil(mi) + s(ni,mi) * stil(mi); %RAE
+                sumhn = sumhn + normn1(n,m) * LegGottN(ni,mp1) * bnmtil; %RAE %norm
+                sumgmn = sumgmn + (n+m+1) * LegGottN(ni,mi) * bnmtil; %RAE
+                bnmtm1 = c(ni,mi) * ctil(mm1) + s(ni,mi) * stil(mm1); %RAE
+                anmtm1 = c(ni,mi) * stil(mm1) - s(ni,mi) * ctil(mm1); %RAE
+                sumjn = sumjn + mxpnm * bnmtm1;
+                sumkn = sumkn - mxpnm * anmtm1;
+
+                if partials == 'y'
+                    npmpl = ni + mp1;
+                    pnm = pn(mi);
+                    pnmp1 = pn(mp1);
+                    cnm = c(mi, 1);
+                    snm = s(mi, 1);
+                    ctil = ctil(mm1);
+                    stil = stil(mm1);
+
+                    bnmtml = cnm * ctil + snm * stil;
+                    pnmbnm = pnm * bnmtll;
+                    sumvn = sumvn + pnmbnm;
+                    if m < n
+                        z_pnmpl = zn(m) * pn(mpl);
+                        sumhn = sumhn + z_pnmpl * bnmtil;
+                        sumpn = sumpn + npmpl * z_pnmpl * bnmtil;
+                        sumqn = sumqn + M * z_pnmp1 * bnmtml;
+                        sumrn = sumrn- M * z_pnmpl * anmtml;
+                    end
+                    sumln = sumln + npmpl * (mpl + npl) *pnmbnm;
+                    summn = summn + pn(mp2) * bnmtil*upsn(m);
+                    sumsn = sumsn + npmpl * mxpnm * bnmtm1;
+                    sumtn = sumtn - npmp1 * mxpnm * anmtml;
+                    if m >= 2
+                        mm2 = m - 2;
+                        sumnn = sumnn + mml * mxpnm * (cnm * ctil(mm2) + snm*stil(mm2));
+                        sumon = sumon + mml * mxpnm * (cnm * stil(mm2) - snm*ctil(mm2));
+                    end
+                end
+
+            end  % for
 
             sumj = sumj + reorn*sumjn;
             sumk = sumk + reorn*sumkn;
-        end
+            if partials == 'y'
+                sumn = sumn + reorn* sumnn;
+                sumo = sumo + reorn* sumon;
+                sumq = sumq + reorn* sumqn;
+                sumr = sumr + reorn* sumrn;
+                sums = sums + reorn* sumsn;
+                sumt = sumt + reorn* sumtn; 
+            end
+        end  % if
+
+        % these will have values when m == 0
         sumh = sumh + reorn*sumhn;
         sumgm = sumgm + reorn*sumgmn;
-    end
+        if partials == 'y'
+            sumv = sumv + reorn * sumvn;
+            suml = suml + reorn * sumln;
+            summ = summ + reorn * summn;
+            sump = sump + reorn * sumpn;
+        end
+    end  % for
+
     lambda = sumgm + sinlat*sumh;
     accel(1) = -muor2*(lambda*xor - sumj);
     accel(2) = -muor2*(lambda*yor - sumk);
     accel(3) = -muor2*(lambda*zor - sumh);
     %accel = rnp'*g; %RAE
+
+    if partials == 'y'
+        pot = muor * sumv;
+        % Need to construct second partial matr1x_3x3
+        gg = -(summ * sinlat + sump + sumh);
+        ff = suml + lambda + sinlat * (sump + sumh - gg);
+        d1 = sinlat * sumq + sums;
+        d2 = sinlat * sumr + sumt;
+        dgdx (1, 1) = muor3 * ((ff* xovr- 2.0 * d1) * xovr - lambda + sumn);
+        dgdx (2, 2) = muor3 * ((ff * yovr - 2.0 * d2) * yovr - lambda - sumn);
+        dgdx (3, 3) = muor3 * ((ff * zovr + 2.0 * gg) * zovr - lambda + summ);
+        temp = muor3 * ((ff * yovr - d2) * xovr - d1 * yovr - sumo);
+        dgdx (1, 2) = temp;
+        dgdx (2, 1) = temp;
+        temp = muor3 * ((ff* xovr - d1) * zovr + gg * xovr + sumq);
+        dgdx (1, 3) = temp;
+        dgdx (3, 1) = temp;
+        temp = muor3 * ((ff * yovr - d2) * zovr + gg * yovr + sumr);
+        dgdx (2, 3) = temp;
+        dgdx (3, 2) = temp;
+    end
 
 end  % GravAccelGott

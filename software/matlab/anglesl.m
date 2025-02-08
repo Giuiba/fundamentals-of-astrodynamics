@@ -83,6 +83,9 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
         rtasc3, jd1, jdf1, jd2, jdf2, jd3, jdf3, diffsites, rs1, rs2, rs3, fid)
 
     constastro;
+    %show = 'y';
+    show = 'n';
+
     % -------------------------  implementation   -------------------------
     %     omegaearth   =     0.000072921158553;  % earth rad/s
     %     omegaearth   =     0.017202791208627;  % sun rad/s
@@ -190,8 +193,10 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
         end
     end
 
-    rs2cdot;
-    rs2cddot;
+    if show == 'y'
+        rs2cdot
+        rs2cddot
+    end
 
     for i= 1 : 3
         dmat(i,1) = los2(i);
@@ -215,8 +220,11 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
         dmat4(i,3) =lddot(i);
     end
 
-    dmat1;
-    dmat2;
+    if show == 'y'
+        dmat1;
+        dmat2;
+    end
+
     d = 2.0 * det(dmat);
     d1c= det(dmat1);
     d2c= det(dmat2);
@@ -256,7 +264,10 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
         rootarr = roots( poly );
 
         x = rootarr(1,1);
-        poly(1)*x^8 + poly(3)*x^6+poly(6)*x^3+poly(9);
+        if show == 'y'
+            poly(1)*x^8 + poly(3)*x^6 + poly(6)*x^3 + poly(9)
+            poly
+        end
 
 
         % ------------------ find correct (xx) root ----------------
@@ -323,10 +334,7 @@ function [r2, v2] = anglesl(decl1, decl2, decl3, rtasc1, rtasc2, ...
             v2(i) = v2c(i) * re / tusec;
         end
 
-        % -------------- find middle velocity vector --------------
-        for i= 1 : 3
-            v2(i)= rhodot*los2(i) + rho*ldot(i) + rs2cdot(i);
-        end
+        bigr2 = bigr2c * re;
     else
         fprintf(1,'determinant value was zero %11.7f ',d );
     end

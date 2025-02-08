@@ -180,7 +180,9 @@ function [r2, r3, f1, f2, q1, magr1, magr2, a, deltae32] = doubler(cc1, cc2, mag
         deltam32 = deltae32+2*s*(sin(deltae32/2))^2-c*sin(deltae32);
         deltam12 = -deltae21+2*s*(sin(deltae21/2))^2+c*sin(deltae21);
     else
-        fprintf(1,'hyperbolic, e1 is greater than 0.99 %11.7f \n',e);
+        if show == 'y'
+            fprintf(1,'hyperbolic, e1 is greater than 0.99 %11.7f \n',e);
+        end
         if (a > 0.0)
             a = -a;  % get right sign for hyperbolic orbit
             p = -p;
