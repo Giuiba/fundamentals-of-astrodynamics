@@ -46,7 +46,7 @@ function [classcov, tm] = coveq2cl(eqcov, eqstate, anom, fr)
         % -------- parse the orbit state
         % --------- determine which set of variables is in use ---------
         if strcmp(anom,'truea') == 1 || strcmp(anom,'meana') == 1  % 1 is true
-            a = eqstate(1);  % in m
+            a = eqstate(1) * 1000.0;  % in m
             n = sqrt(mum/a^3);
         else
             if strcmp(anom,'truen') == 1 || strcmp(anom,'meann') == 1  % 1 is true

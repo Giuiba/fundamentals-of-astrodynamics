@@ -22,7 +22,7 @@
 %
 %  locals        :
 %    r           - matrix of partial derivatives
-%    a           - semimajor axis                 km
+%    a           - semimajor axis                 m
 %    ecc         - eccentricity
 %    incl        - inclination                    0.0  to pi rad
 %    omaga       - longitude of ascending node    0.0  to 2pi rad
@@ -44,14 +44,14 @@
 %   [cartcov,tm] = covcl2ct( classcov,classstate,anom )
 % ----------------------------------------------------------------------------
 
-function [cartcov,tm] = covcl2ctnew( classcov, classstate, anom )
+function [cartcov,tm] = covcl2ct( classcov, classstate, anom )
 
     % -------- define gravitational constant
     constastro;
 
     % --------- determine which set of variables is in use ---------
     % ---- parse the input vector into the classical elements -----
-    a = classstate(1);  % in m
+    a = classstate(1) * 1000.0;  % in m
     n = sqrt(mum/a^3);
     ecc     = classstate(2);
     incl    = classstate(3);
@@ -141,7 +141,7 @@ function [cartcov,tm] = covcl2ctnew( classcov, classstate, anom )
 
     % ---- partials of (a ecc incl node argp nu) wrt ry
     tm(2,1) = p1 * (p21*cos_nu + p22*sin_nu);
-    %tm(2,1) = ry/a;
+    tm(2,1) = ry/a;
     tm(2,2) = -p3 * (p21*cos_nu + p22*sin_nu);
     tm(2,3) = p5 * p23*(sin_w*cos_nu + cos_w*sin_nu);
     tm(2,4) = p5 * (p11*cos_nu + p12*sin_nu);
@@ -162,7 +162,7 @@ function [cartcov,tm] = covcl2ctnew( classcov, classstate, anom )
 
     % ---- partials of (a ecc incl node argp nu) wrt rz
     tm(3,1) = p1 * (p31*cos_nu + p32*sin_nu);
-    %tm(3,1) = rz/a;
+    tm(3,1) = rz/a;
     tm(3,2) = -p3 * sin_inc * (cos_w*sin_nu + sin_w*cos_nu);
     tm(3,3) =  p5 * cos_inc * (cos_w*sin_nu + sin_w*cos_nu);
     tm(3,4) = 0.0;
@@ -180,7 +180,7 @@ function [cartcov,tm] = covcl2ctnew( classcov, classstate, anom )
 
     % ---- partials of (a ecc incl node argp nu) wrt vx
     tm(4,1) = p2 * (p11*sin_nu - p12*(ecc + cos_nu));
-    %tm(4,1) = -vx/(2.0*a);
+    tm(4,1) = -vx/(2.0*a);
     tm(4,2) = -p4 * (p11*sin_nu - p12*(ecc + cos_nu)) + p12*p0;
     tm(4,3) = -p0 * sin_raan*(p31*sin_nu - p32*(ecc + cos_nu));
     tm(4,4) = p0 * (p21*sin_nu - p22*(ecc + cos_nu));
@@ -199,7 +199,7 @@ function [cartcov,tm] = covcl2ctnew( classcov, classstate, anom )
 
     % ---- partials of (a ecc incl node argp nu) wrt vy
     tm(5,1) = p2 * (p21*sin_nu - p22*(ecc + cos_nu));
-    %tm(5,1) = -vy/(2.0*a);
+    tm(5,1) = -vy/(2.0*a);
     tm(5,2) = -p4 * (p21*sin_nu - p22*(ecc + cos_nu)) + p22*p0;
     tm(5,3) = p0 * cos_raan*(p31*sin_nu - p32*(ecc + cos_nu));
     tm(5,4) = p0 * (-p11*sin_nu + p12*(ecc + cos_nu));
@@ -218,7 +218,7 @@ function [cartcov,tm] = covcl2ctnew( classcov, classstate, anom )
     % ---- partials of (a ecc incl node argp nu) wrt vz
     % same
     tm(6,1) = p2 * (p31*sin_nu - p32*(ecc + cos_nu));
-    % tm(6,1) = -vz/(2.0*a);
+    tm(6,1) = -vz/(2.0*a);
     tm(6,2) = -p4 * (p31*sin_nu - p32*(ecc + cos_nu)) + p32*p0;
     tm(6,3) = p0 * cos_inc*(cos_w*cos_nu - sin_w*sin_nu + ecc*cos_w);
     tm(6,4) = 0.0;
@@ -238,3 +238,4 @@ function [cartcov,tm] = covcl2ctnew( classcov, classstate, anom )
     % ---------- calculate the output covariance matrix -----------
     cartcov =  tm*classcov*tm';
 
+end

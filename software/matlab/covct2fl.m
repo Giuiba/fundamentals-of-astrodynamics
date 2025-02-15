@@ -2,43 +2,40 @@
 %
 %                           function covct2fl
 %
-%  this function transforms a six by six covariance matrix expressed in cartesian elements
-%    into one expressed in flight parameters
+%  this function transforms a six by six covariance matrix expressed in cartesian
+%    elements into one expressed in flight parameters
 %
-%  author        : david vallado                  719-573-2600   21 jun 2002
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  inputs          description                    range / units
+%  inputs          description                              range / units
 %    cartcov     - 6x6 cartesian covariance matrix
-%    cartstate   - 6x1 cartesian orbit state      (x y z vx vy vz)
-%    anom        - anomaly                        'latlon', 'radec'
-%    ttt         - julian centuries of tt         centuries
-%    jdut1       - julian date of ut1             days from 4713 bc
-%    lod         - excess length of day           sec
-%    xp          - polar motion coefficient       arc sec
-%    yp          - polar motion coefficient       arc sec
-%    terms       - number of terms for ast calculation 0,2
-%
+%    cartstate   - 6x1 cartesian orbit state                (x y z vx vy vz) m
+%    anom        - anomaly                                  'latlon', 'radec'
+%    ttt         - julian centuries of tt                   centuries
+%    jdut1       - julian date of ut1                       days from 4713 bc
+%    lod         - excess length of day                     sec
+%    xp          - polar motion coefficient                 rad
+%    yp          - polar motion coefficient                 rad
+%    terms       - number of terms for ast calculation      0,2
+
 %  outputs       :
 %    flcov       - 6x6 flight covariance matrix
 %    tm          - transformation matrix
 %
 %  locals        :
 %    r           - matrix of partial derivatives
-%    x,y,z       - components of position vector  km
-%    vx,vy,vz    - components of position vector  km/s
-%    magr        - eci position vector magnitude  km
-%    magv        - eci velocity vector magnitude  km/sec
+%    x,y,z       - components of position vector            km
+%    vx,vy,vz    - components of position vector            km/s
+%    magr        - eci position vector magnitude            km
+%    magv        - eci velocity vector magnitude            km/sec
 %    d           - r dot v
 %    h           - angular momentum vector
-%    hx,hy,hz    - components of angular momentum vector
-%    hcrossrx,y,z- components of h cross r vector
-%    p1,p2       - denominator terms for the partials
 %
-%  coupling      :
+% coupling      :
 %    ecef2eci    - convert eci vectors to ecef
 %
-%  references    :
-%    Vallado and Alfano 2015
+% references    :
+%    Vallado and Alfano AAS 15-537
 %
 %   [flcov,tm] = covct2fl( cartcov,cartstate, anomflt, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps);
 % ----------------------------------------------------------------------------
@@ -46,7 +43,7 @@
 function [flcov,tm] = covct2fl( cartcov,cartstate, anomflt, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps)
 
     % -------- parse the input vectors into cartesian components
-    rx = cartstate(1) * 1000;  % keep all in m, m/s
+    rx = cartstate(1) * 1000;  % m, m/s
     ry = cartstate(2) * 1000;  % this is eci always
     rz = cartstate(3) * 1000;
     vx = cartstate(4) * 1000;
@@ -55,7 +52,7 @@ function [flcov,tm] = covct2fl( cartcov,cartstate, anomflt, iau80arr, ttt, jdut1
 
     if strcmp(anomflt, 'latlon') == 1
         % -------- convert r to eci
-        reci = [rx;ry;rz]/1000;
+        reci = [rx;ry;rz]/1000;  % km
         veci = [vx;vy;vz]/1000;
         aeci = [0.0; 0.0; 0.0];
         % now find ecef coordinates
@@ -191,3 +188,4 @@ function [flcov,tm] = covct2fl( cartcov,cartstate, anomflt, iau80arr, ttt, jdut1
     % ---------- calculate the output covariance matrix -----------
     [flcov]= tm*cartcov*tm';
 
+end

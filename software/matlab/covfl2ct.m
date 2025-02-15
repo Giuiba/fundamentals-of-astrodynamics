@@ -5,21 +5,18 @@
 %  this function transforms a six by six covariance matrix expressed in
 %    flight elements into one expressed in cartesian elements.
 %
-%  author        : david vallado                  719-573-2600   27 may 2003
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
-%  revisions
-%    vallado     - major update                                  26 aug 2015
-%
-%  inputs          description                    range / units
+%  inputs          description                              range / units
 %    flcov       - 6x6 flight covariance matrix
-%    flstate     - 6x1 flight orbit state         (r v latgc lon fpa az)
-%    anom        - anomaly                        'latlon', 'radec'
-%    ttt         - julian centuries of tt         centuries
-%    jdut1       - julian date of ut1             days from 4713 bc
-%    lod         - excess length of day           sec
-%    xp          - polar motion coefficient       arc sec
-%    yp          - polar motion coefficient       arc sec
-%    terms       - number of terms for ast calculation 0,2
+%    flstate     - 6x1 flight orbit state                   (r v latgc lon fpa az)
+%    anom        - anomaly                                  'latlon', 'radec'
+%    ttt         - julian centuries of tt                   centuries
+%    jdut1       - julian date of ut1                       days from 4713 bc
+%    lod         - excess length of day                     sec
+%    xp          - polar motion coefficient                 rad
+%    yp          - polar motion coefficient                 rad
+%    terms       - number of terms for ast calculation      0,2
 %
 %  outputs       :
 %    cartcov     - 6x6 cartesian covariance matrix
@@ -27,22 +24,21 @@
 %
 %  locals        :
 %    tm           - matrix of partial derivatives
-%    magr        - eci position vector magnitude  km
-%    magv        - eci velocity vector magnitude  km/sec
-%    latgc       - geocentric latitude            rad
-%    lon         - longitude                      rad
-%    fpa         - sat flight path angle          rad
-%    az          - sat flight path az             rad
-%    fpav        - sat flight path anglefrom vert rad
-%    xe,ye,ze    - ecef position vector componentskm
+%    magr        - eci position vector magnitude            km
+%    magv        - eci velocity vector magnitude            km/sec
+%    latgc       - geocentric latitude                      rad
+%    lon         - longitude                                rad
+%    fpa         - sat flight path angle                    rad
+%    az          - sat flight path az                       rad
+%    fpav        - sat flight path anglefrom vert           rad
+%    xe,ye,ze    - ecef position vector components          km
 %
 %  coupling      :
 %    ecef2eci    - convert eci vectors to ecef
 %
 %  references    :
-%    Vallado and Alfano 2015
-%
-% [cartcov,tm] = covfl2ct( flcov,flstate, anomflt, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps);
+%    Vallado and Alfano AAS 15-537
+%  [cartcov,tm] = covfl2ct( flcov,flstate, anomflt, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps);
 % ----------------------------------------------------------------------------
 
 function [cartcov,tm] = covfl2ct( flcov,flstate, anomflt, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps)
@@ -54,8 +50,8 @@ function [cartcov,tm] = covfl2ct( flcov,flstate, anomflt, iau80arr, ttt, jdut1, 
     latgc= flstate(2);
     fpa  = flstate(3);
     az   = flstate(4);
-    magr = flstate(5);  % already converted to m in setcov
-    magv = flstate(6);
+    magr = flstate(5) * 1000.0;  % m
+    magv = flstate(6) * 1000.0;
 
     cfpa = cos(fpa);
     sfpa = sin(fpa);
@@ -71,14 +67,14 @@ function [cartcov,tm] = covfl2ct( flcov,flstate, anomflt, iau80arr, ttt, jdut1, 
         sraf = sin(lon);
         cdf = cos(latgc);
         sdf = sin(latgc);
-        recef(1) = magr*0.001*cos(latgc)*cos(lon);  % in km
-        recef(2) = magr*0.001*cos(latgc)*sin(lon);
-        recef(3) = magr*0.001*sin(latgc);
+        recef(1) = magr * 0.001*cos(latgc)*cos(lon);  % in km
+        recef(2) = magr * 0.001*cos(latgc)*sin(lon);
+        recef(3) = magr * 0.001*sin(latgc);
         % -------- convert r to eci
         % this vel is wrong but not needed except for special case ahead
-        vecef(1) = magv*0.001*( -cos(lon)*sin(latgc)*caz*cfpa - sin(lon)*saz*cfpa + cos(lon)*cos(latgc)*sfpa ); % m/s
-        vecef(2) = magv*0.001*( -sin(lon)*sin(latgc)*caz*cfpa + cos(lon)*saz*cfpa + sin(lon)*cos(latgc)*sfpa );
-        vecef(3) = magv*0.001*( sin(lon)*sfpa + cos(latgc)*caz*cfpa );
+        vecef(1) = magv * 0.001*( -cos(lon)*sin(latgc)*caz*cfpa - sin(lon)*saz*cfpa + cos(lon)*cos(latgc)*sfpa ); % m/s
+        vecef(2) = magv * 0.001*( -sin(lon)*sin(latgc)*caz*cfpa + cos(lon)*saz*cfpa + sin(lon)*cos(latgc)*sfpa );
+        vecef(3) = magv * 0.001*( sin(lon)*sfpa + cos(latgc)*caz*cfpa );
         aecef = [0.0; 0.0; 0.0];
         [reci, veci, aeci] = ecef2eci(recef', vecef', aecef, iau80arr, ttt, jdut1, lod, xp, yp, eqeterms, ddpsi, ddeps );
         reci = reci*1000.0;  % in m
@@ -205,4 +201,4 @@ function [cartcov,tm] = covfl2ct( flcov,flstate, anomflt, iau80arr, ttt, jdut1, 
     % ---------- calculate the output covariance matrix -----------
     [cartcov] =  tm*flcov*tm';
 
-
+end

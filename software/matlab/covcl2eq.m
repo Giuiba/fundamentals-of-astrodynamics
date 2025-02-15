@@ -21,7 +21,7 @@
 %    tm          - transformation matrix
 %
 %  locals        :
-%    a           - semimajor axis                 km
+%    a           - semimajor axis                 m
 %    ecc         - eccentricity
 %    incl        - inclination                    0.0  to pi rad
 %    omaga       - longitude of ascending node    0.0  to 2pi rad
@@ -46,7 +46,7 @@ function [eqcov, tm] = covcl2eq ( classcov, classstate, anom, fr)
 
         % --------- determine which set of variables is in use ---------
         % -------- parse the orbit state
-        a = classstate(1);  % in m
+        a = classstate(1) * 1000.0;  % in m
         n = sqrt(mum/a^3);
         ecc     = classstate(2);
         incl    = classstate(3);

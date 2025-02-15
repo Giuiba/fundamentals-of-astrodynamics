@@ -26,7 +26,7 @@
 %    vj2000      - velocity vector                km/s
 %    vx,vy,vz    - components of position vector  km/s
 %    p           - semilatus rectum               km
-%    a           - semimajor axis                 km
+%    a           - semimajor axis                 m
 %    ecc         - eccentricity
 %    incl        - inclination                    0.0  to pi rad
 %    omaga       - longitude of ascending node    0.0  to 2pi rad
@@ -66,7 +66,7 @@ function [classcov, tm] = covct2cl(cartcov, cartstate, anom )
 
     % -------- convert to a classical orbit state for ease of computation
     [p, a, ecc, incl ,omega, argp, nu, mean, arglat, truelon, lonper ] = rv2coe  (reci, veci);
-    p = p * 1000.0;
+    p = p * 1000.0;  % m
     a = a * 1000.0;
     n = sqrt(mum/a^3);
 
