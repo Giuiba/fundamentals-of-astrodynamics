@@ -326,7 +326,7 @@ def rv2coe(
             truelon = adjust_angle(truelon)
 
     # Find mean anomaly for eccentric orbits
-    if orbit_type in [utils.OrbitType.EPH_INCLINED, utils.OrbitType.EPH_EQUATORIAL]:
+    if np.isreal(ecc):
         _, m = newtonnu(ecc, nu)
 
     return p, a, ecc, incl, raan, argp, nu, m, arglat, truelon, lonper, orbit_type
@@ -740,7 +740,7 @@ def rv2flt(
         yp (float): Polar motion coefficient in radians
         ddpsi (float): Delta psi correction to GCRF in radians
         ddeps (float): Delta epsilon correction to GCRF in radians
-        iau80arr (IAU80Array): IAU
+        iau80arr (IAU80Array): IAU 1980 data
         eqeterms (bool, optional): Add terms for ast calculation (default True)
 
     Returns:
@@ -1000,12 +1000,12 @@ def rv2radec(
     return rr, rtasc, decl, drr, drtasc, ddecl
 
 
-###############################################################################
+########################################################################################
 # Azimuth-Elevation Elements
-###############################################################################
+########################################################################################
 
 
-def raz2rvs(
+def razel2rvsez(
     rho: float, az: float, el: float, drho: float, daz: float, del_el: float
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Converts range, azimuth, and elevation values with slant range and velocity
@@ -1046,7 +1046,7 @@ def raz2rvs(
     return rhosez, drhosez
 
 
-def rvs2raz(
+def rvsez2razel(
     rhosez: ArrayLike, drhosez: ArrayLike
 ) -> Tuple[float, float, float, float, float, float]:
     """Transforms SEZ range and velocity vectors to range, azimuth, and elevation values
@@ -1138,7 +1138,7 @@ def razel2rv(
             vecef (np.ndarray): ECEF velocity vector in km/s
     """
     # Find SEZ range and velocity vectors
-    rhosez, drhosez = raz2rvs(rho, az, el, drho, daz, del_el)
+    rhosez, drhosez = razel2rvsez(rho, az, el, drho, daz, del_el)
 
     # Perform SEZ to ECEF transformation
     rhoecef = rot3(rot2(rhosez, latgd - const.HALFPI), -lon).T
@@ -1216,6 +1216,94 @@ def rv2razel(
     del_el = (drhosez[2] - drho * np.sin(el)) / temp if abs(temp) > const.SMALL else 0
 
     return rho, az, el, drho, daz, del_el
+
+
+########################################################################################
+# Site Topocentric (SEZ) Elements
+########################################################################################
+
+
+def _sez_transformation_matrix(lat: float, lon: float) -> np.ndarray:
+    """Computes the transformation matrix from ECI to SEZ."""
+    # Zenith component
+    zvec = unit(
+        np.array([np.cos(lat) * np.cos(lon), np.cos(lat) * np.sin(lon), np.sin(lat)])
+    )
+
+    # East component
+    kvec = np.array([0, 0, 1])
+    evec = unit(np.cross(kvec, zvec))
+
+    # South component
+    svec = unit(np.cross(evec, zvec))
+
+    # Transformation matrix
+    return np.vstack([svec, evec, zvec])
+
+
+def rv2sez(
+    reci: ArrayLike, veci: ArrayLike, lat: float, lon: float
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Converts position and velocity vectors into site topocentric (SEZ) coordinates.
+
+    References:
+        Vallado: 2004, p. 162
+
+    Args:
+        reci (array_like): ECI position vector in km
+        veci (array_like): ECI velocity vector in km/s
+        lat (float): Relative latitude of the second satellite w.r.t. the first
+                     in radians
+        lon (float): Relative longitude of the second satellite w.r.t the first
+                     in radians
+
+    Returns:
+        tuple: (rsez, vsez, transmat)
+            rsez (np.ndarray): SEZ position vector in km
+            vsez (np.ndarray): SEZ velocity vector in km/s
+            transmat (np.ndarray): Transformation matrix from ECI to SEZ
+    """
+    # Transformation matrix from ECI to SEZ
+    transmat = _sez_transformation_matrix(lat, lon)
+
+    # Transform position and velocity vectors
+    rsez = transmat @ reci
+    vsez = transmat @ veci
+
+    return rsez, vsez, transmat
+
+
+def sez2rv(
+    rsez: ArrayLike, vsez: ArrayLike, lat: float, lon: float
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Converts site topocentric (SEZ) coordinates into ECI position and velocity
+    vectors.
+
+    References:
+        Vallado: 2004, p. 162
+
+    Args:
+        rsez (array_like): SEZ position vector in km
+        vsez (array_like): SEZ velocity vector in km/s
+        lat (float): Relative latitude of the second satellite w.r.t. the first
+                     in radians
+        lon (float): Relative longitude of the second satellite w.r.t the first
+                     in radians
+
+    Returns:
+        tuple: (reci, veci, transmat)
+            reci (np.ndarray): ECI position vector in km
+            veci (np.ndarray): ECI velocity vector in km/s
+            transmat (np.ndarray): Transformation matrix from SEZ to ECI
+    """
+    # Transformation matrix from SEZ to ECI
+    transmat = _sez_transformation_matrix(lat, lon).T
+
+    # Transform back to ECI
+    reci = transmat @ rsez
+    veci = transmat @ vsez
+
+    return reci, veci, transmat
 
 
 ########################################################################################
