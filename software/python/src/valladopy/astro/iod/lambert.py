@@ -241,6 +241,87 @@ def min_time(
     return tmin, tminp, tminenergy
 
 
+def tmax_rp(
+    r1: ArrayLike, r2: ArrayLike, dm: DirectionOfMotion, nrev: int, tol: float = 1e-3
+) -> Tuple[float, np.ndarray]:
+    """Solves Lambert's problem and finds the TOF for maximum perigee radius.
+
+    References:
+        Thompson: 2019
+
+    Args:
+        r1 (array_like): Initial ECI position vector in km
+        r2 (array_like): Final ECI position vector in km
+        dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
+        nrev (int): Number of revolutions (0, 1, 2, ...)
+        tol (float, optional): Distance tolerance in km (defaults to 1e-3, or 1m)
+
+    Returns:
+        tuple: (tmaxrp, v1t)
+            tmaxrp (float): Maximum perigee time of flight in seconds
+            v1t (np.ndarray): Initial velocity vector at r1 in km/s
+    """
+    v1t = np.zeros(3)
+    magr1, magr2 = np.linalg.norm(r1), np.linalg.norm(r2)
+
+    # Calculate the cosine of the angle between the two position vectors
+    cos_deltanu = np.dot(r1, r2) / (magr1 * magr2)
+    cos_deltanu = np.clip(cos_deltanu, -1, 1)  # ensure within [-1, 1]
+
+    # Calculate the sine of the angle
+    rcrossr = np.cross(r1, r2)
+    sindeltanu = np.linalg.norm(rcrossr) / (magr1 * magr2)
+    if dm == DirectionOfMotion.LONG:
+        sindeltanu *= -1  # flip sign for LONG way
+
+    # Calculate the time of flight for maximum perigee radius
+    y1, y2 = MU / magr1, MU / magr2
+    tempvec = r1 + r2
+    if np.linalg.norm(tempvec) < tol:  # nearly circular endpoints
+        c = np.sqrt(y1)
+        tmaxrp = (TWOPI * nrev + np.arctan2(sindeltanu, cos_deltanu)) * (MU / c**3)
+    else:
+        if magr1 < magr2:
+            c = np.sqrt((y2 - y1 * cos_deltanu) / (1 - cos_deltanu))
+            x1, x2 = 0, (y1 - c**2) * sindeltanu
+        else:
+            c = np.sqrt((y1 - y2 * cos_deltanu) / (1 - cos_deltanu))
+            x1, x2 = (-y2 + c**2) * sindeltanu, 0
+
+        r = np.sqrt(x1**2 + (y1 - c**2) ** 2) / c
+
+        # Check if acos is larger than 1
+        temp = c * (r**2 + y1 - c**2) / (r * y1)
+        e1 = np.arccos(np.clip(temp, -1, 1))
+        if x1 < 0:
+            e1 = TWOPI - e1
+
+        temp = c * (r**2 + y2 - c**2) / (r * y2)
+        e2 = np.arccos(np.clip(temp, -1, 1))
+        if x2 < 0:
+            e2 = TWOPI - e2
+        if e2 < e1:
+            e2 += TWOPI
+
+        k = (e2 - e1) - np.sin(e2 - e1)
+
+        tmaxrp = MU * (
+            (TWOPI * nrev + k) / np.abs(c**2 - r**2) ** 1.5
+            + (c * sindeltanu) / (y1 * y2)
+        )
+
+        # Close to 180 deg transfer case
+        if magr2 * sindeltanu > tol:
+            nunit = unit(rcrossr)
+            if sindeltanu < 0:
+                nunit *= -1
+
+            nr1 = np.cross(nunit, r1)
+            v1t = (x1 / c) * r1 / magr1 + (y1 / c) * (nr1 / magr1)
+
+    return tmaxrp, v1t
+
+
 ########################################################################################
 # Battin's Method
 ########################################################################################
@@ -449,7 +530,7 @@ def battin(
     r2: ArrayLike,
     v1: ArrayLike,
     dm: DirectionOfMotion,
-    df: DirectionOfFlight,
+    de: DirectionOfEnergy,
     nrev: int,
     dtsec: float,
     n_loops_he: int = 20,
@@ -472,7 +553,7 @@ def battin(
         v1 (array_like): Initial ECI velocity vector in km/s
                          (needed for 180-degree transfer)
         dm (DirectionOfMotion): Direction of motion (LONG or SHORT)
-        df (DirectionOfFlight): Direction of flight (DIRECT or RETROGRADE)
+        de (DirectionOfEnergy): Direction of energy (LOW or HIGH)
         nrev (int): Number of revolutions (0, 1, 2, ...)
         dtsec (float): Time between r1 and r2 in seconds
         n_loops_he (int, optional): Number of loops for high energy case
@@ -481,9 +562,9 @@ def battin(
                                     (defaults to 30)
 
     Returns:
-        tuple: (v1dv, v2dv)
-            v1dv (np.ndarray): Transfer velocity vector at r1 in km/s
-            v2dv (np.ndarray): Transfer velocity vector at r2 in km/s
+        tuple: (v1t, v2t)
+            v1t (np.ndarray): Transfer velocity vector at r1 in km/s
+            v2t (np.ndarray): Transfer velocity vector at r2 in km/s
 
     Notes:
         - The performance over time varies depending on the input TOF (dtsec)
@@ -491,10 +572,10 @@ def battin(
           See plot of time vs. psi (Figure 7-16) in Vallado for more details.
     """
     # Validate the Pydantic model
-    _ = LambertParams(r1=r1, v1=v1, r2=r2, dm=dm, df=df, nrev=nrev, dtsec=dtsec)
+    _ = LambertParams(r1=r1, v1=v1, r2=r2, dm=dm, de=de, nrev=nrev, dtsec=dtsec)
 
     # Initialize values
-    v1dv, v2dv = np.array([np.NAN] * 3), np.array([np.NAN] * 3)
+    v1t, v2t = np.array([np.NAN] * 3), np.array([np.NAN] * 3)
     y = 0
 
     # Create numpy arrays and compute magnitudes of r1 and r2
@@ -502,7 +583,7 @@ def battin(
 
     # Determine direction of flight
     magrcrossr = np.linalg.norm(np.cross(r1, r2))
-    sign = 1 if df == DirectionOfFlight.DIRECT else -1
+    sign = 1 if dm == DirectionOfMotion.SHORT else -1
     sindeltanu = sign * magrcrossr / (magr1 * magr2)
 
     # Compute delta nu
@@ -526,8 +607,12 @@ def battin(
     # Context for the safe square root function errors
     con = "Battin's method intermediate calculations: please adjust `dtsec`"
 
+    # Default values for y and xn
+    y_default, xn_default = 75, 1
+    warn_msg = f"Failed to calculate y, setting to {y_default} and xn to {xn_default}"
+
     # High energy case adjustments for long way, retrograde multi-rev
-    if dm == DirectionOfMotion.LONG and nrev > 0:
+    if de == DirectionOfEnergy.HIGH and nrev > 0:
         xn, x = 1e-20, 10
         loops = 1
         while abs(xn - x) >= SMALL and loops <= n_loops_he:
@@ -553,6 +638,12 @@ def battin(
                 (m / (y**2) - (1 + l_))
                 - safe_sqrt((m / (y**2) - (1 + l_)) ** 2 - 4 * l_, con)
             )
+
+            # Check for NaN values
+            if np.isnan(y):
+                y, xn = y_default, xn_default
+                logger.warning(warn_msg)
+
             loops += 1
 
         # Determine transfer velocity vectors for high energy case
@@ -562,7 +653,7 @@ def battin(
             s * (1 + lam) ** 2 * (l_ + x)
         )
         ecc = safe_sqrt(1 - p / a, con)
-        v1dv, v2dv = hodograph(r1, r2, v1, p, ecc, dnu, dtsec)
+        v1t, v2t = hodograph(r1, r2, v1, p, ecc, dnu, dtsec)
     else:
         # Standard processing, low energy case
         loops, x = 1, 10
@@ -588,6 +679,12 @@ def battin(
             k2 = kbatt(u)
             y = ((1 + h1) / 3) * (2 + safe_sqrt(1 + b, con) / (1 + 2 * u * k2 * k2))
             xn = safe_sqrt(((1 - l_) * 0.5) ** 2 + m / (y**2), con) - (1 + l_) * 0.5
+
+            # Check for NaN values
+            if np.isnan(y):
+                y, xn = y_default, xn_default
+                logger.warning(warn_msg)
+
             loops += 1
 
         # Determine transfer velocity vectors for standard case
@@ -607,9 +704,9 @@ def battin(
                 / (eps**2 + 4 * magr2 / magr1 * np.sin(dnu * 0.5) ** 2),
                 con,
             )
-            v1dv, v2dv = hodograph(r1, r2, v1, p, ecc, dnu, dtsec)
+            v1t, v2t = hodograph(r1, r2, v1, p, ecc, dnu, dtsec)
 
-    return v1dv, v2dv
+    return v1t, v2t
 
 
 ########################################################################################
