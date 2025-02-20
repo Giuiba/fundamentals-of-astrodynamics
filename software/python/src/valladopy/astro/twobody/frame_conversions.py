@@ -1247,7 +1247,7 @@ def rv2sez(
     """Converts position and velocity vectors into site topocentric (SEZ) coordinates.
 
     References:
-        Vallado: 2004, p. 162
+        Vallado: 2022, p. 165-166
 
     Args:
         reci (array_like): ECI position vector in km
@@ -1280,7 +1280,7 @@ def sez2rv(
     vectors.
 
     References:
-        Vallado: 2004, p. 162
+        Vallado: 2022, p. 165-166
 
     Args:
         rsez (array_like): SEZ position vector in km
