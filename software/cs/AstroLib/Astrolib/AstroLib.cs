@@ -38,12 +38,7 @@ using System.Text.RegularExpressions;
 
 using MathTimeMethods;  // Edirection, globals
 using EOPSPWMethods;    // EOPDataClass, SPWDataClass, iau80Class, iau06Class
-using static MathTimeMethods.MathTimeLib;
-using System.Security.Cryptography;
-using System.Security.Policy;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using System.Net.Sockets;
+
 
 namespace AstroLibMethods
 {
@@ -73,21 +68,15 @@ namespace AstroLibMethods
         public class gravityConst
         {
             public string name;
-            public double[,] c = new double[2200, 2200];
-            public double[,] s = new double[2200, 2200];
-            public double[,] cNor = new double[2200, 2200];  // normalized coefficients
-            public double[,] sNor = new double[2200, 2200];
-            public double[,] cSig = new double[2200, 2200];  // sigmas
-            public double[,] sSig = new double[2200, 2200];
-            public double mum = 3.986004415e14; // m^3/s^2 stk uses .4415 
-            public double mu = 398600.4415;     // km^3/s^2 stk uses .4415
-            public double re = 6378.1363;       // km  stk uses .1363
-            public double rem = 6378136.3;      // default equatorial radius[m], set with each model
+            //  use jagged array to avoid unnecessary memory usage
             public int maxsize = 2160;          // default max size gravity model data
-            public double velkmps = 7.905366149846074;
-            public double earthrot = 7.292115e-05;  // 7.29211514670698e-05 older rad/s        
+            public double[][] c = new double[2200][];  // normalized coefficients
+            public double[][] s = new double[2200][];
+            public double[][] cSig = new double[2200][];  // sigmas
+            public double[][] sSig = new double[2200][];
+            public char normalized;
         };
-        public gravityConst gravConst = new gravityConst();
+        public gravityConst gravConsts = new gravityConst();
 
 
         // ------------------- class for astro constants -------------------
@@ -95,6 +84,12 @@ namespace AstroLibMethods
         {
             public double speedoflight = 2.99792458e8;  // speed of light m/s
             public double au = 149597870.7;  // km
+            public double mum = 3.986004415e14; // m^3/s^2 stk uses .4415 
+            public double mu = 398600.4415;     // km^3/s^2 stk uses .4415
+            public double re = 6378.1363;       // km  stk uses .1363
+            public double rem = 6378136.3;      // default equatorial radius[m], set with each model
+            public double velkmps = 7.905366149846074;
+            public double earthrot = 7.292115e-05;  // 7.29211514670698e-05 older rad/s        
         };
         public astroConst astroConsts = new astroConst();
 
@@ -1608,7 +1603,7 @@ namespace AstroLibMethods
             st[2, 2] = 1.0;
 
             // compute sidereal time rate matrix
-            //omegaearth = gravConst.earthrot * (1.0 - lod / 86400.0);
+            //omegaearth = astroConsts.earthrot * (1.0 - lod / 86400.0);
 
             //stdot[0, 0] = -omegaearth * sinast;
             //stdot[0, 1] = -omegaearth * cosast;
@@ -1901,7 +1896,7 @@ namespace AstroLibMethods
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
-            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+            omegaearth[2] = astroConsts.earthrot * (1.0 - lod / 86400.0);
 
             if (direct.Equals(MathTimeLib.Edirection.eto))
             {
@@ -2046,7 +2041,7 @@ namespace AstroLibMethods
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
-            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+            omegaearth[2] = astroConsts.earthrot * (1.0 - lod / 86400.0);
 
             if (direct.Equals(MathTimeLib.Edirection.eto))
             {
@@ -2347,7 +2342,7 @@ namespace AstroLibMethods
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
-            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+            omegaearth[2] = astroConsts.earthrot * (1.0 - lod / 86400.0);
 
             if (direct.Equals(MathTimeLib.Edirection.eto))
             {
@@ -2494,7 +2489,7 @@ namespace AstroLibMethods
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
-            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+            omegaearth[2] = astroConsts.earthrot * (1.0 - lod / 86400.0);
 
             if (direct.Equals(MathTimeLib.Edirection.eto))
             {
@@ -2709,7 +2704,7 @@ namespace AstroLibMethods
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
-            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+            omegaearth[2] = astroConsts.earthrot * (1.0 - lod / 86400.0);
 
             if (direct.Equals(MathTimeLib.Edirection.efrom))
             {
@@ -2828,7 +2823,7 @@ namespace AstroLibMethods
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
-            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+            omegaearth[2] = astroConsts.earthrot * (1.0 - lod / 86400.0);
 
             if (direct.Equals(MathTimeLib.Edirection.efrom))
             {
@@ -2940,7 +2935,7 @@ namespace AstroLibMethods
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
-            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+            omegaearth[2] = astroConsts.earthrot * (1.0 - lod / 86400.0);
 
             if (direct.Equals(MathTimeLib.Edirection.efrom))
             {
@@ -3194,7 +3189,7 @@ namespace AstroLibMethods
                 gmstg = gmst;
             gmstg = gmstg % (2.0 * Math.PI);
 
-            thetasa = gravConst.earthrot * (1.0 - lod / 86400.0);
+            thetasa = astroConsts.earthrot * (1.0 - lod / 86400.0);
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
             omegaearth[2] = thetasa;
@@ -3408,7 +3403,7 @@ namespace AstroLibMethods
             double[,] tm = new double[3, 3];
             double[] crossr = new double[3];
             double[] omegaearth = new double[3];
-            omegaearth[2] = gravConst.earthrot;
+            omegaearth[2] = astroConsts.earthrot;
 
             fundarg(ttt, EOpt.e80, out fArgs06);
 
@@ -3539,19 +3534,19 @@ namespace AstroLibMethods
                 nbar[1] = hbar[0];
                 nbar[2] = 0.0;
                 magn = MathTimeLibr.mag(nbar);
-                c1 = magv * magv - gravConst.mu / magr;
+                c1 = magv * magv - astroConsts.mu / magr;
                 rdotv = MathTimeLibr.dot(r, v);
                 for (i = 0; i <= 2; i++)
-                    ebar[i] = (c1 * r[i] - rdotv * v[i]) / gravConst.mu;
+                    ebar[i] = (c1 * r[i] - rdotv * v[i]) / astroConsts.mu;
                 ecc = MathTimeLibr.mag(ebar);
 
                 // ------------  find a e and semi-latus rectum    // ---------
-                sme = (magv * magv * 0.5) - (gravConst.mu / magr);
+                sme = (magv * magv * 0.5) - (astroConsts.mu / magr);
                 if (Math.Abs(sme) > small)
-                    a = -gravConst.mu / (2.0 * sme);
+                    a = -astroConsts.mu / (2.0 * sme);
                 else
                     a = infinite;
-                p = magh * magh / gravConst.mu;
+                p = magh * magh / astroConsts.mu;
 
                 // -----------------  find inclination    // ------------------
                 hk = hbar[2] / magh;
@@ -3774,8 +3769,8 @@ namespace AstroLibMethods
 
             if (Math.Abs(p) < 0.00000001)
                 p = 0.00000001;
-            vpqw[0] = -sin_nu * Math.Sqrt(gravConst.mu / p);
-            vpqw[1] = (ecc + cos_nu) * Math.Sqrt(gravConst.mu / p);
+            vpqw[0] = -sin_nu * Math.Sqrt(astroConsts.mu / p);
+            vpqw[1] = (ecc + cos_nu) * Math.Sqrt(astroConsts.mu / p);
             vpqw[2] = 0.0;
 
             // ----------------  perform transformation to ijk  ------------
@@ -3894,7 +3889,7 @@ namespace AstroLibMethods
                 psi = MathTimeLibr.cot(incl * 0.5) * Math.Cos(raan);
             }
 
-            n = Math.Sqrt(gravConst.mu / (a * a * a));
+            n = Math.Sqrt(astroConsts.mu / (a * a * a));
 
             meanlonM = fr * raan + argp + m;
             meanlonM = meanlonM % twopi;
@@ -3961,7 +3956,7 @@ namespace AstroLibMethods
             truelon = 999999.1;
 
             // ---- if n is input ----
-            //a = (gravConst.mu/n^2)^(1.0/3.0);
+            //a = (astroConsts.mu/n^2)^(1.0/3.0);
 
             ecc = Math.Sqrt(af * af + ag * ag);
             p = a * (1.0 - ecc * ecc);
@@ -4256,8 +4251,8 @@ namespace AstroLibMethods
         (
         ref double[] rijk, ref double[] vijk,
         Enum direct,
-        ref double rr, ref double ecllat, ref double ecllon,
-        ref double drr, ref double decllat, ref double decllon
+        ref double rr, ref double ecllon, ref double ecllat,
+        ref double drr, ref double decllon, ref double decllat
         )
         {
             const double small = 0.00000001;
@@ -4270,12 +4265,12 @@ namespace AstroLibMethods
             {
                 re[0] = (rr * Math.Cos(ecllat) * Math.Cos(ecllon));
                 re[1] = (rr * Math.Cos(ecllat) * Math.Sin(ecllon));
-                re[2] = (rr * Math.Sin(ecllon));
+                re[2] = (rr * Math.Sin(ecllat));
                 ve[0] = (drr * Math.Cos(ecllat) * Math.Cos(ecllon) -
                     rr * Math.Sin(ecllat) * Math.Cos(ecllon) * decllat -
                     rr * Math.Cos(ecllat) * Math.Sin(ecllon) * decllon);
                 ve[1] = (drr * Math.Cos(ecllat) * Math.Sin(ecllon) -
-                    rr * Math.Sin(ecllat) * Math.Cos(ecllon) * decllat +
+                    rr * Math.Sin(ecllat) * Math.Sin(ecllon) * decllat +
                     rr * Math.Cos(ecllat) * Math.Cos(ecllon) * decllon);
                 ve[2] = (drr * Math.Sin(ecllat) + rr * Math.Cos(ecllat) * decllat);
 
@@ -4284,29 +4279,33 @@ namespace AstroLibMethods
             }
             else
             {
+                re = MathTimeLibr.rot1(rijk, obliquity);
+                ve = MathTimeLibr.rot1(vijk, obliquity);
+
                 // -------------- calculate angles and rates ------------------
-                rr = MathTimeLibr.mag(rijk);
-                temp = Math.Sqrt(rijk[0] * rijk[0] + rijk[1] * rijk[1]);
+                rr = MathTimeLibr.mag(re);
+                temp = Math.Sqrt(re[0] * re[0] + re[1] * re[1]);
                 if (temp < small)
                 {
-                    temp1 = Math.Sqrt(vijk[0] * vijk[0] + vijk[1] * vijk[1]);
+                    temp1 = Math.Sqrt(ve[0] * ve[0] + ve[1] * ve[1]);
                     if (Math.Abs(temp1) > small)
-                        ecllon = Math.Atan2(vijk[1] / temp1, vijk[0] / temp1);
+                        ecllon = Math.Atan2(ve[1], ve[0]);
                     else
                         ecllon = 0.0;
                 }
                 else
-                    ecllon = Math.Atan2(rijk[1] / temp, rijk[0] / temp);
-                ecllat = Math.Asin(rijk[2] / MathTimeLibr.mag(rijk));
+                    ecllon = Math.Atan2(re[1], re[0]);
 
-                temp1 = -rijk[1] * rijk[1] - rijk[0] * rijk[0]; // different now
-                drr = MathTimeLibr.dot(rijk, vijk) / rr;
+                ecllat = Math.Asin(re[2] / rr);
+
+                temp1 = -re[1] * re[1] - re[0] * re[0]; // different now
+                drr = MathTimeLibr.dot(re, ve) / rr;
                 if (Math.Abs(temp1) > small)
-                    decllon = (vijk[0] * rijk[1] - vijk[1] * rijk[0]) / temp1;
+                    decllon = (ve[0] * re[1] - ve[1] * re[0]) / temp1;
                 else
                     decllon = 0.0;
                 if (Math.Abs(temp) > small)
-                    decllat = (vijk[2] - drr * Math.Sin(ecllat)) / temp;
+                    decllat = (ve[2] - drr * Math.Sin(ecllat)) / temp;
                 else
                     decllat = 0.0;
             }
@@ -4551,9 +4550,9 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    reci        - eci position vector                      km
-        //    veci        - eci velocity vector                      km/s
-        //    rseci       - eci site position vector                 km
+        //    recef        - ecef position vector                      km
+        //    vecef        - ecef velocity vector                      km/s
+        //    rsecef       - ecef site position vector                 km
         //    direct      - direction to convert                     efrom  eto
         //
         //  outputs       :
@@ -4565,8 +4564,8 @@ namespace AstroLibMethods
         //    tddecl      - topo declination rate                    rad/s
         //
         //  locals        :
-        //    rhov        - eci range vector from site               km
-        //    drhov       - eci velocity vector from site            km/s
+        //    rhov        - ecef range vector from site               km
+        //    drhov       - ecef velocity vector from site            km/s
         //    latgc       - geocentric lat of satellite, not nadir point  -pi/2 to pi/2 rad          
         //
         //  coupling      :
@@ -4580,7 +4579,7 @@ namespace AstroLibMethods
 
         public void rv_tradec
         (
-        ref double[] reci, ref double[] veci, double[] rseci,
+        ref double[] recef, ref double[] vecef, double[] rsecef,
         Enum direct,
         ref double trr, ref double trtasc, ref double tdecl,
         ref double tdrr, ref double tdrtasc, ref double tddecl
@@ -4591,15 +4590,13 @@ namespace AstroLibMethods
             double[] earthrate = new double[3];
             double[] rhov = new double[3];
             double[] drhov = new double[3];
-            double[] vseci = new double[3];
+            double[] vsecef = new double[3];
             double temp, temp1;
-
-            //latgc = Math.Asin(rseci[2] / MathTimeLibr.mag(rseci));
 
             earthrate[0] = 0.0;
             earthrate[1] = 0.0;
-            earthrate[2] = gravConst.earthrot;
-            MathTimeLibr.cross(earthrate, rseci, out vseci);
+            earthrate[2] = astroConsts.earthrot;
+            MathTimeLibr.cross(earthrate, rsecef, out vsecef);
 
             if (direct.Equals(MathTimeLib.Edirection.efrom))
             {
@@ -4616,15 +4613,15 @@ namespace AstroLibMethods
                     trr * Math.Cos(tdecl) * Math.Cos(trtasc) * tdrtasc);
                 drhov[2] = (tdrr * Math.Sin(tdecl) + trr * Math.Cos(tdecl) * tddecl);
 
-                // ------ find eci range vector from geocenter to satellite ------ 
-                MathTimeLibr.addvec(1.0, rhov, 1.0, rseci, out reci);
-                MathTimeLibr.addvec(1.0, drhov, 1.0, vseci, out veci);
+                // ------ find ecef range vector from geocenter to satellite ------ 
+                MathTimeLibr.addvec(1.0, rhov, 1.0, rsecef, out recef);
+                MathTimeLibr.addvec(1.0, drhov, 1.0, vsecef, out vecef);
             }
             else
             {
-                // ------ find eci range vector from site to satellite ------  
-                MathTimeLibr.addvec(1.0, reci, -1.0, rseci, out rhov);
-                MathTimeLibr.addvec(1.0, veci, -1.0, vseci, out drhov);
+                // ------ find ecef range vector from site to satellite ------  
+                MathTimeLibr.addvec(1.0, recef, -1.0, rsecef, out rhov);
+                MathTimeLibr.addvec(1.0, vecef, -1.0, vsecef, out drhov);
 
                 // -------- calculate topocentric angle and rate values -----  
                 trr = MathTimeLibr.mag(rhov);
@@ -4639,7 +4636,14 @@ namespace AstroLibMethods
                 if (trtasc < 0.0)
                     trtasc = trtasc + Math.PI * 2.0;
 
-                tdecl = Math.Asin(rhov[2] / MathTimeLibr.mag(rhov));
+                // directly over the north pole
+                if (temp < small)
+                    tdecl = Math.Sign(rhov[2]) * Math.PI * 0.5;   // +-90 deg
+                else
+                    tdecl = Math.Asin(rhov[2] / MathTimeLibr.mag(rhov));
+
+                if (trtasc < 0.0)
+                    trtasc = trtasc + 2.0 * Math.PI;
 
                 temp1 = -rhov[1] * rhov[1] - rhov[0] * rhov[0];
                 tdrr = MathTimeLibr.dot(rhov, drhov) / trr;
@@ -4706,7 +4710,7 @@ namespace AstroLibMethods
         {
             const double small = 0.00000001;
 
-            double temp1, temp, sinel, cosel, sinaz, cosaz;
+            double temp, sinel, cosel, sinaz, cosaz;
 
             if (direct.Equals(MathTimeLib.Edirection.efrom))
             {
@@ -4716,39 +4720,41 @@ namespace AstroLibMethods
                 cosaz = Math.Cos(az);
 
                 // ----------------- form sez range vector --------------------
-                rhosez[0] = (-rho * cosel * cosaz);
-                rhosez[1] = (rho * cosel * sinaz);
-                rhosez[2] = (rho * sinel);
+                rhosez[0] = -rho * cosel * cosaz;
+                rhosez[1] = rho * cosel * sinaz;
+                rhosez[2] = rho * sinel;
 
                 // --------------- form sez velocity vector -------------------
-                drhosez[0] = (-drho * cosel * cosaz +
-                    rhosez[2] * del * cosaz + rhosez[1] * daz);
-                drhosez[1] = (drho * cosel * sinaz -
-                    rhosez[2] * del * sinaz - rhosez[0] * daz);
+                drhosez[0] = (-drho * cosel * cosaz + rhosez[2] * del * cosaz + rhosez[1] * daz);
+                drhosez[1] = (drho * cosel * sinaz - rhosez[2] * del * sinaz - rhosez[0] * daz);
                 drhosez[2] = (drho * sinel + rho * del * cosel);
             }
             else
             {
+                rho = MathTimeLibr.mag(rhosez);
+
                 // ------------ calculate azimuth and elevation ---------------
                 temp = Math.Sqrt(rhosez[0] * rhosez[0] + rhosez[1] * rhosez[1]);
                 if (Math.Abs(rhosez[1]) < small)
                     if (temp < small)
+                        az = Math.Atan2(drhosez[1], -drhosez[0]);
+                    else
                     {
-                        temp1 = Math.Sqrt(drhosez[0] * drhosez[0] + drhosez[1] * drhosez[1]);
-                        az = Math.Atan2(drhosez[1] / temp1, drhosez[0] / temp1);
-                    }
-                    else
                         if (drhosez[0] > 0.0)
-                        az = Math.PI;
-                    else
-                        az = 0.0;
+                            az = Math.PI;
+                        else
+                            az = 0.0;
+                    }
                 else
-                    az = Math.Atan2(rhosez[1] / temp, rhosez[0] / temp);
+                    az = Math.Atan2(rhosez[1], -rhosez[0]);
 
-                el = Math.Asin(rhosez[2] / MathTimeLibr.mag(rhosez));
+                if ((temp < small))     // directly over the north pole
+                    el = Math.Sign(rhosez[2]) * Math.PI*0.5; // +-90
+                else
+                    el = Math.Asin(rhosez[2] / MathTimeLibr.mag(rhosez));
 
                 // ------  calculate range, azimuth and elevation rates -------
-                drho = MathTimeLibr.dot(rhosez, drhosez) / rho;
+                drho = MathTimeLibr.mag(drhosez);
                 if (Math.Abs(temp * temp) > small)
                     daz = (drhosez[0] * rhosez[1] - drhosez[1] * rhosez[0]) / (temp * temp);
                 else
@@ -5140,14 +5146,14 @@ namespace AstroLibMethods
                 nbar[1] = hbar[0];
                 nbar[2] = 0.0;
                 magn = MathTimeLibr.mag(nbar);
-                c1 = magv * magv - gravConst.mu / magr;
+                c1 = magv * magv - astroConsts.mu / magr;
                 rdotv = MathTimeLibr.dot(r, v);
                 for (i = 0; i <= 2; i++)
-                    ebar[i] = (c1 * r[i] - rdotv * v[i]) / gravConst.mu;
+                    ebar[i] = (c1 * r[i] - rdotv * v[i]) / astroConsts.mu;
                 ecc = MathTimeLibr.mag(ebar);
 
                 // ------------  find a e and semi-latus rectum  ---------
-                p = magh * magh / gravConst.mu;
+                p = magh * magh / astroConsts.mu;
 
                 // -----------------  find inclination  ------------------
                 hk = hbar[2] / magh;
@@ -5246,8 +5252,8 @@ namespace AstroLibMethods
                 if (Math.Abs(p) < 0.00000001)
                     p = 0.00000001;
 
-                vpqw[0] = -sin_nu * Math.Sqrt(gravConst.mu / p);
-                vpqw[1] = (ecc + cos_nu) * Math.Sqrt(gravConst.mu / p);
+                vpqw[0] = -sin_nu * Math.Sqrt(astroConsts.mu / p);
+                vpqw[1] = (ecc + cos_nu) * Math.Sqrt(astroConsts.mu / p);
                 vpqw[2] = 0.0;
             }
             else
@@ -5960,7 +5966,7 @@ namespace AstroLibMethods
 
                 case "series":
                     double u, p, q;
-                    u = gravConst.mu / (magr1 * magr1 * magr1);
+                    u = astroConsts.mu / (magr1 * magr1 * magr1);
                     p = MathTimeLibr.dot(r1, v1) / (magr1 * magr1);
                     q = (magv1 * magv1 - magr1 * magr1 * u) / (magr1 * magr1);
                     double p2 = p * p;
@@ -6027,9 +6033,9 @@ namespace AstroLibMethods
                     double xsqrd = x * x;
                     double magr2 = MathTimeLibr.mag(r2);
                     f = 1.0 - (xsqrd * c2 / magr1);
-                    g = dtsec - xsqrd * x * c3 / Math.Sqrt(gravConst.mu);
+                    g = dtsec - xsqrd * x * c3 / Math.Sqrt(astroConsts.mu);
                     gdot = 1.0 - (xsqrd * c2 / magr2);
-                    fdot = (Math.Sqrt(gravConst.mu) * x / (magr1 * magr2)) * (z * c3 - 1.0);
+                    fdot = (Math.Sqrt(astroConsts.mu) * x / (magr1 * magr2)) * (z * c3 - 1.0);
                     break;
                 default:
                     f = 0.0;
@@ -6082,7 +6088,7 @@ namespace AstroLibMethods
             // -----------------  circle and ellipse -------------------
             if (alpha >= small)
             {
-                period = twopi * Math.Sqrt(Math.Abs(a * a * a) / gravConst.mu);
+                period = twopi * Math.Sqrt(Math.Abs(a * a * a) / astroConsts.mu);
                 // ------- next if needed for 2body multi-rev ----------
                 if (Math.Abs(dtsec) > Math.Abs(period))
                     // including the truncation will produce vertical lines that are parallel
@@ -6090,10 +6096,10 @@ namespace AstroLibMethods
                     //                    dtsec = rem( dtseco,period );
                     mulrev = Convert.ToInt16(dtsec / period);
                 if (Math.Abs(alpha - 1.0) > small)
-                    xold = Math.Sqrt(gravConst.mu) * dtsec * alpha;
+                    xold = Math.Sqrt(astroConsts.mu) * dtsec * alpha;
                 else
                     // - first guess can't be too close. ie a circle, r2=a
-                    xold = Math.Sqrt(gravConst.mu) * dtsec * alpha * 0.97;
+                    xold = Math.Sqrt(astroConsts.mu) * dtsec * alpha * 0.97;
             }
             else
             {
@@ -6102,8 +6108,8 @@ namespace AstroLibMethods
                 {
                     MathTimeLibr.cross(r, v, out h);
                     magh = MathTimeLibr.mag(h);
-                    p = magh * magh / gravConst.mu;
-                    s = 0.5 * (halfpi - Math.Atan(3.0 * Math.Sqrt(gravConst.mu / (p * p * p)) * dtsec));
+                    p = magh * magh / astroConsts.mu;
+                    s = 0.5 * (halfpi - Math.Atan(3.0 * Math.Sqrt(astroConsts.mu / (p * p * p)) * dtsec));
                     w = Math.Atan(Math.Pow(Math.Tan(s), (1.0 / 3.0)));
                     xold = Math.Sqrt(p) * (2.0 * MathTimeLibr.cot(2.0 * w));
                     alpha = 0.0;
@@ -6111,8 +6117,8 @@ namespace AstroLibMethods
                 else
                 {
                     // ------------------  hyperbola  ------------------
-                    temp = -2.0 * gravConst.mu * dtsec /
-                          (a * (rdotv + Math.Sign(dtsec) * Math.Sqrt(-gravConst.mu * a) *
+                    temp = -2.0 * astroConsts.mu * dtsec /
+                          (a * (rdotv + Math.Sign(dtsec) * Math.Sqrt(-astroConsts.mu * a) *
                           (1.0 - magr * alpha)));
                     xold = Math.Sign(dtsec) * Math.Sqrt(-a) * Math.Log(temp);
                 }
@@ -6120,7 +6126,7 @@ namespace AstroLibMethods
 
             ktr = 1;
             dtnew = -10.0;
-            double tmp = 1.0 / Math.Sqrt(gravConst.mu);
+            double tmp = 1.0 / Math.Sqrt(astroConsts.mu);
             while ((Math.Abs(dtnew * tmp - dtsec) >= small) && (ktr < numiter))
             {
                 xoldsqrd = xold * xold;
@@ -6136,7 +6142,7 @@ namespace AstroLibMethods
                     + magr * xold * (1.0 - znew * c3new);
 
                 // ------------- calculate new value for x -------------
-                xnew = xold + (dtsec * Math.Sqrt(gravConst.mu) - dtnew) / rval;
+                xnew = xold + (dtsec * Math.Sqrt(astroConsts.mu) - dtnew) / rval;
 
                 // ----- check if the univ param goes negative. if so, use bissection
                 if (xnew < 0.0)
@@ -6263,11 +6269,11 @@ namespace AstroLibMethods
                 rdotv = MathTimeLibr.dot(r1, vo);
 
                 // -------------  find sme, alpha, and a  ------------------
-                sme = ((magvo * magvo) * 0.5) - (gravConst.mu / magro);
-                alpha = -sme * 2.0 / gravConst.mu;
+                sme = ((magvo * magvo) * 0.5) - (astroConsts.mu / magro);
+                alpha = -sme * 2.0 / astroConsts.mu;
 
                 if (Math.Abs(sme) > small)
-                    a = -gravConst.mu / (2.0 * sme);
+                    a = -astroConsts.mu / (2.0 * sme);
                 else
                     a = 999999.9;
                 if (Math.Abs(alpha) < small)   // parabola
@@ -6275,7 +6281,7 @@ namespace AstroLibMethods
 
                 if (show == 'y')
                 {
-                    //           printf(" sme %16.8f  a %16.8f alp  %16.8f ER \n",sme/(gravConst.mu/re), a/re, alpha * re );
+                    //           printf(" sme %16.8f  a %16.8f alp  %16.8f ER \n",sme/(astroConsts.mu/re), a/re, alpha * re );
                     //           printf(" sme %16.8f  a %16.8f alp  %16.8f km \n",sme, a, alpha );
                     //           printf(" ktr      xn        psi           r2          xn+1        dtn \n" );
                 }
@@ -6284,7 +6290,7 @@ namespace AstroLibMethods
                 // -----------------  circle and ellipse -------------------
                 if (alpha >= small)
                 {
-                    period = twopi * Math.Sqrt(Math.Abs(a * a * a) / gravConst.mu);
+                    period = twopi * Math.Sqrt(Math.Abs(a * a * a) / astroConsts.mu);
                     // ------- next not needed for 2body multi-rev ----------
                     //if (Math.Abs(dtsec) > Math.Abs(period))
                     // including the truncation will produce vertical lines that are parallel
@@ -6292,10 +6298,10 @@ namespace AstroLibMethods
                     //                    dtseco = rem( dtsec,period );
                     // mulrev = Convert.ToInt16(dtsec / period);
                     if (Math.Abs(alpha - 1.0) > small)
-                        xold = Math.Sqrt(gravConst.mu) * dtsec * alpha;
+                        xold = Math.Sqrt(astroConsts.mu) * dtsec * alpha;
                     else
                         // - first guess can't be too close. ie a circle, r2=a
-                        xold = Math.Sqrt(gravConst.mu) * dtsec * alpha * 0.97;
+                        xold = Math.Sqrt(astroConsts.mu) * dtsec * alpha * 0.97;
                 }
                 else
                 {
@@ -6304,8 +6310,8 @@ namespace AstroLibMethods
                     {
                         MathTimeLibr.cross(r1, vo, out h);
                         magh = MathTimeLibr.mag(h);
-                        p = magh * magh / gravConst.mu;
-                        s = 0.5 * (halfpi - Math.Atan(3.0 * Math.Sqrt(gravConst.mu / (p * p * p)) * dtsec));
+                        p = magh * magh / astroConsts.mu;
+                        s = 0.5 * (halfpi - Math.Atan(3.0 * Math.Sqrt(astroConsts.mu / (p * p * p)) * dtsec));
                         w = Math.Atan(Math.Pow(Math.Tan(s), (1.0 / 3.0)));
                         xold = Math.Sqrt(p) * (2.0 * MathTimeLibr.cot(2.0 * w));
                         alpha = 0.0;
@@ -6313,8 +6319,8 @@ namespace AstroLibMethods
                     else
                     {
                         // ------------------  hyperbola  ------------------
-                        temp = -2.0 * gravConst.mu * dtsec /
-                              (a * (rdotv + Math.Sign(dtsec) * Math.Sqrt(-gravConst.mu * a) *
+                        temp = -2.0 * astroConsts.mu * dtsec /
+                              (a * (rdotv + Math.Sign(dtsec) * Math.Sqrt(-astroConsts.mu * a) *
                               (1.0 - magro * alpha)));
                         xold = Math.Sign(dtsec) * Math.Sqrt(-a) * Math.Log(temp);
                     }
@@ -6322,7 +6328,7 @@ namespace AstroLibMethods
 
                 ktr = 1;
                 dtnew = -10.0;
-                double tmp = 1.0 / Math.Sqrt(gravConst.mu);
+                double tmp = 1.0 / Math.Sqrt(astroConsts.mu);
                 while ((Math.Abs(dtnew * tmp - dtsec) >= small) && (ktr < numiter))
                 {
                     xoldsqrd = xold * xold;
@@ -6338,7 +6344,7 @@ namespace AstroLibMethods
                         + magro * xold * (1.0 - znew * c3new);
 
                     // ------------- calculate new value for x -------------
-                    xnew = xold + (dtsec * Math.Sqrt(gravConst.mu) - dtnew) / rval;
+                    xnew = xold + (dtsec * Math.Sqrt(astroConsts.mu) - dtnew) / rval;
 
                     // ----- check if the univ param goes negative. if so, use bissection
                     // if dtsec is -, then so will xnew be -
@@ -6370,13 +6376,13 @@ namespace AstroLibMethods
                     // --- find position and velocity vectors at new time --
                     xnewsqrd = xnew * xnew;
                     f = 1.0 - (xnewsqrd * c2new / magro);
-                    g = dtsec - xnewsqrd * xnew * c3new / Math.Sqrt(gravConst.mu);
+                    g = dtsec - xnewsqrd * xnew * c3new / Math.Sqrt(astroConsts.mu);
 
                     for (i = 0; i < 3; i++)
                         r2[i] = f * r1[i] + g * vo[i];
                     magr = MathTimeLibr.mag(r2);
                     gdot = 1.0 - (xnewsqrd * c2new / magr);
-                    fdot = (Math.Sqrt(gravConst.mu) * xnew / (magro * magr)) * (znew * c3new - 1.0);
+                    fdot = (Math.Sqrt(astroConsts.mu) * xnew / (magro * magr)) * (znew * c3new - 1.0);
                     for (i = 0; i < 3; i++)
                         v[i] = fdot * r1[i] + gdot * vo[i];
                     magv = MathTimeLibr.mag(v);
@@ -6486,7 +6492,7 @@ namespace AstroLibMethods
             {
                 olddelta = latgd;
                 sintemp = Math.Sin(latgd);
-                c = gravConst.re / (Math.Sqrt(1.0 - eesqrd * sintemp * sintemp));
+                c = astroConsts.re / (Math.Sqrt(1.0 - eesqrd * sintemp * sintemp));
                 latgd = Math.Atan((r[2] + c * eesqrd * sintemp) / temp);
                 i = i + 1;
             }
@@ -6690,7 +6696,7 @@ namespace AstroLibMethods
                out char hitearth, out string hitearthstr, out double rp, out double a
             )
         {
-            double radiuspad = gravConst.re + altPad; // radius of Earth with pad, km
+            double radiuspad = astroConsts.re + altPad; // radius of Earth with pad, km
             double magh, magv1, v12, ainv, ecc, ecosea1, esinea1, ecosea2;
             double[] hbar = new double[3];
             rp = 0.0;
@@ -6717,7 +6723,7 @@ namespace AstroLibMethods
                 // Solve for a 
                 magv1 = MathTimeLibr.mag(v1t);
                 v12 = magv1 * magv1;
-                ainv = 2.0 / magr1 - v12 / gravConst.mu;
+                ainv = 2.0 / magr1 - v12 / astroConsts.mu;
 
                 // Find ecos(E) 
                 ecosea1 = 1.0 - magr1 * ainv;
@@ -6732,13 +6738,13 @@ namespace AstroLibMethods
                     // elliptical orbit
                     if (a > 0.0)
                     {
-                        esinea1 = rdotv1 / Math.Sqrt(gravConst.mu * a);
+                        esinea1 = rdotv1 / Math.Sqrt(astroConsts.mu * a);
                         ecc = Math.Sqrt(ecosea1 * ecosea1 + esinea1 * esinea1);
                     }
                     // hyperbolic orbit
                     else
                     {
-                        esinea1 = rdotv1 / Math.Sqrt(gravConst.mu * Math.Abs(-a));
+                        esinea1 = rdotv1 / Math.Sqrt(astroConsts.mu * Math.Abs(-a));
                         ecc = Math.Sqrt(ecosea1 * ecosea1 - esinea1 * esinea1);
                     }
                     rp = a * (1.0 - ecc);
@@ -6764,10 +6770,10 @@ namespace AstroLibMethods
                     nbar[1] = hbar[0];
                     nbar[2] = 0.0;
                     double magn = MathTimeLibr.mag(nbar);
-                    double c1 = magv1 * magv1 - gravConst.mu / magr1;
+                    double c1 = magv1 * magv1 - astroConsts.mu / magr1;
                     double rdotv = MathTimeLibr.dot(r1, v1t);
                     for (int i = 0; i <= 2; i++)
-                        ebar[i] = (c1 * r1[i] - rdotv * v1t[i]) / gravConst.mu;
+                        ebar[i] = (c1 * r1[i] - rdotv * v1t[i]) / astroConsts.mu;
                     ecc = MathTimeLibr.mag(ebar);
                     rp = a * (1.0 - ecc);
 
@@ -6781,7 +6787,7 @@ namespace AstroLibMethods
                         {
                             MathTimeLibr.cross(r1, v1t, out hbar);
                             magh = MathTimeLibr.mag(hbar); // find h magnitude
-                            rp = magh * magh * 0.5 / gravConst.mu;
+                            rp = magh * magh * 0.5 / astroConsts.mu;
                             if (rp < radiuspad)
                             {
                                 hitearth = 'y';
@@ -6794,13 +6800,13 @@ namespace AstroLibMethods
                             // elliptical orbit
                             if (a > 0.0)
                             {
-                                esinea1 = rdotv1 / Math.Sqrt(gravConst.mu * a);
+                                esinea1 = rdotv1 / Math.Sqrt(astroConsts.mu * a);
                                 ecc = Math.Sqrt(ecosea1 * ecosea1 + esinea1 * esinea1);
                             }
                             // hyperbolic orbit
                             else
                             {
-                                esinea1 = rdotv1 / Math.Sqrt(gravConst.mu * Math.Abs(-a));
+                                esinea1 = rdotv1 / Math.Sqrt(astroConsts.mu * Math.Abs(-a));
                                 ecc = Math.Sqrt(ecosea1 * ecosea1 - esinea1 * esinea1);
                             }
                             if (ecc < 1.0)
@@ -7064,8 +7070,8 @@ namespace AstroLibMethods
 
             small = 0.00000001;
 
-            oomu = 1.0 / Math.Sqrt(gravConst.mu);  // for speed
-            sqrtmu = Math.Sqrt(gravConst.mu);
+            oomu = 1.0 / Math.Sqrt(astroConsts.mu);  // for speed
+            sqrtmu = Math.Sqrt(astroConsts.mu);
 
             // ---- find parameters that are constant for the initial geometry
             magr1 = MathTimeLibr.mag(r1);
@@ -7132,7 +7138,7 @@ namespace AstroLibMethods
                     c3ddot = 0.0;
                 }
                 // now solve this for dt = 0.0
-                //            dtdpsi = x^3*(c3dot - 3.0*c3*c2dot/(2.0*c2))* oomu + 0.125*vara/sqrt(gravConst.mu) * (3.0*c3*sqrty/c2 + vara/x);
+                //            dtdpsi = x^3*(c3dot - 3.0*c3*c2dot/(2.0*c2))* oomu + 0.125*vara/sqrt(astroConsts.mu) * (3.0*c3*sqrty/c2 + vara/x);
                 dtdpsi = x * x * x * (c3dot - 3.0 * c3 * c2dot / (2.0 * c2)) * oomu + 0.125 * vara * (3.0 * c3 * sqrty / c2 + vara * oox) * oomu;
 
                 q = 0.25 * vara * Math.Sqrt(c2) - x * x * c2dot;
@@ -7234,18 +7240,18 @@ namespace AstroLibMethods
             // could do this just for nrev cases, but you can also find these for any nrev if (nrev > 0)
             // ------------- calc tmin parabolic tof to see if the orbit is possible
             if (dm == 'S')
-                tminp = (1.0 / 3.0) * Math.Sqrt(2.0 / gravConst.mu) * (Math.Pow(s, 1.5) - Math.Pow(s - chord, 1.5));
+                tminp = (1.0 / 3.0) * Math.Sqrt(2.0 / astroConsts.mu) * (Math.Pow(s, 1.5) - Math.Pow(s - chord, 1.5));
             else
-                tminp = (1.0 / 3.0) * Math.Sqrt(2.0 / gravConst.mu) * (Math.Pow(s, 1.5) + Math.Pow(s - chord, 1.5));
+                tminp = (1.0 / 3.0) * Math.Sqrt(2.0 / astroConsts.mu) * (Math.Pow(s, 1.5) + Math.Pow(s - chord, 1.5));
 
             // ------------- this is the min energy ellipse tof
             double amin = 0.5 * s;
             alpha = Math.PI;
             beta = 2.0 * Math.Asin(Math.Sqrt((s - chord) / s));
             if (dm == 'S')
-                tminenergy = Math.Pow(amin, 1.5) * ((2.0 * nrev + 1.0) * Math.PI - beta + Math.Sin(beta)) / Math.Sqrt(gravConst.mu);
+                tminenergy = Math.Pow(amin, 1.5) * ((2.0 * nrev + 1.0) * Math.PI - beta + Math.Sin(beta)) / Math.Sqrt(astroConsts.mu);
             else
-                tminenergy = Math.Pow(amin, 1.5) * ((2.0 * nrev + 1.0) * Math.PI + beta - Math.Sin(beta)) / Math.Sqrt(gravConst.mu);
+                tminenergy = Math.Pow(amin, 1.5) * ((2.0 * nrev + 1.0) * Math.PI + beta - Math.Sin(beta)) / Math.Sqrt(astroConsts.mu);
 
             // -------------- calc min tof ellipse (prussing 1992 aas, 2000 jas)
             an = 1.001 * amin;
@@ -7286,9 +7292,9 @@ namespace AstroLibMethods
             }
             // could update beta one last time with alpha too????
             if (dm == 'S')
-                tmin = Math.Pow(an, 1.5) * (2.0 * Math.PI * nrev + xi - eta) / Math.Sqrt(gravConst.mu);
+                tmin = Math.Pow(an, 1.5) * (2.0 * Math.PI * nrev + xi - eta) / Math.Sqrt(astroConsts.mu);
             else
-                tmin = Math.Pow(an, 1.5) * (2.0 * Math.PI * nrev + xi + eta) / Math.Sqrt(gravConst.mu);
+                tmin = Math.Pow(an, 1.5) * (2.0 * Math.PI * nrev + xi + eta) / Math.Sqrt(astroConsts.mu);
         }  // lambertminT
 
 
@@ -7360,8 +7366,8 @@ namespace AstroLibMethods
 
             //s = (magr1 + magr2 + chord) * 0.5;
 
-            y1 = gravConst.mu / magr1;
-            y2 = gravConst.mu / magr2;
+            y1 = astroConsts.mu / magr1;
+            y2 = astroConsts.mu / magr2;
 
             // ------------- nearly circular endpoints
             MathTimeLibr.addvec(1.0, r1, -1.0, r2, out tempvec);
@@ -7370,7 +7376,7 @@ namespace AstroLibMethods
             {
                 c = Math.Sqrt(y1);
                 x1 = x2 = r = 0.0;
-                tmaxrp = (2.0 * nrev * Math.PI + Math.Atan2(sindeltanu, cosdeltanu)) * (gravConst.mu / Math.Pow(c, 3));
+                tmaxrp = (2.0 * nrev * Math.PI + Math.Atan2(sindeltanu, cosdeltanu)) * (astroConsts.mu / Math.Pow(c, 3));
             }
             else
             {
@@ -7410,7 +7416,7 @@ namespace AstroLibMethods
                     e2 = e2 + 2.0 * Math.PI;
                 k = (e2 - e1) - Math.Sin(e2 - e1);
 
-                tmaxrp = gravConst.mu * (
+                tmaxrp = astroConsts.mu * (
                     (2.0 * nrev * Math.PI + k) / Math.Pow(Math.Abs(c * c - r * r), 1.5) +
                     (c * sindeltanu) / (y1 * y2));
             }
@@ -7574,7 +7580,7 @@ namespace AstroLibMethods
 
             findc2c3(psiold, out c2new, out c3new);
 
-            double oosqrtmu = 1.0 / Math.Sqrt(gravConst.mu);
+            double oosqrtmu = 1.0 / Math.Sqrt(astroConsts.mu);
 
             // find initial dtold from psiold
             if (Math.Abs(c2new) > small)
@@ -7719,7 +7725,7 @@ namespace AstroLibMethods
                     // ---- use f and g series to find velocity vectors ----- 
                     f = 1.0 - y / magr1;
                     gdot = 1.0 - y / magr2;
-                    g = 1.0 / (vara * Math.Sqrt(y / gravConst.mu)); // 1 over g
+                    g = 1.0 / (vara * Math.Sqrt(y / astroConsts.mu)); // 1 over g
                     //	fdot = Math.Sqrt(y) * (-magr2 - magr1 + y) / (magr2 * magr1 * vara);
                     for (int i = 0; i < 3; i++)
                     {
@@ -7807,8 +7813,8 @@ namespace AstroLibMethods
             oomagr2 = 1.0 / magr2;
             eps = 0.001 / magr2;  // 1e-14
 
-            a = gravConst.mu * (1.0 * oomagr1 - 1.0 * oop);  // not the semi - major axis
-            b = Math.Pow(gravConst.mu * ecc * oop, 2) - a * a;
+            a = astroConsts.mu * (1.0 * oomagr1 - 1.0 * oop);  // not the semi - major axis
+            b = Math.Pow(astroConsts.mu * ecc * oop, 2) - a * a;
             if (b <= 0.0)
                 x1 = 0.0;
             else
@@ -7822,7 +7828,7 @@ namespace AstroLibMethods
                     nvec[i] = rcrv[i] / MathTimeLibr.mag(rcrv);
                 if (ecc < 1.0)
                 {
-                    ptx = (2.0 * Math.PI) * Math.Sqrt(p * p * p / (gravConst.mu * Math.Pow(1.0 - ecc * ecc, 3)));
+                    ptx = (2.0 * Math.PI) * Math.Sqrt(p * p * p / (astroConsts.mu * Math.Pow(1.0 - ecc * ecc, 3)));
                     if (dtsec % ptx > ptx * 0.5)  // mod
                         x1 = -x1;
                 }
@@ -7830,9 +7836,9 @@ namespace AstroLibMethods
             else
             {
                 // this appears to be the more common option
-                y2a = gravConst.mu * oop - x1 * Math.Sin(dnu) + a * Math.Cos(dnu);
-                y2b = gravConst.mu * oop + x1 * Math.Sin(dnu) + a * Math.Cos(dnu);
-                if (Math.Abs(gravConst.mu * oomagr2 - y2b) < Math.Abs(gravConst.mu * oomagr2 - y2a))
+                y2a = astroConsts.mu * oop - x1 * Math.Sin(dnu) + a * Math.Cos(dnu);
+                y2b = astroConsts.mu * oop + x1 * Math.Sin(dnu) + a * Math.Cos(dnu);
+                if (Math.Abs(astroConsts.mu * oomagr2 - y2b) < Math.Abs(astroConsts.mu * oomagr2 - y2a))
                     x1 = -x1;
 
                 // depending on the cross product, this will be normal or in plane,
@@ -7852,8 +7858,8 @@ namespace AstroLibMethods
             x2 = x1 * Math.Cos(dnu) + a * Math.Sin(dnu);
             for (i = 0; i < 3; i++)
             {
-                v1t[i] = (Math.Sqrt(gravConst.mu * p) * oomagr1) * ((x1 / gravConst.mu) * r1[i] + rcrv[i] * oomagr1);
-                v2t[i] = (Math.Sqrt(gravConst.mu * p) * oomagr2) * ((x2 / gravConst.mu) * r2[i] + rcrr[i] * oomagr2);
+                v1t[i] = (Math.Sqrt(astroConsts.mu * p) * oomagr1) * ((x1 / astroConsts.mu) * r1[i] + rcrv[i] * oomagr1);
+                v2t[i] = (Math.Sqrt(astroConsts.mu * p) * oomagr2) * ((x2 / astroConsts.mu) * r2[i] + rcrr[i] * oomagr2);
             }
         }  // lambhodograph
 
@@ -8072,7 +8078,7 @@ namespace AstroLibMethods
 
             lam = 1.0 / s * Math.Sqrt(magr1 * magr2) * Math.Cos(dnu * 0.5);
             L = Math.Pow((1.0 - lam) / (1.0 + lam), 2);
-            m = 8.0 * gravConst.mu * dtsec * dtsec / (s * s * s * Math.Pow(1.0 + lam, 6));
+            m = 8.0 * astroConsts.mu * dtsec * dtsec / (s * s * s * Math.Pow(1.0 + lam, 6));
 
             // initial guess
             if (nrev > 0)
@@ -8259,8 +8265,8 @@ namespace AstroLibMethods
             rint = new double[3];
             vint = new double[3];
 
-            radius = gravConst.re + alt; // in km
-            omega = Math.Sqrt(gravConst.mu / (radius * radius * radius)); // rad/s
+            radius = astroConsts.re + alt; // in km
+            omega = Math.Sqrt(astroConsts.mu / (radius * radius * radius)); // rad/s
             nt = omega * dts;
             cosnt = Math.Cos(nt);
             sinnt = Math.Sin(nt);
@@ -8319,8 +8325,8 @@ namespace AstroLibMethods
             v = new double[3];
 
             // --------------------implementation----------------------
-            radius = gravConst.re + alt;
-            omega = Math.Sqrt(gravConst.mu / (radius * radius * radius));
+            radius = astroConsts.re + alt;
+            omega = Math.Sqrt(astroConsts.mu / (radius * radius * radius));
             nt = omega * dts;
             cosnt = Math.Cos(nt);
             sinnt = Math.Sin(nt);
@@ -8390,7 +8396,7 @@ namespace AstroLibMethods
             sinlat = Math.Sin(latgd);
 
             // -------  find rdel and rk components of site vector  -----------
-            cearth = gravConst.re / Math.Sqrt(1.0 - (eesqrd * sinlat * sinlat));
+            cearth = astroConsts.re / Math.Sqrt(1.0 - (eesqrd * sinlat * sinlat));
             rdel = (cearth + alt) * Math.Cos(latgd);
             rk = ((1.0 - eesqrd) * cearth + alt) * sinlat;
 
@@ -8549,13 +8555,13 @@ namespace AstroLibMethods
             double tau12c, tau32c, tau13c;
 
             // canonical only through forming and solving the 8th order polynomial
-            double tu = Math.Sqrt(gravConst.re * gravConst.re * gravConst.re / gravConst.mu);
+            double tu = Math.Sqrt(astroConsts.re * astroConsts.re * astroConsts.re / astroConsts.mu);
 
             // ----------------------   initialize    // -----------------------
             double lod = 0.0;  // leave zero for now
             // switch to canonical
-            double omegaearthc = gravConst.earthrot * (1.0 - lod / 86400.0) * tu;  // rad/tu
-            //double omegaearth = gravConst.earthrot * (1.0 - lod / 86400.0);  // rad/s
+            double omegaearthc = astroConsts.earthrot * (1.0 - lod / 86400.0) * tu;  // rad/tu
+            //double omegaearth = astroConsts.earthrot * (1.0 - lod / 86400.0);  // rad/s
             earthratec[0] = 0.0;
             earthratec[1] = 0.0;
             earthratec[2] = omegaearthc;
@@ -8577,9 +8583,9 @@ namespace AstroLibMethods
             // switch to canonical
             for (int i = 0; i < 3; i++)
             {
-                rs1c[i] = rs1[i] / gravConst.re;
-                rs2c[i] = rs2[i] / gravConst.re;
-                rs3c[i] = rs3[i] / gravConst.re;
+                rs1c[i] = rs1[i] / astroConsts.re;
+                rs2c[i] = rs2[i] / astroConsts.re;
+                rs3c[i] = rs3[i] / astroConsts.re;
             }
 
             // --------------- find line of sight vectors -------------------
@@ -8711,12 +8717,12 @@ namespace AstroLibMethods
                 poly[5] = 0.0;
                 // switch to canonical
                 poly[6] = l2dotrs * 4.0 * d2c / d - 8.0 * d1c * d2c / (d * d);
-                //poly[6] = gravConst.mu * (l2dotrs * 4.0 * d2 / d - 8.0 * d1 * d2 / (d * d));  
+                //poly[6] = astroConsts.mu * (l2dotrs * 4.0 * d2 / d - 8.0 * d1 * d2 / (d * d));  
                 poly[7] = 0.0;
                 poly[8] = 0.0;
                 // switch to canonical
                 poly[9] = -4.0 * d2c * d2c / (d * d);
-                //poly[9] = -gravConst.mu * gravConst.mu * 4.0 * d2 * d2 / (d * d); 
+                //poly[9] = -astroConsts.mu * astroConsts.mu * 4.0 * d2 * d2 / (d * d); 
 
                 if (poly[3] < 0.0 && poly[6] > 0.0)
                     errstr = errstr + "LAPLACE may have multiple roots 1.0  0.0  " + poly[3] + "  0.0 0.0 " + poly[6] + " 0.0 0.0 " + poly[9] + "\n";
@@ -8738,7 +8744,7 @@ namespace AstroLibMethods
                 // all seem to converge to the proper answer
                 int kk = 0;
                 // switch to canonical units
-                bigr2c = 20000.0 / gravConst.re; // guess ~GPS altitude
+                bigr2c = 20000.0 / astroConsts.re; // guess ~GPS altitude
                 while (Math.Abs(bigr2 - bigr2c) > 8.0e-5 && kk < 15)  // do in er, 0.5 km
                 {
                     bigr2 = bigr2c;
@@ -8766,15 +8772,15 @@ namespace AstroLibMethods
                         chk3roots = "3 root poss ";
                     else
                         chk3roots = "1 root poss ";
-                    errstr = errstr + chk3roots + " root pick " + (bigr2c * gravConst.re).ToString(); // + "\n";
+                    errstr = errstr + chk3roots + " root pick " + (bigr2c * astroConsts.re).ToString(); // + "\n";
                 }
 
-                //if (bigr2c < 0.0 || bigr2c * gravConst.re > 75000.0)
-                //    bigr2c = 40000.0 / gravConst.re;  // simply set this to about GEO, allowing for less than that too. 
+                //if (bigr2c < 0.0 || bigr2c * astroConsts.re > 75000.0)
+                //    bigr2c = 40000.0 / astroConsts.re;  // simply set this to about GEO, allowing for less than that too. 
 
                 // still in canonical units
                 rho = -2.0 * d1c / d - 2.0 * d2c / (bigr2c * bigr2c * bigr2c * d);
-                //rho = -2.0 * d1 / d - gravConst.mu * 2.0 * d2 / (bigr2 * bigr2 * bigr2 * d);
+                //rho = -2.0 * d1 / d - astroConsts.mu * 2.0 * d2 / (bigr2 * bigr2 * bigr2 * d);
 
                 // ---- find the middle position vector ----
                 for (int k = 0; k < 3; k++)
@@ -8787,7 +8793,7 @@ namespace AstroLibMethods
 
                 // -------- find rhodot MathTimeLibr.magnitude --------
                 rhodot = -d3c / d - d4c / (bigr2c * bigr2c * bigr2c * d);
-                //rhodot = -d3 / d - gravConst.mu * d4 / (bigr2 * bigr2 * bigr2 * d);
+                //rhodot = -d3 / d - astroConsts.mu * d4 / (bigr2 * bigr2 * bigr2 * d);
 
                 // -----find middle velocity vector---- -
                 for (int i = 0; i < 3; i++)
@@ -8796,11 +8802,11 @@ namespace AstroLibMethods
                 // now convert back to normal units
                 for (int i = 0; i < 3; i++)
                 {
-                    r2[i] = r2c[i] * gravConst.re;
-                    v2[i] = v2c[i] * gravConst.re / tu;
+                    r2[i] = r2c[i] * astroConsts.re;
+                    v2[i] = v2c[i] * astroConsts.re / tu;
                 }
                 // for passing back
-                bigr2 = bigr2c * gravConst.re;
+                bigr2 = bigr2c * astroConsts.re;
             }
             else
             {  // Escobal cases where d = 0.0
@@ -8808,7 +8814,7 @@ namespace AstroLibMethods
                // need to derive
                //
 
-                //rho = -2.0 * d1 / d - gravConst.mu * 2.0 * d2 / (bigr2 * bigr2 * bigr2 * d);
+                //rho = -2.0 * d1 / d - astroConsts.mu * 2.0 * d2 / (bigr2 * bigr2 * bigr2 * d);
 
                 //// ---- find the middle position vector ----
                 //for (int k = 0; k < 3; k++)
@@ -8819,7 +8825,7 @@ namespace AstroLibMethods
                 //          + " rho " + rho.ToString() + " d1/d " + (d1 / d).ToString() + " d2/d " + (d2 / d).ToString() + "\n";
 
                 //// -------- find rhodot MathTimeLibr.magnitude --------
-                //rhodot = -d3 / d - gravConst.mu * d4 / (bigr2 * bigr2 * bigr2 * d);
+                //rhodot = -d3 / d - astroConsts.mu * d4 / (bigr2 * bigr2 * bigr2 * d);
 
                 //// -----find middle velocity vector---- -
                 //for (int i = 0; i < 3; i++)
@@ -8856,7 +8862,7 @@ namespace AstroLibMethods
             double tau12, tau32, tau13, a1, a1u, a3, a3u, d, d1, d2, l2dotrs;
             double deriv, derivn1, derivn2, bigr2c;
 
-            double tu = Math.Sqrt(gravConst.re * gravConst.re * gravConst.re / gravConst.mu);
+            double tu = Math.Sqrt(astroConsts.re * astroConsts.re * astroConsts.re / astroConsts.mu);
 
             // ---- set middle to 0, deltas to other times ---- 
             // need to separate into jd and jdf portions for accuracy since it's often only seconds or minutes
@@ -8884,9 +8890,9 @@ namespace AstroLibMethods
                 lmat[i, 0] = los1[i];
                 lmat[i, 1] = los2[i];
                 lmat[i, 2] = los3[i];
-                rsmat[i, 0] = rseci1[i] / gravConst.re;  // er
-                rsmat[i, 1] = rseci2[i] / gravConst.re;
-                rsmat[i, 2] = rseci3[i] / gravConst.re;
+                rsmat[i, 0] = rseci1[i] / astroConsts.re;  // er
+                rsmat[i, 1] = rseci2[i] / astroConsts.re;
+                rsmat[i, 2] = rseci3[i] / astroConsts.re;
             }
 
             d = MathTimeLibr.determinant(lmat, 3);
@@ -8922,16 +8928,16 @@ namespace AstroLibMethods
             d2 = lir[1, 0] * a1u + lir[1, 2] * a3u;
 
             // -------- solve eighth order poly not same as laplace --------- 
-            l2dotrs = MathTimeLibr.dot(los2, rseci2) / gravConst.re;
+            l2dotrs = MathTimeLibr.dot(los2, rseci2) / astroConsts.re;
             poly[1] = 1.0;  // r2^8
             poly[2] = 0.0;
-            poly[3] = -(d1 * d1 + 2.0 * d1 * l2dotrs + MathTimeLibr.mag(rseci2) / gravConst.re * MathTimeLibr.mag(rseci2) / gravConst.re);
+            poly[3] = -(d1 * d1 + 2.0 * d1 * l2dotrs + MathTimeLibr.mag(rseci2) / astroConsts.re * MathTimeLibr.mag(rseci2) / astroConsts.re);
             poly[4] = 0.0;
             poly[5] = 0.0;
-            poly[6] = -2.0 * d2 * (l2dotrs + d1);  // * gravConst.mu
+            poly[6] = -2.0 * d2 * (l2dotrs + d1);  // * astroConsts.mu
             poly[7] = 0.0;
             poly[8] = 0.0;
-            poly[9] = -d2 * d2;  // gravConst.mu * gravConst.mu *
+            poly[9] = -d2 * d2;  // astroConsts.mu * astroConsts.mu *
 
             // simply iterate to find the correct root
             bigr2 = 100.0;
@@ -8940,7 +8946,7 @@ namespace AstroLibMethods
             // do as Halley iteration since derivatives are possible. tests at LEO, GPS, GEO,
             // all seem to converge to the proper answer
             int kk = 0;
-            bigr2c = 20000.0 / gravConst.re; // er guess ~GPS altitude
+            bigr2c = 20000.0 / astroConsts.re; // er guess ~GPS altitude
             while (Math.Abs(bigr2 - bigr2c) > 0.5 && kk < 15)
             {
                 bigr2 = bigr2c;
@@ -8956,7 +8962,7 @@ namespace AstroLibMethods
                 bigr2c = bigr2 - (2.0 * deriv * derivn1) / (2.0 * derivn1 * derivn1 - deriv * derivn2);
                 kk = kk + 1;
             }
-            bigr2 = bigr2c * gravConst.re;
+            bigr2 = bigr2c * astroConsts.re;
         }  // getGaussRoot
 
 
@@ -9060,7 +9066,7 @@ namespace AstroLibMethods
             double a1c, a1uc, a3c, a3uc, d1c, d2c, tau12c, tau32c, tau13c;
 
             // canonical only through forming and solving the 8th order polynomial
-            double tu = Math.Sqrt(gravConst.re * gravConst.re * gravConst.re / gravConst.mu);
+            double tu = Math.Sqrt(astroConsts.re * astroConsts.re * astroConsts.re / astroConsts.mu);
 
             // ----------------------   initialize    // ----------------------- 
             char show;
@@ -9117,10 +9123,10 @@ namespace AstroLibMethods
                 rsmat[i, 1] = rseci2[i];
                 rsmat[i, 2] = rseci3[i];
 
-                rsmatc[i, 0] = rseci1[i] / gravConst.re;  // er
-                rsmatc[i, 1] = rseci2[i] / gravConst.re;
-                rsmatc[i, 2] = rseci3[i] / gravConst.re;
-                rs2c[i] = rseci2[i] / gravConst.re;  // er for later
+                rsmatc[i, 0] = rseci1[i] / astroConsts.re;  // er
+                rsmatc[i, 1] = rseci2[i] / astroConsts.re;
+                rsmatc[i, 2] = rseci3[i] / astroConsts.re;
+                rs2c[i] = rseci2[i] / astroConsts.re;  // er for later
             }
 
             d = MathTimeLibr.determinant(lmat, 3);
@@ -9206,7 +9212,7 @@ namespace AstroLibMethods
             // do as Halley iteration since derivatives are possible. tests at LEO, GPS, GEO,
             // all seem to converge to the proper answer
             int kk = 1;
-            bigr2c = 20000.0 / gravConst.re; // er guess ~GPS altitude
+            bigr2c = 20000.0 / astroConsts.re; // er guess ~GPS altitude
                                              // bigr2nx = bigr2c;
             while (Math.Abs(bigr2 - bigr2c) > 8.0e-5 && kk < 15)  // do in er, 0.5 km
             {
@@ -9233,12 +9239,12 @@ namespace AstroLibMethods
             // if laplace has 1 root, pick gauss root closest to laplace
             // if laplace has multiple roots, another insight is needed.
             //}
-            if (bigr2c < 0.0 || bigr2c * gravConst.re > 50000.0)
-                bigr2c = 35000.0 / gravConst.re;  // simply set this to about GEO, allowing for less than that too. 
+            if (bigr2c < 0.0 || bigr2c * astroConsts.re > 50000.0)
+                bigr2c = 35000.0 / astroConsts.re;  // simply set this to about GEO, allowing for less than that too. 
 
             // now back to normal units
-            bigr2 = bigr2c * gravConst.re;  // km
-                                            //    bigr2nx = bigr2nx * gravConst.re;
+            bigr2 = bigr2c * astroConsts.re;  // km
+                                            //    bigr2nx = bigr2nx * astroConsts.re;
 
             a1 = tau32 / (tau32 - tau12);
             a1u = (tau32 * ((tau32 - tau12) * (tau32 - tau12) - tau32 * tau32)) /
@@ -9262,7 +9268,7 @@ namespace AstroLibMethods
             }
 
             // ------------- solve matrix with u2 better known -------------- 
-            u = gravConst.mu / (bigr2 * bigr2 * bigr2);
+            u = astroConsts.mu / (bigr2 * bigr2 * bigr2);
 
             c1 = a1 + a1u * u;
             c2 = -1.0;
@@ -9377,15 +9383,15 @@ namespace AstroLibMethods
 
                 //double xnewsqrd = xnew * xnew;
                 //f1 = 1.0 - (xnewsqrd * c2new / magr2);
-                //g1 = tau12 - xnewsqrd * xnew * c3new / Math.Sqrt(gravConst.mu);
+                //g1 = tau12 - xnewsqrd * xnew * c3new / Math.Sqrt(astroConsts.mu);
                 //f3 = 1.0 - (xnewsqrd * c2new / magr2);
-                //g3 = tau32 - xnewsqrd * xnew * c3new / Math.Sqrt(gravConst.mu);
+                //g3 = tau32 - xnewsqrd * xnew * c3new / Math.Sqrt(astroConsts.mu);
 
                 // ---- now get an improved estimate of the f and g series ---- 
                 // this is the intermediate form from Escobal pg 108 using only 1st derivative  
-                u = gravConst.mu / (magr2 * magr2 * magr2);
+                u = astroConsts.mu / (magr2 * magr2 * magr2);
                 rdot = MathTimeLibr.dot(r2, v2) / magr2;
-                udot = (-3.0 * gravConst.mu * rdot) / (Math.Pow(magr2, 4));
+                udot = (-3.0 * astroConsts.mu * rdot) / (Math.Pow(magr2, 4));
 
                 tausqr = tau12 * tau12;
                 f1 = 1.0 - 0.5 * u * tausqr - (1.0 / 6.0) * udot * tausqr * tau12;
@@ -9708,7 +9714,7 @@ namespace AstroLibMethods
 
             if (e * e < 1.0)
             {
-                n = Math.Sqrt(gravConst.mu / (a * a * a));
+                n = Math.Sqrt(astroConsts.mu / (a * a * a));
                 eSinE = magr2 / p * Math.Sqrt(1.0 - e * e) * esinv2;
                 eCosE = magr2 / p * (e * e + ecosv2);
 
@@ -9737,7 +9743,7 @@ namespace AstroLibMethods
                     a = -a;  // get right sign for hyperbolic orbit
                     p = -p;
                 }
-                n = Math.Sqrt(gravConst.mu / -(a * a * a));
+                n = Math.Sqrt(astroConsts.mu / -(a * a * a));
 
                 eSinE = magr2 / p * Math.Sqrt(e * e - 1.0) * esinv2;
                 eCosE = magr2 / p * (e * e + ecosv2);
@@ -9865,7 +9871,7 @@ namespace AstroLibMethods
             string tmpstr;
 
             // ----------------------   initialize    // ----------------------- 
-            tol = 1e-8 * gravConst.re;  // km too small?
+            tol = 1e-8 * astroConsts.re;  // km too small?
             tol = 0.1; // km
             //tol = 1.0; // km
             //pctchg = 0.2;  // 0.05
@@ -9951,7 +9957,7 @@ namespace AstroLibMethods
 
                 // check intermediate status -----------------------------------------------------
                 //f = 1.0 - a / magr2 * (1.0 - Math.Cos(deltae32));
-                //g = tau3 - Math.Sqrt(a * a * a / gravConst.mu) * (deltae32 - Math.Sin(deltae32));
+                //g = tau3 - Math.Sqrt(a * a * a / astroConsts.mu) * (deltae32 - Math.Sin(deltae32));
                 //for (i = 0; i < 3; i++)
                 //    v2[i] = (r3[i] - f * r2[i]) / g;
                 //rv2coe(r2, v2,
@@ -10082,7 +10088,7 @@ namespace AstroLibMethods
             if (a < 0.0)
             {
                 f = 1.0 - a / magr2 * (1.0 - Math.Cosh(deltae32));
-                g = tau3 - Math.Sqrt(-a * -a * -a / gravConst.mu) * (deltae32 - Math.Sinh(deltae32));
+                g = tau3 - Math.Sqrt(-a * -a * -a / astroConsts.mu) * (deltae32 - Math.Sinh(deltae32));
                 for (i = 0; i < 3; i++)
                     v2[i] = (r3[i] - f * r2[i]) / g;
                 errstr = errstr + "v2 hyp " + v2[0].ToString() + " " + v2[1].ToString() + " " + v2[2].ToString() + "\n";
@@ -10090,7 +10096,7 @@ namespace AstroLibMethods
             else
             {
                 f = 1.0 - a / magr2 * (1.0 - Math.Cos(deltae32));
-                g = tau3 - Math.Sqrt(a * a * a / gravConst.mu) * (deltae32 - Math.Sin(deltae32));
+                g = tau3 - Math.Sqrt(a * a * a / astroConsts.mu) * (deltae32 - Math.Sin(deltae32));
                 for (i = 0; i < 3; i++)
                     v2[i] = (r3[i] - f * r2[i]) / g;
                 errstr = errstr + "v2 ell " + v2[0].ToString() + " " + v2[1].ToString() + " " + v2[2].ToString() + "\n" + ktr.ToString();
@@ -10237,7 +10243,7 @@ namespace AstroLibMethods
                 numhalfrev = 2 * (int)Math.Floor(tau13 / 86400.0);
 
             itnum = 25;
-            alpha = gravConst.mu / rng1;  // 12245 km reciprocal of sma
+            alpha = astroConsts.mu / rng1;  // 12245 km reciprocal of sma
             ind = 0;
             crit = 10.0;
             axrtio = 0.3;
@@ -10272,14 +10278,14 @@ namespace AstroLibMethods
             // alpha (1/a), rp, ecc, bom, argp, tau since perigee
             // pv3els(r2, v2, alpha, rp, incl, raan, argp, tauxx);
 
-            alpha = gravConst.mu / a;
+            alpha = astroConsts.mu / a;
 
             if (alpha == 0.0)
                 a = 0.0;
             else
-                a = gravConst.mu / alpha;
+                a = astroConsts.mu / alpha;
 
-            ecc = 1.0 - rp * alpha / gravConst.mu;
+            ecc = 1.0 - rp * alpha / astroConsts.mu;
             incl = incl * rad;
             raan = raan * rad;
             //
@@ -10652,7 +10658,7 @@ namespace AstroLibMethods
                     // cr only used, non-critically, in denom of convergence test
 
                     //if (al != 0.0)
-                    //    al = gravConst.mu / al;
+                    //    al = astroConsts.mu / al;
                     //ecc = 1.0 - q * al / gm1;  // eccentricity (old los2[2])
                     //eideg = ei * radian;  // inclination
 
@@ -10891,7 +10897,7 @@ namespace AstroLibMethods
 
                         den = Math.Max(rng2, magr2);
                         if (alpha > 0.0)
-                            den = Math.Max(den, tau12 * Math.Sqrt(alpha * (2.0 * gravConst.mu / alpha - magr2) / magr2));
+                            den = Math.Max(den, tau12 * Math.Sqrt(alpha * (2.0 * astroConsts.mu / alpha - magr2) / magr2));
                         crit = f / den;
 
                         if (lminly)
@@ -11037,7 +11043,7 @@ namespace AstroLibMethods
             string detailSum, detailAll;
             rho2sez = new double[] { 0.0, 0.0, 0.0 };
             // hardwire this for now, could be an input
-            double altpadc = 200.0 / gravConst.re;
+            double altpadc = 200.0 / astroConsts.re;
             errstr = "";
 
             // internal variables 
@@ -11273,7 +11279,7 @@ namespace AstroLibMethods
                 r2mr3 = magr2 - MathTimeLibr.mag(r3);
                 MathTimeLibr.addvec3(r1mr2, r3, r3mr1, r2, r2mr3, r1, out s);
                 MathTimeLibr.cross(d, r2, out b);
-                l = Math.Sqrt(gravConst.mu / (MathTimeLibr.mag(d) * MathTimeLibr.mag(n)));
+                l = Math.Sqrt(astroConsts.mu / (MathTimeLibr.mag(d) * MathTimeLibr.mag(n)));
                 tover2 = l / magr2;
                 MathTimeLibr.addvec(tover2, b, l, s, out v2);
             }
@@ -11380,11 +11386,11 @@ namespace AstroLibMethods
 
             // ------------ perform herrick-gibbs method to find v2 -----------
             term1 = -dt32 *
-                (1.0 / (dt21 * dt31) + gravConst.mu / (12.0 * magr1 * magr1 * magr1));
+                (1.0 / (dt21 * dt31) + astroConsts.mu / (12.0 * magr1 * magr1 * magr1));
             term2 = (dt32 - dt21) *
-                (1.0 / (dt21 * dt32) + gravConst.mu / (12.0 * magr2 * magr2 * magr2));
+                (1.0 / (dt21 * dt32) + astroConsts.mu / (12.0 * magr2 * magr2 * magr2));
             term3 = dt21 *
-                (1.0 / (dt32 * dt31) + gravConst.mu / (12.0 * MathTimeLibr.mag(r3) * MathTimeLibr.mag(r3) * MathTimeLibr.mag(r3)));
+                (1.0 / (dt32 * dt31) + astroConsts.mu / (12.0 * MathTimeLibr.mag(r3) * MathTimeLibr.mag(r3) * MathTimeLibr.mag(r3)));
             MathTimeLibr.addvec3(term1, r1, term2, r2, term3, r3, out v2);
         }  // herrgibbs
 
@@ -12073,9 +12079,12 @@ namespace AstroLibMethods
             Int32 maxsizeGravField = 2500;
             Int32 L, m, ktr, begincol;
             string line, line1;
+            char hasuncdata = 'n';
             L = 0;
 
             gravData = new gravityConst();
+            gravData.normalized = normalized;
+
             // beware as many models have sigmas (EGM-08, GGM-03C, ), while others are blank (JGM-3, )
             //     L    m          cnor                snor          sigma c       sigma s
             //     2    0 - 4.841693259705D-04  0.000000000000D+00  4.68460D-11  0.00000D+00
@@ -12083,6 +12092,16 @@ namespace AstroLibMethods
             //     L    m            cnor                     snor              
             //     2    0      -4.8416537488647e-04     0.0000000000000e+00
             //     2    1      -1.8698764000000e-10     1.1952801000000e-09
+
+            // fill out intiial values
+            gravData.c[0] = new double[1];
+            gravData.s[0] = new double[1];
+            gravData.c[1] = new double[2];
+            gravData.s[1] = new double[2];
+            gravData.c[0][0] = 0.0;
+            gravData.s[0][0] = 0.0;
+            gravData.c[1][0] = 0.0;
+            gravData.s[1][0] = 0.0;
 
             string[] fileData = File.ReadAllLines(fname);
 
@@ -12096,6 +12115,7 @@ namespace AstroLibMethods
             else
                 begincol = 0;
 
+            int oldL = 1;
             while (ktr < fileData.Count() && !fileData[ktr].Contains("END"))
             {
                 line = fileData[ktr];
@@ -12107,21 +12127,26 @@ namespace AstroLibMethods
 
                 L = Convert.ToInt32(linesplt[begincol]);
                 m = Convert.ToInt32(linesplt[begincol + 1]);
-                if (normalized == 'y')
+                if (L != oldL)
                 {
-                    gravData.cNor[L, m] = Convert.ToDouble(linesplt[begincol + 2]);
-                    gravData.sNor[L, m] = Convert.ToDouble(linesplt[begincol + 3]);
+                    gravData.c[L] = new double[L + 1];
+                    gravData.s[L] = new double[L + 1];
                 }
-                else
-                {
-                    gravData.c[L, m] = Convert.ToDouble(linesplt[begincol + 2]);
-                    gravData.s[L, m] = Convert.ToDouble(linesplt[begincol + 3]);
-                }
-                // some models don't have sigmas
+                gravData.c[L][m] = Convert.ToDouble(linesplt[begincol + 2]);
+                gravData.s[L][m] = Convert.ToDouble(linesplt[begincol + 3]);
+                // some models don't have sigma uncertainty
                 try
                 {
-                    gravData.cSig[L, m] = Convert.ToDouble(linesplt[begincol + 4]);
-                    gravData.sSig[L, m] = Convert.ToDouble(linesplt[begincol + 5]);
+                    if (L != oldL)
+                    {
+                        gravData.cSig[L] = new double[L + 1];
+                        gravData.sSig[L] = new double[L + 1];
+                        oldL = L;
+                    }
+                    gravData.cSig[L][m] = Convert.ToDouble(linesplt[begincol + 4]);
+                    gravData.sSig[L][m] = Convert.ToDouble(linesplt[begincol + 5]);
+                    
+                    hasuncdata = 'y';
                 }
                 catch
                 { }
@@ -12176,35 +12201,38 @@ namespace AstroLibMethods
                double latgc,
                Int32 order,
                char normalized,
-               out double[,] legarrGU,
-               out double[,] legarrGN
+               out double[][] legarrGU,
+               out double[][] legarrGN
            )
         {
             Int32 L, m;
             double conv;
-            legarrGU = new double[order + 2, order + 2];
-            legarrGN = new double[order + 2, order + 2];
+            legarrGU = new double[order + 2][];
+            legarrGN = new double[order + 2][];
 
-            legarrGU[0, 0] = 1.0;
-            legarrGU[0, 1] = 0.0;
-            legarrGU[1, 0] = Math.Sin(latgc);
-            legarrGU[1, 1] = Math.Cos(latgc);
+            legarrGU[0] = new double[2];
+            legarrGU[0][0] = 1.0;
+            legarrGU[0][1] = 0.0;
+            legarrGU[1] = new double[3];
+            legarrGU[1][0] = Math.Sin(latgc);
+            legarrGU[1][1] = Math.Cos(latgc);
 
             // -------------------- perform recursions ---------------------- }
             for (L = 2; L <= order; L++)
             {
+                legarrGU[L] = new double[L + 2];
                 for (m = 0; m <= L; m++)
                 {
                     // Legendre functions, zonal 
                     if (m == 0)
-                        legarrGU[L, 0] = ((2 * L - 1) * legarrGU[1, 0] * legarrGU[L - 1, 0] - (L - 1) * legarrGU[L - 2, 0]) / L;
+                        legarrGU[L][0] = ((2 * L - 1) * legarrGU[1][0] * legarrGU[L - 1][ 0] - (L - 1) * legarrGU[L - 2][ 0]) / L;
                     else
                     {
                         // associated Legendre functions
                         if (m == L)
-                            legarrGU[L, L] = (2 * L - 1) * legarrGU[1, 1] * legarrGU[L - 1, m - 1];  // sectoral part
+                            legarrGU[L][ L] = (2 * L - 1) * legarrGU[1][ 1] * legarrGU[L - 1][ m - 1];  // sectoral part
                         else
-                            legarrGU[L, m] = legarrGU[L - 2, m] + (2 * L - 1) * legarrGU[1, 1] * legarrGU[L - 1, m - 1];  // tesseral part
+                            legarrGU[L][m] = legarrGU[L - 2][ m] + (2 * L - 1) * legarrGU[1][ 1] * legarrGU[L - 1][ m - 1];  // tesseral part
                     }
                 }   // for m
             }   // for L
@@ -12218,12 +12246,15 @@ namespace AstroLibMethods
                     orderlim = 170;
                 else
                     orderlim = order;
-                legarrGN[0, 0] = 1.0;
-                legarrGN[0, 1] = 0.0;
-                legarrGN[1, 0] = Math.Sin(latgc);
-                legarrGN[1, 1] = Math.Cos(latgc);
+                legarrGN[0] = new double[2];
+                legarrGN[0][ 0] = 1.0;
+                legarrGN[0][ 1] = 0.0;
+                legarrGN[1] = new double[2];
+                legarrGN[1][ 0] = Math.Sin(latgc);
+                legarrGN[1][ 1] = Math.Cos(latgc);
                 for (L = 1; L <= orderlim; L++)
                 {
+                    legarrGN[L] = new double[L + 2];
                     for (m = 0; m <= L; m++)
                     {
                         // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
@@ -12232,7 +12263,7 @@ namespace AstroLibMethods
                         else
                             conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
 
-                        legarrGN[L, m] = conv * legarrGU[L, m];
+                        legarrGN[L][m] = conv * legarrGU[L][m];
                     } // for m
                 } // for L
             }
@@ -12279,28 +12310,31 @@ namespace AstroLibMethods
                double latgc,
                Int32 order,
                char normalized,
-               out double[,] legarrMU,
-               out double[,] legarrMN
+               out double[][] legarrMU,
+               out double[][] legarrMN
            )
         {
             Int32 L, m;
             double conv;
-            legarrMU = new double[order + 2, order + 2];
-            legarrMN = new double[order + 2, order + 2];
+            legarrMU = new double[order + 2][];
+            legarrMN = new double[order + 2][];
             Int32 orderlim;
 
             // --------------------  montenbruck approach
-            legarrMU[0, 0] = 1.0;
-            legarrMU[0, 1] = 0.0;
-            legarrMU[1, 0] = Math.Sin(latgc);
-            legarrMU[1, 1] = Math.Cos(latgc);
-            double slat = legarrMU[1, 0];
-            double clat = legarrMU[1, 1];
+            legarrMU[0] = new double[2];
+            legarrMU[0][ 0] = 1.0;
+            legarrMU[0][ 1] = 0.0;
+            legarrMU[1] = new double[2];
+            legarrMU[1][ 0] = Math.Sin(latgc);
+            legarrMU[1][ 1] = Math.Cos(latgc);
+            double slat = legarrMU[1][ 0];
+            double clat = legarrMU[1][ 1];
 
             // Legendre functions, zonal 
             for (L = 2; L <= order; L++)
             {
-                legarrMU[L, L] = (2 * L - 1) * clat * legarrMU[L - 1, L - 1];
+                legarrMU[L] = new double[L + 1];
+                legarrMU[L][ L] = (2 * L - 1) * clat * legarrMU[L - 1][ L - 1];
             }
 
             // associated Legendre functions
@@ -12309,9 +12343,9 @@ namespace AstroLibMethods
                 for (m = 0; m < L; m++)
                 {
                     if (L == m + 1)
-                        legarrMU[L, m] = (2 * m + 1) * slat * legarrMU[m, m];
+                        legarrMU[L][m] = (2 * m + 1) * slat * legarrMU[m][ m];
                     else
-                        legarrMU[L, m] = 1.0 / (L - m) * ((2 * L - 1) * slat * legarrMU[L - 1, m] - (L + m - 1) * legarrMU[L - 2, m]);
+                        legarrMU[L][m] = 1.0 / (L - m) * ((2 * L - 1) * slat * legarrMU[L - 1][ m] - (L + m - 1) * legarrMU[L - 2][ m]);
                 }
             }
 
@@ -12323,12 +12357,15 @@ namespace AstroLibMethods
                     orderlim = 170;
                 else
                     orderlim = order;
-                legarrMN[0, 0] = 1.0;
-                legarrMN[0, 1] = 0.0;
-                legarrMN[1, 0] = Math.Sin(latgc);
-                legarrMN[1, 1] = Math.Cos(latgc);
+                legarrMN[0] = new double[2];
+                legarrMN[0][ 0] = 1.0;
+                legarrMN[0][ 1] = 0.0;
+                legarrMN[1] = new double[2];
+                legarrMN[1][ 0] = Math.Sin(latgc);
+                legarrMN[1][ 1] = Math.Cos(latgc);
                 for (L = 1; L <= orderlim; L++)
                 {
+                    legarrMN[L] = new double[L + 1];
                     for (m = 0; m <= L; m++)
                     {
                         // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
@@ -12337,7 +12374,7 @@ namespace AstroLibMethods
                         else
                             conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
 
-                        legarrMN[L, m] = conv * legarrMU[L, m];
+                        legarrMN[L][m] = conv * legarrMU[L][m];
                     } // for m
                 } // for L
             }
@@ -12385,9 +12422,9 @@ namespace AstroLibMethods
                out double[] norm2,
                out double[] norm11,
                out double[] normn10,
-               out double[,] norm1m,
-               out double[,] norm2m,
-               out double[,] normn1
+               out double[][] norm1m,
+               out double[][] norm2m,
+               out double[][] normn1
            )
         {
             Int32 L, m;
@@ -12395,9 +12432,9 @@ namespace AstroLibMethods
             norm2 = new double[order + 2];
             norm11 = new double[order + 2];
             normn10 = new double[order + 2];
-            norm1m = new double[order + 2, order + 2];
-            norm2m = new double[order + 2, order + 2];
-            normn1 = new double[order + 2, order + 2];
+            norm1m = new double[order + 2][];
+            norm2m = new double[order + 2][];
+            normn1 = new double[order + 2][];
 
             // -------------------- perform recursions ---------------------- }
             for (L = 2; L <= order + 1; L++) // L = 2:order + 1  
@@ -12407,12 +12444,16 @@ namespace AstroLibMethods
                 norm11[L] = Math.Sqrt((2 * L + 1.0) / (2 * L)) / (2 * L - 1.0); // eq 3-3 
                 normn10[L] = Math.Sqrt((L + 1.0) * L * 0.5);  // eq 3-13
 
+                norm1m[L] = new double[L + 1];
+                norm2m[L] = new double[L + 1];
+                normn1[L] = new double[L + 1];
+
                 for (m = 1; m <= L; m++) // m = 1:L 
                 {
-                    norm1m[L, m] = Math.Sqrt((L - m) * (2 * L + 1.0) / ((L + m) * (2 * L - 1.0)));    // eq 3-4 
-                    norm2m[L, m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2 * L + 1.0) /
+                    norm1m[L][m] = Math.Sqrt((L - m) * (2 * L + 1.0) / ((L + m) * (2 * L - 1.0)));    // eq 3-4 
+                    norm2m[L][m] = Math.Sqrt((L - m) * (L - m - 1.0) * (2 * L + 1.0) /
                         ((L + m) * (L + m - 1.0) * (2 * L - 3.0)));   // eq 3-5 
-                    normn1[L, m] = Math.Sqrt((L + m + 1.0) * (L - m));    // part of eq 3-9 
+                    normn1[L][m] = Math.Sqrt((L + m + 1.0) * (L - m));    // part of eq 3-9 
                 }
             }
 
@@ -12515,10 +12556,10 @@ namespace AstroLibMethods
                double latgc,
                Int32 order,
                char normalized,
-               out double[,] VArr,
-               out double[,] WArr,
-               out double[,] VArrN,
-               out double[,] WArrN
+               out double[][] VArr,
+               out double[][] WArr,
+               out double[][] VArrN,
+               out double[][] WArrN
            )
         {
             double conv;
@@ -12526,49 +12567,55 @@ namespace AstroLibMethods
             Int32 L, m, orderlim;
 
             // unnormalized
-            VArr = new double[order + 2, order + 2];
-            WArr = new double[order + 2, order + 2];
+            VArr = new double[order + 2][];
+            WArr = new double[order + 2][];
             // normalized
-            VArrN = new double[order + 2, order + 2];
-            WArrN = new double[order + 2, order + 2];
+            VArrN = new double[order + 2][];
+            WArrN = new double[order + 2][];
 
             magr = MathTimeLibr.mag(recef);
 
             // form first set of recursions for l = m on V and W
-            double temp = gravConst.re / (magr * magr);
+            double temp = astroConsts.re / (magr * magr);
 
             // initial zonal values
-            VArr[0, 0] = gravConst.re / magr;
-            VArr[1, 0] = VArr[0, 0] * VArr[0, 0] * Math.Sin(latgc);
-            WArr[0, 0] = 0.0;
-            WArr[1, 0] = 0.0;
+            VArr[0] = new double[2];
+            WArr[0] = new double[2];
+            VArr[0][ 0] = astroConsts.re / magr;
+            VArr[1] = new double[3];
+            WArr[1] = new double[3];
+            VArr[1][ 0] = VArr[0][0] * VArr[0][0] * Math.Sin(latgc);
+            WArr[0][0] = 0.0;
+            WArr[1][0] = 0.0;
 
             // find zonal terms
             for (L = 2; L <= order + 1; L++)
             {
-                VArr[L, 0] = (2.0 * L - 1) / L * recef[2] * temp * VArr[L - 1, 0] -
-                     (L - 1.0) / L * temp * gravConst.re * VArr[L - 2, 0];
-                WArr[L, 0] = 0.0;
+                VArr[L] = new double[L + 2];
+                WArr[L] = new double[L + 2];
+                VArr[L][0] = (2.0 * L - 1) / L * recef[2] * temp * VArr[L - 1][0] -
+                     (L - 1.0) / L * temp * astroConsts.re * VArr[L - 2][0];
+                WArr[L][0] = 0.0;
             }
 
             // find tesseral and sectoral terms
             for (L = 1; L <= order + 1; L++)
             {
                 m = L;
-                VArr[L, m] = (2.0 * m - 1) * (recef[0] * temp * VArr[m - 1, m - 1] - recef[1] * temp * WArr[m - 1, m - 1]);
-                WArr[L, m] = (2.0 * m - 1) * (recef[0] * temp * WArr[m - 1, m - 1] + recef[1] * temp * VArr[m - 1, m - 1]);
+                VArr[L][m] = (2.0 * m - 1) * (recef[0] * temp * VArr[m - 1][m - 1] - recef[1] * temp * WArr[m - 1][m - 1]);
+                WArr[L][m] = (2.0 * m - 1) * (recef[0] * temp * WArr[m - 1][m - 1] + recef[1] * temp * VArr[m - 1][m - 1]);
 
                 for (int k = m + 1; k <= order + 1; k++)
                 {
-                    VArr[k, m] = ((2.0 * k - 1) / (k - m)) * recef[2] * temp * VArr[k - 1, m] -
-                        (k + m - 1.0) / (k - m) * temp * gravConst.re * VArr[k - 2, m];
-                    WArr[k, m] = ((2.0 * k - 1) / (k - m)) * recef[2] * temp * WArr[k - 1, m] -
-                        (k + m - 1.0) / (k - m) * temp * gravConst.re * WArr[k - 2, m];
+                    VArr[k][m] = ((2.0 * k - 1) / (k - m)) * recef[2] * temp * VArr[k - 1][m] -
+                        (k + m - 1.0) / (k - m) * temp * astroConsts.re * VArr[k - 2][m];
+                    WArr[k][m] = ((2.0 * k - 1) / (k - m)) * recef[2] * temp * WArr[k - 1][m] -
+                        (k + m - 1.0) / (k - m) * temp * astroConsts.re * WArr[k - 2][m];
                 }
             }
 
             // --------------- now normalize the variables
-            // note this is only good for equally indexed functions [L, m], others have to be corrected later
+            // note this is only good for equally indexed functions [L][m], others have to be corrected later
             if (normalized == 'y')
             {
                 // my simple approach to normalize the recursion
@@ -12577,10 +12624,14 @@ namespace AstroLibMethods
                     orderlim = 170;
                 else
                     orderlim = order;
-                VArrN[0, 0] = gravConst.re / magr;
-                WArrN[0, 0] = 0.0;
+                VArrN[0] = new double[1];
+                WArrN[0] = new double[1];
+                VArrN[0][0] = astroConsts.re / magr;
+                WArrN[0][0] = 0.0;
                 for (L = 1; L <= orderlim + 1; L++)
                 {
+                    VArrN[L] = new double[L + 1];
+                    WArrN[L] = new double[L + 1];
                     for (m = 0; m <= L; m++)
                     {
                         // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
@@ -12588,8 +12639,8 @@ namespace AstroLibMethods
                             conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
                         else
                             conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
-                        VArrN[L, m] = conv * VArr[L, m];
-                        WArrN[L, m] = conv * WArr[L, m];
+                        VArrN[L][m] = conv * VArr[L][m];
+                        WArrN[L][m] = conv * WArr[L][m];
                     }
                 }
             }
@@ -12601,23 +12652,26 @@ namespace AstroLibMethods
         // useful for gtds, montenbruck, etc
         public void gravnorm
       (
-          out double[,] unnormArr
+          out double[][] unnormArr
       )
         {
-            unnormArr = new double[172, 172];
+            unnormArr = new double[172][];
             int L, m;
             double conv;
 
             L = 0;
 
-            unnormArr[0, 0] = 1.0;
-            unnormArr[1, 0] = Math.Sqrt(3);
-            unnormArr[1, 1] = unnormArr[1, 0];
+            unnormArr[0] = new double[1];
+            unnormArr[0][0] = 1.0;
+            unnormArr[1] = new double[2];
+            unnormArr[1][0] = Math.Sqrt(3);
+            unnormArr[1][1] = unnormArr[1][0];
 
 
             // note these normalization recursions should work for higher than 150 since factorials are "not" used. 
             for (L = 1; L <= 100; L++)
             {
+                unnormArr[L] = new double[L + 1];
                 for (m = 0; m <= L; m++)
                 {
                     if (m == 0)
@@ -12626,7 +12680,7 @@ namespace AstroLibMethods
                         conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
 
                     // ----- store these for later use
-                    unnormArr[L, m] = conv;
+                    unnormArr[L][m] = conv;
                 }
             }
 
@@ -12678,7 +12732,7 @@ namespace AstroLibMethods
             double[] recef,
             Int32 order,
             char normalized,
-            double[,] unnormArr,
+            double[][] unnormArr,
             gravityConst gravData,
             out double[] aPertG,
             char show,
@@ -12686,9 +12740,9 @@ namespace AstroLibMethods
         )
         {
             Int32 L, m;
-            double[,] legarrGU;  // unnormalized gtds
-            double[,] legarrGN;  // normalized gtds
-            double[,] trigArr;
+            double[][] legarrGU;  // unnormalized gtds
+            double[][] legarrGN;  // normalized gtds
+            double[, ] trigArr;
             double oordelta, temp, oor, ror, muor, sumM1, sumM2, sumM3, dRdr,
                    dRdlat, dRdlon, RDelta, latgc, latgd, hellp, lon;
             double temparg;
@@ -12709,7 +12763,7 @@ namespace AstroLibMethods
             // ----------Partial derivatives of disturbing potential ------- }
             double magr = MathTimeLibr.mag(recef);
             oor = 1.0 / magr;
-            ror = gravConst.re * oor;
+            ror = astroConsts.re * oor;
             dRdr = 0.0;
             dRdlat = 0.0;
             dRdlon = 0.0;
@@ -12729,37 +12783,38 @@ namespace AstroLibMethods
                     // unnormalized should sum in reverse to preserve accuracy
                     if (normalized == 'n')
                     {
-                        temparg = gravData.c[L, m] * trigArr[m, 1] + gravData.s[L, m] * trigArr[m, 0];
-                        sumM1 = sumM1 + legarrGU[L, m] * temparg;
+                        temparg = gravData.c[L][m] * trigArr[m, 1] + gravData.s[L][m] * trigArr[m, 0];
+                        sumM1 = sumM1 + legarrGU[L][m] * temparg;
                         if (m + 1 <= L)
-                            sumM2 = sumM2 + (legarrGU[L, m + 1] - m * trigArr[m, 2] * legarrGU[L, m]) * temparg;
+                            sumM2 = sumM2 + (legarrGU[L][m + 1] - m * trigArr[m, 2] * legarrGU[L][m]) * temparg;
                         else
-                            sumM2 = sumM2 - m * trigArr[m, 2] * legarrGU[L, m] * temparg;
-                        sumM3 = sumM3 + m * legarrGU[L, m] * (gravData.s[L, m] * trigArr[m, 1] - gravData.c[L, m] * trigArr[m, 0]);
+                            sumM2 = sumM2 - m * trigArr[m, 2] * legarrGU[L][m] * temparg;
+                        sumM3 = sumM3 + m * legarrGU[L][m] * (gravData.s[L][m] * trigArr[m, 1] - gravData.c[L][m] * trigArr[m, 0]);
                     }
                     else  // normalized
                     {
-                        temparg = gravData.cNor[L, m] * trigArr[m, 1] + gravData.sNor[L, m] * trigArr[m, 0];
-                        sumM1 = sumM1 + legarrGN[L, m] * temparg;
-                        if (m + 1 <= L)
+                        temparg = gravData.c[L][m] * trigArr[m, 1] + gravData.s[L][m] * trigArr[m, 0];
+                        sumM1 = sumM1 + legarrGN[L][m] * temparg;
+                      //  if (m + 1 <= L)
                         {
                             // synchronize the normalization values
-                            conv = unnormArr[L, m] / unnormArr[L, m + 1];
-                            sumM2 = sumM2 + (conv * legarrGN[L, m + 1] - m * trigArr[m, 2] * legarrGN[L, m]) * temparg;
+                        //    conv = unnormArr[L][m] / unnormArr[L][m + 1];
+                        //    sumM2 = sumM2 + (conv * legarrGN[L][m + 1] - m * trigArr[m, 2] * legarrGN[L][m]) * temparg;
+                            sumM2 = sumM2 + (legarrGN[L][m + 1] - m * trigArr[m, 2] * legarrGN[L][m]) * temparg;
                         }
-                        else
-                            sumM2 = sumM2 - m * trigArr[m, 2] * legarrGN[L, m] * temparg;
-                        sumM3 = sumM3 + m * legarrGN[L, m] * (gravData.sNor[L, m] * trigArr[m, 1] - gravData.cNor[L, m] * trigArr[m, 0]);
+                      //  else
+                      //      sumM2 = sumM2 - m * trigArr[m ,2] * legarrGN[L][m] * temparg;
+                        sumM3 = sumM3 + m * legarrGN[L][m] * (gravData.s[L][m] * trigArr[m, 1] - gravData.c[L][m] * trigArr[m, 0]);
                     }
                 }  // for m 
 
-                dRdr = dRdr + temp * (L + 1) * sumM1;  // needs mu/r^2
+                dRdr = dRdr + temp * (L + 1) * sumM1;  // needs -mu/r^2
                 dRdlat = dRdlat + temp * sumM2; // needs mu/r
                 dRdlon = dRdlon + temp * sumM3; // needs mu/r
             } // for L 
 
             // finish getting the partials
-            muor = gravConst.mu * oor;
+            muor = astroConsts.mu * oor;
             dRdr = -muor * oor * dRdr;
             dRdlat = muor * dRdlat;
             dRdlon = muor * dRdlon;
@@ -12771,7 +12826,7 @@ namespace AstroLibMethods
             temp = oor * dRdr - recef[2] * oor * oor * oordeltasqrt * dRdlat;
 
             // don't add the two body component yet
-            //double tmp = gravConst.mu / (Math.Pow(MathTimeLibr.mag(recef), 3));
+            //double tmp = astroConsts.mu / (Math.Pow(MathTimeLibr.mag(recef), 3));
             aPertG[0] = temp * recef[0] - oordelta * dRdlon * recef[1]; // - tmp * recef[0];
             aPertG[1] = temp * recef[1] + oordelta * dRdlon * recef[0]; // - tmp * recef[1];
             aPertG[2] = oor * dRdr * recef[2] + oor * oor * Math.Sqrt(RDelta) * dRdlat; // - tmp * recef[2];
@@ -12779,16 +12834,16 @@ namespace AstroLibMethods
             if (show == 'y')
             {
                 straccum = straccum + "GTDS case nonspherical, no two-body ---------- " + "\n";
-                straccum = straccum + "legarrGU 4 0   " + legarrGU[4, 0].ToString() + "  4 1   "
-                   + legarrGU[4, 1].ToString() + "  4 4   " + legarrGU[4, 4].ToString() + "\n";
-                straccum = straccum + "legarrGN 4 0   " + legarrGN[4, 0].ToString() + "  4 1   "
-                   + legarrGN[4, 1].ToString() + "  4 4   " + legarrGN[4, 4].ToString() + "\n";
+                straccum = straccum + "legarrGU 4 0   " + legarrGU[4][0].ToString() + "  4 1   "
+                   + legarrGU[4][1].ToString() + "  4 4   " + legarrGU[4][4].ToString() + "\n";
+                straccum = straccum + "legarrGN 4 0   " + legarrGN[4][0].ToString() + "  4 1   "
+                   + legarrGN[4][1].ToString() + "  4 4   " + legarrGN[4][4].ToString() + "\n";
                 straccum = straccum + "trigarr 2 2 Sin  " + trigArr[2, 0].ToString() + "  Cos   "
                     + trigArr[2, 1].ToString() + "  Tan   " + trigArr[2, 2].ToString() + "\n";
                 if (order >= 500)
                 {
-                    straccum = straccum + "legarrGN 500 0   " + legarrGN[500, 0].ToString() + "  500 1   "
-                       + legarrGN[500, 1].ToString() + "  500 2   " + legarrGN[500, 2].ToString() + "\n";
+                    straccum = straccum + "legarrGN 500 0   " + legarrGN[500][0].ToString() + "  500 1   "
+                       + legarrGN[500][1].ToString() + "  500 2   " + legarrGN[500][2].ToString() + "\n";
                     straccum = straccum + "trigarr 500 500 Sin  " + trigArr[500, 0].ToString() + "  Cos   "
                         + trigArr[500, 1].ToString() + "  Tan   " + trigArr[500, 2].ToString() + "\n";
                     straccum = straccum + "apertG ecef " + order + " " + order + " " + aPertG[0].ToString() + "     "
@@ -12842,7 +12897,7 @@ namespace AstroLibMethods
             double[] recef,
             Int32 order,
             char normalized,
-            double[,] unnormArr,
+            double[][] unnormArr,
             gravityConst gravData,
             out double[] aPertM,
             char show,
@@ -12850,12 +12905,12 @@ namespace AstroLibMethods
         )
         {
             Int32 L, m;
-            double[,] legarrMU;  // unnormalized montenbruck
-            double[,] legarrMN;  // normalized montenbruck
-            double[,] VArr;
-            double[,] WArr;
-            double[,] VArrN;
-            double[,] WArrN;
+            double[][] legarrMU;  // unnormalized montenbruck
+            double[][] legarrMN;  // normalized montenbruck
+            double[][] VArr;
+            double[][] WArr;
+            double[][] VArrN;
+            double[][] WArrN;
             double latgc, latgd, hellp, lon;
             double conv, conv1, temp, temp1;
             aPertM = new double[3];
@@ -12871,7 +12926,7 @@ namespace AstroLibMethods
             TrigPolyLeg(recef, latgc, order, normalized, out VArr, out WArr, out VArrN, out WArrN);
 
             // correction term for method of formulating VArr and WArr
-            temp = gravConst.mu / (gravConst.re * gravConst.re);
+            temp = astroConsts.mu / (astroConsts.re * astroConsts.re);
             // temp = 1.0;
             // reverse order of summations to get it more accurate??
             for (m = 0; m <= order; m++)
@@ -12882,20 +12937,20 @@ namespace AstroLibMethods
                     {
                         if (m == 0)
                         {
-                            aPertM[0] = aPertM[0] + temp * (-gravData.c[L, 0] * VArr[L + 1, 1]);
-                            aPertM[1] = aPertM[1] + temp * (-gravData.c[L, 0] * WArr[L + 1, 1]);
-                            aPertM[2] = aPertM[2] + temp * (L + 1) * (-gravData.c[L, 0] * VArr[L + 1, 0]);
+                            aPertM[0] = aPertM[0] + temp * (-gravData.c[L][0] * VArr[L + 1][1]);
+                            aPertM[1] = aPertM[1] + temp * (-gravData.c[L][0] * WArr[L + 1][1]);
+                            aPertM[2] = aPertM[2] + temp * (L + 1) * (-gravData.c[L][0] * VArr[L + 1][0]);
                         }
                         else
                         {
                             //  double temp1 = MathTimeLibr.factorial(L - m + 2) / MathTimeLibr.factorial(L - m);
                             // 1975 Giacaglia pg 6 shows the conversion, more stable
                             temp1 = temp * 0.5 * (L - m + 1) * (L - m + 2);
-                            aPertM[0] = aPertM[0] + 0.5 * temp * (-gravData.c[L, m] * VArr[L + 1, m + 1] - gravData.s[L, m] * WArr[L + 1, m + 1]) +
-                                temp1 * (gravData.c[L, m] * VArr[L + 1, m - 1] + gravData.s[L, m] * WArr[L + 1, m - 1]);
-                            aPertM[1] = aPertM[1] + 0.5 * temp * (-gravData.c[L, m] * WArr[L + 1, m + 1] + gravData.s[L, m] * VArr[L + 1, m + 1]) +
-                                temp1 * (-gravData.c[L, m] * WArr[L + 1, m - 1] + gravData.s[L, m] * VArr[L + 1, m - 1]);
-                            aPertM[2] = aPertM[2] + temp * ((L - m + 1) * (-gravData.c[L, m] * VArr[L + 1, m] - gravData.s[L, m] * WArr[L + 1, m]));
+                            aPertM[0] = aPertM[0] + 0.5 * temp * (-gravData.c[L][m] * VArr[L + 1][m + 1] - gravData.s[L][m] * WArr[L + 1][m + 1]) +
+                                temp1 * (gravData.c[L][m] * VArr[L + 1][m - 1] + gravData.s[L][m] * WArr[L + 1][m - 1]);
+                            aPertM[1] = aPertM[1] + 0.5 * temp * (-gravData.c[L][m] * WArr[L + 1][m + 1] + gravData.s[L][m] * VArr[L + 1][m + 1]) +
+                                temp1 * (-gravData.c[L][m] * WArr[L + 1][m - 1] + gravData.s[L][m] * VArr[L + 1][m - 1]);
+                            aPertM[2] = aPertM[2] + temp * ((L - m + 1) * (-gravData.c[L][m] * VArr[L + 1][m] - gravData.s[L][m] * WArr[L + 1][m]));
                         }
                     }
                     else  // normalized
@@ -12907,25 +12962,25 @@ namespace AstroLibMethods
                         // L,m vs L+1, m
                         if (m == 0)
                         {
-                            conv = unnormArr[L, 0] / unnormArr[L + 1, 1];
-                            aPertM[0] = aPertM[0] + temp * conv * (-gravData.cNor[L, 0] * VArrN[L + 1, 1]);
-                            aPertM[1] = aPertM[1] + temp * conv * (-gravData.cNor[L, 0] * WArrN[L + 1, 1]);
-                            conv = unnormArr[L, 0] / unnormArr[L + 1, 0];
-                            aPertM[2] = aPertM[2] + temp * conv * (L + 1) * (-gravData.cNor[L, 0] * VArrN[L + 1, 0]);
+                            conv = unnormArr[L][0] / unnormArr[L + 1][1];
+                            aPertM[0] = aPertM[0] + temp * conv * (-gravData.c[L][0] * VArrN[L + 1][1]);
+                            aPertM[1] = aPertM[1] + temp * conv * (-gravData.c[L][0] * WArrN[L + 1][1]);
+                            conv = unnormArr[L][0] / unnormArr[L + 1][0];
+                            aPertM[2] = aPertM[2] + temp * conv * (L + 1) * (-gravData.c[L][0] * VArrN[L + 1][0]);
                         }
                         else
                         {
                             //  double temp1 = MathTimeLibr.factorial(L - m + 2) / MathTimeLibr.factorial(L - m);
                             // 1975 Giacaglia pg 6 shows the conversion, more stable
                             temp1 = temp * 0.5 * (L - m + 1) * (L - m + 2);
-                            conv = unnormArr[L, m] / unnormArr[L + 1, m + 1];
-                            conv1 = unnormArr[L, m] / unnormArr[L + 1, m - 1];
-                            aPertM[0] = aPertM[0] + 0.5 * temp * conv * (-gravData.cNor[L, m] * VArrN[L + 1, m + 1] - gravData.sNor[L, m] * WArrN[L + 1, m + 1]) +
-                                temp1 * conv1 * (gravData.cNor[L, m] * VArrN[L + 1, m - 1] + gravData.sNor[L, m] * WArrN[L + 1, m - 1]);
-                            aPertM[1] = aPertM[1] + 0.5 * temp * conv * (-gravData.cNor[L, m] * WArrN[L + 1, m + 1] + gravData.sNor[L, m] * VArrN[L + 1, m + 1]) +
-                                temp1 * conv1 * (-gravData.cNor[L, m] * WArrN[L + 1, m - 1] + gravData.sNor[L, m] * VArrN[L + 1, m - 1]);
-                            conv = unnormArr[L, m] / unnormArr[L + 1, m];
-                            aPertM[2] = aPertM[2] + temp * conv * ((L - m + 1) * (-gravData.cNor[L, m] * VArrN[L + 1, m] - gravData.sNor[L, m] * WArrN[L + 1, m]));
+                            conv = unnormArr[L][m] / unnormArr[L + 1][m + 1];
+                            conv1 = unnormArr[L][m] / unnormArr[L + 1][m - 1];
+                            aPertM[0] = aPertM[0] + 0.5 * temp * conv * (-gravData.c[L][m] * VArrN[L + 1][m + 1] - gravData.s[L][m] * WArrN[L + 1][m + 1]) +
+                                temp1 * conv1 * (gravData.c[L][m] * VArrN[L + 1][m - 1] + gravData.s[L][m] * WArrN[L + 1][m - 1]);
+                            aPertM[1] = aPertM[1] + 0.5 * temp * conv * (-gravData.c[L][m] * WArrN[L + 1][m + 1] + gravData.s[L][m] * VArrN[L + 1][m + 1]) +
+                                temp1 * conv1 * (-gravData.c[L][m] * WArrN[L + 1][m - 1] + gravData.s[L][m] * VArrN[L + 1][m - 1]);
+                            conv = unnormArr[L][m] / unnormArr[L + 1][m];
+                            aPertM[2] = aPertM[2] + temp * conv * ((L - m + 1) * (-gravData.c[L][m] * VArrN[L + 1][m] - gravData.s[L][m] * WArrN[L + 1][m]));
                         }
                     }
                     //if (show == 'y')
@@ -12939,7 +12994,7 @@ namespace AstroLibMethods
 
             // Body-fixed acceleration
             // now get correction for initial V, W formulation
-            temp = gravConst.mu / (gravConst.re * gravConst.re);
+            temp = astroConsts.mu / (astroConsts.re * astroConsts.re);
             aPertM[0] = temp * aPertM[0];
             aPertM[1] = temp * aPertM[1];
             aPertM[2] = temp * aPertM[2];
@@ -12947,43 +13002,43 @@ namespace AstroLibMethods
             if (show == 'y')
             {
                 straccum = straccum + "Montenbruck case nonspherical, no two-body ---------- " + "\n";
-                straccum = straccum + "legarrMU 4 0   " + legarrMU[4, 0].ToString() + "  4 1   " + legarrMU[4, 1].ToString() + "  4 4   "
-                    + legarrMU[4, 4].ToString() + "\n";
-                straccum = straccum + "legarrMN 4 0   " + legarrMN[4, 0].ToString() + "  4 1   " + legarrMN[4, 1].ToString() + "  4 4   "
-                    + legarrMN[4, 4].ToString() + "\n";
+                straccum = straccum + "legarrMU 4 0   " + legarrMU[4][0].ToString() + "  4 1   " + legarrMU[4][1].ToString() + "  4 4   "
+                    + legarrMU[4][4].ToString() + "\n";
+                straccum = straccum + "legarrMN 4 0   " + legarrMN[4][0].ToString() + "  4 1   " + legarrMN[4][1].ToString() + "  4 4   "
+                    + legarrMN[4][4].ToString() + "\n";
                 if (normalized == 'n')
                 {
-                    straccum = straccum + "VArr    1    " + VArr[1, 0].ToString() + "    " + VArr[1, 1].ToString() + "\n";
-                    straccum = straccum + "WArr    1    " + WArr[1, 0].ToString() + "    " + WArr[1, 1].ToString() + "\n";
-                    straccum = straccum + "VArr    2    " + VArr[2, 0].ToString() + "    " + VArr[2, 1].ToString() + "    "
-                        + VArr[2, 2].ToString() + "\n";
-                    straccum = straccum + "WArr    2    " + WArr[2, 0].ToString() + "    " + WArr[2, 1].ToString() + "    "
-                        + WArr[2, 2].ToString() + "\n";
-                    straccum = straccum + "VArr    3    " + VArr[3, 0].ToString() + "    " + VArr[3, 1].ToString() + "    "
-                        + VArr[3, 2].ToString() + "\n";
-                    straccum = straccum + "WArr    3    " + WArr[3, 0].ToString() + "    " + WArr[3, 1].ToString() + "    "
-                        + WArr[3, 2].ToString() + "\n";
-                    straccum = straccum + "VArr    4    " + VArr[4, 0].ToString() + "    " + VArr[4, 1].ToString() + "    "
-                        + VArr[4, 2].ToString() + "    " + VArr[4, 3].ToString() + "    " + VArr[4, 4].ToString() + "\n";
-                    straccum = straccum + "WArr    4    " + WArr[4, 0].ToString() + "    " + WArr[4, 1].ToString() + "    "
-                        + WArr[4, 2].ToString() + "    " + WArr[4, 3].ToString() + "    " + WArr[4, 4].ToString() + "\n";
+                    straccum = straccum + "VArr    1    " + VArr[1][0].ToString() + "    " + VArr[1][1].ToString() + "\n";
+                    straccum = straccum + "WArr    1    " + WArr[1][0].ToString() + "    " + WArr[1][1].ToString() + "\n";
+                    straccum = straccum + "VArr    2    " + VArr[2][0].ToString() + "    " + VArr[2][1].ToString() + "    "
+                        + VArr[2][2].ToString() + "\n";
+                    straccum = straccum + "WArr    2    " + WArr[2][0].ToString() + "    " + WArr[2][1].ToString() + "    "
+                        + WArr[2][2].ToString() + "\n";
+                    straccum = straccum + "VArr    3    " + VArr[3][0].ToString() + "    " + VArr[3][1].ToString() + "    "
+                        + VArr[3][2].ToString() + "\n";
+                    straccum = straccum + "WArr    3    " + WArr[3][0].ToString() + "    " + WArr[3][1].ToString() + "    "
+                        + WArr[3][2].ToString() + "\n";
+                    straccum = straccum + "VArr    4    " + VArr[4][0].ToString() + "    " + VArr[4][1].ToString() + "    "
+                        + VArr[4][2].ToString() + "    " + VArr[4][3].ToString() + "    " + VArr[4][4].ToString() + "\n";
+                    straccum = straccum + "WArr    4    " + WArr[4][0].ToString() + "    " + WArr[4][1].ToString() + "    "
+                        + WArr[4][2].ToString() + "    " + WArr[4][3].ToString() + "    " + WArr[4][4].ToString() + "\n";
                 }
                 else
                 {
-                    straccum = straccum + "VArrN   1    " + VArrN[1, 0].ToString() + "    " + VArrN[1, 1].ToString() + "\n";
-                    straccum = straccum + "WArrN   1    " + WArrN[1, 0].ToString() + "    " + WArrN[1, 1].ToString() + "\n";
-                    straccum = straccum + "VArrN   2    " + VArrN[2, 0].ToString() + "    " + VArrN[2, 1].ToString() + "    "
-                        + VArrN[2, 2].ToString() + "\n";
-                    straccum = straccum + "WArrN   2    " + WArrN[2, 0].ToString() + "    " + WArrN[2, 1].ToString() + "    "
-                        + WArrN[2, 2].ToString() + "\n";
-                    straccum = straccum + "VArrN   3    " + VArrN[3, 0].ToString() + "    " + VArrN[3, 1].ToString() + "    "
-                        + VArrN[3, 2].ToString() + "\n";
-                    straccum = straccum + "WArrN   3    " + WArrN[3, 0].ToString() + "    " + WArrN[3, 1].ToString() + "    "
-                        + WArrN[3, 2].ToString() + "\n";
-                    straccum = straccum + "VArrN   4    " + VArrN[4, 0].ToString() + "    " + VArrN[4, 1].ToString() + "    "
-                        + VArrN[4, 2].ToString() + "    " + VArrN[4, 3].ToString() + "    " + VArrN[4, 4].ToString() + "\n";
-                    straccum = straccum + "WArrN   4    " + WArrN[4, 0].ToString() + "    " + WArrN[4, 1].ToString() + "    "
-                        + WArrN[4, 2].ToString() + "    " + WArrN[4, 3].ToString() + "    " + WArrN[4, 4].ToString() + "\n";
+                    straccum = straccum + "VArrN   1    " + VArrN[1][0].ToString() + "    " + VArrN[1][1].ToString() + "\n";
+                    straccum = straccum + "WArrN   1    " + WArrN[1][0].ToString() + "    " + WArrN[1][1].ToString() + "\n";
+                    straccum = straccum + "VArrN   2    " + VArrN[2][0].ToString() + "    " + VArrN[2][1].ToString() + "    "
+                        + VArrN[2][2].ToString() + "\n";
+                    straccum = straccum + "WArrN   2    " + WArrN[2][0].ToString() + "    " + WArrN[2][1].ToString() + "    "
+                        + WArrN[2][2].ToString() + "\n";
+                    straccum = straccum + "VArrN   3    " + VArrN[3][0].ToString() + "    " + VArrN[3][1].ToString() + "    "
+                        + VArrN[3][2].ToString() + "\n";
+                    straccum = straccum + "WArrN   3    " + WArrN[3][0].ToString() + "    " + WArrN[3][1].ToString() + "    "
+                        + WArrN[3][2].ToString() + "\n";
+                    straccum = straccum + "VArrN   4    " + VArrN[4][0].ToString() + "    " + VArrN[4][1].ToString() + "    "
+                        + VArrN[4][2].ToString() + "    " + VArrN[4][3].ToString() + "    " + VArrN[4][4].ToString() + "\n";
+                    straccum = straccum + "WArrN   4    " + WArrN[4][0].ToString() + "    " + WArrN[4][1].ToString() + "    "
+                        + WArrN[4][2].ToString() + "    " + WArrN[4][3].ToString() + "    " + WArrN[4][4].ToString() + "\n";
                 }
                 straccum = straccum + "apertM  bf " + order + " " + order + " " + aPertM[0].ToString() + "     "
                     + aPertM[1].ToString() + "     " + aPertM[2].ToString() + "\n";
@@ -13036,7 +13091,7 @@ namespace AstroLibMethods
             double[] recef,
             Int32 order,
             char normalized,
-            double[,] unnormArr,
+            double[][] unnormArr,
             gravityConst gravData,
             out double[] aPertMC,
             char show,
@@ -13053,10 +13108,10 @@ namespace AstroLibMethods
             double r_sqr, rho, Fac;               // Auxiliary quantities
             double x0, y0, z0;                      // Normalized coordinates
             double C, S;                           // Gravitational coefficients
-            double[,] V = new double[order + 2, order + 2];
-            double[,] W = new double[order + 2, order + 2];
-            double[,] VArrN = new double[order + 2, order + 2];
-            double[,] WArrN = new double[order + 2, order + 2];
+            double[][] V = new double[order + 2][];
+            double[][] W = new double[order + 2][];
+            double[][] VArrN = new double[order + 2][];
+            double[][] WArrN = new double[order + 2][];
 
             magr = MathTimeLibr.mag(recef);
 
@@ -13066,10 +13121,10 @@ namespace AstroLibMethods
             // r_bf = E * r;
             // Auxiliary quantities
             r_sqr = MathTimeLibr.dot(recef, recef);               // Square of distance
-            rho = gravConst.re * gravConst.re / r_sqr;
-            x0 = gravConst.re * recef[0] / r_sqr;          // Normalized
-            y0 = gravConst.re * recef[1] / r_sqr;          // coordinates
-            z0 = gravConst.re * recef[2] / r_sqr;
+            rho = astroConsts.re * astroConsts.re / r_sqr;
+            x0 = astroConsts.re * recef[0] / r_sqr;          // Normalized
+            y0 = astroConsts.re * recef[1] / r_sqr;          // coordinates
+            z0 = astroConsts.re * recef[2] / r_sqr;
 
             //
             // Evaluate harmonic functions 
@@ -13079,44 +13134,56 @@ namespace AstroLibMethods
             // up to degree and order n_max+1
             // Calculate zonal terms V(n,0); set W(n,0)=0.0
 
-            V[0, 0] = gravConst.re / Math.Sqrt(r_sqr);
-            W[0, 0] = 0.0;
-            V[1, 0] = z0 * V[0, 0];
-            W[1, 0] = 0.0;
+            V[0] = new double[2];
+            W[0] = new double[2];
+            V[0][0] = astroConsts.re / Math.Sqrt(r_sqr);
+            W[0][0] = 0.0;
+            V[1] = new double[3];
+            W[1] = new double[3];
+            V[1][0] = z0 * V[0][0];
+            W[1][0] = 0.0;
             for (n = 2; n <= order; n++)
             {
-                V[n, 0] = ((2.0 * n - 1) * z0 * V[n - 1, 0] - (n - 1) * rho * V[n - 2, 0]) / n;
-                W[n, 0] = 0.0;
+                V[n] = new double[n + 2];
+                W[n] = new double[n + 2];
+                V[n][0] = ((2.0 * n - 1) * z0 * V[n - 1][0] - (n - 1) * rho * V[n - 2][0]) / n;
+                W[n][0] = 0.0;
             }
 
             // Calculate tesseral and sectorial terms 
             for (m = 1; m <= order + 1; m++)
             {
                 // Calculate V(m,m) .. V(n_max+1,m)
-                V[m, m] = (2.0 * m - 1) * (x0 * V[m - 1, m - 1] - y0 * W[m - 1, m - 1]);
-                W[m, m] = (2.0 * m - 1) * (x0 * W[m - 1, m - 1] + y0 * V[m - 1, m - 1]);
+                V[m][m] = (2.0 * m - 1) * (x0 * V[m - 1][m - 1] - y0 * W[m - 1][m - 1]);
+                W[m][m] = (2.0 * m - 1) * (x0 * W[m - 1][m - 1] + y0 * V[m - 1][m - 1]);
                 if (m <= order)
                 {
-                    V[m + 1, m] = (2.0 * m + 1) * z0 * V[m, m];
-                    W[m + 1, m] = (2.0 * m + 1) * z0 * W[m, m];
+                    V[m + 1][m] = (2.0 * m + 1) * z0 * V[m][m];
+                    W[m + 1][m] = (2.0 * m + 1) * z0 * W[m][m];
                 }
                 for (n = m + 2; n <= order + 1; n++)
                 {
-                    V[n, m] = ((2.0 * n - 1) * z0 * V[n - 1, m] - (n + m - 1) * rho * V[n - 2, m]) / (n - m);
-                    W[n, m] = ((2.0 * n - 1) * z0 * W[n - 1, m] - (n + m - 1) * rho * W[n - 2, m]) / (n - m);
+                    V[n] = new double[n + 2];
+                    W[n] = new double[n + 2];
+                    V[n][m] = ((2.0 * n - 1) * z0 * V[n - 1][m] - (n + m - 1) * rho * V[n - 2][m]) / (n - m);
+                    W[n][m] = ((2.0 * n - 1) * z0 * W[n - 1][m] - (n + m - 1) * rho * W[n - 2][m]) / (n - m);
                 }
             }
 
             // --------------- now normalize the variables
-            VArrN[0, 0] = gravConst.re / magr;
-            WArrN[0, 0] = 0.0;
+            VArrN[0] = new double[2];
+            WArrN[0] = new double[2];
+            VArrN[0][0] = astroConsts.re / magr;
+            WArrN[0][0] = 0.0;
             for (L = 1; L <= order + 1; L++)
             {
+                VArrN[L] = new double[L+2];
+                WArrN[L] = new double[L+2];
                 for (m = 0; m <= L; m++)
                 {
-                    conv = unnormArr[L, m];
-                    VArrN[L, m] = conv * V[L, m];
-                    WArrN[L, m] = conv * W[L, m];
+                    conv = unnormArr[L][m];
+                    VArrN[L][m] = conv * V[L][m];
+                    WArrN[L][m] = conv * W[L][m];
                 }
             }
 
@@ -13129,49 +13196,49 @@ namespace AstroLibMethods
                     {
                         if (normalized == 'n')
                         {
-                            C = gravData.c[n, 0];      // = C_n,0
-                            aPertMC[0] = aPertMC[0] - C * V[n + 1, 1];
-                            aPertMC[1] = aPertMC[1] - C * W[n + 1, 1];
-                            aPertMC[2] = aPertMC[2] - (n + 1) * C * V[n + 1, 0];
+                            C = gravData.c[n][0];      // = C_n,0
+                            aPertMC[0] = aPertMC[0] - C * V[n + 1][1];
+                            aPertMC[1] = aPertMC[1] - C * W[n + 1][1];
+                            aPertMC[2] = aPertMC[2] - (n + 1) * C * V[n + 1][0];
                         }
                         else
                         {
-                            C = gravData.cNor[n, 0];   // = C_n,0??
-                            conv = unnormArr[n, 0] / unnormArr[n + 1, 1];
-                            aPertMC[0] = aPertMC[0] - conv * C * VArrN[n + 1, 1];
-                            aPertMC[1] = aPertMC[1] - conv * C * WArrN[n + 1, 1];
-                            conv = unnormArr[n, 0] / unnormArr[n + 1, 0];
-                            aPertMC[2] = aPertMC[2] - conv * (n + 1) * C * VArrN[n + 1, 0];
+                            C = gravData.c[n][0];   // = C_n,0??
+                            conv = unnormArr[n][0] / unnormArr[n + 1][1];
+                            aPertMC[0] = aPertMC[0] - conv * C * VArrN[n + 1][1];
+                            aPertMC[1] = aPertMC[1] - conv * C * WArrN[n + 1][1];
+                            conv = unnormArr[n][0] / unnormArr[n + 1][0];
+                            aPertMC[2] = aPertMC[2] - conv * (n + 1) * C * VArrN[n + 1][0];
                         }
                     }
                     else
                     {
                         if (normalized == 'n')
                         {
-                            C = gravData.c[n, m]; // = C_n,m 
-                            S = gravData.s[n, m]; // = S_n,m   he stores CS differently m - 1, n
+                            C = gravData.c[n][m]; // = C_n,m 
+                            S = gravData.s[n][m]; // = S_n,m   he stores CS differently m - 1, n
                             Fac = 0.5 * (n - m + 1) * (n - m + 2);
-                            aPertMC[0] = aPertMC[0] + 0.5 * (-C * V[n + 1, m + 1] - S * W[n + 1, m + 1])
-                                    + Fac * (+C * V[n + 1, m - 1] + S * W[n + 1, m - 1]);
-                            aPertMC[1] = aPertMC[1] + 0.5 * (-C * W[n + 1, m + 1] + S * V[n + 1, m + 1])
-                                    + Fac * (-C * W[n + 1, m - 1] + S * V[n + 1, m - 1]);
-                            aPertMC[2] = aPertMC[2] + (n - m + 1) * (-C * V[n + 1, m] - S * W[n + 1, m]);
+                            aPertMC[0] = aPertMC[0] + 0.5 * (-C * V[n + 1][m + 1] - S * W[n + 1][m + 1])
+                                    + Fac * (+C * V[n + 1][m - 1] + S * W[n + 1][m - 1]);
+                            aPertMC[1] = aPertMC[1] + 0.5 * (-C * W[n + 1][m + 1] + S * V[n + 1][m + 1])
+                                    + Fac * (-C * W[n + 1][m - 1] + S * V[n + 1][m - 1]);
+                            aPertMC[2] = aPertMC[2] + (n - m + 1) * (-C * V[n + 1][m] - S * W[n + 1][m]);
                         }
                         else
                         {
                             // note V and W not formulated for normalized yet??
                             // use un-normalized for now
-                            C = gravData.cNor[n, m];  // = C_n,m 
-                            S = gravData.sNor[n, m];  // = S_n,m   he stores CS differently m - 1, n
+                            C = gravData.c[n][m];  // = C_n,m 
+                            S = gravData.s[n][m];  // = S_n,m   he stores CS differently m - 1, n
                             Fac = 0.5 * (n - m + 1) * (n - m + 2);
-                            conv = unnormArr[n, m] / unnormArr[n + 1, m + 1];
-                            conv1 = unnormArr[n, m] / unnormArr[n + 1, m - 1];
-                            aPertMC[0] = aPertMC[0] + 0.5 * conv * (-C * VArrN[n + 1, m + 1] - S * WArrN[n + 1, m + 1])
-                                    + Fac * conv1 * (+C * VArrN[n + 1, m - 1] + S * WArrN[n + 1, m - 1]);
-                            aPertMC[1] = aPertMC[1] + 0.5 * conv * (-C * WArrN[n + 1, m + 1] + S * VArrN[n + 1, m + 1])
-                                    + Fac * conv1 * (-C * WArrN[n + 1, m - 1] + S * VArrN[n + 1, m - 1]);
-                            conv = unnormArr[n, m] / unnormArr[n + 1, m];
-                            aPertMC[2] = aPertMC[2] + (n - m + 1) * conv * (-C * VArrN[n + 1, m] - S * WArrN[n + 1, m]);
+                            conv = unnormArr[n][m] / unnormArr[n + 1][m + 1];
+                            conv1 = unnormArr[n][m] / unnormArr[n + 1][m - 1];
+                            aPertMC[0] = aPertMC[0] + 0.5 * conv * (-C * VArrN[n + 1][m + 1] - S * WArrN[n + 1][m + 1])
+                                    + Fac * conv1 * (+C * VArrN[n + 1][m - 1] + S * WArrN[n + 1][m - 1]);
+                            aPertMC[1] = aPertMC[1] + 0.5 * conv * (-C * WArrN[n + 1][m + 1] + S * VArrN[n + 1][m + 1])
+                                    + Fac * conv1 * (-C * WArrN[n + 1][m - 1] + S * VArrN[n + 1][m - 1]);
+                            conv = unnormArr[n][m] / unnormArr[n + 1][m];
+                            aPertMC[2] = aPertMC[2] + (n - m + 1) * conv * (-C * VArrN[n + 1][m] - S * WArrN[n + 1][m]);
                         }
                     }
 
@@ -13182,7 +13249,7 @@ namespace AstroLibMethods
             }
             // Body-fixed acceleration
             // now get correction for initial V, W formulation
-            temp = gravConst.mu / (gravConst.re * gravConst.re);
+            temp = astroConsts.mu / (astroConsts.re * astroConsts.re);
             aPertMC[0] = temp * aPertMC[0];
             aPertMC[1] = temp * aPertMC[1];
             aPertMC[2] = temp * aPertMC[2];
@@ -13192,39 +13259,39 @@ namespace AstroLibMethods
                 straccum = straccum + "Montenbruck C case ---------- " + "\n";
                 if (normalized == 'n')
                 {
-                    straccum = straccum + "V    1    " + V[1, 0].ToString() + "    " + V[1, 1].ToString() + "\n";
-                    straccum = straccum + "W    1    " + W[1, 0].ToString() + "    " + W[1, 1].ToString() + "\n";
-                    straccum = straccum + "V    2    " + V[2, 0].ToString() + "    " + V[2, 1].ToString() + "    "
-                        + V[2, 2].ToString() + "\n";
-                    straccum = straccum + "W    2    " + W[2, 0].ToString() + "    " + W[2, 1].ToString() + "    "
-                        + W[2, 2].ToString() + "\n";
-                    straccum = straccum + "V    3    " + V[3, 0].ToString() + "    " + V[3, 1].ToString() + "    "
-                        + V[3, 2].ToString() + "\n";
-                    straccum = straccum + "W    3    " + W[3, 0].ToString() + "    " + W[3, 1].ToString() + "    "
-                        + W[3, 2].ToString() + "\n";
-                    straccum = straccum + "V    4    " + V[4, 0].ToString() + "    " + V[4, 1].ToString() + "    "
-                        + V[4, 2].ToString() + "    " + V[4, 3].ToString() + "    " + V[4, 4].ToString() + "\n";
-                    straccum = straccum + "W    4    " + W[4, 0].ToString() + "    " + W[4, 1].ToString() + "    "
-                        + W[4, 2].ToString() + "    " + W[4, 3].ToString() + "    " + W[4, 4].ToString() + "\n";
+                    straccum = straccum + "V    1    " + V[1][0].ToString() + "    " + V[1][1].ToString() + "\n";
+                    straccum = straccum + "W    1    " + W[1][0].ToString() + "    " + W[1][1].ToString() + "\n";
+                    straccum = straccum + "V    2    " + V[2][0].ToString() + "    " + V[2][1].ToString() + "    "
+                        + V[2][2].ToString() + "\n";
+                    straccum = straccum + "W    2    " + W[2][0].ToString() + "    " + W[2][1].ToString() + "    "
+                        + W[2][2].ToString() + "\n";
+                    straccum = straccum + "V    3    " + V[3][0].ToString() + "    " + V[3][1].ToString() + "    "
+                        + V[3][2].ToString() + "\n";
+                    straccum = straccum + "W    3    " + W[3][0].ToString() + "    " + W[3][1].ToString() + "    "
+                        + W[3][2].ToString() + "\n";
+                    straccum = straccum + "V    4    " + V[4][0].ToString() + "    " + V[4][1].ToString() + "    "
+                        + V[4][2].ToString() + "    " + V[4][3].ToString() + "    " + V[4][4].ToString() + "\n";
+                    straccum = straccum + "W    4    " + W[4][0].ToString() + "    " + W[4][1].ToString() + "    "
+                        + W[4][2].ToString() + "    " + W[4][3].ToString() + "    " + W[4][4].ToString() + "\n";
                 }
                 else
                 {
-                    straccum = straccum + "VArrN   1    " + VArrN[1, 0].ToString() + "    " + VArrN[1, 1].ToString()
+                    straccum = straccum + "VArrN   1    " + VArrN[1][0].ToString() + "    " + VArrN[1][1].ToString()
                         + "\n";
-                    straccum = straccum + "WArrN   1    " + WArrN[1, 0].ToString() + "    " + WArrN[1, 1].ToString()
+                    straccum = straccum + "WArrN   1    " + WArrN[1][0].ToString() + "    " + WArrN[1][1].ToString()
                         + "\n";
-                    straccum = straccum + "VArrN   2    " + VArrN[2, 0].ToString() + "    " + VArrN[2, 1].ToString()
-                        + "    " + VArrN[2, 2].ToString() + "\n";
-                    straccum = straccum + "WArrN   2    " + WArrN[2, 0].ToString() + "    " + WArrN[2, 1].ToString()
-                        + "    " + WArrN[2, 2].ToString() + "\n";
-                    straccum = straccum + "VArrN   3    " + VArrN[3, 0].ToString() + "    " + VArrN[3, 1].ToString()
-                        + "    " + VArrN[3, 2].ToString() + "\n";
-                    straccum = straccum + "WArrN   3    " + WArrN[3, 0].ToString() + "    " + WArrN[3, 1].ToString()
-                        + "    " + WArrN[3, 2].ToString() + "\n";
-                    straccum = straccum + "VArrN   4    " + VArrN[4, 0].ToString() + "    " + VArrN[4, 1].ToString()
-                        + "    " + VArrN[4, 2].ToString() + "    " + VArrN[4, 3].ToString() + "    " + VArrN[4, 4].ToString() + "\n";
-                    straccum = straccum + "WArrN   4    " + WArrN[4, 0].ToString() + "    " + WArrN[4, 1].ToString()
-                        + "    " + WArrN[4, 2].ToString() + "    " + WArrN[4, 3].ToString() + "    " + WArrN[4, 4].ToString() + "\n";
+                    straccum = straccum + "VArrN   2    " + VArrN[2][0].ToString() + "    " + VArrN[2][1].ToString()
+                        + "    " + VArrN[2][2].ToString() + "\n";
+                    straccum = straccum + "WArrN   2    " + WArrN[2][0].ToString() + "    " + WArrN[2][1].ToString()
+                        + "    " + WArrN[2][2].ToString() + "\n";
+                    straccum = straccum + "VArrN   3    " + VArrN[3][0].ToString() + "    " + VArrN[3][1].ToString()
+                        + "    " + VArrN[3][2].ToString() + "\n";
+                    straccum = straccum + "WArrN   3    " + WArrN[3][0].ToString() + "    " + WArrN[3][1].ToString()
+                        + "    " + WArrN[3][2].ToString() + "\n";
+                    straccum = straccum + "VArrN   4    " + VArrN[4][0].ToString() + "    " + VArrN[4][1].ToString()
+                        + "    " + VArrN[4][2].ToString() + "    " + VArrN[4][3].ToString() + "    " + VArrN[4][4].ToString() + "\n";
+                    straccum = straccum + "WArrN   4    " + WArrN[4][0].ToString() + "    " + WArrN[4][1].ToString()
+                        + "    " + WArrN[4][2].ToString() + "    " + WArrN[4][3].ToString() + "    " + WArrN[4][4].ToString() + "\n";
                 }
                 straccum = straccum + "apertMC unbf " + order + " " + order + " " + aPertMC[0].ToString() + "     "
                     + aPertMC[1].ToString() + "     " + aPertMC[2].ToString() + "\n";
@@ -13276,12 +13343,13 @@ namespace AstroLibMethods
                Int32 order,
                gravityConst gravData,
                double[] norm1, double[] norm2, double[] norm11, double[] normn10,
-               double[,] norm1m, double[,] norm2m, double[,] normn1,
+               double[][] norm1m, double[][] norm2m, double[][] normn1,
                out double[] accel
            )
         {
             Int32 L, m;
-            double[,] LegGottN = new double[order + 3, order + 3];
+            // could do as jagged array
+            double[][] LegGottN = new double[order + 3][];
             accel = new double[3];
 
             double[] ctil = new double[order + 3];
@@ -13306,35 +13374,38 @@ namespace AstroLibMethods
                 coslat = recef[2] / temp;
             }
 
-            reor = gravData.re / magr;
+            reor = astroConsts.re / magr;
             reorn = reor;
-            muor2 = gravData.mu / (magr * magr);
+            muor2 = astroConsts.mu / (magr * magr);
 
             // note this section can be calculated ahead of time (without latgc) for speed...
             // -------------------- perform recursions ---------------------- }
             //LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
 
-            LegGottN[0, 0] = 1.0;
-            LegGottN[0, 1] = 0.0;
-            LegGottN[0, 2] = 0.0;
+            LegGottN[0] = new double[3];
+            LegGottN[0][0] = 1.0;
+            LegGottN[0][1] = 0.0;
+            LegGottN[0][2] = 0.0;
+            LegGottN[1] = new double[4];
             if (fastapp == 'y')
-                LegGottN[1, 1] = Math.Sqrt(3.0);
+                LegGottN[1][1] = Math.Sqrt(3.0);
             else
                 // add ep here to match hand calcs. leave out if doing acceleration calcs for speed
-                LegGottN[1, 1] = Math.Sqrt(3.0) * coslat;
-            LegGottN[1, 2] = 0.0;
-            LegGottN[1, 3] = 0.0;
+                LegGottN[1][1] = Math.Sqrt(3.0) * coslat;
+            LegGottN[1][2] = 0.0;
+            LegGottN[1][3] = 0.0;
 
             // --------------- sectoral
             for (L = 2; L <= order; L++)   // L = 2:nax 
             {
+                LegGottN[L] = new double[L + 3];
                 if (fastapp == 'y')
-                    LegGottN[L, L] = norm11[L] * LegGottN[L - 1, L - 1] * (2.0 * L - 1.0);   // eq 3-15 
+                    LegGottN[L][L] = norm11[L] * LegGottN[L - 1][L - 1] * (2.0 * L - 1.0);   // eq 3-15 
                 else
                     // dav add ep to this to make it match hand calcs!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    LegGottN[L, L] = norm11[L] * LegGottN[L - 1, L - 1] * (2.0 * L - 1.0) * coslat;   // eq 3-15 
-                LegGottN[L, L + 1] = 0.0;
-                LegGottN[L, L + 2] = 0.0;
+                    LegGottN[L][L] = norm11[L] * LegGottN[L - 1][L - 1] * (2.0 * L - 1.0) * coslat;   // eq 3-15 
+                LegGottN[L][L + 1] = 0.0;
+                LegGottN[L][L + 2] = 0.0;
             }
 
             // --------------- now for the acceleration recursions
@@ -13346,7 +13417,7 @@ namespace AstroLibMethods
             sumgm = 1.0;
             sumj = 0.0;
             sumk = 0.0;
-            LegGottN[1, 0] = Math.Sqrt(3) * sinlat;
+            LegGottN[1][0] = Math.Sqrt(3) * sinlat;
 
             for (L = 2; L <= order; L++)   //  L = 2:nax
             {
@@ -13357,24 +13428,24 @@ namespace AstroLibMethods
 
                 // note he adds ep back in here for the specific case!!!!! So this is where the complete ALFs would be
                 // --------------- tesserals(L, m = L - 1) initial value
-                LegGottN[L, L - 1] = normn1[L, L - 1] * sinlat * LegGottN[L, L];  // eq 3-16
+                LegGottN[L][L - 1] = normn1[L][L - 1] * sinlat * LegGottN[L][L];  // eq 3-16
 
-                // --------------- zonals(L, m = 1)
-                LegGottN[L, 0] = (n2m1 * sinlat * norm1[L] * LegGottN[L - 1, 0]
-                    - nm1 * norm2[L] * LegGottN[L - 2, 0]) / L;   // eq 3-17  
+                // --------------- zonals(L][m = 1)
+                LegGottN[L][0] = (n2m1 * sinlat * norm1[L] * LegGottN[L - 1][0]
+                    - nm1 * norm2[L] * LegGottN[L - 2][0]) / L;   // eq 3-17  
 
-                // --------------- tesseral(L, m = 2) initial value
-                LegGottN[L, 1] = (n2m1 * sinlat * norm1m[L, 1] * LegGottN[L - 1, 1]
-                    - L * norm2m[L, 1] * LegGottN[L - 2, 1]) / (nm1);  // eq 3-
+                // --------------- tesseral(L][m = 2) initial value
+                LegGottN[L][1] = (n2m1 * sinlat * norm1m[L][1] * LegGottN[L - 1][1]
+                    - L * norm2m[L][1] * LegGottN[L - 2][1]) / (nm1);  // eq 3-
 
-                sumhn = normn10[L] * LegGottN[L, 1] * gravData.cNor[L, 0];
-                sumgmn = LegGottN[L, 0] * gravData.cNor[L, 0] * np1;
+                sumhn = normn10[L] * LegGottN[L][1] * gravData.c[L][0];
+                sumgmn = LegGottN[L][0] * gravData.c[L][0] * np1;
                 if (order > 0)
                 {
                     for (m = 2; m < L - 2; m++)   // m = 2:L-2
                     {
-                        LegGottN[L, m] = (n2m1 * sinlat * norm1m[L, m] * LegGottN[L - 1, m] -
-                               (nm1 + m) * norm2m[L, m] * LegGottN[L - 2, m]) / (L - m); // eq 3-18 
+                        LegGottN[L][m] = (n2m1 * sinlat * norm1m[L][m] * LegGottN[L - 1][m] -
+                               (nm1 + m) * norm2m[L][m] * LegGottN[L - 2][m]) / (L - m); // eq 3-18 
                     }
                     sumjn = 0.0;
                     sumkn = 0.0;
@@ -13389,12 +13460,12 @@ namespace AstroLibMethods
                     {
                         mm1 = m - 1;
                         mp1 = m + 1;
-                        mxpnm = m * LegGottN[L, m];
-                        bnmtil = gravData.cNor[L, m] * ctil[m] + gravData.sNor[L, m] * stil[m];
-                        sumhn = sumhn + normn1[L, m] * LegGottN[L, mp1 + 1] * bnmtil;  // mp2???
-                        sumgmn = sumgmn + (L + m + 1) * LegGottN[L, m] * bnmtil;
-                        bnmtm1 = gravData.cNor[L, m] * ctil[mm1] + gravData.sNor[L, m] * stil[mm1];
-                        anmtm1 = gravData.cNor[L, m] * stil[mm1] - gravData.sNor[L, m] * ctil[mm1];
+                        mxpnm = m * LegGottN[L][m];
+                        bnmtil = gravData.c[L][m] * ctil[m] + gravData.s[L][m] * stil[m];
+                        sumhn = sumhn + normn1[L][m] * LegGottN[L][mp1 + 1] * bnmtil;  // mp2???
+                        sumgmn = sumgmn + (L + m + 1) * LegGottN[L][m] * bnmtil;
+                        bnmtm1 = gravData.c[L][m] * ctil[mm1] + gravData.s[L][m] * stil[mm1];
+                        anmtm1 = gravData.c[L][m] * stil[mm1] - gravData.s[L][m] * ctil[mm1];
                         sumjn = sumjn + mxpnm * bnmtm1;
                         sumkn = sumkn - mxpnm * anmtm1;
                     }
@@ -14018,8 +14089,8 @@ namespace AstroLibMethods
         //    x,y,z       - components of position vector        km
         //    vj2000      - velocity vector                      km/s
         //    vx,vy,vz    - components of position vector        km/s
-        //    p           - semilatus rectum                     km
-        //    a           - semimajor axis                       km
+        //    p           - semilatus rectum                     m
+        //    a           - semimajor axis                       m
         //    ecc         - eccentricity
         //    incl        - inclination                          0.0  to pi rad
         //    oMathTimeLibr.maga       - longitude of ascending node    0.0  to 2pi rad
@@ -14055,7 +14126,7 @@ namespace AstroLibMethods
 
             tm = new double[,] { { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 } };
             // -------- define gravitational constant
-            //double gravConst.mum = 3.986004418e14;  // m3/s2
+            //double astroConsts.mum = 3.986004418e14;  // m3/s2
 
             // -------- parse the input vectors into cartesian and classical components
             rx = cartstate[0] * 1000.0;  // m
@@ -14077,7 +14148,7 @@ namespace AstroLibMethods
             rv2coe(recim, vecim, out p, out a, out ecc, out incl, out raan, out argp, out nu, out mean, out arglat, out truelon, out lonper);
             p = p * 1000.0;  // m
             a = a * 1000.0;
-            n = Math.Sqrt(gravConst.mum / (a * a * a));
+            n = Math.Sqrt(astroConsts.mum / (a * a * a));
 
             // -------- calculate common quantities
             sqrt1me2 = Math.Sqrt(1.0 - ecc * ecc);
@@ -14088,10 +14159,10 @@ namespace AstroLibMethods
             // ----------  form pqw position and velocity vectors ----------  
             r_dot_v = MathTimeLibr.dot(reci, veci);  // *1000.0 * 1000.0;
 
-            ecc_term = magv * magv - gravConst.mum / magr;
-            ecc_x = (ecc_term * rx - r_dot_v * vx) / gravConst.mum;
-            ecc_y = (ecc_term * ry - r_dot_v * vy) / gravConst.mum;
-            ecc_z = (ecc_term * rz - r_dot_v * vz) / gravConst.mum;
+            ecc_term = magv * magv - astroConsts.mum / magr;
+            ecc_x = (ecc_term * rx - r_dot_v * vx) / astroConsts.mum;
+            ecc_y = (ecc_term * ry - r_dot_v * vy) / astroConsts.mum;
+            ecc_z = (ecc_term * rz - r_dot_v * vz) / astroConsts.mum;
             ecc_vec = new double[] { ecc_x, ecc_y, ecc_z };
 
             hx = ry * vz - rz * vy;  // m
@@ -14113,7 +14184,7 @@ namespace AstroLibMethods
             cos_raan = nx / node;
             raan = sign_anode * Math.Acos(cos_raan);
 
-            sign_w = Math.Sign((magv * magv - gravConst.mum / magr) * rz - r_dot_v * vz);
+            sign_w = Math.Sign((magv * magv - astroConsts.mum / magr) * rz - r_dot_v * vz);
             cos_w = n_dot_e / (ecc * node);
             argp = sign_w * Math.Acos(cos_w);
             w_scale = -sign_w / Math.Sqrt(1.0 - cos_w * cos_w);
@@ -14137,13 +14208,13 @@ namespace AstroLibMethods
             tm[0, 5] = p1 * vz;
 
             // ---- partials of ecc wrt (rx ry rz vx vy vz)
-            p0 = 1.0 / (gravConst.mum * ecc);
-            tm[1, 0] = -p0 * (((vx * vy - gravConst.mum * rx * ry / magr3) * ecc_y) + ((vx * vz - gravConst.mum * rx * rz / magr3) * ecc_z) -
-                (vy * vy + vz * vz - gravConst.mum / magr + gravConst.mum * rx * rx / magr3) * ecc_x);
-            tm[1, 1] = -p0 * (((vx * vy - gravConst.mum * rx * ry / magr3) * ecc_x) + ((vy * vz - gravConst.mum * ry * rz / magr3) * ecc_z) -
-                (vx * vx + vz * vz - gravConst.mum / magr + gravConst.mum * ry * ry / magr3) * ecc_y);
-            tm[1, 2] = -p0 * (((vx * vz - gravConst.mum * rx * rz / magr3) * ecc_x) + ((vy * vz - gravConst.mum * ry * rz / magr3) * ecc_y) -
-                (vy * vy + vx * vx - gravConst.mum / magr + gravConst.mum * rz * rz / magr3) * ecc_z);
+            p0 = 1.0 / (astroConsts.mum * ecc);
+            tm[1, 0] = -p0 * (((vx * vy - astroConsts.mum * rx * ry / magr3) * ecc_y) + ((vx * vz - astroConsts.mum * rx * rz / magr3) * ecc_z) -
+                (vy * vy + vz * vz - astroConsts.mum / magr + astroConsts.mum * rx * rx / magr3) * ecc_x);
+            tm[1, 1] = -p0 * (((vx * vy - astroConsts.mum * rx * ry / magr3) * ecc_x) + ((vy * vz - astroConsts.mum * ry * rz / magr3) * ecc_z) -
+                (vx * vx + vz * vz - astroConsts.mum / magr + astroConsts.mum * ry * ry / magr3) * ecc_y);
+            tm[1, 2] = -p0 * (((vx * vz - astroConsts.mum * rx * rz / magr3) * ecc_x) + ((vy * vz - astroConsts.mum * ry * rz / magr3) * ecc_y) -
+                (vy * vy + vx * vx - astroConsts.mum / magr + astroConsts.mum * rz * rz / magr3) * ecc_z);
             tm[1, 3] = -p0 * ((rx * vy - 2.0 * ry * vx) * ecc_y + (ry * vy + rz * vz) * ecc_x + (rx * vz - 2.0 * rz * vx) * ecc_z);
             tm[1, 4] = -p0 * ((ry * vx - 2.0 * rx * vy) * ecc_x + (rx * vx + rz * vz) * ecc_y + (ry * vz - 2.0 * rz * vy) * ecc_z);
             tm[1, 5] = -p0 * ((rx * vx + ry * vy) * ecc_z + (rz * vx - 2.0 * rx * vz) * ecc_x + (rz * vy - 2.0 * ry * vz) * ecc_y);
@@ -14168,57 +14239,57 @@ namespace AstroLibMethods
 
             // ---- partials of argp wrt (rx ry rz vx vy vz)
             p5 = 1.0 / (node * a * a);
-            temp = -hy * (vy * vy + vz * vz - gravConst.mum / magr + gravConst.mum * rx * rx / magr3);
-            temp = temp - hx * (vx * vy - gravConst.mum * rx * ry / magr3) + vz * gravConst.mum * ecc_x;
-            temp = temp / (gravConst.mum * node * ecc) + vz * hy * n_dot_e / (node * node * node * ecc) - tm[1, 0] * n_dot_e / (node * ecc * ecc);
+            temp = -hy * (vy * vy + vz * vz - astroConsts.mum / magr + astroConsts.mum * rx * rx / magr3);
+            temp = temp - hx * (vx * vy - astroConsts.mum * rx * ry / magr3) + vz * astroConsts.mum * ecc_x;
+            temp = temp / (astroConsts.mum * node * ecc) + vz * hy * n_dot_e / (node * node * node * ecc) - tm[1, 0] * n_dot_e / (node * ecc * ecc);
             tm[4, 0] = temp * w_scale;
-            temp = hx * (vx * vx + vz * vz - gravConst.mum / magr + gravConst.mum * ry * ry / magr3);
-            temp = temp + hy * (vx * vy - gravConst.mum * rx * ry / magr3) + vz * gravConst.mum * ecc_y;
-            temp = temp / (gravConst.mum * node * ecc) - vz * hx * n_dot_e / (node * node * node * ecc) - tm[1, 1] * n_dot_e / (node * ecc * ecc);
+            temp = hx * (vx * vx + vz * vz - astroConsts.mum / magr + astroConsts.mum * ry * ry / magr3);
+            temp = temp + hy * (vx * vy - astroConsts.mum * rx * ry / magr3) + vz * astroConsts.mum * ecc_y;
+            temp = temp / (astroConsts.mum * node * ecc) - vz * hx * n_dot_e / (node * node * node * ecc) - tm[1, 1] * n_dot_e / (node * ecc * ecc);
             tm[4, 1] = temp * w_scale;
-            temp = -hy * (vx * vz - gravConst.mum * rx * rz / magr3) + hx * (vy * vz - gravConst.mum * ry * rz / magr3) + vx * gravConst.mum * ecc_x + vy * gravConst.mum * ecc_y;
-            temp = -temp / (gravConst.mum * node * ecc) + (vy * hx - vx * hy) * n_dot_e / (node * node * node * ecc) - tm[1, 2] * n_dot_e / (node * ecc * ecc);
+            temp = -hy * (vx * vz - astroConsts.mum * rx * rz / magr3) + hx * (vy * vz - astroConsts.mum * ry * rz / magr3) + vx * astroConsts.mum * ecc_x + vy * astroConsts.mum * ecc_y;
+            temp = -temp / (astroConsts.mum * node * ecc) + (vy * hx - vx * hy) * n_dot_e / (node * node * node * ecc) - tm[1, 2] * n_dot_e / (node * ecc * ecc);
             tm[4, 2] = temp * w_scale;
-            temp = (rx * vy - 2.0 * ry * vx) * hx - hy * (ry * vy + rz * vz) + rz * gravConst.mum * ecc_x;
-            temp = -temp / (gravConst.mum * node * ecc) - rz * hy * n_dot_e / (node * node * node * ecc) - tm[1, 3] * n_dot_e / (node * ecc * ecc);
+            temp = (rx * vy - 2.0 * ry * vx) * hx - hy * (ry * vy + rz * vz) + rz * astroConsts.mum * ecc_x;
+            temp = -temp / (astroConsts.mum * node * ecc) - rz * hy * n_dot_e / (node * node * node * ecc) - tm[1, 3] * n_dot_e / (node * ecc * ecc);
             tm[4, 3] = temp * w_scale;
-            temp = -(ry * vx - 2.0 * rx * vy) * hy + hx * (rx * vx + rz * vz) + rz * gravConst.mum * ecc_y;
-            temp = -temp / (gravConst.mum * node * ecc) + rz * hx * n_dot_e / (node * node * node * ecc) - tm[1, 4] * n_dot_e / (node * ecc * ecc);
+            temp = -(ry * vx - 2.0 * rx * vy) * hy + hx * (rx * vx + rz * vz) + rz * astroConsts.mum * ecc_y;
+            temp = -temp / (astroConsts.mum * node * ecc) + rz * hx * n_dot_e / (node * node * node * ecc) - tm[1, 4] * n_dot_e / (node * ecc * ecc);
             tm[4, 4] = temp * w_scale;
-            temp = -(rz * vx - 2.0 * rx * vz) * hy + hx * (rz * vy - 2.0 * ry * vz) - rx * gravConst.mum * ecc_x - ry * gravConst.mum * ecc_y;
-            temp = -temp / (gravConst.mum * node * ecc) + (rx * hy - ry * hx) * n_dot_e / (node * node * node * ecc) - tm[1, 5] * n_dot_e / (node * ecc * ecc);
+            temp = -(rz * vx - 2.0 * rx * vz) * hy + hx * (rz * vy - 2.0 * ry * vz) - rx * astroConsts.mum * ecc_x - ry * astroConsts.mum * ecc_y;
+            temp = -temp / (astroConsts.mum * node * ecc) + (rx * hy - ry * hx) * n_dot_e / (node * node * node * ecc) - tm[1, 5] * n_dot_e / (node * ecc * ecc);
             tm[4, 5] = temp * w_scale;
 
             // ---- partials of true anomaly wrt (rx ry rz vx vy vz)
-            temp = ry * (vx * vy - gravConst.mum * rx * ry / magr3) - rx * ecc_term + rz * (vx * vz - gravConst.mum * rx * rz / magr3);
-            temp = temp - rx * (vy * vy + vz * vz - gravConst.mum / magr + gravConst.mum * rx * rx / magr3) + vx * r_dot_v;
-            temp = -temp / (gravConst.mum * magr * ecc) - rx * r_dot_e / (magr3 * ecc) - tm[1, 0] * r_dot_e / (magr * ecc * ecc);
+            temp = ry * (vx * vy - astroConsts.mum * rx * ry / magr3) - rx * ecc_term + rz * (vx * vz - astroConsts.mum * rx * rz / magr3);
+            temp = temp - rx * (vy * vy + vz * vz - astroConsts.mum / magr + astroConsts.mum * rx * rx / magr3) + vx * r_dot_v;
+            temp = -temp / (astroConsts.mum * magr * ecc) - rx * r_dot_e / (magr3 * ecc) - tm[1, 0] * r_dot_e / (magr * ecc * ecc);
             tm[5, 0] = temp * nu_scale;
-            temp = rx * (vx * vy - gravConst.mum * rx * ry / magr3) - ry * ecc_term + rz * (vy * vz - gravConst.mum * ry * rz / magr3);
-            temp = temp - ry * (vx * vx + vz * vz - gravConst.mum / magr + gravConst.mum * ry * ry / magr3) + vy * r_dot_v;
-            temp = -temp / (gravConst.mum * magr * ecc) - ry * r_dot_e / (magr3 * ecc) - tm[1, 1] * r_dot_e / (magr * ecc * ecc);
+            temp = rx * (vx * vy - astroConsts.mum * rx * ry / magr3) - ry * ecc_term + rz * (vy * vz - astroConsts.mum * ry * rz / magr3);
+            temp = temp - ry * (vx * vx + vz * vz - astroConsts.mum / magr + astroConsts.mum * ry * ry / magr3) + vy * r_dot_v;
+            temp = -temp / (astroConsts.mum * magr * ecc) - ry * r_dot_e / (magr3 * ecc) - tm[1, 1] * r_dot_e / (magr * ecc * ecc);
             tm[5, 1] = temp * nu_scale;
-            temp = rx * (vx * vz - gravConst.mum * rx * rz / magr3) - rz * ecc_term + ry * (vy * vz - gravConst.mum * ry * rz / magr3);
-            temp = temp - rz * (vx * vx + vy * vy - gravConst.mum / magr + gravConst.mum * rz * rz / magr3) + vz * r_dot_v;
-            temp = -temp / (gravConst.mum * magr * ecc) - rz * r_dot_e / (magr3 * ecc) - tm[1, 2] * r_dot_e / (magr * ecc * ecc);
+            temp = rx * (vx * vz - astroConsts.mum * rx * rz / magr3) - rz * ecc_term + ry * (vy * vz - astroConsts.mum * ry * rz / magr3);
+            temp = temp - rz * (vx * vx + vy * vy - astroConsts.mum / magr + astroConsts.mum * rz * rz / magr3) + vz * r_dot_v;
+            temp = -temp / (astroConsts.mum * magr * ecc) - rz * r_dot_e / (magr3 * ecc) - tm[1, 2] * r_dot_e / (magr * ecc * ecc);
             tm[5, 2] = temp * nu_scale;
             temp = ry * (rx * vy - 2.0 * ry * vx) + rx * (ry * vy + rz * vz) + rz * (rx * vz - 2.0 * rz * vx);
-            temp = -temp / (gravConst.mum * magr * ecc) - tm[1, 3] * r_dot_e / (magr * ecc * ecc);
+            temp = -temp / (astroConsts.mum * magr * ecc) - tm[1, 3] * r_dot_e / (magr * ecc * ecc);
             tm[5, 3] = temp * nu_scale;
             temp = rx * (ry * vx - 2.0 * rx * vy) + ry * (rx * vx + rz * vz) + rz * (ry * vz - 2.0 * rz * vy);
-            temp = -temp / (gravConst.mum * magr * ecc) - tm[1, 4] * r_dot_e / (magr * ecc * ecc);
+            temp = -temp / (astroConsts.mum * magr * ecc) - tm[1, 4] * r_dot_e / (magr * ecc * ecc);
             tm[5, 4] = temp * nu_scale;
             temp = rz * (rx * vx + ry * vy) + rx * (rz * vx - 2.0 * rx * vz) + ry * (rz * vy - 2.0 * ry * vz);
-            temp = -temp / (gravConst.mum * magr * ecc) - tm[1, 5] * r_dot_e / (magr * ecc * ecc);
+            temp = -temp / (astroConsts.mum * magr * ecc) - tm[1, 5] * r_dot_e / (magr * ecc * ecc);
             tm[5, 5] = temp * nu_scale;
 
             //       // same answers as above
             //       // ---- partials of true anomaly wrt (rx ry rz vx vy vz)
-            //       p8 = magr*magr*magv*magv - gravConst.mum*magr - r_dot_v*r_dot_v;
+            //       p8 = magr*magr*magv*magv - astroConsts.mum*magr - r_dot_v*r_dot_v;
             //       p9 = 1.0/(p8*p8 + r_dot_v*r_dot_v * h*h);
-            //       tm[5,0] = p9 * ( p8 * (h*vx + r_dot_v*(vy*hz - vz*hy)/h) - r_dot_v*h*(2*rx*magv^2 - gravConst.mum*rx/magr - 2*r_dot_v*vx) );
-            //       tm[5,1] = p9 * ( p8 * (h*vy + r_dot_v*(vz*hx - vx*hz)/h) - r_dot_v*h*(2*ry*magv^2 - gravConst.mum*ry/magr - 2*r_dot_v*vy) );
-            //       tm[5,2] = p9 * ( p8 * (h*vz + r_dot_v*(vx*hy - vy*hx)/h) - r_dot_v*h*(2*rz*magv^2 - gravConst.mum*rz/magr - 2*r_dot_v*vz) );
+            //       tm[5,0] = p9 * ( p8 * (h*vx + r_dot_v*(vy*hz - vz*hy)/h) - r_dot_v*h*(2*rx*magv^2 - astroConsts.mum*rx/magr - 2*r_dot_v*vx) );
+            //       tm[5,1] = p9 * ( p8 * (h*vy + r_dot_v*(vz*hx - vx*hz)/h) - r_dot_v*h*(2*ry*magv^2 - astroConsts.mum*ry/magr - 2*r_dot_v*vy) );
+            //       tm[5,2] = p9 * ( p8 * (h*vz + r_dot_v*(vx*hy - vy*hx)/h) - r_dot_v*h*(2*rz*magv^2 - astroConsts.mum*rz/magr - 2*r_dot_v*vz) );
             //       tm[5,3] = p9 * ( p8 * (h*rx + r_dot_v*(rz*hy - ry*hz)/h) - r_dot_v*h*(2*vx*magr^2 - 2*r_dot_v*rx) );
             //       tm[5,4] = p9 * ( p8 * (h*ry + r_dot_v*(rx*hz - rz*hx)/h) - r_dot_v*h*(2*vy*magr^2 - 2*r_dot_v*ry) );
             //       tm[5,5] = p9 * ( p8 * (h*rz + r_dot_v*(ry*hx - rx*hy)/h) - r_dot_v*h*(2*vz*magr^2 - 2*r_dot_v*rz) );
@@ -14309,7 +14380,7 @@ namespace AstroLibMethods
             // --------- determine which set of variables is in use ---------
             // ---- parse the input vector into the classical elements -----
             a = classstate[0] * 1000.0;  // m
-            n = Math.Sqrt(gravConst.mum / (a * a * a));
+            n = Math.Sqrt(astroConsts.mum / (a * a * a));
             ecc = classstate[1];
             incl = classstate[2];
             raan = classstate[3];
@@ -14361,11 +14432,11 @@ namespace AstroLibMethods
 
             // assign constants for efficiency
             temp = Math.Pow(1.0 + ecc * cos_nu, 2);
-            p0 = Math.Sqrt(gravConst.mum / (a * (1.0 - ecc * ecc)));
+            p0 = Math.Sqrt(astroConsts.mum / (a * (1.0 - ecc * ecc)));
             p1 = (1.0 - ecc * ecc) / (1.0 + ecc * cos_nu);
             p2 = 1.0 / (2.0 * a) * p0;
             p3 = (2.0 * a * ecc + a * cos_nu + a * cos_nu * ecc * ecc) / temp;
-            p4 = ecc * gravConst.mum / (a * Math.Pow(1.0 - ecc * ecc, 2) * p0);
+            p4 = ecc * astroConsts.mum / (a * Math.Pow(1.0 - ecc * ecc, 2) * p0);
             p5 = a * p1;
             p6 = a * (1.0 - ecc * ecc) / (temp);
 
@@ -14433,7 +14504,7 @@ namespace AstroLibMethods
             tm[3, 2] = -p0 * sin_raan * (p31 * sin_nu - p32 * (ecc + cos_nu));
             tm[3, 3] = p0 * (p21 * sin_nu - p22 * (ecc + cos_nu));
             tm[3, 4] = -p0 * (p12 * sin_nu + p11 * (ecc + cos_nu));
-            //p10 = Math.Sqrt(-gravConst.mum / (a * (ecc * ecc - 1.0)));
+            //p10 = Math.Sqrt(-astroConsts.mum / (a * (ecc * ecc - 1.0)));
             //tm[3, 5] = p10 * (Math.Cos(raan) * sin_w * sin_nu - Math.Cos(raan) * cos_w * cos_nu +
             //    cos_inc * sin_raan * cos_w * sin_nu + cos_inc * sin_raan * sin_w * cos_nu);
             tm[3, 5] = -p0 * (p11 * cos_nu + p12 * sin_nu);
@@ -14450,7 +14521,7 @@ namespace AstroLibMethods
             tm[4, 2] = p0 * cos_raan * (p31 * sin_nu - p32 * (ecc + cos_nu));
             tm[4, 3] = p0 * (-p11 * sin_nu + p12 * (ecc + cos_nu));
             tm[4, 4] = -p0 * (p22 * sin_nu + p21 * (ecc + cos_nu));
-            //p10 = Math.Sqrt(-gravConst.mum / (a * (ecc * ecc - 1.0)));
+            //p10 = Math.Sqrt(-astroConsts.mum / (a * (ecc * ecc - 1.0)));
             //tm[4, 5] = -p10 * (sin_raan * cos_w * cos_nu - sin_raan * sin_w * sin_nu +
             //    cos_inc * Math.Cos(raan) * cos_w * sin_nu + cos_inc * Math.Cos(raan) * sin_w * cos_nu);
             tm[4, 5] = -p0 * (p21 * cos_nu + p22 * sin_nu);
@@ -14467,7 +14538,7 @@ namespace AstroLibMethods
             tm[5, 2] = p0 * cos_inc * (cos_w * cos_nu - sin_w * sin_nu + ecc * cos_w);
             tm[5, 3] = 0.0;
             tm[5, 4] = -p0 * (p32 * sin_nu + p31 * (ecc + cos_nu));
-            //p10 = Math.Sqrt(-gravConst.mum / (a * (ecc * ecc - 1.0)));
+            //p10 = Math.Sqrt(-astroConsts.mum / (a * (ecc * ecc - 1.0)));
             //tm[5, 5] = p10 * (-Math.Sin(incl) * Math.Sin(argp + nu));
             tm[5, 5] = -p0 * (p31 * cos_nu + p32 * sin_nu);
             if (anomclass.Contains("mean"))
@@ -14564,8 +14635,8 @@ namespace AstroLibMethods
             magr = MathTimeLibr.mag(reci); // m
             magv = MathTimeLibr.mag(veci); // m
 
-            a = 1.0 / (2.0 / magr - magv * magv / gravConst.mum);  // m
-            n = Math.Sqrt(gravConst.mum / (a * a * a));
+            a = 1.0 / (2.0 / magr - magv * magv / astroConsts.mum);  // m
+            n = Math.Sqrt(astroConsts.mum / (a * a * a));
 
             hx = ry * vz - rz * vy;
             hy = -rx * vz + rz * vx;
@@ -14594,10 +14665,10 @@ namespace AstroLibMethods
             ww = w_vec[2];
 
             r_dot_v = MathTimeLibr.dot(reci, veci);
-            p1 = magv * magv - gravConst.mum / magr;
-            ecc_x = (p1 * rx - r_dot_v * vx) / gravConst.mum;
-            ecc_y = (p1 * ry - r_dot_v * vy) / gravConst.mum;
-            ecc_z = (p1 * rz - r_dot_v * vz) / gravConst.mum;
+            p1 = magv * magv - astroConsts.mum / magr;
+            ecc_x = (p1 * rx - r_dot_v * vx) / astroConsts.mum;
+            ecc_y = (p1 * ry - r_dot_v * vy) / astroConsts.mum;
+            ecc_z = (p1 * rz - r_dot_v * vz) / astroConsts.mum;
             ecc_vec = new double[] { ecc_x, ecc_y, ecc_z };
 
             af = MathTimeLibr.dot(ecc_vec, f_vec);
@@ -14617,7 +14688,7 @@ namespace AstroLibMethods
             XD = n * a * a / magr * (af * ag * b * Math.Cos(F) - (1.0 - ag * ag * b) * Math.Sin(F));
             YD = n * a * a / magr * ((1.0 - af * af * b) * Math.Cos(F) - af * ag * b * Math.Sin(F));
 
-            A = Math.Sqrt(gravConst.mum * a);
+            A = Math.Sqrt(astroConsts.mum * a);
             B = Math.Sqrt(1.0 - ag * ag - af * af);
             C = 1.0 + chi * chi + psi * psi;
 
@@ -14662,7 +14733,7 @@ namespace AstroLibMethods
             tm35 = partXDag * fq + partYDag * gq;
             tm36 = partXDag * fw + partYDag * gw;
             // ---- partials of af wrt (rx ry rz vx vy vz)
-            p0 = 1.0 / gravConst.mum;
+            p0 = 1.0 / astroConsts.mum;
             tm[1, 0] = -a * b * af * B * rx / (Math.Pow(magr, 3)) - (ag * (chi * XD - psi * fr * YD) * we) / (A * B) + (B / A) * tm34;
             tm[1, 1] = -a * b * af * B * ry / (Math.Pow(magr, 3)) - (ag * (chi * XD - psi * fr * YD) * wq) / (A * B) + (B / A) * tm35;
             tm[1, 2] = -a * b * af * B * rz / (Math.Pow(magr, 3)) - (ag * (chi * XD - psi * fr * YD) * ww) / (A * B) + (B / A) * tm36;
@@ -14675,7 +14746,7 @@ namespace AstroLibMethods
             tm25 = partXDaf * fq + partYDaf * gq;
             tm26 = partXDaf * fw + partYDaf * gw;
             // ---- partials of ag wrt (rx ry rz vx vy vz)
-            p0 = 1.0 / gravConst.mum;
+            p0 = 1.0 / astroConsts.mum;
             tm[2, 0] = -a * b * ag * B * rx / (Math.Pow(magr, 3)) + (af * (chi * XD - psi * fr * YD) * we) / (A * B) - (B / A) * tm24;
             tm[2, 1] = -a * b * ag * B * ry / (Math.Pow(magr, 3)) + (af * (chi * XD - psi * fr * YD) * wq) / (A * B) - (B / A) * tm25;
             tm[2, 2] = -a * b * ag * B * rz / (Math.Pow(magr, 3)) + (af * (chi * XD - psi * fr * YD) * ww) / (A * B) - (B / A) * tm26;
@@ -14703,7 +14774,7 @@ namespace AstroLibMethods
             {
                 // not ready yet
                 //            p0 = -sign(argp)/Math.Sqrt(1-cos_w*cos_w);
-                //            p1 = 1.0 / gravConst.mum;
+                //            p1 = 1.0 / astroConsts.mum;
                 //             tm[5,0] = p0*(p1*()/(n*ecc) - ()/n*()/(n*n*ecc) - tm[ecc/ry*()) + fr*-vz*nodey/n*n +  
                 //                      ;
                 //             tm[5,1] = p0*();
@@ -14813,22 +14884,22 @@ namespace AstroLibMethods
             if (anomeq.Equals("truea") || anomeq.Equals("meana"))
             {
                 a = eqstate[0] * 1000.0;  // in m
-                n = Math.Sqrt(gravConst.mum / (a * a * a));
+                n = Math.Sqrt(astroConsts.mum / (a * a * a));
             }
             else
             {
                 if (anomeq.Equals("truen") || anomeq.Equals("meann"))
                 {
                     n = eqstate[0];
-                    a = Math.Pow(gravConst.mum / (n * n), 1.0 / 3.0);
+                    a = Math.Pow(astroConsts.mum / (n * n), 1.0 / 3.0);
                 }
                 else
                     if (anomeq.Equals("truep") || anomeq.Equals("meanp"))
                 {
                     p = eqstate[0];
-                    a = Math.Pow(gravConst.mum / (n * n), 1.0 / 3.0);
+                    a = Math.Pow(astroConsts.mum / (n * n), 1.0 / 3.0);
                     ecc = Math.Sqrt(1.0 - p / a);
-                    n = Math.Sqrt(gravConst.mum / (a * a * a));
+                    n = Math.Sqrt(astroConsts.mum / (a * a * a));
                 }
             }
             af = eqstate[1];
@@ -15046,33 +15117,33 @@ namespace AstroLibMethods
                         r_dot_v = Math.Sqrt(rx * vx + ry * vy + rz * vz);
                     else
                         r_dot_v = 0.0;
-                    ecc_term = magv * magv - gravConst.mum / magr;
-                    ecc_x = (ecc_term * rx - r_dot_v * vx) / gravConst.mum;
-                    ecc_y = (ecc_term * ry - r_dot_v * vy) / gravConst.mum;
-                    ecc_z = (ecc_term * rz - r_dot_v * vz) / gravConst.mum;
+                    ecc_term = magv * magv - astroConsts.mum / magr;
+                    ecc_x = (ecc_term * rx - r_dot_v * vx) / astroConsts.mum;
+                    ecc_y = (ecc_term * ry - r_dot_v * vy) / astroConsts.mum;
+                    ecc_z = (ecc_term * rz - r_dot_v * vz) / astroConsts.mum;
                     r_dot_e = Math.Sqrt(rx * ecc_x + ry * ecc_y + rz * ecc_z);
                     nu_scale = -Math.Sign(r_dot_v) / Math.Sqrt(1 - Math.Cos(nu) * Math.Cos(nu));
                     magr3 = Math.Pow(magr, 3);
-                    temp = ry * (vx * vy - gravConst.mum * rx * ry / magr3) - rx * ecc_term + rz * (vx * vz - gravConst.mum * rx * rz / magr3);
-                    temp = temp - rx * (vy * vy + vz * vz - gravConst.mum / magr + gravConst.mum * rx * rx / magr3) + vx * r_dot_v;
-                    temp = -temp / (gravConst.mum * magr * ecc) - rx * r_dot_e / (magr3 * ecc) - tm[1, 0] * r_dot_e / (magr * ecc * ecc);
+                    temp = ry * (vx * vy - astroConsts.mum * rx * ry / magr3) - rx * ecc_term + rz * (vx * vz - astroConsts.mum * rx * rz / magr3);
+                    temp = temp - rx * (vy * vy + vz * vz - astroConsts.mum / magr + astroConsts.mum * rx * rx / magr3) + vx * r_dot_v;
+                    temp = -temp / (astroConsts.mum * magr * ecc) - rx * r_dot_e / (magr3 * ecc) - tm[1, 0] * r_dot_e / (magr * ecc * ecc);
                     tm[5, 0] = temp * nu_scale;
-                    temp = rx * (vx * vy - gravConst.mum * rx * ry / magr3) - ry * ecc_term + rz * (vy * vz - gravConst.mum * ry * rz / magr3);
-                    temp = temp - ry * (vx * vx + vz * vz - gravConst.mum / magr + gravConst.mum * ry * ry / magr3) + vy * r_dot_v;
-                    temp = -temp / (gravConst.mum * magr * ecc) - ry * r_dot_e / (magr3 * ecc) - tm[1, 1] * r_dot_e / (magr * ecc * ecc);
+                    temp = rx * (vx * vy - astroConsts.mum * rx * ry / magr3) - ry * ecc_term + rz * (vy * vz - astroConsts.mum * ry * rz / magr3);
+                    temp = temp - ry * (vx * vx + vz * vz - astroConsts.mum / magr + astroConsts.mum * ry * ry / magr3) + vy * r_dot_v;
+                    temp = -temp / (astroConsts.mum * magr * ecc) - ry * r_dot_e / (magr3 * ecc) - tm[1, 1] * r_dot_e / (magr * ecc * ecc);
                     tm[5, 1] = temp * nu_scale;
-                    temp = rx * (vx * vz - gravConst.mum * rx * rz / magr3) - rz * ecc_term + ry * (vy * vz - gravConst.mum * ry * rz / magr3);
-                    temp = temp - rz * (vx * vx + vy * vy - gravConst.mum / magr + gravConst.mum * rz * rz / magr3) + vz * r_dot_v;
-                    temp = -temp / (gravConst.mum * magr * ecc) - rz * r_dot_e / (magr3 * ecc) - tm[1, 2] * r_dot_e / (magr * ecc * ecc);
+                    temp = rx * (vx * vz - astroConsts.mum * rx * rz / magr3) - rz * ecc_term + ry * (vy * vz - astroConsts.mum * ry * rz / magr3);
+                    temp = temp - rz * (vx * vx + vy * vy - astroConsts.mum / magr + astroConsts.mum * rz * rz / magr3) + vz * r_dot_v;
+                    temp = -temp / (astroConsts.mum * magr * ecc) - rz * r_dot_e / (magr3 * ecc) - tm[1, 2] * r_dot_e / (magr * ecc * ecc);
                     tm[5, 2] = temp * nu_scale;
                     temp = ry * (rx * vy - 2.0 * ry * vx) + rx * (ry * vy + rz * vz) + rz * (rx * vz - 2 * rz * vx);
-                    temp = -temp / (gravConst.mum * magr * ecc) - tm[1, 3] * r_dot_e / (magr * ecc * ecc);
+                    temp = -temp / (astroConsts.mum * magr * ecc) - tm[1, 3] * r_dot_e / (magr * ecc * ecc);
                     tm[5, 3] = temp * nu_scale;
                     temp = rx * (ry * vx - 2.0 * rx * vy) + ry * (rx * vx + rz * vz) + rz * (ry * vz - 2 * rz * vy);
-                    temp = -temp / (gravConst.mum * magr * ecc) - tm[1, 4] * r_dot_e / (magr * ecc * ecc);
+                    temp = -temp / (astroConsts.mum * magr * ecc) - tm[1, 4] * r_dot_e / (magr * ecc * ecc);
                     tm[5, 4] = temp * nu_scale;
                     temp = rz * (rx * vx + ry * vy) + rx * (rz * vx - 2.0 * rx * vz) + ry * (rz * vy - 2 * ry * vz);
-                    temp = -temp / (gravConst.mum * magr * ecc) - tm[1, 5] * r_dot_e / (magr * ecc * ecc);
+                    temp = -temp / (astroConsts.mum * magr * ecc) - tm[1, 5] * r_dot_e / (magr * ecc * ecc);
                     tm[5, 5] = temp * nu_scale;
                 }
             }
@@ -15112,7 +15183,7 @@ namespace AstroLibMethods
         //    argp        - argument of perigee                  0.0  to 2pi rad
         //    nu          - true anomaly                         0.0  to 2pi rad
         //    m           - mean anomaly                         0.0  to 2pi rad
-        //    gravConst.mum, gravitational paramater   m^3/s^2 NOTE Meters!
+        //    astroConsts.mum, gravitational paramater   m^3/s^2 NOTE Meters!
         //
         //  coupling      :
         //
@@ -15135,7 +15206,7 @@ namespace AstroLibMethods
             // --------- determine which set of variables is in use ---------
             // -------- parse the orbit state
             a = classstate[0] * 1000.0;  // in m
-            n = Math.Sqrt(gravConst.mum / (a * a * a));
+            n = Math.Sqrt(astroConsts.mum / (a * a * a));
             ecc = classstate[1];
             incl = classstate[2];
             raan = classstate[3];
@@ -15157,7 +15228,7 @@ namespace AstroLibMethods
             {
                 if (anomeq.Equals("truen") || anomeq.Equals("meann"))
                 {
-                    tm[0, 0] = -(3.0 * Math.Sqrt(gravConst.mum / (a * a * a))) / (2.0 * a);  // if class = a, equin = n
+                    tm[0, 0] = -(3.0 * Math.Sqrt(astroConsts.mum / (a * a * a))) / (2.0 * a);  // if class = a, equin = n
                 }
                 else
                     if (anomeq.Equals("truep") || anomeq.Equals("meanp"))
@@ -15267,7 +15338,7 @@ namespace AstroLibMethods
         //    chi         - component of node vector in eqw
         //    psi         - component of node vector in eqw
         //    meanlon     - mean longitude                             rad
-        //    gravConst.mum, gravitational paramater         m^3/s^2 NOTE Meters!
+        //    astroConsts.mum, gravitational paramater         m^3/s^2 NOTE Meters!
         //
         //  coupling      :
         //    constastro
@@ -15299,22 +15370,22 @@ namespace AstroLibMethods
             if (anomeq.Equals("truea") || anomeq.Equals("meana"))
             {
                 a = eqstate[0] * 1000.0;  // in m
-                n = Math.Sqrt(gravConst.mum / (a * a * a));
+                n = Math.Sqrt(astroConsts.mum / (a * a * a));
             }
             else
             {
                 if (anomeq.Equals("truen") || anomeq.Equals("meann"))
                 {
                     n = eqstate[0];
-                    a = Math.Pow(gravConst.mum / (n * n), 1.0 / 3.0);
+                    a = Math.Pow(astroConsts.mum / (n * n), 1.0 / 3.0);
                 }
                 else
                     if (anomeq.Equals("truep") || anomeq.Equals("meanp"))
                 {
                     p = eqstate[0];
-                    a = Math.Pow(gravConst.mum / (n * n), 1.0 / 3.0);
+                    a = Math.Pow(astroConsts.mum / (n * n), 1.0 / 3.0);
                     ecc = Math.Sqrt(1.0 - p / a);
-                    n = Math.Sqrt(gravConst.mum / (a * a * a));
+                    n = Math.Sqrt(astroConsts.mum / (a * a * a));
                 }
             }
             af = eqstate[1];
@@ -15340,7 +15411,7 @@ namespace AstroLibMethods
             {
                 if (anomeq.Equals("truen") || anomeq.Equals("meann"))
                 {
-                    tm[0, 0] = -2.0 / (3.0 * n) * Math.Pow(gravConst.mum / (n * n), (1.0 / 3.0));
+                    tm[0, 0] = -2.0 / (3.0 * n) * Math.Pow(astroConsts.mum / (n * n), (1.0 / 3.0));
                 }
                 else
                     if (anomeq.Equals("truep") || anomeq.Equals("meanp"))
@@ -15487,7 +15558,7 @@ namespace AstroLibMethods
             rzf = 0.0;
 
             // -------- parse the input vectors into cartesian components
-            rx = cartstate[0] * 1000.0;  // keep all in m, m/s
+            rx = cartstate[0] * 1000.0;  // m, m/s
             ry = cartstate[1] * 1000.0;  // this is eci always
             rz = cartstate[2] * 1000.0;
             vx = cartstate[3] * 1000.0;
@@ -15497,7 +15568,7 @@ namespace AstroLibMethods
             if (anomflt.Equals("latlon"))
             {
                 // -------- convert r to eci
-                reci = new double[] { rx * 0.001, ry * 0.001, rz * 0.001 };
+                reci = new double[] { rx * 0.001, ry * 0.001, rz * 0.001 };  // km
                 veci = new double[] { vx * 0.001, vy * 0.001, vz * 0.001 };
                 aeci = new double[] { 0.0, 0.0, 0.0 };
 
@@ -16163,7 +16234,7 @@ namespace AstroLibMethods
 
             omegaearth[0] = 0.0;
             omegaearth[1] = 0.0;
-            omegaearth[2] = gravConst.earthrot * (1.0 - lod / 86400.0);
+            omegaearth[2] = astroConsts.earthrot * (1.0 - lod / 86400.0);
 
             fundarg(ttt, opt, out fArgs06);
 

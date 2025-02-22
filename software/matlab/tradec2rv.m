@@ -35,11 +35,17 @@
 %  references    :
 %    vallado       2022, 257, eq 4-1, 4-2, alg 26
 %
-% [reci, veci] = tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci, vseci);
+% [reci, veci] = tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci);
 % ------------------------------------------------------------------------------
 
-function [reci, veci] = tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rseci, vseci)
+function [reci, veci] = tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rsecef)
     constmath;
+    constastro;
+
+    omegaearth(1) = 0.0;
+    omegaearth(2) = 0.0;
+    omegaearth(3) = earthrot;
+    vsecef = cross(omegaearth, rsecef);
 
     % --------  calculate topocentric slant range vectors ------------------
     rhov(1) = trr * cos(tdecl) * cos(trtasc);
@@ -55,7 +61,7 @@ function [reci, veci] = tradec2rv(trr, trtasc, tdecl, tdrr, tdrtasc, tddecl, rse
     drhov(3) = tdrr * sin(tdecl) + trr * cos(tdecl) * tddecl;
 
     % ------ find eci range vector from site to satellite ------
-    reci = rhov + rseci;
-    veci = drhov + vseci;
+    reci = rhov + rsecef';
+    veci = drhov + vsecef;
 
 end  % tradec2rv

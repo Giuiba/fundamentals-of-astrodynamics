@@ -35,12 +35,18 @@
 %  references    :
 %    vallado       2022, 257, eq 4-1, 4-2, alg 26
 %
-%  [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( recef, vecef, rsecef, vsecef );
+%  [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( recef, vecef, rsecef );
 % ------------------------------------------------------------------------------
 
-function [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( recef, vecef, rsecef, vsecef )
+function [rho, trtasc, tdecl, drho, dtrtasc, dtdecl] = rv2tradec ( recef, vecef, rsecef )
 
     constmath;
+    constastro;
+
+    omegaearth(1) = 0.0;
+    omegaearth(2) = 0.0;
+    omegaearth(3) = earthrot;
+    vsecef = cross(omegaearth, rsecef)';
 
     % --------------------- implementation ------------------------
     % ------- find ecef slant range vector from site to satellite ---------

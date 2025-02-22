@@ -67,7 +67,7 @@ function [rho, az, el, drho, daz, del] = rvsez2razel ( rhosez, drhosez )
     end
     
     % -------  calculate range, azimuth and elevation rates -------
-    drho= dot(rhosez,drhosez)/rho;
+    drho= mag(drhosez);
     if ( abs( temp*temp ) > small )
         daz= ( drhosez(1)*rhosez(2) - drhosez(2)*rhosez(1) ) / ( temp*temp );
     else
@@ -80,3 +80,4 @@ function [rho, az, el, drho, daz, del] = rvsez2razel ( rhosez, drhosez )
         del= 0.0;
     end
 
+end
