@@ -13,7 +13,7 @@
 %  author        : david vallado                    719-573-2600  10 oct 2019
 %
 %  inputs        description                                   range / units
-%    latgc       - Geocentric lat of satellite                   -pi to pi rad
+%    latgc       - Geocentric lat of satellite                   pi to pi rad
 %    lon         - longitude of satellite                        0 - 2pi rad
 %    order       - size of gravity field                         1..~170
 %
@@ -31,10 +31,10 @@
 %  references :
 %    vallado       2013, 597, Eq 8-57
 %
-%   [P, legarrMU, legarrGU, legarrMN, legarrGN] = legpolyn (latgc, order);
+%   [legarrMU, legarrGU, legarrMN, legarrGN] = legpolyn (latgc, order);
 %  ----------------------------------------------------------------------------*/
 
-function [P, legarrMU, legarrGU, legarrMN, legarrGN] = legpolyn (latgc, order)
+function [legarrMU, legarrGU, legarrMN, legarrGN] = legpolyn (latgc, order)
     %function [legarrMN, legarrGN] = legpolyn ( latgc, order)
 
     legarrGU = zeros(order+3,order+3);
@@ -142,114 +142,114 @@ function [P, legarrMU, legarrGU, legarrMN, legarrGN] = legpolyn (latgc, order)
     % -------------------- try new normalization
     % use MIT example - which seems to give unnormalized answers????
 
-    sinx = sin(latgc);
-    cosx = cos(latgc);
-
-    % now mit/etc approach for larger degree and order
-    order = 1500;
-    Pxn = zeros(order+3, order+3);
-    nmax = order;
-    %U = sin(latgc);  % R_F(3)/RMAG;
-    Pxn(0+1, 0+1) = 1.0;
-    % MITgcm has sin here (C/S later), Adamo too??, AMM Brazil has it backwards
-    Pxn(1+1, 0+1) = sqrt(3.0) * sin(latgc);
-    Pxn(1+1, 1+1) = sqrt(3.0) * cos(latgc);
-    for L = 2:order
-        Li = L + 1;
-
-        for m = 0 : L
-            mi = m + 1;
-            if Li == mi
-                Pxn(mi, mi) = cosx * sqrt((2*m+1)/(2*m)) * Pxn(mi-1,mi-1);
-            else
-                alpha = sqrt( (2*L+1)*(2*L-1) / ((L-m)*(L+m)) );
-                beta = sqrt( (2*L+1)*(L-m-1)*(L+m-1) / ((2*L-3)*(L+m)*(L-m)) );
-                Pxn(Li, mi) = alpha * sinx * Pxn(Li-1, mi) - beta * Pxn(Li-2, mi);
-            end
-        end
-    end
-
-    % CK SHum
-    %how many ts? (how long is 3rd dimension of coeff matrix)
-    % his approach is co-latitude
-    t = pi*0.5 - latgc;
-    k=length(t);
-
-    % initialize P matrix
-    P=zeros(order+1,order+1,k);
-
-    % calculate u=sin(t)
-    u=sin(t);
-
-    % initial values
-    % P_0,0
-    P(1,1,1:k)=ones(1,k);
-    % P_1,1
-    P(2,2,1:k)=sqrt(3).*u;
-    % P_1,0
-    P(2,1,1:k)=sqrt(3).*cos(t);
-
-    % sectorals = diagonals, where m=l
-    for in=3:(order+1)
-        % actual n
-        n=in-1;
-        % here and below, have to use reshape because funky 3rd dimension
-        % matrix element-wise multiplication
-        P(in,in,1:k)=sqrt((2.*n+1)./(2.*n)).*cos(t).*reshape(P(in-1,in-1,1:k),1,[]);
-
-    end
-
-    % iterate through l
-    for in=3:(order+1)
-        % actual l
-        l=in-1;
-        % for each l, iterate through m for m<l
-        for jn=1:(in-1)
-            % actual m
-            m=jn-1;
-            % dont have to save alpha and betas,
-            % just use same variable for each iteration
-            al=sqrt(((2.*l-1).*(2.*l+1))./((l-m).*(l+m)));
-            be=sqrt(((2.*l+1).*(l+m-1).*(l-m-1))./((2.*l-3).*(l-m).*(l+m)));
-            % compute P_l,m (remeber offset index)
-            % again, funky reshapes
-            P(in,jn,1:k)=al.*cos(t).*reshape(P(in-1,jn,1:k),1,[])-be.*reshape(P(in-2,jn,1:k),1,[]);
-        end
-    end
-
-    % his approach is co-latitude
-    t = pi*0.5 - latgc;
-    n = order;
-    m = order;
-    %[p] = PBrockmeier(n,m,t);
-
-end
-
-function [p] = PBrockmeier(n,m,t)
-    % Matlab Code [Credit: John Brockmeier, 2015]
-    if (n == m) % P(n,n,t) :special cases
-        if (n == 0) % P(0,0,t):n=0
-            p = 1;
-        elseif (n == 1) % P(1,1,t):n=1
-            p = sqrt(3)*sqrt((1-(t^2)));
-        else % P(n,n,t):n>=2
-            p = sqrt(((2*n)+1)/(2*n))*sqrt((1-t^2))*PBrockmeier(n-1,n-1,t);
-        end
-    elseif (m == n-1) % P(n,n-1,t):n>=1
-        p = sqrt((2*n)+1)*t*PBrockmeier(n-1,n-1,t);
-    else % P(n,m,t) :0<=m<=n-2, n>=2
-        p = A(n,m)*t*PBrockmeier(n-1,m,t)-B(n,m)*PBrockmeier(n-2,m,t);
-    end
-end
-
-% Recursive 'constants' alpha & beta
-function [a] = A(n,m)
-    a = sqrt((((2*n)-1)*((2*n)+1))/((n-m)*(n+m)));
-end
-
-function [b] = B(n,m)
-    b = sqrt((((2*n)+1)*(n+m-1)*(n-m-1))/(((2*n)-3)*(n-m)*(n+m)));
-end
-
-
-
+%     sinx = sin(latgc);
+%     cosx = cos(latgc);
+% 
+%     % now mit/etc approach for larger degree and order
+%     order = 1500;
+%     Pxn = zeros(order+3, order+3);
+%     nmax = order;
+%     %U = sin(latgc);  % R_F(3)/RMAG;
+%     Pxn(0+1, 0+1) = 1.0;
+%     % MITgcm has sin here (C/S later), Adamo too??, AMM Brazil has it backwards
+%     Pxn(1+1, 0+1) = sqrt(3.0) * sin(latgc);
+%     Pxn(1+1, 1+1) = sqrt(3.0) * cos(latgc);
+%     for L = 2:order
+%         Li = L + 1;
+% 
+%         for m = 0 : L
+%             mi = m + 1;
+%             if Li == mi
+%                 Pxn(mi, mi) = cosx * sqrt((2*m+1)/(2*m)) * Pxn(mi-1,mi-1);
+%             else
+%                 alpha = sqrt( (2*L+1)*(2*L-1) / ((L-m)*(L+m)) );
+%                 beta = sqrt( (2*L+1)*(L-m-1)*(L+m-1) / ((2*L-3)*(L+m)*(L-m)) );
+%                 Pxn(Li, mi) = alpha * sinx * Pxn(Li-1, mi) - beta * Pxn(Li-2, mi);
+%             end
+%         end
+%     end
+% 
+%     % CK SHum
+%     %how many ts? (how long is 3rd dimension of coeff matrix)
+%     % his approach is co-latitude
+%     t = pi*0.5 - latgc;
+%     k=length(t);
+% 
+%     % initialize P matrix
+%     P=zeros(order+1,order+1,k);
+% 
+%     % calculate u=sin(t)
+%     u=sin(t);
+% 
+%     % initial values
+%     % P_0,0
+%     P(1,1,1:k)=ones(1,k);
+%     % P_1,1
+%     P(2,2,1:k)=sqrt(3).*u;
+%     % P_1,0
+%     P(2,1,1:k)=sqrt(3).*cos(t);
+% 
+%     % sectorals = diagonals, where m=l
+%     for in=3:(order+1)
+%         % actual n
+%         n=in-1;
+%         % here and below, have to use reshape because funky 3rd dimension
+%         % matrix element-wise multiplication
+%         P(in,in,1:k)=sqrt((2.*n+1)./(2.*n)).*cos(t).*reshape(P(in-1,in-1,1:k),1,[]);
+% 
+%     end
+% 
+%     % iterate through l
+%     for in=3:(order+1)
+%         % actual l
+%         l=in-1;
+%         % for each l, iterate through m for m<l
+%         for jn=1:(in-1)
+%             % actual m
+%             m=jn-1;
+%             % dont have to save alpha and betas,
+%             % just use same variable for each iteration
+%             al=sqrt(((2.*l-1).*(2.*l+1))./((l-m).*(l+m)));
+%             be=sqrt(((2.*l+1).*(l+m-1).*(l-m-1))./((2.*l-3).*(l-m).*(l+m)));
+%             % compute P_l,m (remeber offset index)
+%             % again, funky reshapes
+%             P(in,jn,1:k)=al.*cos(t).*reshape(P(in-1,jn,1:k),1,[])-be.*reshape(P(in-2,jn,1:k),1,[]);
+%         end
+%     end
+% 
+%     % his approach is co-latitude
+%     t = pi*0.5 - latgc;
+%     n = order;
+%     m = order;
+%     %[p] = PBrockmeier(n,m,t);
+% 
+% end
+% 
+% function [p] = PBrockmeier(n,m,t)
+%     % Matlab Code [Credit: John Brockmeier, 2015]
+%     if (n == m) % P(n,n,t) :special cases
+%         if (n == 0) % P(0,0,t):n=0
+%             p = 1;
+%         elseif (n == 1) % P(1,1,t):n=1
+%             p = sqrt(3)*sqrt((1-(t^2)));
+%         else % P(n,n,t):n>=2
+%             p = sqrt(((2*n)+1)/(2*n))*sqrt((1-t^2))*PBrockmeier(n-1,n-1,t);
+%         end
+%     elseif (m == n-1) % P(n,n-1,t):n>=1
+%         p = sqrt((2*n)+1)*t*PBrockmeier(n-1,n-1,t);
+%     else % P(n,m,t) :0<=m<=n-2, n>=2
+%         p = A(n,m)*t*PBrockmeier(n-1,m,t)-B(n,m)*PBrockmeier(n-2,m,t);
+%     end
+% end
+% 
+% % Recursive 'constants' alpha & beta
+% function [a] = A(n,m)
+%     a = sqrt((((2*n)-1)*((2*n)+1))/((n-m)*(n+m)));
+% end
+% 
+% function [b] = B(n,m)
+%     b = sqrt((((2*n)+1)*(n+m-1)*(n-m-1))/(((2*n)-3)*(n-m)*(n+m)));
+% end
+% 
+% 
+% 

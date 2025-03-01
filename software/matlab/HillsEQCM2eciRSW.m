@@ -13,16 +13,17 @@
 %  all vectors are column vectors
 %
 %  author        : sal alfano         719-573-2600   25 sep 2012
-%  
+%
 %  [rintECI, vintECI] = HillsEQCM2eciRSW(rtgtECI, vtgtECI, rintEQCM, vintEQCM );
 % ------------------------------------------------------------------------------
 
 function [rintECI, vintECI] = HillsEQCM2eciRSW(rtgtECI, vtgtECI, rintEQCM, vintEQCM )
+    constastro;
 
     %  find rotation matrix from ECI to RTN frame
     %  convert target and compute position vector magnitude
     %  In RTN frame lambdatgt will be 0
-    rotECItoRTN1 = fECItoRTNsal(rtgtECI,vtgtECI);
+    rotECItoRTN1 = feci2RSW(rtgtECI,vtgtECI);
     rtgtRTN1 = rotECItoRTN1*rtgtECI;
     vtgtRTN1 = rotECItoRTN1*vtgtECI;
     magrtgt  = norm(rtgtRTN1);
@@ -38,7 +39,7 @@ function [rintECI, vintECI] = HillsEQCM2eciRSW(rtgtECI, vtgtECI, rintEQCM, vintE
         perigeeunit = eccvectgt/ecctgt;
     else
         perigeeunit = rtgtRTN1/magrtgt;
-    end;
+    end
     lambdaperigee = atan2(perigeeunit(2,1),perigeeunit(1,1));
     nu1 = -lambdaperigee;
 
@@ -79,7 +80,7 @@ function [rintECI, vintECI] = HillsEQCM2eciRSW(rtgtECI, vtgtECI, rintEQCM, vintE
     v2vectgt = sqrt(mum/ptgt)*(-sin(nu2)*Pvec + (ecctgt+cos(nu2))*Qvec);
 
     %  rotate to future target (RTN2) frame
-    rotRTN1toRTN2 = fECItoRTNsal(r2vectgt,v2vectgt);
+    rotRTN1toRTN2 = feci2RSW(r2vectgt, v2vectgt);
     rtgtRTN2 = rotRTN1toRTN2*r2vectgt;
     vtgtRTN2 = rotRTN1toRTN2*v2vectgt;
 

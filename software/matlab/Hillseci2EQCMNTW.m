@@ -1,6 +1,6 @@
 % ------------------------------------------------------------------------------
 %
-%                           function hillseci2EQCMNTW
+%                           function Hillseci2EQCMNTW
 %
 %  this function finds the relative pos/vel vectors in the Equidistant
 %  Cylindrical frame given the ECI target and interceptor vectors.
@@ -10,14 +10,15 @@
 %
 %  author        : sal alfano              719-573-2600   26 aug 2010
 %
-%  [rintEQCM, vintEQCM]  =  hillseci2EQCMNTW(rtgtECI, vtgtECI, rintECI, vintECI);
+%  [rintEQCM, vintEQCM]  =  Hillseci2EQCMNTW(rtgtECI, vtgtECI, rintECI, vintECI);
 % ------------------------------------------------------------------------------
 
-function [rintEQCM, vintEQCM]  =  hillseci2EQCMNTW(rtgtECI, vtgtECI, rintECI, vintECI)
+function [rintEQCM, vintEQCM]  =  Hillseci2EQCMNTW(rtgtECI, vtgtECI, rintECI, vintECI)
+    constastro;
 
     %  find rotation matrix from ECI to NTW1 frame for target
     %  convert target and interceptor, compute vector magnitudes
-    rotECItoNTW1 = fECItoNTW(rtgtECI,vtgtECI);
+    rotECItoNTW1 = feci2NTW(rtgtECI,vtgtECI);
     rtgtNTW1 = rotECItoNTW1*rtgtECI;
     vtgtNTW1 = rotECItoNTW1*vtgtECI;
     rintNTW1 = rotECItoNTW1*rintECI;
@@ -58,7 +59,7 @@ function [rintEQCM, vintEQCM]  =  hillseci2EQCMNTW(rtgtECI, vtgtECI, rintECI, vi
     v2vectgt = sqrt(mum/ptgt)*(-sin(nu2)*Pvec  +  (ecctgt + cos(nu2))*Qvec);
 
     %  rotate all to future target (NTW2) frame & adjust for phiint
-    rotNTW1toNTW2 = fECItoNTW(r2vectgt,v2vectgt);
+    rotNTW1toNTW2 = feci2NTW(r2vectgt,v2vectgt);
     rtgtNTW2 = rotNTW1toNTW2*r2vectgt;
     vtgtNTW2 = rotNTW1toNTW2*v2vectgt;
     rotphi = [cosphiint 0 -sinphiint; 0 1 0; sinphiint 0 cosphiint];

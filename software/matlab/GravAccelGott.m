@@ -18,7 +18,7 @@
 %    Eckman, Brown, Adamo 2016 NASA report
 %
 
-function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
+function [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order)
     constastro;
     
     % calculate partial of acceleration wrt state
@@ -26,7 +26,7 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
 
     % this can be done ahead of time
     % these are 0 based arrays since they start at 2
-    for n = 2:nax+1 %RAE
+    for n = 2:degree+1 %RAE
         norm1(n) = sqrt((2*n+1.0) / (2*n-1.0)); % eq 3-1 RAE
         norm2(n) = sqrt((2*n+1.0) / (2*n-3.0)); % eq 3-2 RAE
         norm11(n) = sqrt((2*n+1.0) / (2*n))/(2*n-1.0); % eq 3-3 RAE
@@ -58,7 +58,7 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
     LegGottN(2,4) = 0.0; %RAE
 
     % --------------- sectoral 
-    for n = 2:nax %RAE
+    for n = 2:degree %RAE
         ni = n+1; %RAE
         LegGottN(ni,ni) = norm11(n)*LegGottN(n,n)*(2*n-1.0); %eq 3-15 RAE %norm
         LegGottN(ni,ni+1) = 0.0; %RAE
@@ -75,7 +75,7 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
     sumk = 0.0;
     LegGottN(2,1) = sqrt(3)*sinlat; %RAE %norm 
 
-    for n=2:nax
+    for n=2:degree
         ni = n + 1; %RAE
         reorn = reorn*reor;
         n2m1 = n + n - 1;
@@ -87,21 +87,22 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
 
         % --------------- zonals (ni, m=1)
         LegGottN(ni,1) = (n2m1*sinlat*norm1(n)*LegGottN(n,1) - nm1*norm2(n)*LegGottN(nm1,1))/n; % eq 3-17 RAE %norm
+%fprintf(1,'%11.7f  %11.7f  %11.7f  %11.7f  ',norm1(n),LegGottN(n,1),norm2(n),LegGottN(nm1,1))
 
         % --------------- tesseral (n,m=2) initial value
         LegGottN(ni,2) = (n2m1*sinlat*norm1m(n,1)*LegGottN(n,2) - n*norm2m(n,1)*LegGottN(nm1,2))/(nm1); %RAE %norm
 
-        sumhn = normn10(n)*LegGottN(ni,2)*c(ni,1); %norm %RAE
-        sumgmn = LegGottN(ni,1)*c(ni,1)*np1; %RAE
+        sumhn = normn10(n)*LegGottN(ni,2)*gravarr.cNor(ni,1); %norm %RAE
+        sumgmn = LegGottN(ni,1)*gravarr.cNor(ni,1)*np1; %RAE
 
         if partials == 'y'
-            sumvn = pn(0) * c(ni,1);
-            summn = pn(2) * c(ni,1)*upsn(O);
+            sumvn = pn(0) * gravarr.cNor(ni,1);
+            summn = pn(2) * gravarr.cNor(ni,1)*upsn(O);
             sumpn = sumhn * np1;
             sumln = sumgamn * (np1 + 1.0);
         end
 
-        if (max>0)
+        if (order>0)
             for m = 2:n-2
                 mi = m+1; %RAE
                 % --------------- tesseral (n,m)
@@ -121,10 +122,10 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
             end
             ctil(ni) = ctil(2)*ctil(ni-1) - stil(2)*stil(ni-1); %RAE
             stil(ni) = stil(2)*ctil(ni-1) + ctil(2)*stil(ni-1); %RAE
-            if n < max
+            if n < order
                 lim = n;
             else
-                lim = max;
+                lim = order;
             end
 
             for m = 1:lim
@@ -132,11 +133,11 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
                 mm1 = mi-1; %RAE
                 mp1 = mi+1; %RAE
                 mxpnm = m * LegGottN(ni,mi); %RAE
-                bnmtil = c(ni,mi) * ctil(mi) + s(ni,mi) * stil(mi); %RAE
+                bnmtil = gravarr.cNor(ni,mi) * ctil(mi) + gravarr.sNor(ni,mi) * stil(mi); %RAE
                 sumhn = sumhn + normn1(n,m) * LegGottN(ni,mp1) * bnmtil; %RAE %norm
                 sumgmn = sumgmn + (n+m+1) * LegGottN(ni,mi) * bnmtil; %RAE
-                bnmtm1 = c(ni,mi) * ctil(mm1) + s(ni,mi) * stil(mm1); %RAE
-                anmtm1 = c(ni,mi) * stil(mm1) - s(ni,mi) * ctil(mm1); %RAE
+                bnmtm1 = gravarr.cNor(ni,mi) * ctil(mm1) + gravarr.sNor(ni,mi) * stil(mm1); %RAE
+                anmtm1 = gravarr.cNor(ni,mi) * stil(mm1) - gravarr.sNor(ni,mi) * ctil(mm1); %RAE
                 sumjn = sumjn + mxpnm * bnmtm1;
                 sumkn = sumkn - mxpnm * anmtm1;
 
@@ -196,6 +197,7 @@ function [LegGottN, accel] = GravAccelGott(mu, re, recef, c, s, nax, max)
     end  % for
 
     lambda = sumgm + sinlat*sumh;
+    % muor2 = -1.0;
     accel(1) = -muor2*(lambda*xor - sumj);
     accel(2) = -muor2*(lambda*yor - sumk);
     accel(3) = -muor2*(lambda*zor - sumh);

@@ -15,10 +15,11 @@
 % ------------------------------------------------------------------------------
 
 function [rintECI, vintECI] = HillsEQCM2eciNTW(rtgtECI, vtgtECI, rintEQCM, vintEQCM)
-
+    constastro;
+    
     %  find rotation matrix from ECI to NTW frame
     %  convert target and interceptor, compute vector magnitude and lambda
-    rotECItoNTW1 = fECItoNTW(rtgtECI,vtgtECI);
+    rotECItoNTW1 = feci2NTW(rtgtECI,vtgtECI);
     rtgtNTW1 = rotECItoNTW1*rtgtECI;
     vtgtNTW1 = rotECItoNTW1*vtgtECI;
     magrtgt = norm(rtgtECI);
@@ -35,7 +36,7 @@ function [rintECI, vintECI] = HillsEQCM2eciNTW(rtgtECI, vtgtECI, rintEQCM, vintE
         perigeeunit = eccvectgt/ecctgt;
     else
         perigeeunit = rtgtNTW1/magrtgt;
-    end;
+    end
     lambdaperigee = atan2(perigeeunit(2,1),perigeeunit(1,1));
     nu1 = lambdatgt-lambdaperigee;
 
@@ -50,10 +51,12 @@ function [rintECI, vintECI] = HillsEQCM2eciNTW(rtgtECI, vtgtECI, rintEQCM, vintE
     Qvec = cross([0 0 1]',perigeeunit);
     r2vectgt = r2tgt*(cos(nu2)*Pvec+sin(nu2)*Qvec);
     v2vectgt = sqrt(mum/ptgt)*(-sin(nu2)*Pvec + (ecctgt+cos(nu2))*Qvec);
+
     %       rotate to future target (NTW2) frame & adjust for phiint
-    rotNTW1toNTW2 = fECItoNTW(r2vectgt,v2vectgt);
+    rotNTW1toNTW2 = feci2NTW(r2vectgt,v2vectgt);
     rtgtNTW2 = rotNTW1toNTW2*r2vectgt;
     vtgtNTW2 = rotNTW1toNTW2*v2vectgt;
+
     %       find phi and unit vector for rintNTW1
     phiint=rintEQCM(3,1)/norm(rtgtNTW2);
     cosphiint=cos(phiint);

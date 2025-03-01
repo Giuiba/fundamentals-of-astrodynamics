@@ -22,7 +22,7 @@ function [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vint
 
     %  find rotation matrix from ECI to RTN1 frame for target
     %  convert target and interceptor, compute vector magnitudes
-    rotECItoRTN1 = fECItoRTNsal(rtgtECI, vtgtECI);
+    rotECItoRTN1 = feci2RSW(rtgtECI, vtgtECI);
     rtgtRTN1 = rotECItoRTN1*rtgtECI;
     vtgtRTN1 = rotECItoRTN1*vtgtECI;
     rintRTN1 = rotECItoRTN1*rintECI;
@@ -75,7 +75,7 @@ function [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vint
     v2vectgt =  sqrt(mum/ptgt)*(-sin(nu2)*Pvec + (ecctgt+cos(nu2))*Qvec);
 
     %  rotate all to future target (RTN2) frame & adjust for phi
-    rotRTN1toRTN2 =  fECItoRTNsal(r2vectgt, v2vectgt);
+    rotRTN1toRTN2 =  feci2RSW(r2vectgt, v2vectgt);
     rtgtRTN2 =  rotRTN1toRTN2*r2vectgt;
     vtgtRTN2 =  rotRTN1toRTN2*v2vectgt;
 

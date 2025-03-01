@@ -31,14 +31,14 @@
 %  references :
 %    vallado       2013, 597, Eq 8-57
 %
-%  [aPert, aPert1] = fullgeop ( recef, order, gravarr);
+%  [aPert, aPert1] = fullgeop ( recef, degree, order, gravarr);
 % ----------------------------------------------------------------------------
 
-function [aPert, aPert1] = GravAccelGTDS ( recef, order, gravarr)
+function [aPert, aPert1, aPert2] = GravAccelGTDS ( recef, degree, order, gravarr)
     constastro;
 
-    aPert = zeros(order+3,order+3);
-    aPert1 = zeros(order+3,order+3);
+    % aPert = zeros(order+3,order+3);
+    % aPert1 = zeros(order+3,order+3);
 
     sumM1 = 0.0;
     sumM2 = 0.0;
@@ -48,13 +48,13 @@ function [aPert, aPert1] = GravAccelGTDS ( recef, order, gravarr)
     [latgc, latgd, lon, hellp] = ecef2ll(recef);
 
     % ---------------------Find Legendre polynomials -------------- }
-    [legarrMU, legarrGU, legarrMN, legarrGN] = legpolyn(latgc, order+3);
+    [legarrMU, legarrGU, legarrMN, legarrGN] = legpolyn(latgc, degree+2);
 
     % compare values
     %double[,] diff = new double[6, 6];
     %diff = legarrMU - legarrGU;
 
-    [trigarr, VArr, WArr] = trigpoly(recef, latgc, lon, order+3);
+    [trigarr, VArr, WArr] = trigpoly(recef, latgc, lon, degree+2);
 
     magr = mag(recef);
 
@@ -75,7 +75,7 @@ function [aPert, aPert1] = GravAccelGTDS ( recef, order, gravarr)
     distPartLon = 0.0;
     temp = oor;
 
-    for L = 2: order
+    for L = 2: degree
         Li = L + 1;
 
         % will do the power as each L is indexed
@@ -84,42 +84,53 @@ function [aPert, aPert1] = GravAccelGTDS ( recef, order, gravarr)
         sumM2 = 0.0;
         sumM3 = 0.0;
 
-        for m = 0:L
+        for m = 0 : L
             mi = m + 1;
-            sumM1 = sumM1 + legarrGU(Li, mi) * (gravarr.cNor(Li, mi) * trigarr(mi, 1+1) + gravarr.sNor(Li, mi) * trigarr(mi, 0+1));
-            sumM2 = sumM2 + (legarrGU(Li, mi ++ 1) - trigarr(mi, 2+1) * legarrGU(Li, mi)) * ...
-                (gravarr.cNor(Li, mi) * trigarr(mi, 1+1) + gravarr.sNor(Li, mi) * trigarr(mi, 0+1));
-            sumM3 = sumM3 + m * legarrGU(Li, mi) * (gravarr.sNor(Li, mi) * trigarr(mi, 1+1) - gravarr.cNor(Li, mi) * trigarr(mi, 0+1));
+            temparg = gravarr.cNor(Li, mi) * trigarr(mi, 1+1) + gravarr.sNor(Li, mi) * trigarr(mi, 0+1);
+            sumM1 = sumM1 + legarrGN(Li, mi) * temparg;
+            sumM2 = sumM2 + (legarrGN(Li, mi) - m * trigarr(mi, 2+1) * legarrGN(Li, mi)) * temparg;  % no m+1 in 1st legp
+            sumM3 = sumM3 + m * legarrGN(Li, mi) * (gravarr.sNor(Li, mi) * trigarr(mi, 1+1) - gravarr.cNor(Li, mi) * trigarr(mi, 0+1));
         end % for m
 
-        distPartR = distPartR + temp * (Li) * sumM1;
-        distPartPhi = distPartPhi + temp * sumM2;
-        distPartLon = distPartLon + temp * sumM3;
+        distPartR = distPartR + temp * (L + 1) * sumM1;  % needs -mu/r^2
+        distPartPhi = distPartPhi + temp * sumM2;  % needs mu/r
+        distPartLon = distPartLon + temp * sumM3;  % needs mu/r
     end % for L
 
-    distPartR = -oor * oor * sumM1;
-    distPartPhi = oor * sumM2;
-    distPartLon = oor * sumM3;
+    muor = mu * oor;
+    distPartR = -muor * oor * sumM1;
+    distPartPhi = muor * sumM2;
+    distPartLon = muor * sumM3;
 
     fprintf(1,'----------Non - spherical perturbative acceleration ------------ \n');
     RDelta = sqrt(recef(1) * recef(1) + recef(2) * recef(2));
     oordelta = 1.0 / RDelta;
     temp = oor * distPartR - recef(3) * oor * oor * oordelta * distPartPhi;
-    tmp = mum / (magr^3);
 
-    aPert(1) = temp * recef(1) - oordelta * distPartLon * recef(1) - tmp * recef(1);
-    aPert(2) = temp * recef(2) + oordelta * distPartLon * recef(1) - tmp * recef(2);
-    aPert(3) = oor * distPartR * recef(3) + oor * oor * RDelta * distPartPhi - tmp * recef(3);
+    % two-body term
+    tmp(1) = mu / (magr^3);
+    tmp(2) = mu / (magr^3);
+    tmp(3) = mu / (magr^3);
+     tmp(1) = 0.0;
+     tmp(2) = 0.0;
+     tmp(3) = 0.0;
+
+    aPert(1) = temp * recef(1) - oordelta * distPartLon * recef(1) - tmp(1) * recef(1);
+    aPert(2) = temp * recef(2) + oordelta * distPartLon * recef(1) - tmp(2) * recef(2);
+    aPert(3) = oor * distPartR * recef(3) + oor * oor * RDelta * distPartPhi - tmp(3) * recef(3);
 
 
     % --------------- montenbruck approach
+    aPert1(1) = 0.0;
+    aPert1(2) = 0.0;
+    aPert1(3) = 0.0;
     magrecef = mag(recef);
-    for L = 2: order
+    for L = 2: degree
         Li = L + 1;
         % will do the power as each L is indexed }
         temp = mu / (magrecef * magrecef);
 
-        for m = 0:L
+        for m = 0 : L
             mi = m + 1;
             temp1 = factorial(L - m + 2) / factorial(L - m);
 
@@ -148,6 +159,7 @@ function [aPert, aPert1] = GravAccelGTDS ( recef, order, gravarr)
             aPert1(3) = aPert1(3) + temp * ((L - m + 1) * (-gravarr.cNor(Li, mi) * VArr(Li, mi) - gravarr.sNor(Li, mi) * WArr(Li, mi)));
         end % for m
     end
+    fprintf(1,'accel apertMont  %14.10f  %14.10f  %14.10f \n',aPert1(1), aPert1(2), aPert1(3));
 
     %             int n;                           % Loop counters
     %             double r_sqr, rho, Fac;               % Auxiliary quantities
@@ -178,7 +190,7 @@ function [aPert, aPert1] = GravAccelGTDS ( recef, order, gravarr)
     W(0+1, 0+1) = 0.0;
     V(1+1, 0+1) = z0 * V(0+1, 0+1);
     W(1+1, 0+1) = 0.0;
-    for n = 2: order
+    for n = 2: degree
         ni = n + 1;
         V(ni, 0+1) = ((2 * n - 1) * z0 * V(ni - 1, 0+1) - (n - 1) * rho * V(ni - 2, 0+1)) / n;
         W(ni, 0+1) = 0.0;
@@ -191,8 +203,8 @@ function [aPert, aPert1] = GravAccelGTDS ( recef, order, gravarr)
         V(mi, mi) = (2 * m - 1) * (x0 * V(mi - 1, mi - 1) - y0 * W(mi - 1, mi - 1));
         W(mi, mi) = (2 * m - 1) * (x0 * W(mi - 1, mi - 1) + y0 * V(mi - 1, mi - 1));
         if (m <= order)
-            V(mi, mi) = (2 * mi) * z0 * V(mi, mi);
-            W(mi, mi) = (2 * mi) * z0 * W(mi, mi);
+            V(mi + 1, mi) = (2 * mi) * z0 * V(mi, mi);
+            W(mi + 1, mi) = (2 * mi) * z0 * W(mi, mi);
         end
         for n = m + 2: order + 1
             ni = n + 1;
@@ -204,7 +216,7 @@ function [aPert, aPert1] = GravAccelGTDS ( recef, order, gravarr)
     % Calculate accelerations ax,ay,az
     for m = 0:order
         mi = m + 1;
-        for (n = m:order)
+        for (n = m:degree)
             ni = n + 1;
             if (m == 0)
                 C = gravarr.cNor(ni, 1);   % = C_n,0
