@@ -1,19 +1,8 @@
-import os
-
 import numpy as np
-import pytest
 
 import src.valladopy.astro.perturbations.utils as utils
-import src.valladopy.astro.time.data as data
 
-from ...conftest import load_matlab_data, custom_allclose
-
-
-@pytest.fixture()
-def gravarr_norm(test_data_dir):
-    struct_name = "gravarr_norm"
-    file_path = os.path.join(test_data_dir, "gravarr_norm.mat")
-    return load_matlab_data(file_path, keys=[struct_name])[struct_name]
+from ...conftest import custom_allclose
 
 
 def test_legpolyn():
@@ -57,12 +46,64 @@ def test_legpolyn():
     assert custom_allclose(legarr_gn, legarr_mn_exp)
 
 
-def test_read_gravity_field(gravarr_norm):
-    # Read gravity field data
-    filepath = os.path.join(data.DATA_DIR, "EGM-08norm100.txt")
-    gravity_field_data = utils.read_gravity_field(filepath, normalized=True)
+def test_trigpoly():
+    recef = np.array([6524.834, 6862.875, 6448.296])
+    latgc = np.radians(32.5)
+    lon = np.radians(44.4)
+    order = 8
+
+    # Call trigpoly method
+    trig_arr, v_arr, w_arr = utils.trigpoly(recef, latgc, lon, order)
 
     # Check results
-    assert custom_allclose(gravarr_norm.cNor, gravity_field_data.c)
-    assert custom_allclose(gravarr_norm.sNor, gravity_field_data.s)
-    assert gravity_field_data.normalized
+    assert custom_allclose(
+        trig_arr,
+        np.array(
+            [
+                [0, 1, 0],
+                [0.6996633405133654, 0.7144726796328034, 0],
+                [0.9997806834748455, 0.02094241988335699, 1.2741405216149864],
+                [0.7289686274214116, -0.6845471059286886, 1.9112107824224795],
+                [0.04187565372919955, -0.9991228300988583, 2.5482810432299727],
+                [-0.6691306063588583, -0.7431448254773941, 3.185351304037466],
+                [-0.9980267284282717, -0.06279051952931336, 3.8224215648449595],
+                [-0.7569950556517565, 0.6534206039901054, 4.459491825652452],
+                [-0.08367784333231543, 0.9964928592495043, 5.0965620864599455],
+            ]
+        ),
+    )
+    assert custom_allclose(
+        v_arr,
+        np.array(
+            [
+                [0.5567229456811682, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0.16653087608144873, 0.17651964099167233, 0, 0, 0, 0, 0, 0, 0, 0],
+                [-0.002969423260645143, 0, 0.2298252355060661, 0, 0, 0, 0, 0, 0, 0],
+                [-0.036060252753553866, 0, 0, 0.4428821269662462, 0, 0, 0, 0, 0, 0],
+                [-0.020355149796396365, 0, 0, 0, 1.1330274550692048, 0, 0, 0, 0, 0],
+                [-0.0032778227992070457, 0, 0, 0, 0, 3.6155399106772506, 0, 0, 0, 0],
+                [0.0032533123531603395, 0, 0, 0, 0, 0.0, 13.827112909836652, 0, 0, 0],
+                [0.0028857346435441707, 0, 0, 0, 0, 0, 0, 61.6405956973825, 0, 0],
+                [0.0009221724880043109, 0, 0, 0, 0, 0, 0, 0, 313.8557548691445, 0],
+                [-0.00021411708825645867, 0, 0, 0, 0, 0, 0, 0, 0, 1796.9993339180005],
+            ]
+        ),
+    )
+
+    assert custom_allclose(
+        w_arr,
+        np.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, -0.1856648354840481, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, -0.23547432602636975, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, -0.44995393839655023, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, -1.1463648047431974, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, -3.649151711480955, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, -13.933133407306409, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, -62.04224399565824, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, -315.63206073851455, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, -1805.9815419727986],
+            ]
+        ),
+    )
