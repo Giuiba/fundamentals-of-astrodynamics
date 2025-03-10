@@ -19,14 +19,16 @@
 % ------------------------------------------------------------------------------
 
 function [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vintECI)
+    constastro;
 
     %  find rotation matrix from ECI to RTN1 frame for target
     %  convert target and interceptor, compute vector magnitudes
-    rotECItoRTN1 = feci2RSW(rtgtECI, vtgtECI);
-    rtgtRTN1 = rotECItoRTN1*rtgtECI;
-    vtgtRTN1 = rotECItoRTN1*vtgtECI;
-    rintRTN1 = rotECItoRTN1*rintECI;
-    vintRTN1 = rotECItoRTN1*vintECI;
+    [rtgtRTN1, vtgtRTN1,transmat] = rv2rsw( rtgtECI, vtgtECI );
+   % rotECItoRTN1 = feci2RSW(rtgtECI, vtgtECI);
+   % rtgtRTN1 = rotECItoRTN1*rtgtECI;
+   % vtgtRTN1 = rotECItoRTN1*vtgtECI;
+    rintRTN1 = transmat*rintECI;
+    vintRTN1 = transmat*vintECI;
     magrtgt = norm(rtgtRTN1);
     magrint = norm(rintRTN1);
 
@@ -39,29 +41,61 @@ function [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vint
     coslambda = cos(lambda);
     sinlambda = sin(lambda);
 
-    %  find necessary orbital elements of target at present (nu1)
-    %  and future (nu2) locations
+    %  find necessary orbital elements of target at present (nu1) and future (nu2) locations
+
+   % magr = mag( r );
+    magvtgt = mag( vtgtECI );
+    % ------------------  find h n and e vectors   ----------------
+    [hbar] = cross( rtgtECI, vtgtECI );
+    magh = mag( hbar );
+    if ( magh >= 0.0 )
+        nbar(1)= -hbar(2);
+        nbar(2)= hbar(1);
+        nbar(3)= 0.0;
+        magn = mag( nbar );
+        c1 = magvtgt*magvtgt - mum /magrtgt;
+        rdotv= dot( rtgtRTN1, vtgtRTN1 );
+        for i= 1 : 3
+            eccvectgt(i)= (c1*rtgtRTN1(i) - rdotv*vtgtRTN1(i))/mum;
+        end
+        ecctgt = mag( eccvectgt );
+
+        % ------------  find a e and semi-latus rectum   ----------
+        sme= ( magvtgt*magvtgt*0.5  ) - ( mum /magrtgt );
+        if ( abs( sme ) > small )
+            atgt= -mum  / (2.0 *sme);
+        else
+            atgt= infinite;
+        end
+        ptgt = magh*magh/mum;
+
+        % -----------------  find inclination   -------------------
+        hk= hbar(3)/magh;
+        incl= acos( hk );
+    end
+
     mum =  398600.4415; %  for km, else *10^9 for m;
-    hvectgt =  cross(rtgtRTN1, vtgtRTN1);
-    ptgt =  dot(hvectgt,hvectgt)/mum;
-    eccvectgt =  cross(vtgtRTN1, hvectgt)/mum - rtgtRTN1/magrtgt;
-    ecctgt =  norm(eccvectgt);
-    atgt =  ptgt/(1 - ecctgt*ecctgt);
+    %hvectgt =  cross(rtgtRTN1, vtgtRTN1);
+    %ptgt =  dot(hvectgt,hvectgt)/mum;
+    %eccvectgt =  cross(vtgtRTN1, hvectgt)/mum - rtgtRTN1/magrtgt;
+    %ecctgt =  norm(eccvectgt);
+    %atgt =  ptgt/(1 - ecctgt*ecctgt);
     % the check on ecc is sensitive. can result in diffs at certain
     % times
     if ecctgt > 0.0000001
         perigeeunit =  eccvectgt/ecctgt;
     else
-        perigeeunit =  rtgtRTN1/magrtgt;
+        perigeeunit =  rtgtRTN1/magrtgt; % will always be [1 0 0 ]
     end
     if ecctgt > 0.99
+        rintRTN1-rtgtRTN1
         rtgtRTN1
         vtgtRTN1
         rintRTN1
         vintRTN1
         dbstop;
     end
-    lambdaperigee =  atan2(perigeeunit(2,1), perigeeunit(1,1));
+    lambdaperigee =  atan2(perigeeunit(2), perigeeunit(1));
     nu1 =  -lambdaperigee;
     nu2 =  lambda-lambdaperigee;
 
@@ -75,9 +109,7 @@ function [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vint
     v2vectgt =  sqrt(mum/ptgt)*(-sin(nu2)*Pvec + (ecctgt+cos(nu2))*Qvec);
 
     %  rotate all to future target (RTN2) frame & adjust for phi
-    rotRTN1toRTN2 =  feci2RSW(r2vectgt, v2vectgt);
-    rtgtRTN2 =  rotRTN1toRTN2*r2vectgt;
-    vtgtRTN2 =  rotRTN1toRTN2*v2vectgt;
+    [rtgtRTN2, vtgtRTN2, transmat] = rv2rsw( r2vectgt, v2vectgt );
 
     %  find interceptor SEZ components
     rottoSEZ =  zeros(3,3);
@@ -94,7 +126,7 @@ function [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vint
     vintSEZ = rottoSEZ*vintRTN1;
 
     %  find position component positions
-    rintEQCM(1,1) = rintSEZ(3,1) - rtgtRTN2(1,1);
+    rintEQCM(1) = rintSEZ(3) - rtgtRTN2(1);
 
     % try function for elliptic integral instead
     [ea0,m] = newtonnu ( ecctgt,nu1 );
@@ -113,22 +145,23 @@ function [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vint
     [F1, E1] = elliptic12( ea1, ecctgt^2 );  % with implied tol of 1e-22, no error. Shows up at about 1e-5
 
     fixit = 0.0;
-    if E1-E0 < 0.0
-        fixit = pi;
+    %if E1-E0 < 0.0
+    if abs(E1-E0) < 1e-6
+        fixit = 0.0; %pi;
     end
 
     % arc length value
-    rintEQCM(2,1) = (atgt * (E1 - E0+fixit));
+    rintEQCM(2) = (atgt * (E1 - E0+fixit));
     %        fprintf(1,'elliptic integral, %14.6f, %14.8f, %14.6f, %12.5f, %12.5f, ANS %12.6f  %12.6f \n', ...
     %                      atgt, ecctgt, b, m0*rad, m1*rad, arclength, rintEQCM(2,1) );
 
-    rintEQCM(3,1) = phi*r2tgt;
+    rintEQCM(3) = phi*r2tgt;
     %fprintf( 1,'%f,%f, ea0, %f, ea1, %f \n',E1-E0, ea1-ea0, ea0, ea1);
     %  find velocity component positions
-    lamdadot =  vintSEZ(2,1) / (magrint*cosphi);
-    vintEQCM(1,1) = vintSEZ(3,1) - vtgtRTN2(1,1);
-    vintEQCM(2,1) = lamdadot*r2tgt - (vtgtRTN1(2,1) / magrtgt) * magrtgt;
-    vintEQCM(3,1) = (-vintSEZ(1,1) / magrint)*r2tgt;
+    lamdadot =  vintSEZ(2) / (magrint*cosphi);
+    vintEQCM(1) = vintSEZ(3) - vtgtRTN2(1);
+    vintEQCM(2) = lamdadot*r2tgt - (vtgtRTN1(2) / magrtgt) * magrtgt;
+    vintEQCM(3) = (-vintSEZ(1) / magrint)*r2tgt;
 
 end
 
