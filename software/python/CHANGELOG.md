@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] - 2025-02-09
+## [0.2.0] - 2025-03-10
 - Updated functions to match current MATLAB routines:
   - IOD angles (`laplace` and `gauss`)
   - Minor name refactoring in IAU functions
