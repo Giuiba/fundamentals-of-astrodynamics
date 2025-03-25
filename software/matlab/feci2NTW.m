@@ -17,7 +17,7 @@
 %
 %  locals        :
 %
-%  rot_dv = feci2NTW(ra0 , a0);
+%  rot_dv = feci2NTW(ra0 , va0);
 % ------------------------------------------------------------------------------
 
 function rot_dv = feci2NTW(ra0 , va0)

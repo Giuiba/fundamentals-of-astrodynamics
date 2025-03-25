@@ -14,8 +14,7 @@
 %
 %  author        : sal alfano              719-573-2600   25 sep 2012
 %
-%  [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI,
-%  vintECI);
+%  [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vintECI);
 % ------------------------------------------------------------------------------
 
 function [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vintECI)
@@ -24,9 +23,6 @@ function [rintEQCM, vintEQCM] = Hillseci2EQCMRSW(rtgtECI, vtgtECI, rintECI, vint
     %  find rotation matrix from ECI to RTN1 frame for target
     %  convert target and interceptor, compute vector magnitudes
     [rtgtRTN1, vtgtRTN1,transmat] = rv2rsw( rtgtECI, vtgtECI );
-   % rotECItoRTN1 = feci2RSW(rtgtECI, vtgtECI);
-   % rtgtRTN1 = rotECItoRTN1*rtgtECI;
-   % vtgtRTN1 = rotECItoRTN1*vtgtECI;
     rintRTN1 = transmat*rintECI;
     vintRTN1 = transmat*vintECI;
     magrtgt = norm(rtgtRTN1);

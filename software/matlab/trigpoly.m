@@ -36,19 +36,19 @@ function [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, order)
     magr = mag(recef);
 
     % -------------------- gtds approach
-    trigArr(0+1, 0+1) = 0.0;    % sin terms
-    trigArr(0+1, 1+1) = 1.0;    % cos terms
-    tlon = tan(latgc);
-    trigArr(1+1, 0+1) =  sin(lon);  % initial value
-    trigArr(1+1, 1+1) =  cos(lon);
     slon = sin(lon);
     clon = cos(lon);
+    tlon = tan(latgc);
+    trigArr(0+1, 0+1) = 0.0;    % sin terms  
+    trigArr(0+1, 1+1) = 1.0;    % cos terms
+    trigArr(1+1, 0+1) =  slon;  % initial value
+    trigArr(1+1, 1+1) =  clon;
 
     for m = 2: order
         mi = m + 1;
         trigArr(mi, 0+1) = 2.0 * clon * trigArr(mi-1, 0+1) - trigArr(mi-2, 0+1);  % sin terms
         trigArr(mi, 1+1) = 2.0 * clon * trigArr(mi-1, 1+1) - trigArr(mi-2, 1+1);  % cos terms
-        trigArr(mi, 2+1) = (m-1) * tlon + tlon;  % m tan
+        trigArr(mi, 2+1) = (m-1) * tlon + tlon;  % m tan terms
     end
 
     % -------------------- montenbruck approach

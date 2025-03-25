@@ -1,10 +1,11 @@
+% ----------------------------------------------------------------------------
 %
 %        function GravAccelGott
 %
 % inputs
 %    mu       gravitaional paramater
 %    xin      position ecef vector of satellite km
-%    c, s     gravity coefficients normalized
+%    c, s     gravity coefficients normalized 
 %    nax      degree
 %    max      order
 %    rnp      3x3 identity matrix
@@ -17,6 +18,8 @@
 %  References
 %    Eckman, Brown, Adamo 2016 NASA report
 %
+%  [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order);
+% ----------------------------------------------------------------------------
 
 function [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order)
     constastro;

@@ -5,7 +5,10 @@
 %  this procedure solves the lambert problem for orbit determination and returns
 %    the velocity vectors at each of two given position vectors.  the solution
 %    uses universal variables for calculation and a bissection technique for
-%    updating psi.
+%    updating psi. note that v1 (the initial orbit velocity and not the transfer 
+%    orbit velocity at the start) is not formally part of the lambert solution, 
+%    but here, it's needed for the hodegraph implementation for transfers very 
+%    near 180 deg. it can be set to zero if you're not near the 180 deg transfer. 
 %
 %  algorithm     : setting the initial bounds:
 %                  using -8pi and 4pi2 will allow single rev solutions
@@ -288,7 +291,7 @@ function [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nrev, dtsec, tbi, o
         end % while loop
 
         if ( (loops >= numiter) || (ynegktr >= 10) )
-            errorl= strcat('gnotconv',num2str(abs(dtnew - dtsec)));
+            errorl= strcat('gnotconv dtsec dtnew delta (s) ', dtsec, ' ', num2str(abs(dtnew - dtsec)));
             if ( ynegktr >= 10 )
                 errorl= 'y negati';
             end
@@ -325,8 +328,8 @@ function [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nrev, dtsec, tbi, o
         v2diru = unit(v2dir);
         v1t = -v1tmag*v1diru;
         v2t = -v2tmag*v2diru;
-        fprintf(1,'%11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \n',r1, v1t);
-        fprintf(1,'%11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \n',r2, v2t);
+        fprintf(1,'lamb univ imposs r1  %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \n',r1, v1t);
+        fprintf(1,'lamb univ imposs r2  %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f \n',r2, v2t);
 
         v1tu = v1t;% / velkmps;
         v2tu = v2t;% / velkmps;
@@ -344,16 +347,17 @@ function [v1tu, v2tu, errorl] = lambertu(r1, r2, v1, dm, de, nrev, dtsec, tbi, o
         %             end;
     end  % if  var a > 0.0
 
-    if (strcmp(errorl, '      ok') ~= 0)
-        [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r1,v1tu);
-        fprintf(outfile,'%10s %3i %3i %2s %2s %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f case %11.7f %11.7f %11.7f %11.7f %11.7f ', ...
-            errorl, loops, nrev, dm, de, dtnew, y, xold, v1tu(1), v1tu(2), v1tu(3), v2tu(1), v2tu(2), v2tu(3), lower, upper, psinew, dtdpsi, ecc); %(dtnew - dtsec)/dtdpsi, ecc );  % c2dot, c3dot
-        fprintf(1,'C%3i %3i %2s %2s %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f  %11.7f dnu %11.7f \n', ...
-            loops, nrev, dm, de, dtnew, magr1, magr2, vara, y, xold, psinew, acos(cosdeltanu)*180.0/pi)
-    else
-        fprintf(outfile,'#%s \n',errorl);
-        fprintf(1,'#%s \n',errorl);
+    if show == 'y'
+        if (strcmp(errorl, '      ok') ~= 0)
+            [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r1,v1tu);
+            fprintf(outfile,'%10s %3i %3i %2s %2s %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f case %11.7f %11.7f %11.7f %11.7f %11.7f ', ...
+                errorl, loops, nrev, dm, de, dtnew, y, xold, v1tu(1), v1tu(2), v1tu(3), v2tu(1), v2tu(2), v2tu(3), lower, upper, psinew, dtdpsi, ecc); %(dtnew - dtsec)/dtdpsi, ecc );  % c2dot, c3dot
+            % fprintf(1,'C%3i %3i %2s %2s %11.7f %11.7f %11.7f %11.7f %11.7f %11.7f  %11.7f dnu %11.7f \n', ...
+            %     loops, nrev, dm, de, dtnew, magr1, magr2, vara, y, xold, psinew, acos(cosdeltanu)*180.0/pi)
+        else
+            fprintf(outfile,'#%s \n',errorl);
+            fprintf(1,'#%s \n',errorl);
+        end
     end
-
 end
 

@@ -10,8 +10,7 @@
 %    recef       - position vector ECEF                          km
 %    order       - size of gravity field                         1..360
 %    normal      - normalized in file                            'y', 'n'
-%    gravData.c  - gravitational coefficients (in gravData)
-%    gravData.s  - gravitational coefficients (in gravData)
+%    gravData    - gravitational coefficients  
 %
 %  outputs       :
 %    apert       - efc perturbation acceleration                  km / s^2
@@ -31,10 +30,10 @@
 %  references :
 %    vallado       2013, 597, Eq 8-57
 %
-%  [aPert, aPert1] = fullgeop ( recef, degree, order, gravarr);
+%  [aPert, aPert1, aPert2] = GravAccelGTDS ( recef, gravarr, degree, order);
 % ----------------------------------------------------------------------------
 
-function [aPert, aPert1, aPert2] = GravAccelGTDS ( recef, degree, order, gravarr)
+function [aPert, aPert1, aPert2] = GravAccelGTDS ( recef, gravarr, degree, order)
     constastro;
 
     % aPert = zeros(order+3,order+3);
@@ -50,36 +49,20 @@ function [aPert, aPert1, aPert2] = GravAccelGTDS ( recef, degree, order, gravarr
     % ---------------------Find Legendre polynomials -------------- }
     [legarrMU, legarrGU, legarrMN, legarrGN] = legpolyn(latgc, degree+2);
 
-    % compare values
-    %double[,] diff = new double[6, 6];
-    %diff = legarrMU - legarrGU;
-
     [trigarr, VArr, WArr] = trigpoly(recef, latgc, lon, degree+2);
 
     magr = mag(recef);
-
-    % now do the partials
-    %     temp0 = (recef(1)^2 + recef(2)^2);
-    %     temp1 = 1.0 / magr;
-    %     temp2 = recef(3) / (magr^2*sqrt(recef(1)^2 + recef(2)^2));
-    %     temp3 = 1.0 / temp0;
-    %     temp4 = sqrt(temp0)/magr^2;
-    %
-    %     agrav(1) = (temp1* partrr - temp2*partrlat) * recef(1) - (temp3*partrlon)*recef(2);
-    %     agrav(2) = (temp1* partrr - temp2*partrlat) * recef(2) - (temp3*partrlon)*recef(1);
-    %     agrav(3) = (temp1* partrr) * recef(3) + temp4*partrlon;
-
-    oor = re / magr;
+    oor = 1.0 / magr;
+    ror = re * oor;
     distPartR = 0.0;
     distPartPhi = 0.0;
     distPartLon = 0.0;
-    temp = oor;
 
     for L = 2: degree
         Li = L + 1;
 
-        % will do the power as each L is indexed
-        temp = temp * oor;
+        % will do the power as each L is found
+        temp = ror * ror;
         sumM1 = 0.0;
         sumM2 = 0.0;
         sumM3 = 0.0;
@@ -88,7 +71,7 @@ function [aPert, aPert1, aPert2] = GravAccelGTDS ( recef, degree, order, gravarr
             mi = m + 1;
             temparg = gravarr.cNor(Li, mi) * trigarr(mi, 1+1) + gravarr.sNor(Li, mi) * trigarr(mi, 0+1);
             sumM1 = sumM1 + legarrGN(Li, mi) * temparg;
-            sumM2 = sumM2 + (legarrGN(Li, mi) - m * trigarr(mi, 2+1) * legarrGN(Li, mi)) * temparg;  % no m+1 in 1st legp
+            sumM2 = sumM2 + (legarrGN(Li, mi + 1) - trigarr(mi, 2+1) * legarrGN(Li, mi)) * temparg;  % yes m+1 in 1st legp
             sumM3 = sumM3 + m * legarrGN(Li, mi) * (gravarr.sNor(Li, mi) * trigarr(mi, 1+1) - gravarr.cNor(Li, mi) * trigarr(mi, 0+1));
         end % for m
 
@@ -98,27 +81,28 @@ function [aPert, aPert1, aPert2] = GravAccelGTDS ( recef, degree, order, gravarr
     end % for L
 
     muor = mu * oor;
-    distPartR = -muor * oor * sumM1;
-    distPartPhi = muor * sumM2;
-    distPartLon = muor * sumM3;
+    distPartR = -muor * oor * distPartR;
+    distPartPhi = muor * distPartPhi;
+    distPartLon = muor * distPartLon;
 
-    fprintf(1,'----------Non - spherical perturbative acceleration ------------ \n');
+    %fprintf(1,'----------Non - spherical perturbative acceleration ------------ \n');
     RDelta = sqrt(recef(1) * recef(1) + recef(2) * recef(2));
     oordelta = 1.0 / RDelta;
-    temp = oor * distPartR - recef(3) * oor * oor * oordelta * distPartPhi;
+    temp1 = oor * distPartR - recef(3) * oor * oor * oordelta * distPartPhi;
 
     % two-body term
     tmp(1) = mu / (magr^3);
     tmp(2) = mu / (magr^3);
     tmp(3) = mu / (magr^3);
-     tmp(1) = 0.0;
-     tmp(2) = 0.0;
-     tmp(3) = 0.0;
 
-    aPert(1) = temp * recef(1) - oordelta * distPartLon * recef(1) - tmp(1) * recef(1);
-    aPert(2) = temp * recef(2) + oordelta * distPartLon * recef(1) - tmp(2) * recef(2);
-    aPert(3) = oor * distPartR * recef(3) + oor * oor * RDelta * distPartPhi - tmp(3) * recef(3);
+    aPert(1) = temp1 * recef(1) - oordelta * oordelta * distPartLon * recef(2);
+    aPert(2) = temp1 * recef(2) + oordelta * oordelta * distPartLon * recef(1);
+    aPert(3) = oor * distPartR * recef(3) + oor * oor * RDelta * distPartPhi;
 
+    % add in two-body
+    % aPert(1) = aPert(1) + tmp(1)*recef(1);
+    % aPert(2) = aPert(2) + tmp(2)*recef(2);
+    % aPert(3) = aPert(3) + tmp(3)*recef(3);
 
     % --------------- montenbruck approach
     aPert1(1) = 0.0;
@@ -170,6 +154,10 @@ function [aPert, aPert1, aPert2] = GravAccelGTDS ( recef, degree, order, gravarr
     %             double(,) W = new double(order+2, order + 2);
 
     % now try montenbruck code approach
+    aPert2(1) = 0.0;
+    aPert2(2) = 0.0;
+    aPert2(3) = 0.0;
+    
     % Body-fixed position
     % r_bf = E * r;
     % Auxiliary quantities
@@ -220,26 +208,26 @@ function [aPert, aPert1, aPert2] = GravAccelGTDS ( recef, degree, order, gravarr
             ni = n + 1;
             if (m == 0)
                 C = gravarr.cNor(ni, 1);   % = C_n,0
-                aPert1(1) = aPert1(1) - C * V(ni, 1);
-                aPert1(2) = aPert1(2) - C * W(ni, 1);
-                aPert1(3) = aPert1(3) - (n + 1) * C * V(ni, 0+1);
+                aPert2(1) = aPert2(1) - C * V(ni, 1);
+                aPert2(2) = aPert2(2) - C * W(ni, 1);
+                aPert2(3) = aPert2(3) - (n + 1) * C * V(ni, 0+1);
             else
                 C = gravarr.cNor(ni, mi);   % = C_n,m
                 S = gravarr.sNor(mi - 1, ni); % = S_n,m
                 Fac = 0.5 * (n - m + 1) * (n - m + 2);
-                aPert1(1) = aPert1(1) + 0.5 * (-C * V(ni, mi) - S * W(ni, mi))...
+                aPert2(1) = aPert2(1) + 0.5 * (-C * V(ni, mi) - S * W(ni, mi))...
                     + Fac * (+C * V(ni, mi - 1) + S * W(ni, mi - 1));
-                aPert1(2) = aPert1(2) + 0.5 * (-C * W(ni, mi) + S * V(ni, mi))...
+                aPert2(2) = aPert2(2) + 0.5 * (-C * W(ni, mi) + S * V(ni, mi))...
                     + Fac * (-C * W(ni, mi - 1) + S * V(ni, mi - 1));
-                aPert1(3) = aPert1(3)+(n - m + 1) * (-C * V(ni, mi) - S * W(ni, mi));
+                aPert2(3) = aPert2(3)+(n - m + 1) * (-C * V(ni, mi) - S * W(ni, mi));
             end
         end
     end
 
     % Body-fixed acceleration
-    aPert2(1) = (mu / (re * re)) * aPert1(1);
-    aPert2(2) = (mu / (re * re)) * aPert1(2);
-    aPert2(3) = (mu / (re * re)) * aPert1(3);
+    aPert2(1) = (mu / (re * re)) * aPert2(1);
+    aPert2(2) = (mu / (re * re)) * aPert2(2);
+    aPert2(3) = (mu / (re * re)) * aPert2(3);
 
     % Inertial acceleration
     %return Transp(E) * a_bf;

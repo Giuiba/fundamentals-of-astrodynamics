@@ -3,7 +3,11 @@
 %                           procedure lamberbattin
 %
 %  this procedure solves lambert's problem using battins method. the method is
-%    developed in battin (1987).
+%    developed in battin (1987). note that v1 (the initial orbit velocity
+%    and not the transfer orbit velocity at the start) is not formally part
+%    of the lambert solution, but here, it's needed for the hodegraph
+%    implementation for transfers very near 180 deg. it can be set to zero
+%    if you're not near the 180 deg transfer. 
 %
 %  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
@@ -122,17 +126,17 @@ function [v1t, v2t, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec )
                 y = 75.0;
                 xn = 1.0;
             end
-            fprintf(1,' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n',loops, y, x, h1, h2, b, f );
+            %fprintf(1,' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n',loops, y, x, h1, h2, b, f );
             loops = loops + 1;
         end  % while
 
-        fprintf(1,' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n',loops, y, x, h1, h2, b, f );
+        %fprintf(1,' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n',loops, y, x, h1, h2, b, f );
         x = xn;
         a = s*(1.0 + lam)^2*(1.0 + x)*(L + x) / (8.0*x);
         p = (2.0*magr1*magr2*(1.0 + x)*sin(dnu*0.5)^2) / (s*(1 + lam)^2 * (L + x));  % thompson (1.0 + x)*
         ecc = sqrt(1.0 - p/a);
         [v1t, v2t] = lambhodograph( r1, v1, r2, p, ecc, dnu, dtsec );
-        fprintf(1,'high v1t %16.8f %16.8f %16.8f \n',v1t );
+        fprintf(1,'batt special v1t %16.8f %16.8f %16.8f \n',v1t );
     else
         % standard processing
         % note that the dr nrev=0 case is not represented

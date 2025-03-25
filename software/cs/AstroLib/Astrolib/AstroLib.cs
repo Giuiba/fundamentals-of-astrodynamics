@@ -7447,7 +7447,10 @@ namespace AstroLibMethods
         //  this procedure solves the lambert problem for orbit determination and returns
         //    the velocity vectors at each of two given position vectors.  the solution
         //    uses universal variables for calculation and a bissection technique for
-        //    updating psi.
+        //    updating psi. note that v1 (the initial orbit velocity and not the transfer 
+        //    orbit velocity at the start) is not formally part of the lambert solution, 
+        //    but here, it's needed for the hodegraph implementation for transfers very 
+        //    near 180 deg. it can be set to zero if you're not near the 180 deg transfer.
         //
         //  algorithm     : setting the initial bounds:
         //                  using -8pi and 4pi2 will allow single rev solutions
@@ -7994,7 +7997,11 @@ namespace AstroLibMethods
         //                           procedure lamberbattin
         //
         //  this procedure solves lambert's problem using battins method. the method is
-        //    developed in battin (1987).
+        //    developed in battin (1987). note that v1 (the initial orbit velocity
+        //    and not the transfer orbit velocity at the start) is not formally part
+        //    of the lambert solution, but here, it's needed for the hodegraph
+        //    implementation for transfers very near 180 deg. it can be set to zero
+        //    if you're not near the 180 deg transfer. 
         //
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
@@ -12768,13 +12775,12 @@ namespace AstroLibMethods
             dRdr = 0.0;
             dRdlat = 0.0;
             dRdlon = 0.0;
-            temp = ror;
 
             // sum the Legendre polynomials for the given order
             for (L = 2; L <= degree; L++)
             {
                 // will do the power as each L is indexed }
-                temp = temp * ror;
+                temp = ror * ror;
                 sumM1 = 0.0;  // partial wrt r
                 sumM2 = 0.0;  // partial wrt lat
                 sumM3 = 0.0;  // partial wrt lon
@@ -12786,25 +12792,17 @@ namespace AstroLibMethods
                     {
                         temparg = gravData.c[L][m] * trigArr[m, 1] + gravData.s[L][m] * trigArr[m, 0];
                         sumM1 = sumM1 + legarrGU[L][m] * temparg;
-                        if (m + 1 <= L)
+                        //if (m + 1 <= L)
                             sumM2 = sumM2 + (legarrGU[L][m + 1] - m * trigArr[m, 2] * legarrGU[L][m]) * temparg;
-                        else
-                            sumM2 = sumM2 - m * trigArr[m, 2] * legarrGU[L][m] * temparg;
+                        //else
+                        //    sumM2 = sumM2 - m * trigArr[m, 2] * legarrGU[L][m] * temparg;
                         sumM3 = sumM3 + m * legarrGU[L][m] * (gravData.s[L][m] * trigArr[m, 1] - gravData.c[L][m] * trigArr[m, 0]);
                     }
                     else  // normalized
                     {
                         temparg = gravData.c[L][m] * trigArr[m, 1] + gravData.s[L][m] * trigArr[m, 0];
                         sumM1 = sumM1 + legarrGN[L][m] * temparg;
-                        if (m + 1 <= L)
-                        {
-                            // synchronize the normalization values
-                            conv = unnormArr[L][m] / unnormArr[L][m + 1];
-                            sumM2 = sumM2 + (conv * legarrGN[L][m + 1] - m * trigArr[m, 2] * legarrGN[L][m]) * temparg;
-                            sumM2 = sumM2 + (legarrGN[L][m + 1] - m * trigArr[m, 2] * legarrGN[L][m]) * temparg;
-                        }
-                        else
-                            sumM2 = sumM2 - m * trigArr[m ,2] * legarrGN[L][m] * temparg;
+                        sumM2 = sumM2 + (legarrGN[L][m + 1] - trigArr[m, 2] * legarrGN[L][m]) * temparg;
                         sumM3 = sumM3 + m * legarrGN[L][m] * (gravData.s[L][m] * trigArr[m, 1] - gravData.c[L][m] * trigArr[m, 0]);
                     }
                 }  // for m 
@@ -12821,16 +12819,16 @@ namespace AstroLibMethods
             dRdlon = muor * dRdlon;
 
             // ---------- Non - spherical perturbative acceleration ------------ }
-            RDelta = recef[0] * recef[0] + recef[1] * recef[1];
-            double oordeltasqrt = 1.0 / Math.Sqrt(RDelta);
+            RDelta = Math.Sqrt(recef[0] * recef[0] + recef[1] * recef[1]);
+            double oordeltasqrt = 1.0 / RDelta;
             oordelta = 1.0 / RDelta;
             temp = oor * dRdr - recef[2] * oor * oor * oordeltasqrt * dRdlat;
 
             // don't add the two body component yet
             //double tmp = astroConsts.mu / (Math.Pow(MathTimeLibr.mag(recef), 3));
-            aPertG[0] = temp * recef[0] - oordelta * dRdlon * recef[1]; // - tmp * recef[0];
+            aPertG[0] = temp * recef[0] - oordelta * oordelta * dRdlon * recef[1]; // - tmp * recef[0];
             aPertG[1] = temp * recef[1] + oordelta * dRdlon * recef[0]; // - tmp * recef[1];
-            aPertG[2] = oor * dRdr * recef[2] + oor * oor * Math.Sqrt(RDelta) * dRdlat; // - tmp * recef[2];
+            aPertG[2] = oor * dRdr * recef[2] + oor * oor *RDelta * dRdlat; // - tmp * recef[2];
 
             if (show == 'y' && degree > 4)
             {
@@ -13252,10 +13250,10 @@ namespace AstroLibMethods
             }
             // Body-fixed acceleration
             // now get correction for initial V, W formulation
-            temp = astroConsts.mu / (astroConsts.re * astroConsts.re);
-            aPertMC[0] = temp * aPertMC[0];
-            aPertMC[1] = temp * aPertMC[1];
-            aPertMC[2] = temp * aPertMC[2];
+            //temp = astroConsts.mu / (astroConsts.re * astroConsts.re);
+            aPertMC[0] = 1.0 * aPertMC[0];
+            aPertMC[1] = 1.0 * aPertMC[1];
+            aPertMC[2] = 1.0 * aPertMC[2];
 
             if (show == 'y' && degree > 4)
             {
