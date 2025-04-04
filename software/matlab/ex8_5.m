@@ -72,7 +72,7 @@
     ddeps = -0.007365 * conv;
     ddx = 0.000255 * conv;  % " to rad
     ddy = 0.000039 * conv;
-    order = 106;
+    nutorder = 106;
     eqeterms = 2;
     timezone=0;
     
@@ -80,8 +80,9 @@
     [iau80arr] = iau80in(fileLoc);
     
     normalized = 'y';
-    fname = 'D:/Dataorig/Gravity/EGM2008_to2190_TideFree.txt';
-    %fname = 'D:/Dataorig/Gravity/EGM96Allnorm.txt';
+    fname = 'D:/Dataorig/Gravity/EGM2008 norm 486.txt';
+    %fname = 'D:/Dataorig/Gravity/EGM2008_to2190_TideFree.txt';
+    fprintf(1,'Reading %s \n', fname);
     [gravarr] = readgravityfield(fname, normalized);
 
     fprintf(1, 'input data \n\n');
@@ -96,7 +97,7 @@
     fprintf(1, ' lod %8.6f s\n', lod);
     fprintf(1, ' ddpsi %8.6f " ddeps  %8.6f\n', ddpsi/conv, ddeps/conv);
     fprintf(1, ' ddx   %8.6f " ddy    %8.6f\n', ddx/conv, ddy/conv);
-    fprintf(1, ' order %3i  eqeterms %3i  \n', order, eqeterms );
+    fprintf(1, ' order %3i  eqeterms %3i  \n', nutorder, eqeterms );
     fprintf(1, 'units are km and km/s and km/s2\n' );
     
     % -------- convtime    - convert time from utc to all the others
@@ -161,27 +162,30 @@
     [latgc, latgd, lon, hellp] = ecef2ll(recef);
     fprintf(1, 'lat lon  %14.9f %14.9f %14.9f\n', latgc*rad, lon*rad, hellp );
     
+    magr = mag(recef);
+    accel2bdf = -mu*recef/magr^3;
+    
     fprintf(1,'--------------------Find Legendre polynomials -------------\n');
     
-    [gravarr] = readgravityfield('D:/Dataorig/Gravity/EGM-08norm100.txt', 'n');
     % fprintf(1,'\nunnormalized coefficents --------------- \n');
     % fprintf(1,'  4  0 %16.11e  %16.11e \n', gravarr.c(5, 1), gravarr.s(5, 1) );
     % fprintf(1,'  4  4 %16.11e  %16.11e \n', gravarr.c(5, 5), gravarr.s(5, 5) );
     % fprintf(1,' 21  1 %16.11e  %16.11e \n', gravarr.c(22, 2), gravarr.s(22, 2)  );
     fprintf(1,'\nnormalized coefficents --------------- \n');
+    fprintf(1,'  2  0 %16.11e  %16.11e \n', gravarr.cNor(2, 1), gravarr.sNor(2, 1) );
     fprintf(1,'  4  0 %16.11e  %16.11e \n', gravarr.cNor(5, 1), gravarr.sNor(5, 1) );
     fprintf(1,'  4  4 %16.11e  %16.11e \n', gravarr.cNor(5, 5), gravarr.sNor(5, 5) );
     fprintf(1,' 21  1 %16.11e  %16.11e \n', gravarr.cNor(22, 2), gravarr.sNor(22, 2)  );
     
     % [legarr, Legarr1] = legPoly(latgc, order);
+    degree = 6;
     order = 6;
-    % latgc = 39.87 / rad;  % test case xxxxxxxxxxxxxxxxxxxx
-    [legarrMU, legarrGU, legarrMN, legarrGN] = legpolyn(latgc, order);
-    
+    [legarrMU, legarrGU, legarrMN, legarrGN, LegGottN] = legpolyn(latgc, degree+2, order+2);
+
     % this seems to show that the Montenbruck approach has smaller
     % (1e-15) diffs than the gtds approach (1e-12)
-    legarrMU-legarrGU
-    legarrMN-legarrGN
+    %legarrMU-legarrGU
+    %legarrMN-legarrGN
     
     fprintf(1,'\nLegendre polynomials --------------- \n');
     
@@ -206,15 +210,12 @@
         fprintf(1,' %s %s \n\n', str0, str2);
     end
     
-    
-    [trigarr, varr, warr] = trigpoly(recef, latgc, lon, order);
-    
-    
-    [aPert, aPert1] = GravAccelGott ( recef, jdut1, jdut1frac, order, gravarr)
-    
-    
-    
-    fprintf(1, ' a %14.9f %14.9f %14.9f\n\n', aPert );
+    [trigarr, VArr, WArr] = trigpoly(recef, latgc, lon, degree+2);
+   
+    [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order);
+    fprintf(1,'gott R ecef wo2b     %2d %2d %21.17f  %21.17f  %21.17f  %21.17f \n', ...
+        degree, order, accel' - accel2bdf, mag(accel' - accel2bdf));
+    fprintf(1, ' accel w2b  %14.9f %14.9f %14.9f\n\n', accel );
     
     
     
@@ -234,9 +235,10 @@
     
     fprintf(1,' ------------------ find third body acceleration\n');
     % sun
-    [jpldearr, jdjpldestart, jdjpldestartFrac] = initjplde('D:\Codes\LIBRARY\DataLib\sunmooneph_430t.txt');
-    
-    [rsun, rsmag, rmoon, rmmag] = findjpldeparam( jdtdb+1, jdtdbfrac, 's', jpldearr, jdjpldestart);
+    infilename = append('D:\Codes\LIBRARY\DataLib\', 'sunmooneph_430t12.txt');
+    [jpldearr] = readjplde(infilename);
+
+    [rsun, rsmag, rmoon, rmmag] = findjpldeparam(jdtdb+1, jdtdbfrac, 's', jpldearr);
     % hard code to stk
     rsuns = [126916355.384390;    -69567131.339884;    -30163629.424510]';
     % JPL ans  2020  2 18  M          0.6306

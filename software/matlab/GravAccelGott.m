@@ -1,8 +1,13 @@
 % ----------------------------------------------------------------------------
 %
-%        function GravAccelGott
+%                             function GravAccelGott
 %
-% inputs
+%   this function finds the acceleration for the gravity field using the 
+%     Gottlieb approach.
+%
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
+%
+%  inputs        description                                   range / units
 %    mu       gravitaional paramater
 %    xin      position ecef vector of satellite km
 %    c, s     gravity coefficients normalized 
@@ -29,16 +34,16 @@ function [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order)
 
     % this can be done ahead of time
     % these are 0 based arrays since they start at 2
-    for n = 2:degree+1 %RAE
-        norm1(n) = sqrt((2*n+1.0) / (2*n-1.0)); % eq 3-1 RAE
-        norm2(n) = sqrt((2*n+1.0) / (2*n-3.0)); % eq 3-2 RAE
-        norm11(n) = sqrt((2*n+1.0) / (2*n))/(2*n-1.0); % eq 3-3 RAE
-        normn10(n) = sqrt((n+1.0)*n * 0.5); % RAE
+    for L = 2:degree+1 %RAE
+        norm1(L) = sqrt((2*L+1.0) / (2*L-1.0)); % eq 3-1 RAE
+        norm2(L) = sqrt((2*L+1.0) / (2*L-3.0)); % eq 3-2 RAE
+        norm11(L) = sqrt((2*L+1.0) / (2*L))/(2*L-1.0); % eq 3-3 RAE
+        normn10(L) = sqrt((L+1.0)*L * 0.5); % RAE
         
-        for m = 1:n %RAE
-            norm1m(n,m) = sqrt((n-m)*(2*n+1.0) / ((n+m)*(2*n-1.0))); % eq 3-4 RAE
-            norm2m(n,m) = sqrt((n-m)*(n-m-1.0)*(2*n+1.0) / ((n+m)*(n+m-1.0)*(2*n-3.0))); % eq 3-5 RAE
-            normn1(n,m) = sqrt((n+m+1.0)*(n-m)); % part of eq 3-9 RAE
+        for m = 1:L %RAE
+            norm1m(L,m) = sqrt((L-m)*(2*L+1.0) / ((L+m)*(2*L-1.0))); % eq 3-4 RAE
+            norm2m(L,m) = sqrt((L-m)*(L-m-1.0)*(2*L+1.0) / ((L+m)*(L+m-1.0)*(2*L-3.0))); % eq 3-5 RAE
+            normn1(L,m) = sqrt((L+m+1.0)*(L-m)); % part of eq 3-9 RAE
         end %RAE
     end %RAE
     
@@ -56,16 +61,16 @@ function [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order)
     LegGottN(1,1) = 1.0; %RAE
     LegGottN(1,2) = 0.0; %RAE
     LegGottN(1,3) = 0.0; %RAE
-    LegGottN(2,2) = sqrt(3.0); %RAE %norm 
+    LegGottN(2,2) = sqrt(3.0); %RAE    * coslat if comparing legpoly
     LegGottN(2,3) = 0.0; %RAE
     LegGottN(2,4) = 0.0; %RAE
 
     % --------------- sectoral 
-    for n = 2:degree %RAE
-        ni = n+1; %RAE
-        LegGottN(ni,ni) = norm11(n)*LegGottN(n,n)*(2*n-1.0); %eq 3-15 RAE %norm
-        LegGottN(ni,ni+1) = 0.0; %RAE
-        LegGottN(ni,ni+2) = 0.0; %RAE
+    for L = 2:degree %RAE
+        Li = L+1; %RAE
+        LegGottN(Li,Li) = norm11(L)*LegGottN(L,L)*(2*L-1.0); %eq 3-15 * coslat if comparing legpoly
+        LegGottN(Li,Li+1) = 0.0; %RAE
+        LegGottN(Li,Li+2) = 0.0; %RAE
     end
 
     ctil(1) = 1.0; %RAE
@@ -78,39 +83,39 @@ function [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order)
     sumk = 0.0;
     LegGottN(2,1) = sqrt(3)*sinlat; %RAE %norm 
 
-    for n=2:degree
-        ni = n + 1; %RAE
+    for L=2:degree
+        Li = L + 1; %RAE
         reorn = reorn*reor;
-        n2m1 = n + n - 1;
-        nm1 = n - 1;
-        np1 = n + 1;
+        n2m1 = L + L - 1;
+        nm1 = L - 1;
+        np1 = L + 1;
 
         % --------------- tesserals(ni, m=ni-1) initial value
-        LegGottN(ni,n) = normn1(n,n-1)*sinlat*LegGottN(ni,ni); %RAE %norm
+        LegGottN(Li,L) = normn1(L,L-1)*sinlat*LegGottN(Li,Li); %RAE %norm
 
         % --------------- zonals (ni, m=1)
-        LegGottN(ni,1) = (n2m1*sinlat*norm1(n)*LegGottN(n,1) - nm1*norm2(n)*LegGottN(nm1,1))/n; % eq 3-17 RAE %norm
+        LegGottN(Li,1) = (n2m1*sinlat*norm1(L)*LegGottN(L,1) - nm1*norm2(L)*LegGottN(nm1,1))/L; % eq 3-17 RAE %norm
 %fprintf(1,'%11.7f  %11.7f  %11.7f  %11.7f  ',norm1(n),LegGottN(n,1),norm2(n),LegGottN(nm1,1))
 
         % --------------- tesseral (n,m=2) initial value
-        LegGottN(ni,2) = (n2m1*sinlat*norm1m(n,1)*LegGottN(n,2) - n*norm2m(n,1)*LegGottN(nm1,2))/(nm1); %RAE %norm
+        LegGottN(Li,2) = (n2m1*sinlat*norm1m(L,1)*LegGottN(L,2) - L*norm2m(L,1)*LegGottN(nm1,2))/(nm1); %RAE %norm
 
-        sumhn = normn10(n)*LegGottN(ni,2)*gravarr.cNor(ni,1); %norm %RAE
-        sumgmn = LegGottN(ni,1)*gravarr.cNor(ni,1)*np1; %RAE
+        sumhn = normn10(L)*LegGottN(Li,2)*gravarr.cNor(Li,1); %norm %RAE
+        sumgmn = LegGottN(Li,1)*gravarr.cNor(Li,1)*np1; %RAE
 
         if partials == 'y'
-            sumvn = pn(0) * gravarr.cNor(ni,1);
-            summn = pn(2) * gravarr.cNor(ni,1)*upsn(O);
+            sumvn = pn(0) * gravarr.cNor(Li,1);
+            summn = pn(2) * gravarr.cNor(Li,1)*upsn(O);
             sumpn = sumhn * np1;
             sumln = sumgamn * (np1 + 1.0);
         end
 
         if (order>0)
-            for m = 2:n-2
+            for m = 2:L-2 % eckman wrong?, should be n-1?
                 mi = m+1; %RAE
                 % --------------- tesseral (n,m)
-                LegGottN(ni,mi) = (n2m1*sinlat*norm1m(n,m)*LegGottN(n,mi) - ...
-                    (nm1+m)*norm2m(n,m)*LegGottN(nm1,mi)) / (n-m); % eq 3-18 RAE %norm
+                LegGottN(Li,mi) = (n2m1*sinlat*norm1m(L,m)*LegGottN(L,mi) - ...
+                    (nm1+m)*norm2m(L,m)*LegGottN(nm1,mi)) / (L-m); % eq 3-18 RAE %norm
             end  % for
 
             sumjn = 0.0;
@@ -123,10 +128,10 @@ function [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order)
                 sumsn = 0.0;
                 sumtn = 0.0;    
             end
-            ctil(ni) = ctil(2)*ctil(ni-1) - stil(2)*stil(ni-1); %RAE
-            stil(ni) = stil(2)*ctil(ni-1) + ctil(2)*stil(ni-1); %RAE
-            if n < order
-                lim = n;
+            ctil(Li) = ctil(2)*ctil(Li-1) - stil(2)*stil(Li-1); %RAE
+            stil(Li) = stil(2)*ctil(Li-1) + ctil(2)*stil(Li-1); %RAE
+            if L < order
+                lim = L;
             else
                 lim = order;
             end
@@ -135,17 +140,17 @@ function [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order)
                 mi = m+1; %RAE
                 mm1 = mi-1; %RAE
                 mp1 = mi+1; %RAE
-                mxpnm = m * LegGottN(ni,mi); %RAE
-                bnmtil = gravarr.cNor(ni,mi) * ctil(mi) + gravarr.sNor(ni,mi) * stil(mi); %RAE
-                sumhn = sumhn + normn1(n,m) * LegGottN(ni,mp1) * bnmtil; %RAE %norm
-                sumgmn = sumgmn + (n+m+1) * LegGottN(ni,mi) * bnmtil; %RAE
-                bnmtm1 = gravarr.cNor(ni,mi) * ctil(mm1) + gravarr.sNor(ni,mi) * stil(mm1); %RAE
-                anmtm1 = gravarr.cNor(ni,mi) * stil(mm1) - gravarr.sNor(ni,mi) * ctil(mm1); %RAE
+                mxpnm = m * LegGottN(Li,mi); %RAE
+                bnmtil = gravarr.cNor(Li,mi) * ctil(mi) + gravarr.sNor(Li,mi) * stil(mi); %RAE
+                sumhn = sumhn + normn1(L,m) * LegGottN(Li,mp1) * bnmtil; %RAE %norm
+                sumgmn = sumgmn + (L+m+1) * LegGottN(Li,mi) * bnmtil; %RAE
+                bnmtm1 = gravarr.cNor(Li,mi) * ctil(mm1) + gravarr.sNor(Li,mi) * stil(mm1); %RAE
+                anmtm1 = gravarr.cNor(Li,mi) * stil(mm1) - gravarr.sNor(Li,mi) * ctil(mm1); %RAE
                 sumjn = sumjn + mxpnm * bnmtm1;
                 sumkn = sumkn - mxpnm * anmtm1;
 
                 if partials == 'y'
-                    npmpl = ni + mp1;
+                    npmpl = Li + mp1;
                     pnm = pn(mi);
                     pnmp1 = pn(mp1);
                     cnm = c(mi, 1);
@@ -156,7 +161,7 @@ function [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order)
                     bnmtml = cnm * ctil + snm * stil;
                     pnmbnm = pnm * bnmtll;
                     sumvn = sumvn + pnmbnm;
-                    if m < n
+                    if m < L
                         z_pnmpl = zn(m) * pn(mpl);
                         sumhn = sumhn + z_pnmpl * bnmtil;
                         sumpn = sumpn + npmpl * z_pnmpl * bnmtil;
@@ -174,7 +179,7 @@ function [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order)
                     end
                 end
 
-            end  % for
+            end  % for m
 
             sumj = sumj + reorn*sumjn;
             sumk = sumk + reorn*sumkn;

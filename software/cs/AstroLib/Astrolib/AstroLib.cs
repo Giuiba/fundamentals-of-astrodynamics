@@ -7184,7 +7184,6 @@ namespace AstroLibMethods
         //    r1          - ijk position vector 1                   km
         //    r2          - ijk position vector 2                   km
         //    dm          - direction of motion                     'L', 'S'
-        //    de          - orbital energy                          'L', 'H'
         //    nrev        - number of revs to complete              0, 1, 2, 3,  
         //
         //  outputs       :
@@ -7212,7 +7211,7 @@ namespace AstroLibMethods
 
         public void lambertminT
         (
-            double[] r1, double[] r2, char dm, char de, Int32 nrev,
+            double[] r1, double[] r2, char dm, Int32 nrev,
             out double tmin, out double tminp, out double tminenergy
         )
         {
@@ -7271,7 +7270,7 @@ namespace AstroLibMethods
                 temp = Math.Sqrt(0.5 * (s - chord) * alp);
                 if (Math.Abs(temp) > 1.0)
                     temp = Math.Sign(temp) * 1.0;
-                if (dm == 'L')  // old de l
+                if (dm == 'S')  // old de l
                     beta = 2.0 * Math.Asin(temp);
                 else
                     beta = -2.0 * Math.Asin(temp);  // fix quadrant
@@ -7290,11 +7289,8 @@ namespace AstroLibMethods
                            an.ToString("0.00000000");
                 i = i + 1;
             }
-            // could update beta one last time with alpha too????
-            if (dm == 'S')
-                tmin = Math.Pow(an, 1.5) * (2.0 * Math.PI * nrev + xi - eta) / Math.Sqrt(astroConsts.mu);
-            else
-                tmin = Math.Pow(an, 1.5) * (2.0 * Math.PI * nrev + xi + eta) / Math.Sqrt(astroConsts.mu);
+            
+            tmin = Math.Pow(an, 1.5) * (2.0 * Math.PI * nrev + xi - eta) / Math.Sqrt(astroConsts.mu);
         }  // lambertminT
 
 
@@ -7445,7 +7441,7 @@ namespace AstroLibMethods
         //                           procedure lambertuniv
         //
         //  this procedure solves the lambert problem for orbit determination and returns
-        //    the velocity vectors at each of two given position vectors.  the solution
+        //    the velocity vectors at each of two given position vectors. the solution
         //    uses universal variables for calculation and a bissection technique for
         //    updating psi. note that v1 (the initial orbit velocity and not the transfer 
         //    orbit velocity at the start) is not formally part of the lambert solution, 
@@ -12208,12 +12204,12 @@ namespace AstroLibMethods
                double latgc,
                Int32 order,
                char normalized,
+               double[][] normArr,
                out double[][] legarrGU,
                out double[][] legarrGN
            )
         {
             Int32 L, m;
-            double conv;
             legarrGU = new double[order + 2][];
             legarrGN = new double[order + 2][];
 
@@ -12249,8 +12245,8 @@ namespace AstroLibMethods
             Int32 orderlim = order;
             if (normalized == 'y')
             {
-                if (order > 170)
-                    orderlim = 170;
+                if (order > 85)
+                    orderlim = 85;
                 else
                     orderlim = order;
                 legarrGN[0] = new double[2];
@@ -12263,15 +12259,7 @@ namespace AstroLibMethods
                 {
                     legarrGN[L] = new double[L + 2];
                     for (m = 0; m <= L; m++)
-                    {
-                        // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
-                        if (m == 0)
-                            conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
-                        else
-                            conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
-
-                        legarrGN[L][m] = conv * legarrGU[L][m];
-                    } // for m
+                        legarrGN[L][m] = normArr[L][m] * legarrGU[L][m];
                 } // for L
             }
 
@@ -12317,12 +12305,12 @@ namespace AstroLibMethods
                double latgc,
                Int32 order,
                char normalized,
+               double[][] normArr,
                out double[][] legarrMU,
                out double[][] legarrMN
            )
         {
             Int32 L, m;
-            double conv;
             legarrMU = new double[order + 2][];
             legarrMN = new double[order + 2][];
             Int32 orderlim;
@@ -12360,8 +12348,8 @@ namespace AstroLibMethods
             // normalize after the polynomials are found because they are intertwined in the recursion
             if (normalized == 'y')
             {
-                if (order > 170)
-                    orderlim = 170;
+                if (order > 85)
+                    orderlim = 85;
                 else
                     orderlim = order;
                 legarrMN[0] = new double[2];
@@ -12374,15 +12362,8 @@ namespace AstroLibMethods
                 {
                     legarrMN[L] = new double[L + 1];
                     for (m = 0; m <= L; m++)
-                    {
-                        // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
-                        if (m == 0)
-                            conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
-                        else
-                            conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
+                        legarrMN[L][m] = normArr[L][m] * legarrMU[L][m];
 
-                        legarrMN[L][m] = conv * legarrMU[L][m];
-                    } // for m
                 } // for L
             }
         } // LegPolyMont
@@ -12392,16 +12373,10 @@ namespace AstroLibMethods
 
         // ----------------------------------------------------------------------------
         //
-        //                           function LegPolyGottN
+        //                           function getnormGottN
         //
-        //   this function finds the portions of the legendre functions and associated legendre 
-        //   functions for the gravity field using the constant portion from the normalized Gottlieb 
-        //   approach. the arrays are indexed from 0 to coincide with the usual nomenclature 
-        //   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 
-        //   greater as they start at 1. note that this formulation is able to handle degree 
-        //   and order terms larger than 170, due to the formulation. note these will not match 
-        //   hand calculations because they do not have the latgc term which is added later in 
-        //   the recursions. these functions can be found once before any calls to the gottlieb method.
+        //   this function finds the normalization constant values for the Gottlieb approach.
+        //     these functions can be found once before any calls to the gottlieb method.
         //      
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
@@ -12422,7 +12397,7 @@ namespace AstroLibMethods
         //    vallado       2022, 600, Eq 8-56
         // ---------------------------------------------------------------------------
 
-        public void LegPolyGottN
+        public void getnormGottN
            (
                Int32 degree,
                out double[] norm1,
@@ -12443,7 +12418,7 @@ namespace AstroLibMethods
             norm2m = new double[degree + 2][];
             normn1 = new double[degree + 2][];
 
-            // -------------------- perform recursions ---------------------- }
+            // -------------------- perform recursions ---------------------- 
             for (L = 2; L <= degree + 1; L++) // L = 2:order + 1  
             {
                 norm1[L] = Math.Sqrt((2 * L + 1.0) / (2 * L - 1.0));    // eq 3-1 
@@ -12464,7 +12439,7 @@ namespace AstroLibMethods
                 }
             }
 
-        } // LegPolyGottN
+        } // getnormGottN
 
 
 
@@ -12513,7 +12488,7 @@ namespace AstroLibMethods
 
             trigArr[1, 0] = slon = Math.Sin(lon);
             trigArr[1, 1] = clon = Math.Cos(lon);
-            trigArr[1, 2] = tlon = Math.Tan(latgc);
+            tlon = Math.Tan(latgc);
 
             for (m = 2; m <= degree; m++)
             {
@@ -12563,13 +12538,13 @@ namespace AstroLibMethods
                double latgc,
                Int32 degree,
                char normalized,
+               double[][] normArr,
                out double[][] VArr,
                out double[][] WArr,
                out double[][] VArrN,
                out double[][] WArrN
            )
         {
-            double conv;
             double magr;
             Int32 L, m, orderlim;
 
@@ -12591,7 +12566,7 @@ namespace AstroLibMethods
             VArr[0][ 0] = astroConsts.re / magr;
             VArr[1] = new double[3];
             WArr[1] = new double[3];
-            VArr[1][ 0] = VArr[0][0] * VArr[0][0] * Math.Sin(latgc);
+            VArr[1][0] = VArr[0][0] * VArr[0][0] * Math.Sin(latgc);
             WArr[0][0] = 0.0;
             WArr[1][0] = 0.0;
 
@@ -12627,8 +12602,8 @@ namespace AstroLibMethods
             {
                 // my simple approach to normalize the recursion
                 // normalize after the polynomials are found because they are intertwined in the recursion
-                if (degree > 170)
-                    orderlim = 170;
+                if (degree > 85)
+                    orderlim = 85;
                 else
                     orderlim = degree;
                 VArrN[0] = new double[1];
@@ -12640,14 +12615,9 @@ namespace AstroLibMethods
                     VArrN[L] = new double[L + 1];
                     WArrN[L] = new double[L + 1];
                     for (m = 0; m <= L; m++)
-                    {
-                        // note that above n = 170, the factorial will return 0, thus affecting the results!!!!
-                        if (m == 0)
-                            conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
-                        else
-                            conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
-                        VArrN[L][m] = conv * VArr[L][m];
-                        WArrN[L][m] = conv * WArr[L][m];
+                    { 
+                        VArrN[L][m] = normArr[L][m] * VArr[L][m];
+                        WArrN[L][m] = normArr[L][m] * WArr[L][m];
                     }
                 }
             }
@@ -12655,30 +12625,43 @@ namespace AstroLibMethods
         } // TrigPolyLeg
 
 
-        // this produces the normalization values for up to a 100x100 gravity field
-        // useful for gtds, montenbruck, etc
+        // ----------------------------------------------------------------------------
+        //
+        //                           function gravnorm
+        //
+        //   this function finds the normalization values for up to an 85 x 85 field. useful
+        //     for GTDS, montenbruck
+        //      
+        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //
+        //  inputs          description                              range / units
+        //
+        //  outputs       :
+        //    normArr     - normalization values
+        //
+        //  references :
+        //    vallado       2022, 550
+        // ----------------------------------------------------------------------------
         public void gravnorm
       (
-          out double[][] unnormArr
+          out double[][] normArr
       )
         {
-            unnormArr = new double[172][];
+            normArr = new double[172][];
             int L, m;
             double conv;
 
             L = 0;
 
-            unnormArr[0] = new double[1];
-            unnormArr[0][0] = 1.0;
-            unnormArr[1] = new double[2];
-            unnormArr[1][0] = Math.Sqrt(3);
-            unnormArr[1][1] = unnormArr[1][0];
+            normArr[0] = new double[1];
+            normArr[0][0] = 1.0;
+            normArr[1] = new double[2];
+            normArr[1][0] = Math.Sqrt(3);
+            normArr[1][1] = normArr[1][0];
 
-
-            // note these normalization recursions should work for higher than 150 since factorials are "not" used. 
-            for (L = 1; L <= 100; L++)
+            for (L = 1; L <= 85; L++)
             {
-                unnormArr[L] = new double[L + 1];
+                normArr[L] = new double[L + 1];
                 for (m = 0; m <= L; m++)
                 {
                     if (m == 0)
@@ -12687,7 +12670,7 @@ namespace AstroLibMethods
                         conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
 
                     // ----- store these for later use
-                    unnormArr[L][m] = conv;
+                    normArr[L][m] = conv;
                 }
             }
 
@@ -12710,7 +12693,7 @@ namespace AstroLibMethods
         //    degree      - size of gravity field (zonals)                          1.. 170 .. 2000
         //    order       - size of gravity field (other)                           1.. 170 .. 2000
         //    normalized  - normalized in file                            'y', 'n'
-        //    unnormArr   - array of normalization values                  
+        //    normArr   - array of normalization values                  
         //    gravData    - structure containing the gravity field coefficients, 
         //                  radius of the Earth, and gravitational parameter
         //
@@ -12740,7 +12723,7 @@ namespace AstroLibMethods
             double[] recef,
             Int32 degree, Int32 order,
             char normalized,
-            double[][] unnormArr,
+            double[][] normArr,
             gravityConst gravData,
             out double[] aPertG,
             char show,
@@ -12751,7 +12734,7 @@ namespace AstroLibMethods
             double[][] legarrGU;  // unnormalized gtds
             double[][] legarrGN;  // normalized gtds
             double[, ] trigArr;
-            double oordelta, temp, oor, ror, muor, sumM1, sumM2, sumM3, dRdr,
+            double temp, oor, ror, muor, sumM1, sumM2, sumM3, dRdr,
                    dRdlat, dRdlon, RDelta, latgc, latgd, hellp, lon;
             double temparg;
             double conv;
@@ -12765,8 +12748,8 @@ namespace AstroLibMethods
             ecef2ll(recef, out latgc, out latgd, out lon, out hellp);
 
             // ---------------------Find Legendre polynomials -------------- }
-            LegPolyGTDS(latgc, degree, normalized, out legarrGU, out legarrGN);
-            TrigPoly(lon, latgc, degree, out trigArr);
+            LegPolyGTDS(latgc, degree, normalized, normArr, out legarrGU, out legarrGN);
+            TrigPoly(lon, latgc, degree + 1, out trigArr);
 
             // ----------Partial derivatives of disturbing potential ------- }
             double magr = MathTimeLibr.mag(recef);
@@ -12787,7 +12770,7 @@ namespace AstroLibMethods
 
                 for (m = 0; m <= L; m++)
                 {
-                    // unnormalized should sum in reverse to preserve accuracy
+                    // unnormalized should sum in reverse to preserve accuracy?
                     if (normalized == 'n')
                     {
                         temparg = gravData.c[L][m] * trigArr[m, 1] + gravData.s[L][m] * trigArr[m, 0];
@@ -12821,13 +12804,12 @@ namespace AstroLibMethods
             // ---------- Non - spherical perturbative acceleration ------------ }
             RDelta = Math.Sqrt(recef[0] * recef[0] + recef[1] * recef[1]);
             double oordeltasqrt = 1.0 / RDelta;
-            oordelta = 1.0 / RDelta;
             temp = oor * dRdr - recef[2] * oor * oor * oordeltasqrt * dRdlat;
 
             // don't add the two body component yet
             //double tmp = astroConsts.mu / (Math.Pow(MathTimeLibr.mag(recef), 3));
-            aPertG[0] = temp * recef[0] - oordelta * oordelta * dRdlon * recef[1]; // - tmp * recef[0];
-            aPertG[1] = temp * recef[1] + oordelta * dRdlon * recef[0]; // - tmp * recef[1];
+            aPertG[0] = temp * recef[0] - oordeltasqrt * oordeltasqrt * dRdlon * recef[1]; // - tmp * recef[0];
+            aPertG[1] = temp * recef[1] + oordeltasqrt * oordeltasqrt * dRdlon * recef[0]; // - tmp * recef[1];
             aPertG[2] = oor * dRdr * recef[2] + oor * oor *RDelta * dRdlat; // - tmp * recef[2];
 
             if (show == 'y' && degree > 4)
@@ -12852,207 +12834,11 @@ namespace AstroLibMethods
 
         }  // GravAccelGTDS 
 
+         
 
         // ----------------------------------------------------------------------------
         //
         //                           function GravAccelMont
-        //
-        //   this function finds the acceleration for the gravity field. the acceleration is
-        //   found in the body fixed frame. rotation back to inertial is done after this 
-        //   routine. this is the montenbruck approach. 
-        //      
-        //  author        : david vallado             davallado@gmail.com      20 jan 2025
-        //
-        //  inputs          description                              range / units
-        //    recef       - position vector ECEF                          km   
-        //    degree      - size of gravity field (zonals)                          1.. 170 .. 2000
-        //    order       - size of gravity field (other)                           1.. 170 .. 2000
-        //    normalized  - normalized in file                            'y', 'n'
-        //    unnormArr   - array of normalization values                  
-        //    gravData    - structure containing the gravity field coefficients, 
-        //                  radius of the Earth, and gravitational parameter
-        //
-        //  outputs       :
-        //    apert       - efc perturbation acceleration                  km / s^2
-        //
-        //  locals :
-        //    show        - show intermediate steps                        'y', 'n'
-        //    straccum    - string containing the various intermediate steps
-        //    conv        - conversion to normalize
-        //    L, m        - degree and order indices
-        //    LegArr      - array of Legendre polynomials
-        //    VArr        - array of trig terms
-        //    WArr        - array of trig terms
-        //
-        //  coupling      :
-        //   LegPoly      - find the unnormalized Legendre polynomials through recursion
-        //   TrigPoly     - find the trigonmetric terms through recursion
-        //
-        //  references :
-        //    vallado       2022, 601, Eq 8-59
-        // ----------------------------------------------------------------------------
-
-        public void GravAccelMont
-        (
-            double[] recef,
-            Int32 degree, Int32 order,
-            char normalized,
-            double[][] unnormArr,
-            gravityConst gravData,
-            out double[] aPertM,
-            char show,
-            out string straccum
-        )
-        {
-            Int32 L, m;
-            double[][] legarrMU;  // unnormalized montenbruck
-            double[][] legarrMN;  // normalized montenbruck
-            double[][] VArr;
-            double[][] WArr;
-            double[][] VArrN;
-            double[][] WArrN;
-            double latgc, latgd, hellp, lon;
-            double conv, conv1, temp, temp1;
-            aPertM = new double[3];
-            straccum = "";
-
-            // note, lat/lon could be done by Cartesian terms to erase any concerns about proximity to 90 deg lat cases.
-
-            // --------------------find latgc and lon---------------------- }
-            ecef2ll(recef, out latgc, out latgd, out lon, out hellp);
-
-            // ---------------------Find Legendre polynomials -------------- }
-            LegPolyMont(latgc, degree, normalized, out legarrMU, out legarrMN);
-            TrigPolyLeg(recef, latgc, degree, normalized, out VArr, out WArr, out VArrN, out WArrN);
-
-            // correction term for method of formulating VArr and WArr
-            temp = astroConsts.mu / (astroConsts.re * astroConsts.re);
-            // temp = 1.0;
-            // reverse order of summations to get it more accurate??
-            for (m = 0; m <= order; m++)
-            {
-                for (L = m; L <= degree; L++)
-                {
-                    if (normalized == 'n')
-                    {
-                        if (m == 0)
-                        {
-                            aPertM[0] = aPertM[0] + temp * (-gravData.c[L][0] * VArr[L + 1][1]);
-                            aPertM[1] = aPertM[1] + temp * (-gravData.c[L][0] * WArr[L + 1][1]);
-                            aPertM[2] = aPertM[2] + temp * (L + 1) * (-gravData.c[L][0] * VArr[L + 1][0]);
-                        }
-                        else
-                        {
-                            //  double temp1 = MathTimeLibr.factorial(L - m + 2) / MathTimeLibr.factorial(L - m);
-                            // 1975 Giacaglia pg 6 shows the conversion, more stable
-                            temp1 = temp * 0.5 * (L - m + 1) * (L - m + 2);
-                            aPertM[0] = aPertM[0] + 0.5 * temp * (-gravData.c[L][m] * VArr[L + 1][m + 1] - gravData.s[L][m] * WArr[L + 1][m + 1]) +
-                                temp1 * (gravData.c[L][m] * VArr[L + 1][m - 1] + gravData.s[L][m] * WArr[L + 1][m - 1]);
-                            aPertM[1] = aPertM[1] + 0.5 * temp * (-gravData.c[L][m] * WArr[L + 1][m + 1] + gravData.s[L][m] * VArr[L + 1][m + 1]) +
-                                temp1 * (-gravData.c[L][m] * WArr[L + 1][m - 1] + gravData.s[L][m] * VArr[L + 1][m - 1]);
-                            aPertM[2] = aPertM[2] + temp * ((L - m + 1) * (-gravData.c[L][m] * VArr[L + 1][m] - gravData.s[L][m] * WArr[L + 1][m]));
-                        }
-                    }
-                    else  // normalized
-                    {
-                        // note Varr and WArr not formulated for normalized yet because normalization is different for different terms
-                        // this really maps out a gradient? of the normalization
-                        // L,m vs L+1, m+1
-                        // L,m vs L+1, m-1
-                        // L,m vs L+1, m
-                        if (m == 0)
-                        {
-                            conv = unnormArr[L][0] / unnormArr[L + 1][1];
-                            aPertM[0] = aPertM[0] + temp * conv * (-gravData.c[L][0] * VArrN[L + 1][1]);
-                            aPertM[1] = aPertM[1] + temp * conv * (-gravData.c[L][0] * WArrN[L + 1][1]);
-                            conv = unnormArr[L][0] / unnormArr[L + 1][0];
-                            aPertM[2] = aPertM[2] + temp * conv * (L + 1) * (-gravData.c[L][0] * VArrN[L + 1][0]);
-                        }
-                        else
-                        {
-                            //  double temp1 = MathTimeLibr.factorial(L - m + 2) / MathTimeLibr.factorial(L - m);
-                            // 1975 Giacaglia pg 6 shows the conversion, more stable
-                            temp1 = temp * 0.5 * (L - m + 1) * (L - m + 2);
-                            conv = unnormArr[L][m] / unnormArr[L + 1][m + 1];
-                            conv1 = unnormArr[L][m] / unnormArr[L + 1][m - 1];
-                            aPertM[0] = aPertM[0] + 0.5 * temp * conv * (-gravData.c[L][m] * VArrN[L + 1][m + 1] - gravData.s[L][m] * WArrN[L + 1][m + 1]) +
-                                temp1 * conv1 * (gravData.c[L][m] * VArrN[L + 1][m - 1] + gravData.s[L][m] * WArrN[L + 1][m - 1]);
-                            aPertM[1] = aPertM[1] + 0.5 * temp * conv * (-gravData.c[L][m] * WArrN[L + 1][m + 1] + gravData.s[L][m] * VArrN[L + 1][m + 1]) +
-                                temp1 * conv1 * (-gravData.c[L][m] * WArrN[L + 1][m - 1] + gravData.s[L][m] * VArrN[L + 1][m - 1]);
-                            conv = unnormArr[L][m] / unnormArr[L + 1][m];
-                            aPertM[2] = aPertM[2] + temp * conv * ((L - m + 1) * (-gravData.c[L][m] * VArrN[L + 1][m] - gravData.s[L][m] * WArrN[L + 1][m]));
-                        }
-                    }
-                    //if (show == 'y')
-                    //{
-                    //    straccum = straccum + "LegarrMU m " + L.ToString() + " " + m.ToString() +
-                    //           aPertM[0].ToString() + " " + aPertM[1].ToString() + " " + aPertM[2].ToString() + "\n";
-                    //}
-
-                }  // for m 
-            }  // for L
-
-            // Body-fixed acceleration
-            // now get correction for initial V, W formulation
-            temp = astroConsts.mu / (astroConsts.re * astroConsts.re);
-            aPertM[0] = temp * aPertM[0];
-            aPertM[1] = temp * aPertM[1];
-            aPertM[2] = temp * aPertM[2];
-
-            if (show == 'y' && degree > 4)
-            {
-                straccum = straccum + "Montenbruck case nonspherical, no two-body ---------- " + "\n";
-                straccum = straccum + "legarrMU 4 0   " + legarrMU[4][0].ToString() + "  4 1   " + legarrMU[4][1].ToString() + "  4 4   "
-                    + legarrMU[4][4].ToString() + "\n";
-                straccum = straccum + "legarrMN 4 0   " + legarrMN[4][0].ToString() + "  4 1   " + legarrMN[4][1].ToString() + "  4 4   "
-                    + legarrMN[4][4].ToString() + "\n";
-                if (normalized == 'n')
-                {
-                    straccum = straccum + "VArr    1    " + VArr[1][0].ToString() + "    " + VArr[1][1].ToString() + "\n";
-                    straccum = straccum + "WArr    1    " + WArr[1][0].ToString() + "    " + WArr[1][1].ToString() + "\n";
-                    straccum = straccum + "VArr    2    " + VArr[2][0].ToString() + "    " + VArr[2][1].ToString() + "    "
-                        + VArr[2][2].ToString() + "\n";
-                    straccum = straccum + "WArr    2    " + WArr[2][0].ToString() + "    " + WArr[2][1].ToString() + "    "
-                        + WArr[2][2].ToString() + "\n";
-                    straccum = straccum + "VArr    3    " + VArr[3][0].ToString() + "    " + VArr[3][1].ToString() + "    "
-                        + VArr[3][2].ToString() + "\n";
-                    straccum = straccum + "WArr    3    " + WArr[3][0].ToString() + "    " + WArr[3][1].ToString() + "    "
-                        + WArr[3][2].ToString() + "\n";
-                    straccum = straccum + "VArr    4    " + VArr[4][0].ToString() + "    " + VArr[4][1].ToString() + "    "
-                        + VArr[4][2].ToString() + "    " + VArr[4][3].ToString() + "    " + VArr[4][4].ToString() + "\n";
-                    straccum = straccum + "WArr    4    " + WArr[4][0].ToString() + "    " + WArr[4][1].ToString() + "    "
-                        + WArr[4][2].ToString() + "    " + WArr[4][3].ToString() + "    " + WArr[4][4].ToString() + "\n";
-                }
-                else
-                {
-                    straccum = straccum + "VArrN   1    " + VArrN[1][0].ToString() + "    " + VArrN[1][1].ToString() + "\n";
-                    straccum = straccum + "WArrN   1    " + WArrN[1][0].ToString() + "    " + WArrN[1][1].ToString() + "\n";
-                    straccum = straccum + "VArrN   2    " + VArrN[2][0].ToString() + "    " + VArrN[2][1].ToString() + "    "
-                        + VArrN[2][2].ToString() + "\n";
-                    straccum = straccum + "WArrN   2    " + WArrN[2][0].ToString() + "    " + WArrN[2][1].ToString() + "    "
-                        + WArrN[2][2].ToString() + "\n";
-                    straccum = straccum + "VArrN   3    " + VArrN[3][0].ToString() + "    " + VArrN[3][1].ToString() + "    "
-                        + VArrN[3][2].ToString() + "\n";
-                    straccum = straccum + "WArrN   3    " + WArrN[3][0].ToString() + "    " + WArrN[3][1].ToString() + "    "
-                        + WArrN[3][2].ToString() + "\n";
-                    straccum = straccum + "VArrN   4    " + VArrN[4][0].ToString() + "    " + VArrN[4][1].ToString() + "    "
-                        + VArrN[4][2].ToString() + "    " + VArrN[4][3].ToString() + "    " + VArrN[4][4].ToString() + "\n";
-                    straccum = straccum + "WArrN   4    " + WArrN[4][0].ToString() + "    " + WArrN[4][1].ToString() + "    "
-                        + WArrN[4][2].ToString() + "    " + WArrN[4][3].ToString() + "    " + WArrN[4][4].ToString() + "\n";
-                }
-                straccum = straccum + "apertM  bf " + order + " " + order + " " + aPertM[0].ToString() + "     "
-                    + aPertM[1].ToString() + "     " + aPertM[2].ToString() + "\n";
-            }
-
-            // Inertial acceleration 
-            //return Transp(E) * a_bf;
-
-        }  // GravAccelMont 
-
-
-        // ----------------------------------------------------------------------------
-        //
-        //                           function GravAccelMonta
         //
         //   this function finds the acceleration for the gravity field. the acceleration is
         //   found in the body fixed frame. rotation back to inertial is done after this 
@@ -13065,7 +12851,7 @@ namespace AstroLibMethods
         //    degree      - size of gravity field (zonals)                          1.. 170 .. 2000
         //    order       - size of gravity field (other)                           1.. 170 .. 2000
         //    normalized  - normalized in file                            'y', 'n'
-        //    unnormArr   - array of normalization values                  
+        //    normArr   - array of normalization values                  
         //    gravData    - structure containing the gravity field coefficients, 
         //                  radius of the Earth, and gravitational parameter
         //
@@ -13087,37 +12873,43 @@ namespace AstroLibMethods
         //    vallado       2022, 602
         // ----------------------------------------------------------------------------
 
-        public void GravAccelMonta
+        public void GravAccelMont
         (
             double[] recef,
             Int32 degree, Int32 order,
             char normalized,
-            double[][] unnormArr,
+            double[][] normArr,
             gravityConst gravData,
             out double[] aPertMC,
             char show,
             out string straccum
         )
         {
-            Int32 L, m;
+            Int32 m;
             double temp, latgc, latgd, hellp, lon, magr;
-            double conv, conv1;
+            double conv;
+            double convL1, convL0, convL11, convLm1;
             aPertMC = new double[3];
             straccum = "";
 
-            int n;                           // Loop counters
+            int L;                           // Loop counters
             double r_sqr, rho, Fac;               // Auxiliary quantities
             double x0, y0, z0;                      // Normalized coordinates
             double C, S;                           // Gravitational coefficients
-            double[][] V = new double[degree + 2][];
-            double[][] W = new double[degree + 2][];
-            double[][] VArrN = new double[degree + 2][];
-            double[][] WArrN = new double[degree + 2][];
+            double[][] legarrMU;  // unnormalized montenbruck
+            double[][] legarrMN;  // normalized montenbruck
+            double[][] VArr;
+            double[][] WArr;
+            double[][] VArrN;
+            double[][] WArrN;
 
             magr = MathTimeLibr.mag(recef);
 
             // --------------------find latgc and lon---------------------- }
             ecef2ll(recef, out latgc, out latgd, out lon, out hellp);
+            // ---------------------Find Legendre polynomials -------------- }
+            LegPolyMont(latgc, degree, normalized, normArr, out legarrMU, out legarrMN);
+            TrigPolyLeg(recef, latgc, degree, normalized, normArr, out VArr, out WArr, out VArrN, out WArrN);
 
             // r_bf = E * r;
             // Auxiliary quantities
@@ -13135,112 +12927,96 @@ namespace AstroLibMethods
             // up to degree and order n_max+1
             // Calculate zonal terms V(n,0); set W(n,0)=0.0
 
-            V[0] = new double[2];
-            W[0] = new double[2];
-            V[0][0] = astroConsts.re / Math.Sqrt(r_sqr);
-            W[0][0] = 0.0;
-            V[1] = new double[4];
-            W[1] = new double[4];
-            V[1][0] = z0 * V[0][0];
-            W[1][0] = 0.0;
-            for (n = 2; n <= degree+1; n++)  // add +1
+            VArr[0] = new double[2];
+            WArr[0] = new double[2];
+            VArr[0][0] = astroConsts.re / Math.Sqrt(r_sqr);
+            WArr[0][0] = 0.0;
+
+            VArr[1] = new double[4];
+            WArr[1] = new double[4];
+            VArr[1][0] = z0 * VArr[0][0];
+            WArr[1][0] = 0.0;
+            for (L = 2; L <= degree+1; L++)  // add +1
             {
-                V[n] = new double[n + 3];
-                W[n] = new double[n + 3];
-                V[n][0] = ((2.0 * n - 1) * z0 * V[n - 1][0] - (n - 1) * rho * V[n - 2][0]) / n;
-                W[n][0] = 0.0;
+                VArr[L] = new double[L + 3];
+                WArr[L] = new double[L + 3];
+                temp = 1.0 / L;
+                VArr[L][0] = ((2.0 * L - 1) * z0 * VArr[L - 1][0] - (L - 1) * rho * VArr[L - 2][0]) * temp;
+                WArr[L][0] = 0.0;
             }
 
             // Calculate tesseral and sectorial terms 
-            for (m = 1; m <= degree + 1; m++)
+            for (m = 1; m <= order + 1; m++)
             {
                 // Calculate V(m,m) .. V(n_max+1,m)
-                V[m][m] = (2.0 * m - 1) * (x0 * V[m - 1][m - 1] - y0 * W[m - 1][m - 1]);
-                W[m][m] = (2.0 * m - 1) * (x0 * W[m - 1][m - 1] + y0 * V[m - 1][m - 1]);
+                VArr[m][m] = (2.0 * m - 1) * (x0 * VArr[m - 1][m - 1] - y0 * WArr[m - 1][m - 1]);
+                WArr[m][m] = (2.0 * m - 1) * (x0 * WArr[m - 1][m - 1] + y0 * VArr[m - 1][m - 1]);
                 if (m <= order)
                 {
-                    V[m + 1][m] = (2.0 * m + 1) * z0 * V[m][m];
-                    W[m + 1][m] = (2.0 * m + 1) * z0 * W[m][m];
+                    VArr[m + 1][m] = (2.0 * m + 1) * z0 * VArr[m][m];
+                    WArr[m + 1][m] = (2.0 * m + 1) * z0 * WArr[m][m];
                 }
-                for (n = m + 2; n <= order + 1; n++)
+                for (L = m + 2; L <= degree + 1; L++)
                 {
-                    V[n] = new double[n + 2];
-                    W[n] = new double[n + 2];
-                    V[n][m] = ((2.0 * n - 1) * z0 * V[n - 1][m] - (n + m - 1) * rho * V[n - 2][m]) / (n - m);
-                    W[n][m] = ((2.0 * n - 1) * z0 * W[n - 1][m] - (n + m - 1) * rho * W[n - 2][m]) / (n - m);
-                }
-            }
-
-            // --------------- now normalize the variables
-            VArrN[0] = new double[2];
-            WArrN[0] = new double[2];
-            VArrN[0][0] = astroConsts.re / magr;
-            WArrN[0][0] = 0.0;
-            for (L = 1; L <= degree + 1; L++)
-            {
-                VArrN[L] = new double[L+2];
-                WArrN[L] = new double[L+2];
-                for (m = 0; m <= L; m++)
-                {
-                    conv = unnormArr[L][m];
-                    VArrN[L][m] = conv * V[L][m];
-                    WArrN[L][m] = conv * W[L][m];
+                    VArr[L] = new double[L + 2];
+                    WArr[L] = new double[L + 2];
+                    temp = 1.0 / (L - m);
+                    VArr[L][m] = ((2.0 * L - 1) * z0 * VArr[L - 1][m] - (L + m - 1) * rho * VArr[L - 2][m]) * temp;
+                    WArr[L][m] = ((2.0 * L - 1) * z0 * WArr[L - 1][m] - (L + m - 1) * rho * WArr[L - 2][m]) * temp;
                 }
             }
 
             // Calculate accelerations, note the order is switched here
             for (m = 0; m <= order; m++)
             {
-                for (n = m; n <= degree; n++)
+                for (L = m; L <= degree; L++)
                 {
-                    if (m == 0)
+                    if (normalized == 'n')
                     {
-                        if (normalized == 'n')
-                        {
-                            C = gravData.c[n][0];      // = C_n,0
-                            aPertMC[0] = aPertMC[0] - C * V[n + 1][1];
-                            aPertMC[1] = aPertMC[1] - C * W[n + 1][1];
-                            aPertMC[2] = aPertMC[2] - (n + 1) * C * V[n + 1][0];
-                        }
-                        else
-                        {
-                            C = gravData.c[n][0];   // = C_n,0??
-                            conv = unnormArr[n][0] / unnormArr[n + 1][1];
-                            aPertMC[0] = aPertMC[0] - conv * C * VArrN[n + 1][1];
-                            aPertMC[1] = aPertMC[1] - conv * C * WArrN[n + 1][1];
-                            conv = unnormArr[n][0] / unnormArr[n + 1][0];
-                            aPertMC[2] = aPertMC[2] - conv * (n + 1) * C * VArrN[n + 1][0];
-                        }
+                        convL1 = 1.0;
+                        convL0 = 1.0;
+                        convL11 = 1.0;
+                        convLm1 = 1.0;
+                        conv = 1.0;
+                        VArr = VArrN;
+                        WArr = WArrN;
                     }
                     else
                     {
-                        if (normalized == 'n')
-                        {
-                            C = gravData.c[n][m]; // = C_n,m 
-                            S = gravData.s[n][m]; // = S_n,m   he stores CS differently m - 1, n
-                            Fac = 0.5 * (n - m + 1) * (n - m + 2);
-                            aPertMC[0] = aPertMC[0] + 0.5 * (-C * V[n + 1][m + 1] - S * W[n + 1][m + 1])
-                                    + Fac * (+C * V[n + 1][m - 1] + S * W[n + 1][m - 1]);
-                            aPertMC[1] = aPertMC[1] + 0.5 * (-C * W[n + 1][m + 1] + S * V[n + 1][m + 1])
-                                    + Fac * (-C * W[n + 1][m - 1] + S * V[n + 1][m - 1]);
-                            aPertMC[2] = aPertMC[2] + (n - m + 1) * (-C * V[n + 1][m] - S * W[n + 1][m]);
-                        }
+                        // note Varr and WArr not formulated for normalized yet because normalization is different for different terms
+                        // this really maps out a gradient? of the normalization
+                        // L,m vs L+1, m+1
+                        // L,m vs L+1, m-1
+                        // L,m vs L+1, m
+                        convL1 = normArr[L][0] / normArr[L + 1][1];
+                        convL0 = normArr[L][0] / normArr[L + 1][0];
+                        convL11 = normArr[L][m] / normArr[L + 1][m + 1];
+                        if (m > 0)
+                            convLm1 = normArr[L][m] / normArr[L + 1][m - 1];
                         else
-                        {
-                            // note V and W not formulated for normalized yet??
-                            // use un-normalized for now
-                            C = gravData.c[n][m];  // = C_n,m 
-                            S = gravData.s[n][m];  // = S_n,m   he stores CS differently m - 1, n
-                            Fac = 0.5 * (n - m + 1) * (n - m + 2);
-                            conv = unnormArr[n][m] / unnormArr[n + 1][m + 1];
-                            conv1 = unnormArr[n][m] / unnormArr[n + 1][m - 1];
-                            aPertMC[0] = aPertMC[0] + 0.5 * conv * (-C * VArrN[n + 1][m + 1] - S * WArrN[n + 1][m + 1])
-                                    + Fac * conv1 * (+C * VArrN[n + 1][m - 1] + S * WArrN[n + 1][m - 1]);
-                            aPertMC[1] = aPertMC[1] + 0.5 * conv * (-C * WArrN[n + 1][m + 1] + S * VArrN[n + 1][m + 1])
-                                    + Fac * conv1 * (-C * WArrN[n + 1][m - 1] + S * VArrN[n + 1][m - 1]);
-                            conv = unnormArr[n][m] / unnormArr[n + 1][m];
-                            aPertMC[2] = aPertMC[2] + (n - m + 1) * conv * (-C * VArrN[n + 1][m] - S * WArrN[n + 1][m]);
-                        }
+                            convLm1 = 0.0;
+                        conv = normArr[L][m] / normArr[L + 1][m];
+                    }
+
+                    if (m == 0)
+                    {
+                        C = gravData.c[L][0];   // = C_n,0??
+                        aPertMC[0] = aPertMC[0] - convL1 * C * VArrN[L + 1][1];
+                        aPertMC[1] = aPertMC[1] - convL1 * C * WArrN[L + 1][1];
+                        aPertMC[2] = aPertMC[2] - convL0 * (L + 1) * C * VArrN[L + 1][0];
+                    }
+                    else
+                    {
+                        // note V and W not formulated for normalized yet??
+                        // use un-normalized for now
+                        C = gravData.c[L][m];  // = C_n,m 
+                        S = gravData.s[L][m];  // = S_n,m   he stores CS differently m - 1, n
+                        Fac = 0.5 * (L - m + 1) * (L - m + 2);
+                        aPertMC[0] = aPertMC[0] + 0.5 * convL11 * (-C * VArrN[L + 1][m + 1] - S * WArrN[L + 1][m + 1])
+                                + Fac * convLm1 * (+C * VArrN[L + 1][m - 1] + S * WArrN[L + 1][m - 1]);
+                        aPertMC[1] = aPertMC[1] + 0.5 * convL11 * (-C * WArrN[L + 1][m + 1] + S * VArrN[L + 1][m + 1])
+                                + Fac * convLm1 * (-C * WArrN[L + 1][m - 1] + S * VArrN[L + 1][m - 1]);
+                        aPertMC[2] = aPertMC[2] + (L - m + 1) * conv * (-C * VArrN[L + 1][m] - S * WArrN[L + 1][m]);
                     }
 
                     //if (show == 'y') 
@@ -13250,57 +13026,36 @@ namespace AstroLibMethods
             }
             // Body-fixed acceleration
             // now get correction for initial V, W formulation
-            //temp = astroConsts.mu / (astroConsts.re * astroConsts.re);
-            aPertMC[0] = 1.0 * aPertMC[0];
-            aPertMC[1] = 1.0 * aPertMC[1];
-            aPertMC[2] = 1.0 * aPertMC[2];
+            temp = astroConsts.mu / (astroConsts.re * astroConsts.re);
+            //temp = 1.0;
+            aPertMC[0] = temp * aPertMC[0];
+            aPertMC[1] = temp * aPertMC[1];
+            aPertMC[2] = temp * aPertMC[2];
 
             if (show == 'y' && degree > 4)
             {
                 straccum = straccum + "Montenbruck C case ---------- " + "\n";
-                if (normalized == 'n')
-                {
-                    straccum = straccum + "V    1    " + V[1][0].ToString() + "    " + V[1][1].ToString() + "\n";
-                    straccum = straccum + "W    1    " + W[1][0].ToString() + "    " + W[1][1].ToString() + "\n";
-                    straccum = straccum + "V    2    " + V[2][0].ToString() + "    " + V[2][1].ToString() + "    "
-                        + V[2][2].ToString() + "\n";
-                    straccum = straccum + "W    2    " + W[2][0].ToString() + "    " + W[2][1].ToString() + "    "
-                        + W[2][2].ToString() + "\n";
-                    straccum = straccum + "V    3    " + V[3][0].ToString() + "    " + V[3][1].ToString() + "    "
-                        + V[3][2].ToString() + "\n";
-                    straccum = straccum + "W    3    " + W[3][0].ToString() + "    " + W[3][1].ToString() + "    "
-                        + W[3][2].ToString() + "\n";
-                    straccum = straccum + "V    4    " + V[4][0].ToString() + "    " + V[4][1].ToString() + "    "
-                        + V[4][2].ToString() + "    " + V[4][3].ToString() + "    " + V[4][4].ToString() + "\n";
-                    straccum = straccum + "W    4    " + W[4][0].ToString() + "    " + W[4][1].ToString() + "    "
-                        + W[4][2].ToString() + "    " + W[4][3].ToString() + "    " + W[4][4].ToString() + "\n";
-                }
-                else
-                {
-                    straccum = straccum + "VArrN   1    " + VArrN[1][0].ToString() + "    " + VArrN[1][1].ToString()
-                        + "\n";
-                    straccum = straccum + "WArrN   1    " + WArrN[1][0].ToString() + "    " + WArrN[1][1].ToString()
-                        + "\n";
-                    straccum = straccum + "VArrN   2    " + VArrN[2][0].ToString() + "    " + VArrN[2][1].ToString()
-                        + "    " + VArrN[2][2].ToString() + "\n";
-                    straccum = straccum + "WArrN   2    " + WArrN[2][0].ToString() + "    " + WArrN[2][1].ToString()
-                        + "    " + WArrN[2][2].ToString() + "\n";
-                    straccum = straccum + "VArrN   3    " + VArrN[3][0].ToString() + "    " + VArrN[3][1].ToString()
-                        + "    " + VArrN[3][2].ToString() + "\n";
-                    straccum = straccum + "WArrN   3    " + WArrN[3][0].ToString() + "    " + WArrN[3][1].ToString()
-                        + "    " + WArrN[3][2].ToString() + "\n";
-                    straccum = straccum + "VArrN   4    " + VArrN[4][0].ToString() + "    " + VArrN[4][1].ToString()
-                        + "    " + VArrN[4][2].ToString() + "    " + VArrN[4][3].ToString() + "    " + VArrN[4][4].ToString() + "\n";
-                    straccum = straccum + "WArrN   4    " + WArrN[4][0].ToString() + "    " + WArrN[4][1].ToString()
-                        + "    " + WArrN[4][2].ToString() + "    " + WArrN[4][3].ToString() + "    " + WArrN[4][4].ToString() + "\n";
-                }
+                straccum = straccum + "VArrN   1    " + VArrN[1][0].ToString() + "    " + VArrN[1][1].ToString()
+                    + "\n";
+                straccum = straccum + "WArrN   1    " + WArrN[1][0].ToString() + "    " + WArrN[1][1].ToString()
+                    + "\n";
+                straccum = straccum + "VArrN   2    " + VArrN[2][0].ToString() + "    " + VArrN[2][1].ToString()
+                    + "    " + VArrN[2][2].ToString() + "\n";
+                straccum = straccum + "WArrN   2    " + WArrN[2][0].ToString() + "    " + WArrN[2][1].ToString()
+                    + "    " + WArrN[2][2].ToString() + "\n";
+                straccum = straccum + "VArrN   3    " + VArrN[3][0].ToString() + "    " + VArrN[3][1].ToString()
+                    + "    " + VArrN[3][2].ToString() + "\n";
+                straccum = straccum + "WArrN   3    " + WArrN[3][0].ToString() + "    " + WArrN[3][1].ToString()
+                    + "    " + WArrN[3][2].ToString() + "\n";
+                straccum = straccum + "VArrN   4    " + VArrN[4][0].ToString() + "    " + VArrN[4][1].ToString()
+                    + "    " + VArrN[4][2].ToString() + "    " + VArrN[4][3].ToString() + "    " + VArrN[4][4].ToString() + "\n";
+                straccum = straccum + "WArrN   4    " + WArrN[4][0].ToString() + "    " + WArrN[4][1].ToString()
+                    + "    " + WArrN[4][2].ToString() + "    " + WArrN[4][3].ToString() + "    " + WArrN[4][4].ToString() + "\n";
                 straccum = straccum + "apertMC unbf " + order + " " + order + " " + aPertMC[0].ToString() + "     "
                     + aPertMC[1].ToString() + "     " + aPertMC[2].ToString() + "\n";
             }
 
-            // Inertial acceleration 
-            //return Transp(E) * a_bf;
-        }  // GravAccelMonta 
+        }  // GravAccelMont 
 
 
         // ----------------------------------------------------------------------------
@@ -13329,7 +13084,6 @@ namespace AstroLibMethods
         //
         //  locals :
         //    L,m         - degree and order indices
-        //    fastapp     - use 'n' if want to compare Legendre functions          'y', 'n'
         //
         //  coupling      :
         //   none
@@ -13361,7 +13115,6 @@ namespace AstroLibMethods
                 sumkn, sumk, sumh, sumgm, lambda, reor, muor2;
             double n2m1;
             Int32 lim, nm1, np1, mm1, mp1;
-            char fastapp = 'y';
 
             sumjn = 0.0;
             sumkn = 0.0;
@@ -13370,11 +13123,6 @@ namespace AstroLibMethods
             magr = MathTimeLibr.mag(recef);
             double[] runit = MathTimeLibr.norm(recef);
             sinlat = runit[2];  // this is sin(latgc)
-            if (fastapp == 'n')
-            {
-                double temp = Math.Sqrt(recef[0] * recef[0] + recef[1] * recef[1]);
-                coslat = recef[2] / temp;
-            }
 
             reor = astroConsts.re / magr;
             reorn = reor;
@@ -13389,11 +13137,7 @@ namespace AstroLibMethods
             LegGottN[0][1] = 0.0;
             LegGottN[0][2] = 0.0;
             LegGottN[1] = new double[4];
-            if (fastapp == 'y')
-                LegGottN[1][1] = Math.Sqrt(3.0);
-            else
-                // add ep here to match hand calcs. leave out if doing acceleration calcs for speed
-                LegGottN[1][1] = Math.Sqrt(3.0) * coslat;
+            LegGottN[1][1] = Math.Sqrt(3.0);
             LegGottN[1][2] = 0.0;
             LegGottN[1][3] = 0.0;
 
@@ -13401,16 +13145,11 @@ namespace AstroLibMethods
             for (L = 2; L <= degree; L++)   // L = 2:nax 
             {
                 LegGottN[L] = new double[L + 3];
-                if (fastapp == 'y')
-                    LegGottN[L][L] = norm11[L] * LegGottN[L-1][L-1] * (2.0 * L - 1.0);   // eq 3-15 
-                else
-                    // dav add ep to this to make it match hand calcs!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    LegGottN[L][L] = norm11[L] * LegGottN[L-1][L-1] * (2.0 * L - 1.0) * coslat;   // eq 3-15 
+                LegGottN[L][L] = norm11[L] * LegGottN[L-1][L-1] * (2.0 * L - 1.0);   // eq 3-15 
                 LegGottN[L][L + 1] = 0.0;
                 LegGottN[L][L + 2] = 0.0;
             }
 
-            // --------------- now for the acceleration recursions
             ctil[0] = 1.0;
             stil[0] = 0.0;
             ctil[1] = runit[0];
@@ -13444,7 +13183,7 @@ namespace AstroLibMethods
                 sumgmn = LegGottN[L][0] * gravData.c[L][0] * np1;
                 if (order > 0)
                 {
-                    for (m = 2; m <= L - 2; m++)   // m = 2:L-2
+                    for (m = 2; m <= L - 2; m++)   // m = 2:L-2  eckman wrong?, should be L-1? no
                     {
                         LegGottN[L][m] = (n2m1 * sinlat * norm1m[L][m] * LegGottN[L-1][m] -
                                (nm1 + m) * norm2m[L][m] * LegGottN[nm1-1][m]) / (L - m); // eq 3-18 
@@ -13464,13 +13203,13 @@ namespace AstroLibMethods
                         mp1 = m + 1;
                         mxpnm = m * LegGottN[L][m];
                         bnmtil = gravData.c[L][m] * ctil[m] + gravData.s[L][m] * stil[m];
-                        sumhn = sumhn + normn1[L][m] * LegGottN[L][mp1] * bnmtil;  // mp2???
+                        sumhn = sumhn + normn1[L][m] * LegGottN[L][mp1-1] * bnmtil;  // mp2???
                         sumgmn = sumgmn + (L + m + 1) * LegGottN[L][m] * bnmtil;
                         bnmtm1 = gravData.c[L][m] * ctil[mm1] + gravData.s[L][m] * stil[mm1];
                         anmtm1 = gravData.c[L][m] * stil[mm1] - gravData.s[L][m] * ctil[mm1];
                         sumjn = sumjn + mxpnm * bnmtm1;
                         sumkn = sumkn - mxpnm * anmtm1;
-                    }
+                    }  // for m
 
                     sumj = sumj + reorn * sumjn;
                     sumk = sumk + reorn * sumkn;
@@ -13478,15 +13217,13 @@ namespace AstroLibMethods
 
                 sumh = sumh + reorn * sumhn;
                 sumgm = sumgm + reorn * sumgmn;
-            }
+            }  // for
 
             lambda = sumgm + sinlat * sumh;
             accel[0] = -muor2 * (lambda * runit[0] - sumj);
             accel[1] = -muor2 * (lambda * runit[1] - sumk);
             accel[2] = -muor2 * (lambda * runit[2] - sumh);
         }  // GravAccelGott
-
-
 
 
 

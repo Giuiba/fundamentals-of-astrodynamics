@@ -11,7 +11,6 @@
 %    r1          - ijk position vector 1                   km
 %    r2          - ijk position vector 2                   km
 %    dm          - direction of motion                     'L', 'S'
-%    de          - orbital energy                          'L', 'H'
 %    nrev        - number of revs to complete              0, 1, 2, 3,
 %
 %  outputs       :
@@ -36,11 +35,11 @@
 %    vallado       2022, 481, Alg 57, ex 7-5
 %    prussing      JAS 2000
 %
-%  [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, de, nrev);
+%  [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, nrev);
 %  ------------------------------------------------------------------------------
 
-function [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, de, nrev)
-    mu = 3.986004415e5;
+function [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, nrev)
+    constastro;
 
     magr1 = mag(r1);
     magr2 = mag(r2);
@@ -51,7 +50,7 @@ function [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, de, nrev)
     end
 
     rcrossr = cross(r1, r2);
-    if (de == 'L')
+    if (dm == 'S')
         sindeltanu = mag(rcrossr) / (magr1 * magr2);
     else
         sindeltanu = -mag(rcrossr) / (magr1 * magr2);
@@ -61,18 +60,6 @@ function [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, de, nrev)
     if (dnu < 0.0)
         dnu = 2.0 * pi + dnu;
     end
-
-    % ------------- try prussing test his numbers are wrong -------
-    %dnu = 75.0 / (180.0 / pi);
-    %cosdeltanu = cos(dnu);
-    %magr1 = 1.0;
-    %magr2 = 1.524;
-    %mu = 4.0 * pi * pi;
-    %dnu = 90.0 / (180.0 / pi);
-    %cosdeltanu = cos(dnu);
-    %magr1 = 1.0;  % er
-    %magr2 = 1.0;
-    %mu = 1.0;
 
     % these are the same
     %    if (de == 'L')
@@ -89,7 +76,7 @@ function [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, de, nrev)
 
     % ------------- calc tmin parabolic tof to see if the orbit is possible
     % ----- no ellitpical orbits exist below this --------
-    if (dm == 'S')
+    if (sindeltanu > 0.0)   % dm== 'S'
         tminp = (1.0 / 3.0) * sqrt(2.0 / mu) * ((s^1.5) - (s - chord)^1.5);
     else
         tminp = (1.0 / 3.0) * sqrt(2.0 / mu) * ((s^1.5) + (s - chord)^1.5);
@@ -100,7 +87,7 @@ function [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, de, nrev)
     amin = 0.5 * s;
     %alpha = pi;
     beta = 2.0 * asin(sqrt((s - chord) / s));
-    if (dm == 'S')
+    if (dm == 'L')
         tminenergy = (amin^1.5) * ((2.0 * nrev + 1.0) * pi - beta + sin(beta)) / sqrt(mu);
     else
         tminenergy = (amin^1.5) * ((2.0 * nrev + 1.0) * pi + beta - sin(beta)) / sqrt(mu);
@@ -116,7 +103,7 @@ function [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, de, nrev)
         a = an;
         alp = 1.0 / a;
         alpha = 2.0 * asin(sqrt(0.5 * s * alp));
-        if (de == 'L')
+        if (dm == 'S')
             beta = 2.0 * asin(sqrt(0.5 * (s - chord) * alp));
         else
             beta = - 2.0 * asin(sqrt(0.5 * (s - chord) * alp));  % fix quadrant
@@ -135,27 +122,7 @@ function [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, de, nrev)
         i = i + 1;
     end
     fprintf(1,'iter %2i ',i);
-    % could update beta one last time with alpha too????
-    if (dm == 'S')
-        tmin = (an^1.5) * (2.0 * pi * nrev + xi - eta) / sqrt(mu);
-    else
-        tmin = (an^1.5) * (2.0 * pi * nrev + xi + eta) / sqrt(mu);
-    end
-
-    %      dm = 'S';
-    %      de = 'L';
-    %      nrev = 0;
-    %      blair
-    %      r1 = [6778.136300000, 0.000000, 0.000000 ];
-    %      r2 = [-6694.857334274, -1180.483980026, 0.000000 ];
-    %      v1 = [0.000000, 7.668558568, 0.000000 ];
-    %      moving
-    %      r1 = [ -6175.1034, 2757.0706, 1626.6556 ];
-    %      v1 = [ 2.376641, 1.139677, 7.078097];
-    %      r2 = [ -1078.007289, 8796.641859, 1890.7135 ];
-    %
-    %      [tmin, tminp, tminenergy] = lambertminT(r1, r2, dm, de, nrev);
-    %
-    fprintf(1,'%c  %c %i  %f  %f  %f  \n',dm, de, nrev, tmin, tminp, tminenergy);
+    tmin = (an^1.5) * (2.0 * pi * nrev + xi - eta) / sqrt(mu);
 
 end
+
