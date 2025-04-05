@@ -2,16 +2,18 @@
 %
 %                           function GravAccelGTDS
 %
-%   this function finds the acceleration for the gravity field using the 
-%     GTDS approach.
+%   this function finds the acceleration for the gravity field. the acceleration is
+%   found in the body fixed frame. rotation back to inertial is done after this
+%   routine. this is the gtds approach.
 %
 %  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
 %  inputs        description                                   range / units
 %    recef       - position vector ECEF                          km
-%    order       - size of gravity field                         1..360
-%    normal      - normalized in file                            'y', 'n'
-%    gravData    - gravitational coefficients  
+%    gravarr     - gravitational coefficients
+%    normArr     - normalization coefficients
+%    degree      - degree of gravity field                        1..85
+%    order       - order of gravity field                         1..85
 %
 %  outputs       :
 %    apert       - efc perturbation acceleration                  km / s^2
@@ -21,37 +23,31 @@
 %    L, m        - degree and order indices
 %    trigArr     - array of trigonometric terms
 %    LegArr      - array of Legendre polynomials
-%    VArr        - array of trig terms
-%    WArr        - array of trig terms
 %
 %  coupling      :
 %   LegPoly      - find the unnormalized Legendre polynomials through recursion
 %   TrigPoly     - find the trigonmetric terms through recursion
 %
 %  references :
-%    vallado       2013, 597, Eq 8-57
+%    vallado       2022, 600
 %
-%  [aPert] = GravAccelGTDS ( recef, gravarr, degree, order);
+%  [aPert] = GravAccelGTDS ( recef, gravarr, normArr, degree, order);
 % ----------------------------------------------------------------------------
 
-function [aPert] = GravAccelGTDS ( recef, gravarr, degree, order)
+function [aPert] = GravAccelGTDS ( recef, gravarr, normArr, degree, order)
     constastro;
-
-    % aPert = zeros(order+3,order+3);
-    % aPert1 = zeros(order+3,order+3);
 
     sumM1 = 0.0;
     sumM2 = 0.0;
     sumM3 = 0.0;
 
-    % --------------------find latgc and lon---------------------- 
+    % --------------------find latgc and lon----------------------
     [latgc, latgd, lon, hellp] = ecef2ll(recef);
 
-    % ---------------------Find Legendre polynomials -------------- 
-    % this could probably be done ahead of time
-    [legarrMU, legarrGU, legarrMN, legarrGN, LegGottN] = legpolyn(latgc, degree+2, order+2);
+    % ---------------------Find Legendre polynomials --------------
+    [legarrGU, legarrGN] = legpolyGTDS (latgc, normArr, degree+2, order+2);
 
-    [trigarr, VArr, WArr] = trigpoly(recef, latgc, lon, degree+2);
+    [trigArr] = trigpolyGTDS(latgc, lon, degree+2);
 
     magr = mag(recef);
     oor = 1.0 / magr;
@@ -71,11 +67,11 @@ function [aPert] = GravAccelGTDS ( recef, gravarr, degree, order)
 
         for m = 0 : L
             mi = m + 1;
-            temparg = gravarr.cNor(Li, mi) * trigarr(mi, 1+1) + gravarr.sNor(Li, mi) * trigarr(mi, 0+1);
+            temparg = gravarr.cNor(Li, mi) * trigArr(mi, 1+1) + gravarr.sNor(Li, mi) * trigArr(mi, 0+1);
             sumM1 = sumM1 + legarrGN(Li, mi) * temparg;
-            sumM2 = sumM2 + (legarrGN(Li, mi + 1) - trigarr(mi, 2+1) * legarrGN(Li, mi)) * temparg;  % yes m+1 in 1st legp
-%fprintf(1,'%20.14f  %20.14f  %20.14f  %20.14f  %20.14f  \n', sumM2, legarrGN(Li, mi + 1), trigarr(mi, 2+1), legarrGN(Li, mi), temparg);
-            sumM3 = sumM3 + m * legarrGN(Li, mi) * (gravarr.sNor(Li, mi) * trigarr(mi, 1+1) - gravarr.cNor(Li, mi) * trigarr(mi, 0+1));
+            sumM2 = sumM2 + (legarrGN(Li, mi + 1) - trigArr(mi, 2+1) * legarrGN(Li, mi)) * temparg;  % yes m+1 in 1st legp
+            %fprintf(1,'%20.14f  %20.14f  %20.14f  %20.14f  %20.14f  \n', sumM2, legarrGN(Li, mi + 1), trigArr(mi, 2+1), legarrGN(Li, mi), temparg);
+            sumM3 = sumM3 + m * legarrGN(Li, mi) * (gravarr.sNor(Li, mi) * trigArr(mi, 1+1) - gravarr.cNor(Li, mi) * trigArr(mi, 0+1));
         end % for m
 
         dRdr = dRdr + temp * (L + 1) * sumM1;  % needs -mu/r^2

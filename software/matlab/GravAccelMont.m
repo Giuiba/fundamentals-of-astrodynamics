@@ -2,56 +2,55 @@
 %
 %                           function GravAccelMont
 %
-%   this function finds the acceleration for the gravity field using the 
-%     Montenbruck approach.
+%   this function finds the acceleration for the gravity field. the acceleration is
+%   found in the body fixed frame. rotation back to inertial is done after this
+%   routine. this is the montenbruck  approach.
 %
 %  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
 %  inputs        description                                   range / units
 %    recef       - position vector ECEF                          km
-%    order       - size of gravity field                         1..360
-%    normal      - normalized in file                            'y', 'n'
-%    gravData    - gravitational coefficients  
+%    gravarr     - gravitational coefficients
+%    normArr     - normalization coefficients
+%    degree      - degree of gravity field                        1..85
+%    order       - order of gravity field                         1..85
 %
 %  outputs       :
 %    apert       - efc perturbation acceleration                  km / s^2
 %
 %  locals :
-%    conv        - conversion to normalize
 %    L, m        - degree and order indices
-%    trigArr     - array of trigonometric terms
 %    LegArr      - array of Legendre polynomials
 %    VArr        - array of trig terms
 %    WArr        - array of trig terms
 %
 %  coupling      :
 %   LegPoly      - find the unnormalized Legendre polynomials through recursion
-%   TrigPoly     - find the trigonmetric terms through recursion
 %
 %  references :
-%    vallado       2013, 597, Eq 8-57
+%    vallado       2022, 600
 %
-%  [aPert, aPert1] = GravAccelMont ( recef, gravarr, degree, order);
+%  [aPert, aPert1] = GravAccelMont ( recef, gravarr, normArr, degree, order);
 % ----------------------------------------------------------------------------
 
-function [aPert] = GravAccelMont ( recef, gravarr, degree, order)
+function [aPert] = GravAccelMont ( recef, gravarr, normArr, degree, order)
     constastro;
 
     % find normalized values - can be done ahead of time
-    [unnormArr] = gravnorm(degree + 1);
+    [normArr] = gravnorm(degree + 1);
 
-    % --------------------find latgc and lon---------------------- 
+    % --------------------find latgc and lon----------------------
     [latgc, latgd, lon, hellp] = ecef2ll(recef);
 
-    % ---------------------Find Legendre polynomials -------------- 
-    [legarrMU, legarrGU, legarrMN, legarrGN, LegGottN] = legpolyn(latgc, degree+2, order+2);
+    % ---------------------Find Legendre polynomials --------------
+    [legarrMU, legarrMN] = legpolyMont (latgc, normArr, degree, order);
 
-    [trigarr, VArr, WArr] = trigpoly(recef, latgc, lon, degree+2);
+    [VArr, WArr] = trigpolyMont(recef, latgc, degree+2);
 
     aPert(1) = 0.0;
     aPert(2) = 0.0;
     aPert(3) = 0.0;
-    
+
     % Body-fixed position
     % r_bf = E * r;
     % Auxiliary quantities
@@ -110,9 +109,9 @@ function [aPert] = GravAccelMont ( recef, gravarr, degree, order)
                 C = gravarr.cNor(ni, mi);   % = C_n,m
                 S = gravarr.sNor(ni, mi);   % = S_n,m
                 Fac = 0.5 * (n - m + 1) * (n - m + 2);
-              conv = unnormArr(ni, mi) / unnormArr(ni + 1, mi + 1);
-              conv1 = unnormArr(ni, mi) / unnormArr(ni + 1, mi- 1);                
-                
+                conv = normArr(ni, mi) / normArr(ni + 1, mi + 1);
+                conv1 = normArr(ni, mi) / normArr(ni + 1, mi- 1);
+
                 aPert(1) = aPert(1) + 0.5 * conv * (-C * V(ni + 1, mi + 1) - S * W(ni + 1, mi + 1))...
                     + Fac * conv1 * (+C * V(ni + 1, mi - 1) + S * W(ni + 1, mi - 1));
                 aPert(2) = aPert(2) + 0.5 * conv * (-C * W(ni + 1, mi + 1) + S * V(ni + 1, mi + 1))...

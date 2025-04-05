@@ -12169,21 +12169,69 @@ namespace AstroLibMethods
 
         // ----------------------------------------------------------------------------
         //
-        //                           function LegPolyGTDS
+        //                           function gravnorm
         //
-        //   this function finds the unnormalized and normalized Legendre polynomials for the 
-        //   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
-        //   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 greater  
-        //   as they start at 1. these functions are valid for normalized and unnormalized expressions, 
-        //   up to degree and order ~170. larger gravity fields should use alternate formulations
-        //   designed for larger gravity fields. this is the GTDS approach. 
+        //   this function finds the normalization values for up to an 85 x 85 field. useful
+        //     for GTDS, montenbruck
         //      
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    latgc       - geocentric lat of satellite, not nadir point         -pi/2 to pi/2 rad          
-        //    order       - size of gravity field                                1..~170
-        //    normalized  - normalized or unnormalized                           'y', 'n'                        
+        //
+        //  outputs       :
+        //    normArr     - normalization values
+        //
+        //  references :
+        //    vallado       2022, 550
+        // ----------------------------------------------------------------------------
+        public void gravnorm
+      (
+          out double[][] normArr
+      )
+        {
+            normArr = new double[86][];
+            int L, m;
+
+            L = 0;
+
+            normArr[0] = new double[1];
+            normArr[0][0] = 1.0;
+            normArr[1] = new double[2];
+            normArr[1][0] = Math.Sqrt(3);
+            normArr[1][1] = normArr[1][0];
+
+            for (L = 0; L <= 85; L++)
+            {
+                normArr[L] = new double[L + 1];
+                for (m = 0; m <= L; m++)
+                {
+                    if (m == 0)
+                        normArr[L][m] = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
+                    else
+                        normArr[L][m] = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
+
+                }
+            }
+
+        } // gravnorm
+
+
+        // ----------------------------------------------------------------------------
+        //
+        //                           function LegPolyGTDS
+        //
+        //   this function finds the Legendre polynomials for the gravity field.fortran
+        //   and matlab implementations will have indicies of +1 as they start at 1. note
+        //   these are valid for normalized and unnormalized expressions, as long as
+        //   the order is less than about 85 (L + m). this is the GTDS approach.
+        //
+        //  author        : david vallado             davallado @gmail.com      20 jan 2025
+        //
+        //  inputs description                                   range / units
+        //    latgc       - Geocentric lat of satellite                   pi to pi rad
+        //    normArr     - normalization coefficients               
+        //    degree      - degree of gravity field                        1..85
+        //    order       - order of gravity field                         1..85
         //
         //  outputs       :
         //    LegArrGU    - array of un normalized Legendre polynomials, gtds
@@ -12196,22 +12244,22 @@ namespace AstroLibMethods
         //   none
         //
         //  references :
-        //    vallado       2022, 500, Eq 8-56
+        //    vallado       2022, 600
         // ---------------------------------------------------------------------------
 
         public void LegPolyGTDS
            (
                double latgc,
-               Int32 order,
-               char normalized,
                double[][] normArr,
+               Int32 degree,
+               Int32 order,
                out double[][] legarrGU,
                out double[][] legarrGN
            )
         {
             Int32 L, m;
-            legarrGU = new double[order + 2][];
-            legarrGN = new double[order + 2][];
+            legarrGU = new double[degree + 2][];
+            legarrGN = new double[degree + 2][];
 
             legarrGU[0] = new double[2];
             legarrGU[0][0] = 1.0;
@@ -12221,7 +12269,7 @@ namespace AstroLibMethods
             legarrGU[1][1] = Math.Cos(latgc);
 
             // -------------------- perform recursions ---------------------- }
-            for (L = 2; L <= order; L++)
+            for (L = 2; L <= degree; L++)
             {
                 legarrGU[L] = new double[L + 2];
                 for (m = 0; m <= L; m++)
@@ -12242,13 +12290,11 @@ namespace AstroLibMethods
 
             // my simple approach to normalize the recursion
             // normalize after the polynomials are found because they are intertwined in the recursion
-            Int32 orderlim = order;
-            if (normalized == 'y')
-            {
-                if (order > 85)
+            Int32 orderlim = degree;
+                if (degree > 85)
                     orderlim = 85;
                 else
-                    orderlim = order;
+                    orderlim = degree;
                 legarrGN[0] = new double[2];
                 legarrGN[0][ 0] = 1.0;
                 legarrGN[0][ 1] = 0.0;
@@ -12261,7 +12307,6 @@ namespace AstroLibMethods
                     for (m = 0; m <= L; m++)
                         legarrGN[L][m] = normArr[L][m] * legarrGU[L][m];
                 } // for L
-            }
 
         } // LegPolyGTDS
 
@@ -12271,20 +12316,18 @@ namespace AstroLibMethods
         //
         //                           function LegPolyMont
         //
-        //   this function finds the unnormalized and normalized Legendre polynomials for the 
-        //   gravity field. the arrays are indexed from 0 to coincide with the usual nomenclature 
-        //   (eq 8-21 in my text). fortran and matlab implementations will have indices of 1 
-        //   greater as they start at 1. note that some recursions at high degree tesseral terms 
-        //   experience error for resonant orbits. these are valid for normalized and 
-        //   unnormalized expressions. for satellite operations, orders up to about 120 are valid. 
-        //   this is the montenbruck formulation. 
-        //      
-        //  author        : david vallado             davallado@gmail.com      20 jan 2025
+        //   this function finds the Legendre polynomials for the gravity field.fortran
+        //   and matlab implementations will have indicies of +1 as they start at 1. note
+        //   these are valid for normalized and unnormalized expressions, as long as
+        //   the order is less than about 85 (L + m). 
         //
-        //  inputs          description                              range / units
-        //    latgc       - geocentric lat of satellite, not nadir point          -pi/2 to pi/2 rad          
-        //    order       - size of gravity field                                 1..~170
-        //    normalized  - normalized or unnormalized                            'y', 'n'                        
+        //  author        : david vallado             davallado @gmail.com      20 jan 2025
+        //
+        //  inputs description                                   range / units
+        //    latgc       - Geocentric lat of satellite                   pi to pi rad
+        //    normArr     - normalization coefficients               
+        //    degree      - degree of gravity field                        1..85
+        //    order       - order of gravity field                         1..85
         //
         //  outputs       :
         //    LegArrMU    - array of unnormalized Legendre polynomials, montenbruck
@@ -12297,22 +12340,22 @@ namespace AstroLibMethods
         //   none
         //
         //  references :
-        //    vallado       2022, 600
+        //    vallado       2022, 602
         // ---------------------------------------------------------------------------
 
         public void LegPolyMont
            (
                double latgc,
-               Int32 order,
-               char normalized,
                double[][] normArr,
+               Int32 degree,
+               Int32 order,
                out double[][] legarrMU,
                out double[][] legarrMN
            )
         {
             Int32 L, m;
-            legarrMU = new double[order + 2][];
-            legarrMN = new double[order + 2][];
+            legarrMU = new double[degree + 2][];
+            legarrMN = new double[degree + 2][];
             Int32 orderlim;
 
             // --------------------  montenbruck approach
@@ -12326,14 +12369,14 @@ namespace AstroLibMethods
             double clat = legarrMU[1][ 1];
 
             // Legendre functions, zonal 
-            for (L = 2; L <= order; L++)
+            for (L = 2; L <= degree; L++)
             {
                 legarrMU[L] = new double[L + 1];
                 legarrMU[L][ L] = (2 * L - 1) * clat * legarrMU[L - 1][ L - 1];
             }
 
             // associated Legendre functions
-            for (L = 2; L <= order; L++)
+            for (L = 2; L <= degree; L++)
             {
                 for (m = 0; m < L; m++)
                 {
@@ -12346,28 +12389,24 @@ namespace AstroLibMethods
 
             // my simple approach to normalize the recursion
             // normalize after the polynomials are found because they are intertwined in the recursion
-            if (normalized == 'y')
-            {
-                if (order > 85)
+                if (degree > 85)
                     orderlim = 85;
                 else
-                    orderlim = order;
+                    orderlim = degree;
                 legarrMN[0] = new double[2];
                 legarrMN[0][ 0] = 1.0;
                 legarrMN[0][ 1] = 0.0;
                 legarrMN[1] = new double[2];
                 legarrMN[1][ 0] = Math.Sin(latgc);
                 legarrMN[1][ 1] = Math.Cos(latgc);
-                for (L = 1; L <= orderlim; L++)
+                for (L = 0; L <= orderlim; L++)
                 {
                     legarrMN[L] = new double[L + 1];
                     for (m = 0; m <= L; m++)
                         legarrMN[L][m] = normArr[L][m] * legarrMU[L][m];
 
                 } // for L
-            }
         } // LegPolyMont
-
 
 
 
@@ -12380,7 +12419,7 @@ namespace AstroLibMethods
         //      
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  inputs          description                              range / units
+        //  inputs          description                                         range / units
         //    degree      - size of gravity field (zonals)                          1.. 170 .. 2000
         //
         //  outputs       :
@@ -12442,19 +12481,124 @@ namespace AstroLibMethods
         } // getnormGottN
 
 
+        // ----------------------------------------------------------------------------
+        //
+        //                           function LegPolyGott
+        //
+        //   this function finds the Legendre polynomials for the gravity field.fortran 
+        //   and matlab implementations will have indicies of +1 as they start at 1. the 
+        //   Gottlieb approach is valid for very large gravity fields, but will "not" 
+        //   match values calulated in the acceleration becuase the recursions are 
+        //   formulated to be consistent with large gravty fields.
+        //
+        //  author        : david vallado             davallado @gmail.com      20 jan 2025
+        //
+        //  inputs description                                   range / units
+        //    latgc       - Geocentric lat of satellite                   pi to pi rad
+        //    lon         - longitude of satellite                        0 - 2pi rad
+        //    degree      - degree of gravity field                        1..2160
+        //    order       - order of gravity field                         1..2160
+        //
+        //  outputs       :
+        //    LegGottN    - array of normalized Legendre polynomials gottlieb
+        //
+        //  locals :
+        //    L, m         - degree and order indices
+        //
+        //  coupling      :
+        //   none
+        //
+        //  references :
+        //    vallado       2022, 600
+        //  ----------------------------------------------------------------------------
+
+        public void LegPolyGott
+   (
+       double latgc,
+       Int32 degree, Int32 order,
+                out double[][] LegGottN
+  )
+        {
+            Int32 L, m;
+            // could do as jagged array
+            LegGottN = new double[degree + 3][];
+
+            double[] norm1;
+            double[] norm2;
+            double[] norm11;
+            double[] normn10;
+            double[][] norm1m;
+            double[][] norm2m;
+            double[][] normn1;
+
+            double sinlat, coslat;
+            double n2m1;
+            Int32 nm1, np1;
+
+            sinlat = Math.Sin(latgc);
+
+            // -------------------- perform recursions ---------------------- }
+            getnormGottN(degree, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
+
+            LegGottN[0] = new double[3];
+            LegGottN[0][0] = 1.0;
+            LegGottN[0][1] = 0.0;
+            LegGottN[0][2] = 0.0;
+            LegGottN[1] = new double[4];
+            LegGottN[1][1] = Math.Sqrt(3.0) * Math.Cos(latgc);  // eq 3-15 * coslat if comparing legpoly
+            LegGottN[1][2] = 0.0;
+            LegGottN[1][3] = 0.0;
+
+            // --------------- sectoral
+            for (L = 2; L <= degree; L++)   // L = 2:nax 
+            {
+                LegGottN[L] = new double[L + 3];
+                LegGottN[L][L] = norm11[L] * LegGottN[L - 1][L - 1] * (2.0 * L - 1.0) * Math.Cos(latgc);   // eq 3-15 * coslat if comparing legpoly 
+                LegGottN[L][L + 1] = 0.0;
+                LegGottN[L][L + 2] = 0.0;
+            }
+
+            LegGottN[1][0] = Math.Sqrt(3) * sinlat;
+
+            for (L = 2; L <= degree; L++)   //  L = 2:nax
+            {
+                n2m1 = L + L - 1;
+                nm1 = L - 1;
+                np1 = L + 1;
+
+                // note he adds ep back in here for the specific case!!!!! So this is where the complete ALFs would be
+                // --------------- tesserals(L, m = L - 1) initial value
+                LegGottN[L][L - 1] = normn1[L][L - 1] * sinlat * LegGottN[L][L];  // eq 3-16
+
+                // --------------- zonals(L][m = 1)
+                LegGottN[L][0] = (n2m1 * sinlat * norm1[L] * LegGottN[L - 1][0]
+                    - nm1 * norm2[L] * LegGottN[nm1 - 1][0]) / L;   // eq 3-17  
+
+                // --------------- tesseral(L][m = 2) initial value
+                LegGottN[L][1] = (n2m1 * sinlat * norm1m[L][1] * LegGottN[L - 1][1]
+                    - L * norm2m[L][1] * LegGottN[nm1 - 1][1]) / (nm1);  // eq 3-
+
+                for (m = 2; m <= L - 1; m++)
+                {
+                }
+
+            }
+        }  //  LegPolyGott
+
+
 
         // ----------------------------------------------------------------------------
         //
-        //                           function TrigPoly
+        //                           function TrigPolyGTDS
         //
         //   this function finds the accumulated trigonometric terms for satellite 
         //   operations, orders up to about 120 are valid. this is the GTDS approach. 
         //      
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  inputs          description                              range / units
-        //    lon         - longitude of satellite                                  0 - 2pi rad
+        //  inputs          description                                        range / units
         //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    lon         - longitude of satellite                                  0 - 2pi rad
         //    degree      - size of gravity field (zonals)                          1.. 170 .. 2000
         //
         //  outputs       :
@@ -12467,12 +12611,12 @@ namespace AstroLibMethods
         //   none
         //
         //  references :
-        //    vallado       2022, 600, Eq 8-56
+        //    vallado       2022, 601
         // ----------------------------------------------------------------------------
 
-        public void TrigPoly
+        public void TrigPolyGTDS
            (
-               double lon, double latgc,
+               double latgc, double lon,
                Int32 degree,
                out double[,] trigArr
            )
@@ -12502,7 +12646,7 @@ namespace AstroLibMethods
 
         // ----------------------------------------------------------------------------
         //
-        //                           function TrigPolyLeg
+        //                           function TrigPolyMont
         //
         //   this function finds the accumulated legendre polynomials and trigonometric
         //   terms for satellite operations, orders up to about 120 are valid. this is the 
@@ -12510,11 +12654,12 @@ namespace AstroLibMethods
         //   
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  inputs          description                              range / units
+        //  inputs          description                                     range / units
         //    recef       - satellite position vector, earth fixed                km
-        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
-        //    degree      - size of gravity field (zonals)                          1.. 170 .. 2000
-        //    normalized  - normalized or unnormalized                              'y', 'n'                        
+        //    latgc       - geocentric lat of satellite, not nadir point          -pi/2 to pi/2 rad          
+        //    degree      - size of gravity field (zonals)                         1.. 170 .. 2000
+        //    normalized  - normalized or unnormalized                             'y', 'n'                        
+        //    normArr     - normalization coefficients               
         //
         //  outputs       :
         //    VArr        - array of trig terms
@@ -12529,10 +12674,10 @@ namespace AstroLibMethods
         //   none
         //
         //  references :
-        //    vallado       2022, 602
+        //    vallado       2022, 601
         // ----------------------------------------------------------------------------
 
-        public void TrigPolyLeg
+        public void TrigPolyMont
            (
                double[] recef,
                double latgc,
@@ -12622,59 +12767,7 @@ namespace AstroLibMethods
                 }
             }
 
-        } // TrigPolyLeg
-
-
-        // ----------------------------------------------------------------------------
-        //
-        //                           function gravnorm
-        //
-        //   this function finds the normalization values for up to an 85 x 85 field. useful
-        //     for GTDS, montenbruck
-        //      
-        //  author        : david vallado             davallado@gmail.com      20 jan 2025
-        //
-        //  inputs          description                              range / units
-        //
-        //  outputs       :
-        //    normArr     - normalization values
-        //
-        //  references :
-        //    vallado       2022, 550
-        // ----------------------------------------------------------------------------
-        public void gravnorm
-      (
-          out double[][] normArr
-      )
-        {
-            normArr = new double[172][];
-            int L, m;
-            double conv;
-
-            L = 0;
-
-            normArr[0] = new double[1];
-            normArr[0][0] = 1.0;
-            normArr[1] = new double[2];
-            normArr[1][0] = Math.Sqrt(3);
-            normArr[1][1] = normArr[1][0];
-
-            for (L = 1; L <= 85; L++)
-            {
-                normArr[L] = new double[L + 1];
-                for (m = 0; m <= L; m++)
-                {
-                    if (m == 0)
-                        conv = Math.Sqrt(MathTimeLibr.factorial(L) * (2 * L + 1) / MathTimeLibr.factorial(L));
-                    else
-                        conv = Math.Sqrt(MathTimeLibr.factorial(L - m) * 2 * (2 * L + 1) / MathTimeLibr.factorial(L + m));
-
-                    // ----- store these for later use
-                    normArr[L][m] = conv;
-                }
-            }
-
-        } // gravnorm
+        } // TrigPolyMont
 
 
 
@@ -12692,23 +12785,20 @@ namespace AstroLibMethods
         //    recef       - position vector ECEF                          km   
         //    degree      - size of gravity field (zonals)                          1.. 170 .. 2000
         //    order       - size of gravity field (other)                           1.. 170 .. 2000
-        //    normalized  - normalized in file                            'y', 'n'
         //    normArr   - array of normalization values                  
-        //    gravData    - structure containing the gravity field coefficients, 
+        //    gravarr    - structure containing the gravity field coefficients, 
         //                  radius of the Earth, and gravitational parameter
         //
         //  outputs       :
         //    apertG      - efc perturbation acceleration                  km / s^2
+        //    straccum    - string containing the various intermediate steps
         //
         //  locals :
         //    show        - show intermediate steps                        'y', 'n'
-        //    straccum    - string containing the various intermediate steps
         //    conv        - conversion to normalize
         //    L, m        - degree and order indices
         //    trigArr     - array of trigonometric terms
         //    LegArr      - array of Legendre polynomials
-        //    VArr        - array of trig terms
-        //    WArr        - array of trig terms
         //
         //  coupling      :
         //   LegPolyG     - find the unnormalized Legendre polynomials through recursion
@@ -12721,13 +12811,12 @@ namespace AstroLibMethods
         public void GravAccelGTDS
         (
             double[] recef,
-            Int32 degree, Int32 order,
-            char normalized,
-            double[][] normArr,
             gravityConst gravData,
+            double[][] normArr,
+            Int32 degree, Int32 order,
             out double[] aPertG,
-            char show,
-            out string straccum
+            out string straccum,
+            char show
         )
         {
             Int32 L, m;
@@ -12737,7 +12826,6 @@ namespace AstroLibMethods
             double temp, oor, ror, muor, sumM1, sumM2, sumM3, dRdr,
                    dRdlat, dRdlon, RDelta, latgc, latgd, hellp, lon;
             double temparg;
-            double conv;
             aPertG = new double[3];
             sumM1 = 0.0;
             sumM2 = 0.0;
@@ -12748,8 +12836,9 @@ namespace AstroLibMethods
             ecef2ll(recef, out latgc, out latgd, out lon, out hellp);
 
             // ---------------------Find Legendre polynomials -------------- }
-            LegPolyGTDS(latgc, degree, normalized, normArr, out legarrGU, out legarrGN);
-            TrigPoly(lon, latgc, degree + 1, out trigArr);
+            LegPolyGTDS(latgc, normArr, degree, order, out legarrGU, out legarrGN);
+
+            TrigPolyGTDS(latgc, lon, degree + 1, out trigArr);
 
             // ----------Partial derivatives of disturbing potential ------- }
             double magr = MathTimeLibr.mag(recef);
@@ -12770,24 +12859,10 @@ namespace AstroLibMethods
 
                 for (m = 0; m <= L; m++)
                 {
-                    // unnormalized should sum in reverse to preserve accuracy?
-                    if (normalized == 'n')
-                    {
-                        temparg = gravData.c[L][m] * trigArr[m, 1] + gravData.s[L][m] * trigArr[m, 0];
-                        sumM1 = sumM1 + legarrGU[L][m] * temparg;
-                        //if (m + 1 <= L)
-                            sumM2 = sumM2 + (legarrGU[L][m + 1] - m * trigArr[m, 2] * legarrGU[L][m]) * temparg;
-                        //else
-                        //    sumM2 = sumM2 - m * trigArr[m, 2] * legarrGU[L][m] * temparg;
-                        sumM3 = sumM3 + m * legarrGU[L][m] * (gravData.s[L][m] * trigArr[m, 1] - gravData.c[L][m] * trigArr[m, 0]);
-                    }
-                    else  // normalized
-                    {
-                        temparg = gravData.c[L][m] * trigArr[m, 1] + gravData.s[L][m] * trigArr[m, 0];
-                        sumM1 = sumM1 + legarrGN[L][m] * temparg;
-                        sumM2 = sumM2 + (legarrGN[L][m + 1] - trigArr[m, 2] * legarrGN[L][m]) * temparg;
-                        sumM3 = sumM3 + m * legarrGN[L][m] * (gravData.s[L][m] * trigArr[m, 1] - gravData.c[L][m] * trigArr[m, 0]);
-                    }
+                    temparg = gravData.c[L][m] * trigArr[m, 1] + gravData.s[L][m] * trigArr[m, 0];
+                    sumM1 = sumM1 + legarrGN[L][m] * temparg;
+                    sumM2 = sumM2 + (legarrGN[L][m + 1] - trigArr[m, 2] * legarrGN[L][m]) * temparg;
+                    sumM3 = sumM3 + m * legarrGN[L][m] * (gravData.s[L][m] * trigArr[m, 1] - gravData.c[L][m] * trigArr[m, 0]);
                 }  // for m 
 
                 dRdr = dRdr + temp * (L + 1) * sumM1;  // needs -mu/r^2
@@ -12834,7 +12909,7 @@ namespace AstroLibMethods
 
         }  // GravAccelGTDS 
 
-         
+
 
         // ----------------------------------------------------------------------------
         //
@@ -12842,21 +12917,19 @@ namespace AstroLibMethods
         //
         //   this function finds the acceleration for the gravity field. the acceleration is
         //   found in the body fixed frame. rotation back to inertial is done after this 
-        //   routine. this is the montenbruck alternate approach. 
+        //   routine. this is the montenbruck  approach. 
         //      
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
-        //  inputs          description                              range / units
-        //    recef       - position vector ECEF                          km   
-        //    degree      - size of gravity field (zonals)                          1.. 170 .. 2000
-        //    order       - size of gravity field (other)                           1.. 170 .. 2000
-        //    normalized  - normalized in file                            'y', 'n'
+        //  inputs          description                                     range / units
+        //    recef       - position vector ECEF                               km   
+        //    gravData    - structure containing the gravity field coefficients 
         //    normArr   - array of normalization values                  
-        //    gravData    - structure containing the gravity field coefficients, 
-        //                  radius of the Earth, and gravitational parameter
+        //    degree      - size of gravity field (zonals)                     1.. 170 .. 2000
+        //    order       - size of gravity field (other)                      1.. 170 .. 2000
         //
         //  outputs       :
-        //    apertMC     - efc perturbation acceleration                  km / s^2
+        //    apertMC     - efc perturbation acceleration                      km / s^2
         //
         //  locals :
         //    conv        - conversion to normalize
@@ -12876,13 +12949,13 @@ namespace AstroLibMethods
         public void GravAccelMont
         (
             double[] recef,
-            Int32 degree, Int32 order,
+            gravityConst gravData,
             char normalized,
             double[][] normArr,
-            gravityConst gravData,
+            Int32 degree, Int32 order,
             out double[] aPertMC,
-            char show,
-            out string straccum
+            out string straccum,
+            char show
         )
         {
             Int32 m;
@@ -12907,9 +12980,11 @@ namespace AstroLibMethods
 
             // --------------------find latgc and lon---------------------- }
             ecef2ll(recef, out latgc, out latgd, out lon, out hellp);
+
             // ---------------------Find Legendre polynomials -------------- }
-            LegPolyMont(latgc, degree, normalized, normArr, out legarrMU, out legarrMN);
-            TrigPolyLeg(recef, latgc, degree, normalized, normArr, out VArr, out WArr, out VArrN, out WArrN);
+            LegPolyMont(latgc, normArr, degree, order, out legarrMU, out legarrMN);
+
+            TrigPolyMont(recef, latgc, degree, normalized, normArr, out VArr, out WArr, out VArrN, out WArrN);
 
             // r_bf = E * r;
             // Auxiliary quantities
@@ -12951,7 +13026,7 @@ namespace AstroLibMethods
                 // Calculate V(m,m) .. V(n_max+1,m)
                 VArr[m][m] = (2.0 * m - 1) * (x0 * VArr[m - 1][m - 1] - y0 * WArr[m - 1][m - 1]);
                 WArr[m][m] = (2.0 * m - 1) * (x0 * WArr[m - 1][m - 1] + y0 * VArr[m - 1][m - 1]);
-                if (m <= order)
+                if (m <= degree)
                 {
                     VArr[m + 1][m] = (2.0 * m + 1) * z0 * VArr[m][m];
                     WArr[m + 1][m] = (2.0 * m + 1) * z0 * WArr[m][m];
@@ -13071,13 +13146,11 @@ namespace AstroLibMethods
         //  author        : david vallado             davallado@gmail.com      20 jan 2025
         //
         //  inputs          description                              range / units
-        //    latgc       - geocentric lat of satellite, not nadir point           -pi/2 to pi/2 rad          
+        //    recef       - earth fixed position vector for satellite              km
+        //    gravData    - structure containing the gravity field coefficients 
+        //    normxx      - constant normalization parameters pre-calculated              
         //    degree      - size of gravity field (zonals)                          1.. 170 .. 2000
         //    order       - size of gravity field (other)                           1.. 170 .. 2000
-        //    gravData    - structure containing the gravity field coefficients, 
-        //                  radius of the Earth, and gravitational parameter
-        //    recef       - earth fixed position vector for satellite              km
-        //    normxx      - constant normalization parameters pre-calculated              
         //
         //  outputs       :
         //    accel       - bf frame acceleration from gravity                              km/s^2
@@ -13096,10 +13169,10 @@ namespace AstroLibMethods
         public void GravAccelGott
            (
                double[] recef,
-               Int32 degree, Int32 order,
                gravityConst gravData,
                double[] norm1, double[] norm2, double[] norm11, double[] normn10,
                double[][] norm1m, double[][] norm2m, double[][] normn1,
+               Int32 degree, Int32 order,
                out double[] accel
            )
         {
@@ -13116,6 +13189,9 @@ namespace AstroLibMethods
             double n2m1;
             Int32 lim, nm1, np1, mm1, mp1;
 
+            // these can be caluclated ahead of time and passed in
+            //getnormGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
+
             sumjn = 0.0;
             sumkn = 0.0;
             coslat = 0.0;
@@ -13127,10 +13203,6 @@ namespace AstroLibMethods
             reor = astroConsts.re / magr;
             reorn = reor;
             muor2 = astroConsts.mu / (magr * magr);
-
-            // note this section can be calculated ahead of time (without latgc) for speed...
-            // -------------------- perform recursions ---------------------- }
-            //LegPolyGottN(order, out norm1, out norm2, out norm11, out normn10, out norm1m, out norm2m, out normn1);
 
             LegGottN[0] = new double[3];
             LegGottN[0][0] = 1.0;
@@ -13181,6 +13253,7 @@ namespace AstroLibMethods
 
                 sumhn = normn10[L] * LegGottN[L][1] * gravData.c[L][0];
                 sumgmn = LegGottN[L][0] * gravData.c[L][0] * np1;
+
                 if (order > 0)
                 {
                     for (m = 2; m <= L - 2; m++)   // m = 2:L-2  eckman wrong?, should be L-1? no

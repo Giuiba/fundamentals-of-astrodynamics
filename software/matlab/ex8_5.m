@@ -15,20 +15,7 @@
     
     constastro;
     
-    
-    for (L = 0: 5)
-    
-        for (m = 0: L)
-    
-            if (m == 0)
-                conv(L+1,m+1) = sqrt((factorial(L) * (2 * L + 1)) / factorial(L));
-            else
-                conv(L+1,m+1) = sqrt((factorial(L - m) * 2 * (2 * L + 1)) / factorial(L + m));
-            end
-        end
-    end
-    
-    
+        [normArr] = gravnorm(5+2);
     
     
     % LEO test
@@ -180,7 +167,8 @@
     % [legarr, Legarr1] = legPoly(latgc, order);
     degree = 6;
     order = 6;
-    [legarrMU, legarrGU, legarrMN, legarrGN, LegGottN] = legpolyn(latgc, degree+2, order+2);
+    [legarrGU, legarrGN] = legpolyGTDS(latgc, normArr, degree, order);
+    [legarrMU, legarrMN] = legpolyMont(latgc, normArr, degree, order);
 
     % this seems to show that the Montenbruck approach has smaller
     % (1e-15) diffs than the gtds approach (1e-12)
@@ -210,8 +198,11 @@
         fprintf(1,' %s %s \n\n', str0, str2);
     end
     
-    [trigarr, VArr, WArr] = trigpoly(recef, latgc, lon, degree+2);
+    [trigarr] = trigpolyGTDS(latgc, lon, degree+3);
+    % [VArr, WArr] = trigpolyMont(recef, latgc, degree+3);
    
+    % [aPertGTDS] = GravAccelGTDS ( recef, gravarr, normArr, degree, order);
+
     [LegGottN, accel] = GravAccelGott(recef, gravarr, degree, order);
     fprintf(1,'gott R ecef wo2b     %2d %2d %21.17f  %21.17f  %21.17f  %21.17f \n', ...
         degree, order, accel' - accel2bdf, mag(accel' - accel2bdf));

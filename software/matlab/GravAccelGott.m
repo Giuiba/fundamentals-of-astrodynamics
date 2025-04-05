@@ -2,15 +2,18 @@
 %
 %                             function GravAccelGott
 %
-%   this function finds the acceleration for the gravity field using the 
-%     Gottlieb approach.
+%   this function finds the acceleration for the gravity field using the normalized
+%   Gottlieb approach. the arrays are indexed from 0 to coincide with the usual nomenclature
+%   (eq 8-21 in my text). Fortran and MATLAB implementations will have indices of 1 greater
+%   as they start at 1. note that this formulation is able to handle degree and order terms
+%   larger then 170 due to the formulation. includes two-body contribution.
 %
 %  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
 %  inputs        description                                   range / units
 %    mu       gravitaional paramater
 %    xin      position ecef vector of satellite km
-%    c, s     gravity coefficients normalized 
+%    c, s     gravity coefficients normalized
 %    nax      degree
 %    max      order
 %    rnp      3x3 identity matrix

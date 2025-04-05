@@ -1,20 +1,19 @@
 % ----------------------------------------------------------------------------
 %
-%                           function trigpoly
+%                           function trigpolyMont
 %
 %   this function finds the accumlated legendre polynomials and trigonmetric terms.
 %   matlab/for implementations will have indicies of +1 because they start at 1.
 %   beware that the multipliers must retain the original indices values!!
 %
-%  author        : david vallado                    719-573-2600  10 oct 2019
+%  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
 %  inputs        description                                   range / units
 %    recef       - satellite position vector, earth fixed        km
-%    lon         - longitude of satellite                        rad
-%    order       - size of gravity field                         1..2160..
+%    latgc       - latitude of satellite                         rad
+%    degree      - size of gravity field                         1..2160..
 %
 %  outputs       :
-%    trigArr     - array of trigonometric terms
 %    VArr        - array of trig terms
 %    WArr        - array of trig terms
 %
@@ -25,31 +24,15 @@
 %   none
 %
 %  references :
-%    vallado       2013, 597, Eq 8-57
+%    vallado       2022, 601
 %
-%  [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, degree)
-% ----------------------------------------------------------------------------*/
+%  [VArr, WArr] = trigpolyMont(recef, latgc, degree);
+% ----------------------------------------------------------------------------
 
-function [trigArr, VArr, WArr] = trigpoly(recef, latgc, lon, degree)
+function [VArr, WArr] = trigpolyMont(recef, latgc, degree)
     constastro;
 
     magr = mag(recef);
-
-    % -------------------- gtds approach
-    slon = sin(lon);
-    clon = cos(lon);
-    tlon = tan(latgc);
-    trigArr(0+1, 0+1) = 0.0;    % sin terms  
-    trigArr(0+1, 1+1) = 1.0;    % cos terms
-    trigArr(1+1, 0+1) =  slon;  % initial value
-    trigArr(1+1, 1+1) =  clon;
-
-    for m = 2: degree
-        mi = m + 1;
-        trigArr(mi, 0+1) = 2.0 * clon * trigArr(mi-1, 0+1) - trigArr(mi-2, 0+1);  % sin terms
-        trigArr(mi, 1+1) = 2.0 * clon * trigArr(mi-1, 1+1) - trigArr(mi-2, 1+1);  % cos terms
-        trigArr(mi, 2+1) = (m-1) * tlon + tlon;  % m tan terms
-    end
 
     % -------------------- montenbruck approach
     % now form first set of recursions for l=m on V and W

@@ -1,8 +1,9 @@
 % -----------------------------------------------------------------------------
 %
-%                           function gibbs
+%                           function gravnorm
 %
-%  this function dfns the normalization constants for the gravity field.
+%  this function dfns the normalization constants for the gravity field. useful
+%  for GTDS, montenbruck
 %
 %  author        : david vallado             davallado@gmail.com      20 jan 2025
 %
@@ -10,15 +11,15 @@
 %    degree      -  degree of gravity field                   2 .. 120
 %
 %  outputs       :
-%    v2          -  velocity vector for r2                    km / s
+%    normArr     -  normalization values for gravity
 %
 %  references    :
 %    vallado       2022, 550
 %
-% [unnormArr] = gravnorm(degree);
+% [normArr] = gravnorm(degree);
 % ------------------------------------------------------------------------------
 
-function [unnormArr] = gravnorm(degree)
+function [normArr] = gravnorm(degree)
 
     % ----------------------- normalization values
     for L = 0 : degree
@@ -34,9 +35,9 @@ function [unnormArr] = gravnorm(degree)
 
             % note that above n = 170, the factorial will return 0, thus affecting the results!!!!
             if (m == 0)
-                unnormArr(Li, mi) = sqrt((factorial(L - m) * (2.0 * L + 1)) / factorial(L + m));
+                normArr(Li, mi) = sqrt((factorial(L) * (2.0 * L + 1)) / factorial(L));
             else
-                unnormArr(Li, mi) = sqrt((factorial(L - m) * 2.0 * (2 * L + 1)) / factorial(L + m));
+                normArr(Li, mi) = sqrt((factorial(L - m) * 2.0 * (2 * L + 1)) / factorial(L + m));
             end
 
         end   % for m
