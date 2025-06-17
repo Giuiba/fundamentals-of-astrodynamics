@@ -8,6 +8,12 @@ import src.valladopy.astro.perturbations.gravity as gravity
 from ...conftest import custom_allclose
 
 
+@pytest.fixture
+def recef():
+    # Example position vector in ECEF coordinates
+    return np.array([-2110.289523, -5511.916033, 3491.913394])
+
+
 @pytest.mark.parametrize(
     "filename, shape_exp, has_uncertainties",
     # NOTE: These files are assumed to exist in the datalib directory!
@@ -91,6 +97,27 @@ def gravarr():
     return gravarr
 
 
+def test_get_norm():
+    norm_arr = gravity.get_norm(degree=5)
+    # fmt: off
+    assert custom_allclose(
+        norm_arr,
+        np.array(
+            [
+                [1, 0, 0, 0, 0, 0],
+                [1.7320508075688772, 1.7320508075688772, 0, 0, 0, 0],
+                [2.23606797749979, 1.2909944487358056, 0.6454972243679028, 0, 0, 0],
+                [2.6457513110645907, 1.0801234497346435, 0.3415650255319866,
+                 0.13944333775567927, 0, 0],
+                [3, 0.9486832980505138, 0.22360679774997896,
+                 0.05976143046671968, 0.021128856368212913, 0],
+                [3.3166247903554, 0.8563488385776752, 0.1618347187425374,
+                 0.033034373632170495, 0.007786276535852612, 0.0024622368345219954]
+            ]
+        )
+    )
+
+
 def test_get_norm_gott():
     norms = gravity.get_norm_gott(degree=5)
     norm1, norm2, norm11, normn10, norm1m, norm2m, normn1 = norms
@@ -171,11 +198,8 @@ def test_get_norm_gott():
     )
 
 
-def test_accel_gott(gravarr):
-    # Test acceleration calculation
-    recef = np.array([-2110.289523, -5511.916033, 3491.913394])
-    degree = 5
-    order = 5
+def test_accel_gott(gravarr, recef):
+    degree = order = 5
     leg_gott_n, accel = gravity.accel_gott(recef, gravarr, degree, order)
 
     # Expected results
@@ -206,3 +230,19 @@ def test_accel_gott(gravarr):
     gravarr.normalized = False
     with pytest.raises(ValueError):
         gravity.accel_gott(recef, gravarr, degree, order)
+
+
+def test_accel_gtds(gravarr, recef):
+    # Test acceleration calculation
+    accel = gravity.accel_gtds(recef, gravarr, degree=5)
+    assert custom_allclose(
+        accel,
+        np.array(
+            [-1.1714564875876532e-06, -3.0093063370147093e-06, -1.0300884561681294e-05]
+        ),
+    )
+
+    # Check that we get an error if the gravity field data is not normalized
+    gravarr.normalized = False
+    with pytest.raises(ValueError):
+        gravity.accel_gtds(recef, gravarr, degree=5)
