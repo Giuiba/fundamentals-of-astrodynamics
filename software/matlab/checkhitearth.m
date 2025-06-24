@@ -59,7 +59,7 @@ function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nre
     if (magr1 < rpad || magr2 < rpad)
         % hitting earth already at start or stop point
         hitearth = 'y';
-        hitearthstr = strcat(hitearth,' initradii');
+        hitearthstr = 'y initradii';
         if show == 'y'
             fprintf( 1, 'hitearth? %s \n',hitearthstr );
         end
@@ -92,7 +92,7 @@ function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nre
             rp = a * (1.0 - ecc);
             if (rp < rpad)
                 hitearth = 'y';
-                hitearthstr = hitearth + 'Sub_Earth_nrev';
+                hitearthstr = 'y Sub_Earth_nrev';
             end
             % nrev = 0, 3 cases:
             % heading to perigee and ending after perigee
@@ -108,7 +108,7 @@ function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nre
                     rp = magh * magh * 0.5 / mu;
                     if (rp < rpad)
                         hitearth = 'y';
-                        hitearthstr = strcat(hitearth, ' Sub_Earth_para');
+                        hitearthstr = 'y Sub_Earth_para';
                     end
                 else
                     % for both elliptical & hyperbolic
@@ -123,7 +123,7 @@ function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nre
                         rp = a * (1.0 - ecc);
                         if (rp < rpad)
                             hitearth = 'y';
-                            hitearthstr = strcat(hitearth, ' Sub_Earth_ell');
+                            hitearthstr = 'y Sub_Earth_ell';
                         end
                     else
                         % hyperbolic heading towards the earth
@@ -131,7 +131,7 @@ function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nre
                             rp = a * (1.0 - ecc);
                             if (rp < rpad)
                                 hitearth = 'y';
-                                hitearthstr = strcat(hitearth, ' Sub_Earth_hyp');
+                                hitearthstr = 'y Sub_Earth_hyp';
                             end
                         end
                     end

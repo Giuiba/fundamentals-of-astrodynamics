@@ -20,34 +20,30 @@
 %                  only affects nrev >= 1 solutions
 %    dtsec       - time between r1 and r2                     sec
 %    nrev        - number of revs to complete                 0, 1, 2, 3,
-%    altpad      - altitude pad for hitearth calc             km
 %    show        - control output don't output for speed      'y', 'n'
 %
 %  outputs       :
 %    v1t         - ijk transfer velocity vector               km/s
 %    v2t         - ijk transfer velocity vector               km/s
-%    hitearth    - flag if hti or not                         'y', 'n'
-%    errorsum    - error flag                                 'ok',
-%    errorout    - text for iterations / last loop
+%    detailAll   - detail text for iterations 
 %
 %  references    :
 %    vallado       2022, 505, Alg 61, ex 7-5
 %    thompson      AAS GNC 2018
 %
-% [v1dv, v2dv, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec );
+% [v1dv, v2dv, detailAll] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec, show );
 % ------------------------------------------------------------------------------
 
-function [v1t, v2t, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec )
+function [v1t, v2t, detailAll] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec, show )
     constmath;
     constastro;
 
-    errorb = '      ok';
-    show = 'n';
+    detailAll = 'lambertb\n';
     y = 0.0;
     k2 = 0.0;
     u = 0.0;
-    v1t = [1000,1000,1000];
-    v2t = [1000,1000,1000];
+    v1t = [1000; 1000; 1000];
+    v2t = [1000; 1000; 1000];
 
     magr1 = mag(r1);
     magr2 = mag(r2);
@@ -102,7 +98,7 @@ function [v1t, v2t, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec )
     if (de == 'H') && (nrev > 0)  % old dm == 'l'
         xn = 1e-20;  % be sure to reset this here!!
         x    = 10.0;  % starting value
-        loops = 1;
+        loops = 0;
         while ((abs(xn-x) >= small) && (loops <= 20))
             x = xn;
             temp = 1.0 / (2.0*(L - x*x));
@@ -126,11 +122,17 @@ function [v1t, v2t, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec )
                 y = 75.0;
                 xn = 1.0;
             end
-            %fprintf(1,' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n',loops, y, x, h1, h2, b, f );
+            if (show == 'y')
+                detailAll = sprintf('%s %s',detailAll, sprintf(' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n', ...
+                    loops, y, x, h1, h2, b, f) );
+            end
             loops = loops + 1;
         end  % while
 
-        %fprintf(1,' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n',loops, y, x, h1, h2, b, f );
+        if (show == 'y')
+            detailAll = sprintf('%s %s',detailAll, sprintf(' %3i yh %11.6f x %11.6f h1 %11.6f h2 %11.6f b %11.6f f %11.7f \n', ...
+                loops, y, x, h1, h2, b, f) );
+        end
         x = xn;
         a = s*(1.0 + lam)^2*(1.0 + x)*(L + x) / (8.0*x);
         p = (2.0*magr1*magr2*(1.0 + x)*sin(dnu*0.5)^2) / (s*(1 + lam)^2 * (L + x));  % thompson (1.0 + x)*
@@ -140,7 +142,7 @@ function [v1t, v2t, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec )
     else
         % standard processing
         % note that the dr nrev=0 case is not represented
-        loops= 1;
+        loops= 0;
         y1 = 0.0;
         x    = 10.0;  % starting value
         while ((abs(xn-x) >= small) && (loops <= 30))
@@ -187,12 +189,10 @@ function [v1t, v2t, errorb] = lambertb ( r1, r2, v1, dm, de, nrev, dtsec )
 
             loops = loops + 1;
             if show == 'y'
-                fprintf(1,' %3i yb %11.6f x %11.6f k2 %11.6f b %11.6f u %11.6f y1 %11.7f \n',loops,y, x, k2, b, u, y1 );
+                detailAll = sprintf('%s %s',detailAll, sprintf(' %3i yb %11.6f x %11.6f k2 %11.6f b %11.6f u %11.6f y1 %11.7f \n', ...
+                    loops,y, x, k2, b, u, y1) );
             end
         end  % while
-        if show == 'y'
-            fprintf(1,' %3i yb %11.6f x %11.6f k2 %11.6f b %11.6f u %11.6f y1 %11.7f \n',loops,y, x, k2, b, u, y1 );
-        end
 
         if (loops < 30)
             % blair approach use y from solution
