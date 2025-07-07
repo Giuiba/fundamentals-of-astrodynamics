@@ -41,17 +41,17 @@
 % ------------------------------------------------------------------------------
 
 function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nrev )
+    constastro;
 
     % --------------------------  implementation   -----------------
     show = 'n';
-    mu = 3.986004418e5;
 
     hitearth = 'n';
     hitearthstr = 'no';
 
     magr1 = mag(r1);
     magr2 = mag(r2);
-    rpad = 6378.137 + altpad;
+    rpad = re + altpad;
 
     %fprintf(1,'mr1 %11.7f mr2 %11.7f ',magr1, magr2);
     % check whether Lambert transfer trajectory hits the Earth
@@ -108,7 +108,7 @@ function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nre
                     rp = magh * magh * 0.5 / mu;
                     if (rp < rpad)
                         hitearth = 'y';
-                        hitearthstr = 'y Sub_Earth_para';
+                        hitearthstr = 'y Sub_Earth_parb';
                     end
                 else
                     % for both elliptical & hyperbolic
@@ -123,7 +123,7 @@ function [hitearth, hitearthstr] = checkhitearth ( altpad, r1, v1t, r2, v2t, nre
                         rp = a * (1.0 - ecc);
                         if (rp < rpad)
                             hitearth = 'y';
-                            hitearthstr = 'y Sub_Earth_ell';
+                            hitearthstr = 'y Sub_Earth_ecc';
                         end
                     else
                         % hyperbolic heading towards the earth

@@ -71,8 +71,8 @@ function [v1tu, v2tu, detailAll] = lambertu(r1, r2, v1, dm, de, nrev, dtsec, kbi
 
     % -------------------------  implementation   -------------------------
     constastro;
-    small = 0.00001; % can affect cases where znew is multiples of 2pi^2
-    numiter= 20;
+    small = 0.000001; % can affect cases where znew is multiples of 2pi^2
+    numiter= 40;
     detailAll = 'lambertu\n';
     for i= 1 : 3
         v1tu(i) = 0.0;
