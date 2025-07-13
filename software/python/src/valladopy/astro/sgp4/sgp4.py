@@ -209,7 +209,7 @@ class SGP4:
             step (float, optional): Time step in minutes (default = None)
 
         Returns:
-            tuple (r_init, v_init, startmfe, stopmfe, deltamin)
+            tuple (startmfe, stopmfe, deltamin, r_init, v_init)
                 startmfe (float): Start time in minutes from epoch
                 stopmfe (float): Stop time in minutes from epoch
                 deltamin (float): Time step in minutes

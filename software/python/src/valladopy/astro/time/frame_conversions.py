@@ -151,7 +151,7 @@ def eci2ecef(
         Vallado: 2022, p. 223-230
 
     Args:
-        reci (array_like): ECi position vector in km
+        reci (array_like): ECI position vector in km
         veci (array_like): ECI velocity vector in km/s
         aeci (array_like): ECI acceleration vector in km/s²
         ttt (float): Julian centuries of TT
